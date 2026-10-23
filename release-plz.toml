@@ -1,0 +1,100 @@
+# release-plz: keeps a release pull request with the version bump and the CHANGELOG.md section
+# open on `main`; merging it pushes the tag `vX.Y.Z` and creates the GitHub Release whose notes
+# are that section. See docs/releasing.md.
+#
+# 0.x policy: `fix`, `perf` and `feat` bump the patch (0.4.0 -> 0.4.1); a breaking change (`!`
+# after the type or scope, or a `BREAKING CHANGE:` footer) bumps the minor (0.4.x -> 0.5.0). A
+# breaking commit also carries a `Migration:` footer per consumer; the changelog prints them.
+
+[workspace]
+# Versions come from git tags; nothing goes to crates.io (`publish = false` in Cargo.toml too).
+git_only = true
+publish = false
+git_tag_enable = true
+git_tag_name = "v{{ version }}"
+# The GitHub Release is titled like the tag; release-plz's multi-package default would be
+# `rayx_app-vX.Y.Z`.
+git_release_name = "v{{ version }}"
+# No cargo-dist here: release-plz creates the GitHub Release from the changelog section.
+git_release_enable = true
+changelog_update = true
+# Breaking changes are declared by their commits. cargo-semver-checks would also build NSH for
+# both the tag and `main` on every run.
+semver_check = false
+# Only changes that reach users start a release; docs, tests, CI, build and agentx commits ride
+# along in the next one.
+release_commits = "^(feat|fix|perf)"
+
+# One release unit: the three crates inherit `[workspace.package] version`, `rayx_app` builds on
+# `rayx_app_di` and both re-export `rayx_app_macros`' derive, so they share one version (the
+# version group), one tag `vX.Y.Z`, one GitHub Release and one root CHANGELOG.md, all owned by
+# `rayx_app`.
+[[package]]
+name = "rayx_app"
+changelog_path = "./CHANGELOG.md"
+changelog_include = ["rayx_app_di", "rayx_app_macros"]
+version_group = "rayx"
+
+[[package]]
+name = "rayx_app_di"
+version_group = "rayx"
+# Released under `rayx_app`'s tag and changelog. It keeps the inherited `git_tag_name`: in
+# git-only mode that template is how it finds its previous version (`v*` tags).
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_app_macros"
+version_group = "rayx"
+# Like `rayx_app_di`.
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[changelog]
+header = """# Changelog
+
+All notable changes to `rayx_app`, `rayx_app_di` and `rayx_app_macros` are documented in this
+file. The three crates share one version and one release tag `vX.Y.Z`. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the crates follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
+Conventional Commits by release-plz.
+
+"""
+# Each `Migration:` footer of a commit is printed as a nested line under its entry.
+body = """
+## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+{%- if commit.scope -%}
+- *({{ commit.scope }})* {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}
+{% else -%}
+- {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}
+{% endif -%}
+{% for footer in commit.footers -%}
+{% if footer.token == "Migration" %}{{ "  " }}- Migration: {{ footer.value }}
+{% endif -%}
+{% endfor -%}
+{% endfor -%}
+{% endfor %}
+"""
+trim = true
+protect_breaking_commits = true
+tag_pattern = "v[0-9].*"
+sort_commits = "oldest"
+commit_parsers = [
+  # Housekeeping that is not a change to the crates.
+  { message = "^chore\\(agentx\\)", skip = true },
+  { message = "^chore\\(release\\)", skip = true },
+  { message = "^chore\\(deps\\)", skip = true },
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Fixes" },
+  { message = "^perf", group = "Performance" },
+  { message = "^refactor", group = "Refactoring" },
+  { message = "^docs", group = "Documentation" },
+  { message = "^(ci|build)", group = "Build and CI" },
+  { message = "^test", group = "Tests" },
+  { message = "^chore", group = "Maintenance" },
+]
