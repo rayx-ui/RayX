@@ -1,0 +1,38 @@
+name: RayX
+
+# Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the pure-Rust
+# DI core. Runs on every pull request (release-plz's release pull requests included) and every
+# push to `main`. The toolchain is rust-toolchain.toml's.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: fmt, clippy, test, wasm32
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # QuickJS, the JavaScript engine of the NSH layer's tests, is C; bindgen needs libclang.
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install -y clang libclang-dev
+
+      - uses: dtolnay/rust-toolchain@1.99.0
+        with:
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
+
+      # Dependencies only (NSH, oxc, QuickJS): main's runs save it, pull requests restore it.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - run: cargo check -p rayx_app_di --target wasm32-unknown-unknown
