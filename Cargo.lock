@@ -2104,7 +2104,7 @@ checksum = "610a5acd306ec67f907abe5567859a3c693fb9886eb1f012ab8f2a47bef3db51"
 [[package]]
 name = "nsh-base"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "html5ever",
  "log",
@@ -2122,7 +2122,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "anyhow",
  "dunce",
@@ -2147,7 +2147,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "cap-std",
  "crc32fast",
@@ -2176,7 +2176,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "crossbeam-channel",
  "libc",
@@ -2188,12 +2188,13 @@ dependencies = [
  "rustc-hash 2.1.3",
  "serde_json",
  "tokio",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "nsh-js"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -2214,7 +2215,7 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "imagesize 0.15.0",
  "proc-macro2",
@@ -2226,7 +2227,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -2241,7 +2242,7 @@ dependencies = [
 [[package]]
 name = "nsh-shader"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-7#4faf2cfd9eb2040ff4d6391e8a38d085de217791"
 dependencies = [
  "naga",
 ]

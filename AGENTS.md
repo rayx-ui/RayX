@@ -16,9 +16,9 @@ dependency. The workspace has three crates sharing one version:
 ## Dependencies
 
 - `dxn_reactive` comes from [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) by release tag.
-- NSH comes from the fork `github.com/dXnSix/nsh` through `[patch.crates-io]`, pinned to the
-  integration tag `fork-*` that Gamify builds with; a consumer's own patch decides which NSH it
-  builds with.
+- NSH comes from the fork `github.com/dXnSix/nsh` through `[patch.crates-io]`, pinned to one of
+  its integration tags `fork-*` (the newest RayX needs); a consumer's own patch decides which NSH
+  it builds with.
 - Git tags only: never path, branch or commit dependencies.
 - GPUI, gpux and RayX.Old's crates (`rayx`, `rayx_runtime`) must not appear in the dependency tree.
 
