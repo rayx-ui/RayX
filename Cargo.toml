@@ -39,10 +39,10 @@ expect_used = "deny"
 # NSH comes from an integration tag of the fork (github.com/dXnSix/nsh,
 # `fork-*`); a consumer's own patch decides there.
 [patch.crates-io]
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-7" }
+nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
+nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
+nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
+nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
+nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
+nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
+nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.2.0-8" }
