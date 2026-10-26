@@ -793,6 +793,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be1e0bca6c3637f992fc1cc7cbc52a78c1ef6db076dbf1059c4323d6a2048376"
 
 [[package]]
+name = "defmt"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4a0795ac740cb54d7b3775c9c17345f6aaecf884c01733b39d6017738e0e3e1"
+dependencies = [
+ "bitflags 1.3.2",
+ "defmt-macros",
+]
+
+[[package]]
+name = "defmt-macros"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "840bb056bd99c495c9188198a258ab787c79f306d864db3e6e8451442d6d8366"
+dependencies = [
+ "defmt-parser",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.9",
+]
+
+[[package]]
+name = "defmt-parser"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71958f69fb2de856c5dd51ac9377e986ca1aa5919f931bf5395a807277f889a0"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "der"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1774,6 +1805,50 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
+name = "jiff"
+version = "0.2.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2b005715dcbeb0089a3c0dab99f2ff1cc3b2525323552703d648585d342a383"
+dependencies = [
+ "defmt",
+ "jiff-core",
+ "jiff-static",
+ "jiff-tzdb",
+ "log",
+ "portable-atomic",
+ "portable-atomic-util",
+ "serde_core",
+]
+
+[[package]]
+name = "jiff-core"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e52fe76043ccecc9005d2305ebaadf7d7fc0cc89ca6baa10a94d6bc68c7128c"
+dependencies = [
+ "defmt",
+ "log",
+]
+
+[[package]]
+name = "jiff-static"
+version = "0.2.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cc9817253cf7c7ee4684451bd327e88d6f3658014e54a29198625590650695c"
+dependencies = [
+ "jiff-core",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "jiff-tzdb"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa8377070c6bae868759445e5a77f66d84f0b72f3a054bfb00e6d038b8282da7"
+
+[[package]]
 name = "jobserver"
 version = "0.1.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2104,7 +2179,7 @@ checksum = "610a5acd306ec67f907abe5567859a3c693fb9886eb1f012ab8f2a47bef3db51"
 [[package]]
 name = "nsh-base"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "html5ever",
  "log",
@@ -2122,7 +2197,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "anyhow",
  "dunce",
@@ -2147,7 +2222,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "cap-std",
  "crc32fast",
@@ -2176,7 +2251,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "crossbeam-channel",
  "libc",
@@ -2194,10 +2269,11 @@ dependencies = [
 [[package]]
 name = "nsh-js"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
+ "jiff",
  "libc",
  "log",
  "nsh-core",
@@ -2215,7 +2291,7 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "imagesize 0.15.0",
  "proc-macro2",
@@ -2227,7 +2303,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -2242,7 +2318,7 @@ dependencies = [
 [[package]]
 name = "nsh-shader"
 version = "0.2.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-8#a30e8fd14eae0209ef74d5c8ac7e8fe885f5951e"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-9#33456e82362cd573c28036c807086d4c1b15ea69"
 dependencies = [
  "naga",
 ]
@@ -3101,6 +3177,21 @@ dependencies = [
  "cpubits",
  "cpufeatures 0.3.1",
  "universal-hash",
+]
+
+[[package]]
+name = "portable-atomic"
+version = "1.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05c8b63e8d9609db387f0324918f81d68fe27748f084ef092fb35954d0539a85"
+
+[[package]]
+name = "portable-atomic-util"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10ab3eb7f3becc3a1cbc4f2c6f20267996cfc1a6467a873763411b136a122715"
+dependencies = [
+ "portable-atomic",
 ]
 
 [[package]]
