@@ -114,4 +114,4 @@ component's cleanup; `ServiceScope::view_model::<T>()` does the same for TSX unt
 NSH comes from the integration tag of the fork Gamify builds with (`[patch.crates-io]` in `Cargo.toml`); a consumer's
 own patch decides which NSH it builds with.
 
-Status: built for Gamify (github.com/dXnSix), consumed through git tags (`v0.4.0`, on NSH 0.2.0).
+Status: built for Gamify (github.com/dXnSix), consumed through git tags (`v0.4.0` on NSH 0.2.0; `main` on NSH 0.3.0).

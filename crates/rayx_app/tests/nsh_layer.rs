@@ -21,7 +21,8 @@ use futures::{
 };
 use nsh_core::{
     ApproxTextEngine, MountBatch, MountItem,
-    ui::{Registry, Root, prelude::*},
+    element::{Registry, Root},
+    prelude::*,
 };
 use nsh_engine::{App, Bundle, Engine, EngineConfig, LocalEngine, MountSink};
 use rayx_app::{

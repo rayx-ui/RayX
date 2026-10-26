@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use dxn_reactive::{ActivatableViewModel, ActivationToken};
-use nsh_core::ui::prelude::*;
+use nsh_core::prelude::*;
 use rayx_core::ServiceProvider;
 
 use crate::{AppError, start_app};

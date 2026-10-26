@@ -5,7 +5,7 @@ use std::{fmt, rc::Rc, sync::OnceLock, time::Duration};
 use futures::future::{FutureExt, LocalBoxFuture, Shared};
 
 use dxn_reactive::ReactiveError;
-use nsh_core::ui::{ambient::global, prelude::*};
+use nsh_core::prelude::*;
 use rayx_core::{
     ConfigurationError, RayXAppBuilder, ServiceProvider, ServiceResolutionError,
     di::{StartupInitializationContext, StartupInitializationError},
