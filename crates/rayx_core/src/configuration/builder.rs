@@ -1,76 +1,67 @@
-use super::error::{ConfigurationError, OptionsFinalizeError};
-use super::options::OptionsPlans;
-use crate::options::OptionsRegistry;
+use super::source::{JsonSource, MemorySource};
+use super::{Configuration, ConfigurationError, ConfigurationSource};
+use serde_json::Value;
 
-/// Collects options plans and builds them into an [`OptionsRegistry`].
+/// Collects configuration sources (.NET's `ConfigurationBuilder`) and builds them into a
+/// [`Configuration`]. Later sources' values go over earlier ones'.
 #[derive(Default)]
 pub struct ConfigurationBuilder {
-    options: OptionsPlans,
-}
-
-/// The result of [`ConfigurationBuilder::build_sync`]. RayX's result also holds
-/// the configuration root built from sources, which the core does not have.
-#[derive(Debug)]
-pub struct ConfigurationBuildResult {
-    pub options: OptionsRegistry,
+    sources: Vec<Box<dyn ConfigurationSource>>,
 }
 
 impl ConfigurationBuilder {
-    /// Registers `T::default()` options for `section`.
-    pub fn options<T>(&mut self, section: impl Into<String>) -> &mut Self
-    where
-        T: Default + Send + Sync + 'static,
-    {
-        self.configure_options(section, T::default, |_| {}, |_| Ok(()));
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Adds a source.
+    pub fn add_source(&mut self, source: impl ConfigurationSource) -> &mut Self {
+        self.sources.push(Box::new(source));
         self
     }
 
-    /// Registers layered options: the first plan for `T` supplies the base and the
-    /// finalizer; later plans for the same `T` add configurators. Plans for one
-    /// type under different sections fail the build.
-    pub fn configure_options<T>(
-        &mut self,
-        section: impl Into<String>,
-        base_factory: impl FnOnce() -> T + 'static,
-        configure: impl FnOnce(&mut T) + 'static,
-        finalize: impl FnOnce(&mut T) -> Result<(), OptionsFinalizeError> + 'static,
-    ) -> &mut Self
+    /// Adds values by path (.NET's `AddInMemoryCollection`):
+    /// `[("Feed:Label", json!("live")), ("Feed:Retry:Limit", json!(3))]`.
+    pub fn add_in_memory<K, V>(&mut self, values: impl IntoIterator<Item = (K, V)>) -> &mut Self
     where
-        T: Send + Sync + 'static,
+        K: Into<String>,
+        V: Into<Value>,
     {
-        self.options
-            .configure(section.into(), base_factory, configure, finalize);
-        self
+        self.add_source(MemorySource::from_pairs(
+            values
+                .into_iter()
+                .map(|(path, value)| (path.into(), value.into())),
+        ))
     }
 
-    /// Registers an exact options value; it replaces any earlier plan for `T`,
-    /// and later layered plans for `T` are ignored.
-    pub fn options_value<T>(&mut self, value: T) -> &mut Self
-    where
-        T: Send + Sync + 'static,
-    {
-        self.options.exact(value);
-        self
+    /// Adds a tree of values (an object), such as `json!({ "Feed": { "Label": "live" } })`.
+    pub fn add_value(&mut self, values: Value) -> &mut Self {
+        self.add_source(MemorySource { values })
     }
 
-    pub fn build_options_sync(self) -> Result<OptionsRegistry, ConfigurationError> {
-        self.build_sync().map(|result| result.options)
+    /// Adds JSON text (an object).
+    pub fn add_json(&mut self, json: impl Into<String>) -> &mut Self {
+        self.add_source(JsonSource { json: json.into() })
     }
 
-    pub async fn build_options_async(self) -> Result<OptionsRegistry, ConfigurationError> {
-        self.build_async().await.map(|result| result.options)
+    /// How many sources there are.
+    pub fn len(&self) -> usize {
+        self.sources.len()
     }
 
-    pub fn build_sync(self) -> Result<ConfigurationBuildResult, ConfigurationError> {
-        Ok(ConfigurationBuildResult {
-            options: self.options.materialize()?,
-        })
+    pub fn is_empty(&self) -> bool {
+        self.sources.is_empty()
     }
 
-    /// The same as [`Self::build_sync`]; kept for RayX API parity (RayX needs it
-    /// for async sources).
-    pub async fn build_async(self) -> Result<ConfigurationBuildResult, ConfigurationError> {
-        self.build_sync()
+    /// Loads every source and merges them. A source that loads asynchronously fails it
+    /// ([`ConfigurationError::AsyncSource`]); use [`Self::build_async`] then.
+    pub fn build(self) -> Result<Configuration, ConfigurationError> {
+        Configuration::load(self.sources)
+    }
+
+    /// [`Self::build`], awaiting asynchronous sources one after another, in order.
+    pub async fn build_async(self) -> Result<Configuration, ConfigurationError> {
+        Configuration::load_async(self.sources).await
     }
 }
 
@@ -78,7 +69,7 @@ impl std::fmt::Debug for ConfigurationBuilder {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter
             .debug_struct("ConfigurationBuilder")
-            .field("options", &self.options.len())
+            .field("sources", &self.sources.len())
             .finish()
     }
 }

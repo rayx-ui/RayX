@@ -25,8 +25,8 @@ use nsh_core::{
 };
 use nsh_engine::{App, Bundle, Engine, EngineConfig, LocalEngine, MountSink};
 use rayx_app::{
-    ActivatableViewModel, AppService, AppServices, AppState, NshAppBuilder, ServiceAppBuilderExt,
-    ServiceScope, ViewModelActivator, app_state,
+    ActivatableViewModel, AppService, AppServices, AppState, ConfigurationAppBuilderExt,
+    RayXAppBuilder, ServiceAppBuilderExt, ServiceScope, ViewModelActivator, app_state,
     di::{
         AsyncInitializable, StartupInitializable, StartupInitializationContext,
         StartupInitializationResult, StartupInitializationState, StartupServiceType,
@@ -91,6 +91,8 @@ const FAIL: usize = 1;
 const HANG: usize = 2;
 /// The store takes 300 ms to initialize.
 const SLOW: usize = 3;
+/// The pages' options lose their title, which they are validated for on start.
+const INVALID_OPTIONS: usize = 4;
 
 /// The startup services that initialized, in order.
 static STARTED: Mutex<Vec<&'static str>> = Mutex::new(Vec::new());
@@ -194,14 +196,37 @@ impl Drop for Mode {
     }
 }
 
+/// Options bound to the app's configuration and validated on start.
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+struct PagesOptions {
+    title: String,
+}
+
 fn next_id() -> usize {
     NEXT_ID.fetch_add(1, Ordering::SeqCst)
 }
 
 /// The app's composition root, as a GameX `with_*` extension would register it.
-fn build_app(builder: NshAppBuilder) -> NshAppBuilder {
+fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     BUILDS.fetch_add(1, Ordering::SeqCst);
     builder
+        .configure_app_configuration(|configuration| {
+            configuration.add_value(serde_json::json!({ "Pages": { "Title": "Pages" } }));
+        })
+        .add_options::<PagesOptions>(|options| {
+            options
+                .bind("Pages")
+                .configure(|options| {
+                    if MODE.load(Ordering::SeqCst) == INVALID_OPTIONS {
+                        options.title.clear();
+                    }
+                })
+                .validate(
+                    |options| !options.title.is_empty(),
+                    "the pages need a title",
+                )
+                .validate_on_start();
+        })
         .add_startup_singleton(Store::default())
         .add_startup_singleton(Catalog::default())
         .add_singleton(Session { id: next_id() })
@@ -477,6 +502,28 @@ fn nsh_layer_fails_startup_when_a_service_times_out() {
         "{failed}"
     );
     assert_eq!(*STARTED.lock().unwrap(), ["store"]);
+}
+
+#[test]
+fn nsh_layer_fails_startup_when_options_validated_on_start_fail() {
+    let _serial = serial();
+    set_app(build_app);
+    let _mode = Mode::set(INVALID_OPTIONS);
+    SEEN.with_borrow_mut(Vec::clear);
+    let (mut engine, rx, _close) = start_pages();
+
+    let shown = pump_until(&mut engine, &rx, "failed:");
+    let failed = shown
+        .iter()
+        .find(|text| text.starts_with("failed:"))
+        .unwrap();
+    assert!(failed.contains("PagesOptions"), "{failed}");
+    assert!(failed.contains("the pages need a title"), "{failed}");
+    assert!(
+        STARTED.lock().unwrap().is_empty(),
+        "no startup service initializes"
+    );
+    assert!(SEEN.with_borrow(Vec::is_empty));
 }
 
 thread_local! {

@@ -1,5 +1,6 @@
 use super::provider::ServiceProvider;
 use super::ready::DiReady;
+use crate::options::OptionsError;
 use futures::future::{Either, LocalBoxFuture, join_all, select};
 use std::{
     any::{TypeId, type_name},
@@ -280,6 +281,9 @@ pub enum StartupInitializationError {
     ServiceFailures {
         failures: StartupInitializationFailures,
     },
+    /// Options registered with `validate_on_start` failed
+    /// ([`ServiceProvider::validate_options_on_start`]); no startup service was initialized.
+    Options { failures: Vec<OptionsError> },
 }
 
 impl fmt::Display for StartupInitializationError {
@@ -299,6 +303,16 @@ impl fmt::Display for StartupInitializationError {
             ),
             Self::ServiceFailures { failures } => {
                 write!(formatter, "one or more startup services failed: {failures}")
+            }
+            Self::Options { failures } => {
+                formatter.write_str("options failed on start: ")?;
+                for (index, failure) in failures.iter().enumerate() {
+                    if index > 0 {
+                        formatter.write_str("; ")?;
+                    }
+                    write!(formatter, "{failure}")?;
+                }
+                Ok(())
             }
         }
     }
@@ -470,7 +484,9 @@ impl StartupRegistry {
 
     /// Initializes every startup service, layer by layer in dependency order (a layer's services
     /// concurrently), stopping at the first layer with failures. Without a timer, nothing times
-    /// out; see [`Self::initialize_with_timer`].
+    /// out; see [`Self::initialize_with_timer`]. First it makes the options registered with
+    /// `validate_on_start` ([`ServiceProvider::validate_options_on_start`]); when one fails,
+    /// no service is initialized.
     pub async fn initialize(
         &self,
         context: StartupInitializationContext,
@@ -502,6 +518,10 @@ impl StartupRegistry {
     where
         F: Future<Output = ()>,
     {
+        context
+            .services()
+            .validate_options_on_start()
+            .map_err(|failures| StartupInitializationError::Options { failures })?;
         let services = self.resolved_services(&context)?;
         let default_timeout = self.default_initialization_timeout();
         for layer in Self::runtime_initialization_layers_for(&services)? {

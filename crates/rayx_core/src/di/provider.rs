@@ -1,7 +1,7 @@
 use super::lifecycle::{StartupInitializable, StartupRegistry, StartupServiceType};
 use super::ready::DiReady;
 use super::registry::{ServiceRegistry, ServiceResolutionError};
-use crate::options::{Options, OptionsError, OptionsRegistry};
+use crate::options::OptionsRegistrations;
 use std::sync::Arc;
 
 pub trait IntoServiceArc<T>
@@ -42,7 +42,7 @@ where
 {
 }
 
-/// The service container: registrations, options and the startup registry.
+/// The service container: registrations, options registrations and the startup registry.
 ///
 /// Lifetimes (RayX's behaviour, unchanged):
 ///
@@ -62,7 +62,7 @@ where
 /// shared singleton cache.
 #[derive(Clone, Debug)]
 pub struct ServiceProvider {
-    options: OptionsRegistry,
+    options: OptionsRegistrations,
     services: ServiceRegistry,
     startup: StartupRegistry,
 }
@@ -70,7 +70,7 @@ pub struct ServiceProvider {
 impl ServiceProvider {
     pub fn new() -> Self {
         Self {
-            options: OptionsRegistry::default(),
+            options: OptionsRegistrations::default(),
             services: ServiceRegistry::default(),
             startup: StartupRegistry::default(),
         }
@@ -80,22 +80,16 @@ impl ServiceProvider {
         Self::new()
     }
 
-    pub fn options<T>(&self) -> Option<Options<T>>
-    where
-        T: Send + Sync + 'static,
-    {
-        self.options.options::<T>()
-    }
-
-    pub fn required_options<T>(&self) -> Result<Options<T>, OptionsError>
-    where
-        T: Send + Sync + 'static,
-    {
-        self.options.required::<T>()
-    }
-
-    pub fn options_registry(&self) -> &OptionsRegistry {
+    pub(crate) fn options_registrations(&self) -> &OptionsRegistrations {
         &self.options
+    }
+
+    pub(crate) fn options_registrations_mut(&mut self) -> &mut OptionsRegistrations {
+        &mut self.options
+    }
+
+    pub(crate) fn service_registry_mut(&mut self) -> &mut ServiceRegistry {
+        &mut self.services
     }
 
     pub fn service<T>(&self) -> Option<Arc<T>>
@@ -579,16 +573,6 @@ impl ServiceProvider {
         self
     }
 
-    pub fn with_options_registry(mut self, options: OptionsRegistry) -> Self {
-        self.options = options;
-        self
-    }
-
-    pub fn with_added_options(mut self, options: OptionsRegistry) -> Self {
-        self.options.extend(options);
-        self
-    }
-
     pub fn with_startup_service<T>(mut self, service: Arc<T>) -> Self
     where
         T: StartupInitializable + ?Sized,
@@ -605,7 +589,7 @@ impl ServiceProvider {
         self
     }
 
-    /// Creates a child scope: shared singletons, options and startup registry,
+    /// Creates a child scope: shared singletons, options registrations and startup registry,
     /// a fresh scoped-instance cache, and a snapshot of the registrations.
     pub fn create_scope(&self) -> Self {
         Self {

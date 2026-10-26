@@ -165,20 +165,7 @@ fn di_startup_timeout_is_not_enforced_without_a_timer() {
 
 #[test]
 fn di_startup_timeout_default_is_set_from_the_app_builder() {
-    #[derive(Default)]
-    struct Builder {
-        configuration: ConfigurationBuilder,
-        services: ServiceProvider,
-    }
-    impl AppBuilder for Builder {
-        fn configuration_mut(&mut self) -> &mut ConfigurationBuilder {
-            &mut self.configuration
-        }
-        fn services_mut(&mut self) -> &mut ServiceProvider {
-            &mut self.services
-        }
-    }
-    let builder = Builder::default().default_initialization_timeout(Duration::from_secs(3));
+    let builder = RayXAppBuilder::new().default_initialization_timeout(Duration::from_secs(3));
     assert_eq!(
         builder
             .services

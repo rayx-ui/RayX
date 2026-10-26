@@ -1,13 +1,13 @@
 # RayX
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps; it replaces the GPUI and gpux
-stack of the previous RayX (now `RayX.Old`). It starts with dependency injection, options and an app builder with the
-API of RayX's `rayx_runtime::di`, which until `v0.3.0` were the `nsh-app` repository's `nsh_app*` crates. They come in
-two layers:
+stack of the previous RayX (now `RayX.Old`). It starts with dependency injection, configuration, options and an app
+builder with the API of .NET's `Microsoft.Extensions` (as RayX's `rayx_runtime` had it), which until `v0.3.0` were the
+`nsh-app` repository's `nsh_app*` crates. They come in two layers:
 
 - `rayx_core`: the pure-Rust core: a `ServiceProvider` with singleton, scoped and transient services, scopes,
-  options and the `AppBuilder`. No NSH dependency, so service crates use it and stay testable with `cargo test` and
-  buildable for every target, wasm32 included.
+  configuration sources, options and the `RayXAppBuilder`. No NSH dependency, so service crates use it and stay
+  testable with `cargo test` and buildable for every target, wasm32 included.
 - `rayx_app`: the NSH layer: one root provider per NSH surface, a scope per screen (created on mount, dropped on
   cleanup), view-model activation on mount ([`dxn_reactive`](https://github.com/dXnSix/dXn.Reactive)'s
   activators), and access from `#[class]` bridges and Rust components.
@@ -27,6 +27,43 @@ rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "v0.4.0" }    # NSH 
 Coming from `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths. Coming from `nsh-app`
 `v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_core`) and their paths, and move to
 `dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.
+
+## Configuration and options
+
+The app builder's `configuration` collects sources (values in memory, a JSON tree or text, and `ConfigurationSource`
+for files, the app's bundled settings or a server, which may load asynchronously); later sources' values go over
+earlier ones'. The built `Configuration` is a singleton, read by path (`"Feed:Retry:Limit"`) and section; `set` and
+`reload` change it and notify its listeners.
+
+Options follow .NET's options model. Register them on the services and read them by type:
+
+```rust
+#[derive(Default, Serialize, Deserialize)]
+struct FeedOptions { label: String, retry_limit: u32 }
+
+let mut app = RayXAppBuilder::new();
+app.configuration.add_json(SETTINGS); // { "Feed": { "label": "live", "retryLimit": 3 } }
+app.services
+    .add_options::<FeedOptions>()
+    .bind("Feed")                                       // the section over the defaults
+    .configure(|options| options.label.push_str("!"))   // configure steps run in registration order,
+    .post_configure(|options| options.retry_limit = options.retry_limit.min(5)) // then post-configure,
+    .validate(|options| !options.label.is_empty(), "the feed needs a label") // then every validation
+    .validate_on_start();                               // fail startup, not the first use
+let services = app.build()?;
+let options = services.options::<FeedOptions>()?;       // IOptions<T>: made once
+```
+
+- Options are made from `T::default()`; ones nobody registered are just that. `bind` needs `Serialize` and
+  `Deserialize`; its keys match ignoring case, `_` and `-` (`retryLimit` binds `retry_limit`), a list is replaced as
+  a whole (.NET appends to it), and a `null` binds nothing.
+- Named options: `add_named_options::<T>(name)`, `configure_named`, `configure_all`, `post_configure_all`; steps that
+  take a service: `configure_with::<D>`, `post_configure_with::<D>`, `validate_with::<D>`.
+- `services.options_snapshot::<T>()` (`IOptionsSnapshot<T>`) makes them once per scope; `services.options_monitor::<T>()`
+  (`IOptionsMonitor<T>`) makes them again when the configuration a name is bound to changes and calls its `on_change`
+  listeners.
+- Startup makes the options registered with `validate_on_start` before it initializes any startup service; an invalid
+  one fails it.
 
 ## Startup
 

@@ -5,9 +5,9 @@ the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../RayX.Old`), wh
 dependency. The workspace has three crates sharing one version:
 
 - `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
-  services, scopes, async startup), options, configuration and the `AppBuilder`. It has no NSH
-  dependency and must keep building for `wasm32-unknown-unknown`; service crates depend on it
-  alone.
+  services, scopes, async startup), configuration sources, .NET's options model and the
+  `RayXAppBuilder`. It has no NSH dependency and must keep building for `wasm32-unknown-unknown`;
+  service crates depend on it alone.
 - `crates/rayx_app`: the NSH layer: a root provider per engine surface, a scope per screen, view
   models activated with their screen, and the `AppServices`/`ServiceScope` classes for TSX. It is
   the only crate that depends on `nsh-core`.

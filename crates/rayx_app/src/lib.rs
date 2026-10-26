@@ -1,17 +1,18 @@
-//! RayX's dependency injection, options and app builder ([`rayx_core`]) on NSH.
+//! RayX's dependency injection, configuration, options and app builder ([`rayx_core`]) on NSH.
 //!
 //! The core's lifetimes, tied to what NSH runs:
 //!
 //! - **Root provider: one per engine surface.** NSH forbids process-wide singletons (each
-//!   window, test and hot restart is a surface of its own), so [`install`] keeps the provider an
-//!   [`AppBuilder`] built in the surface's `global` slot, and [`set_app`] names the builder
+//!   window, test and hot restart is a surface of its own), so [`install`] keeps the provider a
+//!   [`RayXAppBuilder`] built in the surface's `global` slot, and [`set_app`] names the builder
 //!   function a surface builds its provider with when the app starts on it. Singletons live as
 //!   long as their surface's provider.
 //! - **Startup.** [`start_app`] (TSX: `await AppServices.load()`; a Rust root: [`start`] and
-//!   [`app_state`]) builds the root and awaits every startup service's async initialization in
-//!   dependency order, each within its timeout (its own, else the builder's default). The app is
-//!   ready, and services resolve, only once all of them initialized; one failure or timeout fails
-//!   startup.
+//!   [`app_state`]) builds the root with [`RayXAppBuilder::build_async`] (its configuration's
+//!   sources may load asynchronously), makes the options registered with `validate_on_start`, and
+//!   awaits every startup service's async initialization in dependency order, each within its
+//!   timeout (its own, else the builder's default). The app is ready, and services resolve, only
+//!   once all of them initialized; an invalid option, one failure or a timeout fails startup.
 //! - **Screen scope: from mount to cleanup.** [`use_screen_scope`], in a Rust component, makes a
 //!   child scope of the nearest enclosing screen's (or of the surface root), provides it to what
 //!   the component renders and drops it when the component's owner cleans up, so scoped services
@@ -35,13 +36,15 @@ mod surface;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
 pub use rayx_core::{
-    AppBuilder, AppService, ConfigurationAppBuilderExt, ConfigurationBuilder, ConfigurationError,
-    Options, OptionsError, OptionsRegistry, ServiceAppBuilderExt, ServiceLifetime, ServiceProvider,
-    ServiceResolutionError, StartupRegistry, configuration, di, options, prelude, services,
+    AppBuilder, AppService, ChangeSubscription, Configuration, ConfigurationAppBuilderExt,
+    ConfigurationBuilder, ConfigurationError, Options, OptionsBuilder, OptionsError,
+    OptionsMonitor, OptionsSnapshot, RayXAppBuilder, ServiceAppBuilderExt, ServiceLifetime,
+    ServiceProvider, ServiceResolutionError, StartupRegistry, configuration, di, options, prelude,
+    services,
 };
 
 pub use scope_class::{AppServices, ServiceScope};
 pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
 pub use surface::{
-    AppError, AppState, NshAppBuilder, app_services, app_state, install, set_app, start, start_app,
+    AppError, AppState, app_services, app_state, install, set_app, start, start_app,
 };

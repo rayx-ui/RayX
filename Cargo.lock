@@ -3534,6 +3534,8 @@ dependencies = [
  "nsh-engine",
  "nsh-js",
  "rayx_core",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 
@@ -3553,6 +3555,8 @@ version = "0.4.0"
 dependencies = [
  "futures",
  "rayx_app_macros",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

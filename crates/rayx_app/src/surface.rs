@@ -7,40 +7,9 @@ use futures::future::{FutureExt, LocalBoxFuture, Shared};
 use dxn_reactive::ReactiveError;
 use nsh_core::ui::{ambient::global, prelude::*};
 use rayx_core::{
-    AppBuilder, ConfigurationBuilder, ConfigurationError, ServiceProvider, ServiceResolutionError,
+    ConfigurationError, RayXAppBuilder, ServiceProvider, ServiceResolutionError,
     di::{StartupInitializationContext, StartupInitializationError},
 };
-
-/// An [`AppBuilder`] for one surface: configuration (options) and services, built into the
-/// surface's root provider by [`NshAppBuilder::build`].
-#[derive(Default)]
-pub struct NshAppBuilder {
-    pub configuration: ConfigurationBuilder,
-    pub services: ServiceProvider,
-}
-
-impl AppBuilder for NshAppBuilder {
-    fn configuration_mut(&mut self) -> &mut ConfigurationBuilder {
-        &mut self.configuration
-    }
-
-    fn services_mut(&mut self) -> &mut ServiceProvider {
-        &mut self.services
-    }
-}
-
-impl NshAppBuilder {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// The root provider: the services with the options the configuration builds. Its startup
-    /// services are not initialized yet ([`start_app`] does that).
-    pub fn build(self) -> Result<ServiceProvider, AppError> {
-        let options = self.configuration.build_options_sync()?;
-        Ok(self.services.with_added_options(options))
-    }
-}
 
 /// Why the app has no root provider on a surface, or a service could not be resolved from it.
 #[derive(Debug)]
@@ -51,10 +20,10 @@ pub enum AppError {
     NotStarted,
     /// The app is starting on this surface; wait for [`app_state`] to change.
     Starting,
-    /// The app's options did not build.
+    /// The app's configuration did not load.
     Configuration(ConfigurationError),
-    /// A startup service failed or timed out, or startup could not be ordered (a cycle, a
-    /// missing dependency). The app does not start.
+    /// Options validated on start failed, a startup service failed or timed out, or startup
+    /// could not be ordered (a cycle, a missing dependency). The app does not start.
     Startup(StartupInitializationError),
     /// A service did not resolve.
     Resolution(ServiceResolutionError),
@@ -73,7 +42,9 @@ impl fmt::Display for AppError {
                 "the app has not started on this surface: await AppServices.load() (TSX) or call rayx_app::start (Rust)",
             ),
             Self::Starting => f.write_str("the app is still starting on this surface"),
-            Self::Configuration(error) => write!(f, "the app's options did not build: {error}"),
+            Self::Configuration(error) => {
+                write!(f, "the app's configuration did not load: {error}")
+            }
             Self::Startup(error) => write!(f, "the app did not start: {error}"),
             Self::Resolution(error) => write!(f, "{error}"),
             Self::Activation(error) => write!(f, "the view model did not activate: {error}"),
@@ -109,7 +80,7 @@ impl From<ServiceResolutionError> for AppError {
 }
 
 /// The app's builder function: a plain function, so every surface builds its own provider.
-type BuildApp = fn(NshAppBuilder) -> NshAppBuilder;
+type BuildApp = fn(RayXAppBuilder) -> RayXAppBuilder;
 
 static APP: OnceLock<BuildApp> = OnceLock::new();
 
@@ -239,7 +210,7 @@ pub fn start() {
 }
 
 async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
-    let root = build(NshAppBuilder::new()).build()?;
+    let root = build(RayXAppBuilder::new()).build_async().await?;
     let registry = root.startup_registry().clone();
     registry
         .initialize_with_timer(

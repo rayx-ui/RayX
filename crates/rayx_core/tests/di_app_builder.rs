@@ -1,15 +1,18 @@
-//! The `AppBuilder` extension pattern GameX's service crates use
-//! (`with_sportsbook`, `with_sportsbook_slips`), with only `use` paths changed.
+//! The `AppBuilder` extension pattern service crates use (`with_sportsbook`,
+//! `with_sportsbook_slips`) on `RayXAppBuilder`: options registered with the options model,
+//! services reading them when they are made.
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use rayx_core::prelude::{AppService, ConfigurationBuilder, ServiceProvider};
+use rayx_core::prelude::{AppService, RayXAppBuilder, ServiceProvider};
 use rayx_core::services::app::{AppBuilder, ConfigurationAppBuilderExt, ServiceAppBuilderExt};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 // --- abstractions crate ----------------------------------------------------
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 struct FeedOptions {
     initial_now_ms: Option<i64>,
     label: String,
@@ -71,21 +74,34 @@ impl NavViewModel for SideNavViewModel {
 }
 
 trait FeedAppBuilderExt: AppBuilder {
-    fn with_feed<F>(mut self, configure_options: F) -> Self
-    where
-        F: FnOnce(&mut FeedOptions),
-    {
-        let mut options = FeedOptions::default();
-        configure_options(&mut options);
-        self.configuration_mut().options_value(options.clone());
-
-        let feed = Arc::new(FeedService {
-            label: options.label.clone(),
+    /// The feed's options come from the `Feed` section, then `configure_options`.
+    fn with_feed(
+        mut self,
+        configure_options: impl Fn(&mut FeedOptions) + Send + Sync + 'static,
+    ) -> Self {
+        self = self.add_options::<FeedOptions>(|options| {
+            options
+                .bind("Feed")
+                .configure(configure_options)
+                .validate(
+                    |options| !options.label.is_empty(),
+                    "the feed needs a label",
+                )
+                .validate_on_start();
         });
-        self.services_mut()
-            .add_singleton::<FeedService>(Arc::clone(&feed));
-        let feed_trait: Arc<dyn Feed> = feed;
-        self = self.add_singleton_as::<dyn Feed>(feed_trait);
+        let services = self.services_mut();
+        services.try_add_service_factory::<FeedService>(|services| FeedService {
+            label: services
+                .options::<FeedOptions>()
+                .expect("the feed options are valid")
+                .label
+                .clone(),
+        });
+        services.try_add_service_factory_as::<dyn Feed>(|services| {
+            services
+                .required_service::<FeedService>()
+                .expect("the feed service is registered")
+        });
 
         self.add_scoped::<SideNavViewModel>(SideNavViewModel::from_services)
             .add_scoped_as::<dyn NavViewModel>(|services| {
@@ -100,60 +116,47 @@ impl<T> FeedAppBuilderExt for T where T: AppBuilder {}
 
 // --- tests -------------------------------------------------------------------
 
-#[derive(Default)]
-struct TestBuilder {
-    configuration: ConfigurationBuilder,
-    services: ServiceProvider,
-}
-
-impl AppBuilder for TestBuilder {
-    fn configuration_mut(&mut self) -> &mut ConfigurationBuilder {
-        &mut self.configuration
-    }
-
-    fn services_mut(&mut self) -> &mut ServiceProvider {
-        &mut self.services
-    }
-}
-
 #[test]
 fn di_app_builder_extension_registers_options_and_trait_objects()
 -> Result<(), Box<dyn std::error::Error>> {
-    let mut builder = TestBuilder::default().with_feed(|options| {
-        options.initial_now_ms = Some(1_000);
-        options.label = "live".to_string();
-    });
-    let options = builder.configuration.build_options_sync()?;
-    builder.services = builder.services.with_added_options(options);
+    let services = RayXAppBuilder::new()
+        .configure_app_configuration(|configuration| {
+            configuration.add_value(json!({ "Feed": { "label": "configured" } }));
+        })
+        .with_feed(|options| {
+            options.initial_now_ms = Some(1_000);
+            options.label.push_str("+live");
+        })
+        .build()?;
+    assert_eq!(services.validate_options_on_start(), Ok(()));
 
-    let options = builder.services.required_options::<FeedOptions>()?;
-    assert_eq!(options.value().initial_now_ms, Some(1_000));
-    assert_eq!(options.value().label, "live");
+    let options = services.options::<FeedOptions>()?;
+    assert_eq!(options.initial_now_ms, Some(1_000));
+    assert_eq!(options.label, "configured+live");
 
-    let feed = builder.services.required_service::<dyn Feed>()?;
-    assert_eq!(feed.label(), "live");
-    let concrete = builder.services.required_service::<FeedService>()?;
+    let feed = services.required_service::<dyn Feed>()?;
+    assert_eq!(feed.label(), "configured+live");
+    let concrete = services.required_service::<FeedService>()?;
     assert_eq!(
         Arc::as_ptr(&concrete).cast::<()>(),
         Arc::as_ptr(&feed).cast::<()>()
     );
 
-    let scoped = builder.services.create_scope();
+    let scoped = services.create_scope();
     let nav = scoped.required_service::<dyn NavViewModel>()?;
-    assert_eq!(nav.feed_label(), "live");
-    assert_eq!(
-        scoped.required_options::<FeedOptions>()?.value().label,
-        "live"
-    );
+    assert_eq!(nav.feed_label(), "configured+live");
+    assert_eq!(scoped.options::<FeedOptions>()?.label, "configured+live");
 
-    assert!(builder.services.startup_registry().is_empty());
+    assert!(services.startup_registry().is_empty());
     Ok(())
 }
 
 #[test]
 fn di_app_builder_scoped_view_model_identity() -> Result<(), Box<dyn std::error::Error>> {
-    let builder = TestBuilder::default().with_feed(|options| options.label = "x".to_string());
-    let scoped = builder.services.create_scope();
+    let services = RayXAppBuilder::new()
+        .with_feed(|options| options.label = "x".to_string())
+        .build()?;
+    let scoped = services.create_scope();
 
     let concrete_nav = scoped.required_service::<SideNavViewModel>()?;
     let trait_nav = scoped.required_service::<dyn NavViewModel>()?;
@@ -163,7 +166,7 @@ fn di_app_builder_scoped_view_model_identity() -> Result<(), Box<dyn std::error:
         "concrete and trait nav resolution must share one scoped ViewModel"
     );
 
-    let other = builder.services.create_scope();
+    let other = services.create_scope();
     assert_ne!(
         other.required_service::<dyn NavViewModel>()?.id(),
         trait_nav.id(),
@@ -177,14 +180,10 @@ fn di_app_builder_scoped_view_model_identity() -> Result<(), Box<dyn std::error:
 }
 
 #[test]
-fn di_app_builder_configure_and_transient_extensions() -> Result<(), Box<dyn std::error::Error>> {
-    let builder = TestBuilder::default()
-        .configure(|configuration| {
-            configuration.options_value(FeedOptions {
-                initial_now_ms: None,
-                label: "configured".to_string(),
-            });
-        })
+fn di_app_builder_configure_options_and_transient_extensions()
+-> Result<(), Box<dyn std::error::Error>> {
+    let services = RayXAppBuilder::new()
+        .configure_options::<FeedOptions>(|options| options.label = "configured".to_string())
         .add_singleton(FeedService {
             label: "singleton".to_string(),
         })
@@ -192,16 +191,10 @@ fn di_app_builder_configure_and_transient_extensions() -> Result<(), Box<dyn std
             Arc::new(FeedService {
                 label: "transient".to_string(),
             }) as Arc<dyn Feed>
-        });
-    let services = builder
-        .services
-        .clone()
-        .with_added_options(builder.configuration.build_options_sync()?);
+        })
+        .build()?;
 
-    assert_eq!(
-        services.required_options::<FeedOptions>()?.value().label,
-        "configured"
-    );
+    assert_eq!(services.options::<FeedOptions>()?.label, "configured");
     assert_eq!(
         services.required_service::<FeedService>()?.label,
         "singleton"
@@ -214,15 +207,17 @@ fn di_app_builder_configure_and_transient_extensions() -> Result<(), Box<dyn std
 }
 
 #[test]
-fn di_app_builder_missing_options_and_services_are_errors() {
-    let builder = TestBuilder::default();
-    let options_error = builder
-        .services
-        .required_options::<FeedOptions>()
-        .unwrap_err();
-    assert!(options_error.to_string().contains("FeedOptions"));
-    let service_error = builder
-        .services
+fn di_app_builder_invalid_options_and_missing_services_are_errors() {
+    let services = RayXAppBuilder::new()
+        .with_feed(|_| {})
+        .build()
+        .expect("the configuration builds");
+    let failures = services.validate_options_on_start().unwrap_err();
+    assert!(failures[0].to_string().contains("the feed needs a label"));
+
+    let service_error = RayXAppBuilder::new()
+        .build()
+        .expect("the configuration builds")
         .create_scope()
         .required_service::<dyn NavViewModel>()
         .err()

@@ -1,15 +1,18 @@
-//! Options configuration (RayX's `rayx_runtime::configuration`, options plans only).
+//! Configuration (.NET's `Microsoft.Extensions.Configuration`): sources merged into one tree of
+//! values, read by path and bound onto options.
 //!
-//! RayX layers configuration sources (files, environment, app settings, through
-//! the `config` crate) under the options plans. Sources are platform-specific
-//! (file system, bundled app content, browser), so the core keeps only the plans:
-//! exact values (`options_value`) and default-based, configured and finalized
-//! values (`options`, `configure_options`). The section name is kept for error
-//! messages and conflict detection.
+//! The core has the sources every target can load: values in memory, a tree, JSON text, and
+//! [`ConfigurationSource`] for the rest (files, the app's bundled settings, a server), which may
+//! load asynchronously.
 
 mod builder;
 mod error;
-mod options;
+mod root;
+mod source;
+pub(crate) mod tree;
 
-pub use builder::{ConfigurationBuildResult, ConfigurationBuilder};
-pub use error::{ConfigurationError, OptionsFinalizeError, OptionsFinalizeStage};
+pub use builder::ConfigurationBuilder;
+pub use error::ConfigurationError;
+pub use root::{Configuration, ConfigurationSection};
+pub use serde_json::Value;
+pub use source::{ConfigurationSource, SourceLoad};

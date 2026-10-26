@@ -1,110 +1,75 @@
 use std::fmt;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum OptionsFinalizeStage {
-    Normalize,
-    Validate,
-}
-
-impl fmt::Display for OptionsFinalizeStage {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Normalize => formatter.write_str("normalize"),
-            Self::Validate => formatter.write_str("validate"),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct OptionsFinalizeError {
-    stage: OptionsFinalizeStage,
-    message: String,
-}
-
-impl OptionsFinalizeError {
-    pub fn normalization(message: impl Into<String>) -> Self {
-        Self {
-            stage: OptionsFinalizeStage::Normalize,
-            message: message.into(),
-        }
-    }
-
-    pub fn validation(message: impl Into<String>) -> Self {
-        Self {
-            stage: OptionsFinalizeStage::Validate,
-            message: message.into(),
-        }
-    }
-
-    pub fn stage(&self) -> OptionsFinalizeStage {
-        self.stage
-    }
-}
-
-impl From<String> for OptionsFinalizeError {
-    fn from(message: String) -> Self {
-        Self::validation(message)
-    }
-}
-
-impl From<&str> for OptionsFinalizeError {
-    fn from(message: &str) -> Self {
-        Self::validation(message)
-    }
-}
-
-impl fmt::Display for OptionsFinalizeError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(&self.message)
-    }
-}
-
-impl std::error::Error for OptionsFinalizeError {}
-
-#[derive(Debug)]
+/// Why configuration did not load, or a value did not convert.
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ConfigurationError {
-    OptionsFinalize {
-        section: String,
-        type_name: &'static str,
-        stage: OptionsFinalizeStage,
-        source: Box<OptionsFinalizeError>,
+    /// A source failed to load.
+    Source {
+        source_name: String,
+        message: String,
     },
-    OptionsPlanConflict {
+    /// A source's tree is not an object (`null` is allowed: it contributes nothing).
+    NotAnObject {
+        source_name: String,
+        kind: &'static str,
+    },
+    /// A source loads asynchronously: build with [`ConfigurationBuilder::build_async`], reload
+    /// with [`Configuration::reload_async`].
+    ///
+    /// [`ConfigurationBuilder::build_async`]: super::ConfigurationBuilder::build_async
+    /// [`Configuration::reload_async`]: super::Configuration::reload_async
+    AsyncSource { source_name: String },
+    /// The value at `path` did not convert to `type_name`.
+    Get {
+        path: String,
         type_name: &'static str,
-        existing_section: String,
-        requested_section: String,
+        message: String,
+    },
+    /// The section at `path` did not bind to `type_name` (its value with the section over it did
+    /// not convert back).
+    Bind {
+        path: String,
+        type_name: &'static str,
+        message: String,
     },
 }
 
 impl fmt::Display for ConfigurationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::OptionsFinalize {
-                section,
-                type_name,
-                stage,
-                source,
+            Self::Source {
+                source_name,
+                message,
             } => write!(
                 formatter,
-                "failed to {stage} options `{type_name}` for section `{section}`: {source}"
+                "configuration source `{source_name}` did not load: {message}"
             ),
-            Self::OptionsPlanConflict {
+            Self::NotAnObject { source_name, kind } => write!(
+                formatter,
+                "configuration source `{source_name}` must load an object, not {kind}"
+            ),
+            Self::AsyncSource { source_name } => write!(
+                formatter,
+                "configuration source `{source_name}` loads asynchronously: build or reload the configuration with the async method"
+            ),
+            Self::Get {
+                path,
                 type_name,
-                existing_section,
-                requested_section,
+                message,
             } => write!(
                 formatter,
-                "options plan conflict for `{type_name}`: existing section `{existing_section}`, requested section `{requested_section}`"
+                "configuration value `{path}` is not a `{type_name}`: {message}"
+            ),
+            Self::Bind {
+                path,
+                type_name,
+                message,
+            } => write!(
+                formatter,
+                "configuration section `{path}` does not bind to `{type_name}`: {message}"
             ),
         }
     }
 }
 
-impl std::error::Error for ConfigurationError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::OptionsFinalize { source, .. } => Some(source.as_ref()),
-            Self::OptionsPlanConflict { .. } => None,
-        }
-    }
-}
+impl std::error::Error for ConfigurationError {}

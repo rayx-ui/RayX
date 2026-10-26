@@ -2,9 +2,30 @@ use super::AppBuilder;
 use crate::di::{
     DiReady, IntoServiceArc, IntoSingletonService, ServiceProvider, StartupInitializable,
 };
+use crate::options::OptionsBuilder;
 use std::sync::Arc;
 
 pub trait ServiceAppBuilderExt: AppBuilder {
+    /// Registers the unnamed options `T` and lets `build` add their steps
+    /// ([`ServiceProvider::add_options`]):
+    /// `.add_options::<FeedOptions>(|options| { options.bind("Feed").validate_on_start(); })`.
+    fn add_options<T>(mut self, build: impl FnOnce(OptionsBuilder<'_, T>)) -> Self
+    where
+        T: Default + Send + Sync + 'static,
+    {
+        build(self.services_mut().add_options::<T>());
+        self
+    }
+
+    /// Configures the unnamed options `T` ([`ServiceProvider::configure`]).
+    fn configure_options<T>(mut self, configure: impl Fn(&mut T) + Send + Sync + 'static) -> Self
+    where
+        T: Default + Send + Sync + 'static,
+    {
+        self.services_mut().configure::<T>(configure);
+        self
+    }
+
     /// The init timeout of startup services that set none of their own.
     fn default_initialization_timeout(mut self, timeout: std::time::Duration) -> Self {
         self.services_mut()

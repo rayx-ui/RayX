@@ -1,5 +1,7 @@
+use std::ops::Deref;
 use std::sync::Arc;
 
+/// Options made by the options pipeline (.NET's `IOptions<T>.Value`): shared and immutable.
 pub struct Options<T> {
     value: Arc<T>,
 }
@@ -20,6 +22,19 @@ impl<T> Options<T> {
         T: Clone,
     {
         self.value.as_ref().clone()
+    }
+
+    /// Whether two options are the same instance (made once, cached).
+    pub fn ptr_eq(left: &Self, right: &Self) -> bool {
+        Arc::ptr_eq(&left.value, &right.value)
+    }
+}
+
+impl<T> Deref for Options<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        &self.value
     }
 }
 
