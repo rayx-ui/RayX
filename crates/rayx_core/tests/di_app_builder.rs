@@ -2,8 +2,8 @@
 //! (`with_sportsbook`, `with_sportsbook_slips`), with only `use` paths changed.
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use rayx_app_di::prelude::{AppService, ConfigurationBuilder, ServiceProvider};
-use rayx_app_di::services::app::{AppBuilder, ConfigurationAppBuilderExt, ServiceAppBuilderExt};
+use rayx_core::prelude::{AppService, ConfigurationBuilder, ServiceProvider};
+use rayx_core::services::app::{AppBuilder, ConfigurationAppBuilderExt, ServiceAppBuilderExt};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
 
@@ -19,14 +19,14 @@ trait Feed: Send + Sync + 'static {
     fn label(&self) -> String;
 }
 
-impl rayx_app_di::di::AppService for dyn Feed {}
+impl rayx_core::di::AppService for dyn Feed {}
 
 trait NavViewModel: Send + Sync + 'static {
     fn id(&self) -> u32;
     fn feed_label(&self) -> String;
 }
 
-impl rayx_app_di::di::AppService for dyn NavViewModel {}
+impl rayx_core::di::AppService for dyn NavViewModel {}
 
 // --- services crate ----------------------------------------------------------
 

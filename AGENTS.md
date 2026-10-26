@@ -4,7 +4,7 @@ RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh)
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../RayX.Old`), which is not a
 dependency. The workspace has three crates sharing one version:
 
-- `crates/rayx_app_di`: the pure-Rust core: dependency injection (singleton, scoped and transient
+- `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), options, configuration and the `AppBuilder`. It has no NSH
   dependency and must keep building for `wasm32-unknown-unknown`; service crates depend on it
   alone.
@@ -31,7 +31,7 @@ committing:
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo check -p rayx_app_di --target wasm32-unknown-unknown
+cargo check -p rayx_core --target wasm32-unknown-unknown
 ```
 
 CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`.
@@ -47,7 +47,7 @@ Raw diagnostic output goes to the ignored `artifacts-temp/`, never into commits.
 
 Consumers, the sportsbook demo Gamify (`../../Six/Six.Gamify`) first among them, depend on release
 tags only:
-`rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` (and `rayx_app_di` from the
+`rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` (and `rayx_core` from the
 same tag for service crates). A change Gamify needs is released here first; then Gamify bumps its
 tag by hand and validates its affected slices.
 

@@ -4,7 +4,7 @@
 
 use futures::FutureExt;
 use futures::future::{LocalBoxFuture, poll_fn};
-use rayx_app_di::prelude::*;
+use rayx_core::prelude::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::task::Poll;

@@ -3533,16 +3533,8 @@ dependencies = [
  "nsh-core",
  "nsh-engine",
  "nsh-js",
- "rayx_app_di",
+ "rayx_core",
  "tokio",
-]
-
-[[package]]
-name = "rayx_app_di"
-version = "0.4.0"
-dependencies = [
- "futures",
- "rayx_app_macros",
 ]
 
 [[package]]
@@ -3553,6 +3545,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "rayx_core"
+version = "0.4.0"
+dependencies = [
+ "futures",
+ "rayx_app_macros",
 ]
 
 [[package]]

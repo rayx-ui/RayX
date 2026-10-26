@@ -2,7 +2,7 @@
 //! (ported from RayX's `rayx_runtime::di` tests).
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use rayx_app_di::prelude::*;
+use rayx_core::prelude::*;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 

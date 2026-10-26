@@ -4,7 +4,7 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use dxn_reactive::ActivatableViewModel;
 use nsh_core::ui::{cleanup, provide_context, use_context};
-use rayx_app_di::ServiceProvider;
+use rayx_core::ServiceProvider;
 
 use crate::{AppError, app_services};
 

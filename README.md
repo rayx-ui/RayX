@@ -5,7 +5,7 @@ stack of the previous RayX (now `RayX.Old`). It starts with dependency injection
 API of RayX's `rayx_runtime::di`, which until `v0.3.0` were the `nsh-app` repository's `nsh_app*` crates. They come in
 two layers:
 
-- `rayx_app_di`: the pure-Rust core: a `ServiceProvider` with singleton, scoped and transient services, scopes,
+- `rayx_core`: the pure-Rust core: a `ServiceProvider` with singleton, scoped and transient services, scopes,
   options and the `AppBuilder`. No NSH dependency, so service crates use it and stay testable with `cargo test` and
   buildable for every target, wasm32 included.
 - `rayx_app`: the NSH layer: one root provider per NSH surface, a scope per screen (created on mount, dropped on
@@ -20,12 +20,13 @@ Releases are git tags `vX.Y.Z`; nothing is published to a registry. Depend on a 
 
 ```toml
 [dependencies]
-rayx_app_di = { git = "https://github.com/rayx-ui/RayX", tag = "v0.4.0" } # service crates
+rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "v0.4.0" } # service crates
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "v0.4.0" }    # NSH bridge crates
 ```
 
-Coming from `nsh-app` `v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_app_di`) and
-their paths, and move to `dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.
+Coming from `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths. Coming from `nsh-app`
+`v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_core`) and their paths, and move to
+`dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.
 
 ## Startup
 

@@ -7,8 +7,8 @@ use syn::{Attribute, DeriveInput, parse_macro_input};
 
 /// Implements `AppService` (RayX's `RayXService`) for a service type.
 ///
-/// The generated impl names the trait as `::rayx_app_di::di::AppService` when the
-/// calling crate depends on `rayx_app_di`, otherwise as `::rayx_app::di::AppService`
+/// The generated impl names the trait as `::rayx_core::di::AppService` when the
+/// calling crate depends on `rayx_core`, otherwise as `::rayx_app::di::AppService`
 /// (the NSH layer re-exports the core under `di`). Renamed dependencies are honoured.
 ///
 /// `#[app_service(startup)]` is accepted (as RayX's `#[rayx(startup)]`) and marks
@@ -53,15 +53,15 @@ fn di_path() -> proc_macro2::TokenStream {
         let ident = syn::Ident::new(name, proc_macro2::Span::call_site());
         quote!(::#ident::di)
     };
-    // `rayx_app_di` declares `extern crate self as rayx_app_di`, so `Itself` (its own
+    // `rayx_core` declares `extern crate self as rayx_core`, so `Itself` (its own
     // unit and integration tests) resolves through the absolute path as well.
-    match crate_name("rayx_app_di") {
-        Ok(FoundCrate::Itself) => path("rayx_app_di"),
+    match crate_name("rayx_core") {
+        Ok(FoundCrate::Itself) => path("rayx_core"),
         Ok(FoundCrate::Name(name)) => path(&name),
         Err(_) => match crate_name("rayx_app") {
             Ok(FoundCrate::Itself) => quote!(crate::di),
             Ok(FoundCrate::Name(name)) => path(&name),
-            Err(_) => quote!(::rayx_app_di::di),
+            Err(_) => quote!(::rayx_core::di),
         },
     }
 }

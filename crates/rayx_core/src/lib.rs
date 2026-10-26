@@ -3,12 +3,12 @@
 //!
 //! Porting from RayX changes only `use` paths, plus `RayXService` -> [`AppService`]:
 //!
-//! | RayX | rayx_app_di |
+//! | RayX | rayx_core |
 //! | --- | --- |
-//! | `rayx::di::*`, `rayx_runtime::di::*` | `rayx_app_di::di::*` |
-//! | `rayx::services::app::{AppBuilder, ServiceAppBuilderExt}` | `rayx_app_di::services::app::*` |
-//! | `rayx::prelude::{ConfigurationBuilder, ServiceProvider, RayXService}` | `rayx_app_di::prelude::{.., AppService}` |
-//! | `rayx_runtime::options::*`, `configuration::*` | `rayx_app_di::options::*`, `configuration::*` |
+//! | `rayx::di::*`, `rayx_runtime::di::*` | `rayx_core::di::*` |
+//! | `rayx::services::app::{AppBuilder, ServiceAppBuilderExt}` | `rayx_core::services::app::*` |
+//! | `rayx::prelude::{ConfigurationBuilder, ServiceProvider, RayXService}` | `rayx_core::prelude::{.., AppService}` |
+//! | `rayx_runtime::options::*`, `configuration::*` | `rayx_core::options::*`, `configuration::*` |
 //!
 //! The most used items are also re-exported at the crate root.
 //!
@@ -24,8 +24,8 @@
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
-// Lets `#[derive(AppService)]` name `::rayx_app_di` from inside this crate too.
-extern crate self as rayx_app_di;
+// Lets `#[derive(AppService)]` name `::rayx_core` from inside this crate too.
+extern crate self as rayx_core;
 
 pub mod configuration;
 pub mod di;

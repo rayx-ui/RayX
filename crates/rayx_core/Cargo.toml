@@ -1,6 +1,6 @@
 [package]
-name = "rayx_app_di"
-description = "Dependency injection, options and an app builder with RayX's DI API, for Native Shell (NSH) apps."
+name = "rayx_core"
+description = "RayX's NSH-free core: dependency injection, configuration, options and the app builder."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

@@ -6,7 +6,7 @@ use futures::future::{FutureExt, LocalBoxFuture, Shared};
 
 use dxn_reactive::ReactiveError;
 use nsh_core::ui::{ambient::global, prelude::*};
-use rayx_app_di::{
+use rayx_core::{
     AppBuilder, ConfigurationBuilder, ConfigurationError, ServiceProvider, ServiceResolutionError,
     di::{StartupInitializationContext, StartupInitializationError},
 };
@@ -185,7 +185,7 @@ pub fn app_services() -> Result<ServiceProvider, AppError> {
 ///
 /// Run it in an NSH task (`spawn`, or a class's `async` member): it waits on NSH's timers.
 ///
-/// [`AsyncInitializable::initialization_timeout`]: rayx_app_di::di::AsyncInitializable::initialization_timeout
+/// [`AsyncInitializable::initialization_timeout`]: rayx_core::di::AsyncInitializable::initialization_timeout
 pub async fn start_app() -> Result<ServiceProvider, AppError> {
     let slot = global::<SurfaceApp>();
     let running = slot.with_untracked(|app| match (&app.state, &app.root) {

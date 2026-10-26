@@ -13,7 +13,7 @@ workspace = true
 
 [dependencies]
 futures = { workspace = true, features = ["std"] }
-rayx_app_di.workspace = true
+rayx_core.workspace = true
 nsh-core.workspace = true
 dxn_reactive.workspace = true
 

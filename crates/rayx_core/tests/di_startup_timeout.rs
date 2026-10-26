@@ -4,7 +4,7 @@
 
 use futures::FutureExt;
 use futures::future::{LocalBoxFuture, pending, ready};
-use rayx_app_di::prelude::*;
+use rayx_core::prelude::*;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 

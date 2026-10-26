@@ -2,8 +2,8 @@
 //! `configuration` tests, without configuration sources).
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use rayx_app_di::configuration::{ConfigurationError, OptionsFinalizeError, OptionsFinalizeStage};
-use rayx_app_di::{ConfigurationBuilder, Options, OptionsError, OptionsRegistry, ServiceProvider};
+use rayx_core::configuration::{ConfigurationError, OptionsFinalizeError, OptionsFinalizeStage};
+use rayx_core::{ConfigurationBuilder, Options, OptionsError, OptionsRegistry, ServiceProvider};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 

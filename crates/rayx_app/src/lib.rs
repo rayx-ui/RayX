@@ -1,4 +1,4 @@
-//! RayX's dependency injection, options and app builder ([`rayx_app_di`]) on NSH.
+//! RayX's dependency injection, options and app builder ([`rayx_core`]) on NSH.
 //!
 //! The core's lifetimes, tied to what NSH runs:
 //!
@@ -23,7 +23,7 @@
 //!   for TSX until it is disposed.
 //!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
-//! on [`rayx_app_di`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
+//! on [`rayx_core`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
 //! re-export it, so `#[derive(AppService)]` works in a crate that depends on `rayx_app` alone.
 
 // Unit tests panic on broken fixtures by design.
@@ -34,7 +34,7 @@ mod screen;
 mod surface;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
-pub use rayx_app_di::{
+pub use rayx_core::{
     AppBuilder, AppService, ConfigurationAppBuilderExt, ConfigurationBuilder, ConfigurationError,
     Options, OptionsError, OptionsRegistry, ServiceAppBuilderExt, ServiceLifetime, ServiceProvider,
     ServiceResolutionError, StartupRegistry, configuration, di, options, prelude, services,
