@@ -29,3 +29,19 @@ reject nesting), returns receipts with their inverse operations and publishes `O
 
 - Ported whole, with its contract tests (`tests/operations.rs`); the `rayx_diagnostics` feature is `diagnostics`.
 - Left out: `OperationsAppContextExt` and `OperationsGpuxAppExt` (GPUI globals).
+
+## History (`services::history`)
+
+Undo and redo per history scope over the operation service: `HistoryService` records the receipts of the targets bound
+to a scope (`bind_target_scope`), undoes and redoes them through their inverse operations, enforces size limits, keeps
+scope lifecycles and publishes `HistoryEvent`s; `HistoryStore` persists each scope's journal (`HistoryJournalV2`), with
+`InMemoryHistoryStore` built in. Registered with `add_history()` (history in memory) or `add_history_with_store(store)`,
+both registering the operation service too.
+
+- Ported whole, with its tests (`tests/history.rs`: contracts, scope lifecycle, persistence, receipt admission, replay,
+  several windows, journal versions).
+- Changed: every target persists through the store's synchronous methods. RayX.Old's WebAssembly path loaded and
+  saved in the background with `wasm_bindgen_futures` (and refused `clear_scope` while a store was set); the core has
+  no browser dependency, and the in-memory stores of this iteration need none.
+- Left out: `HistoryAppContextExt` and `HistoryGpuxAppExt` (GPUI globals). A persistent store over NSH's storage is a
+  later step; storage is in memory in this iteration (see Storage).
