@@ -19,3 +19,13 @@ service left behind:
 - `initialize_gpux` startup phases and anything else that touches a GPUI `App`, `Window` or `Entity`.
 
 The services, and what each ports and leaves out:
+
+## Operations (`services::operations`)
+
+Typed, versioned domain operations applied to registered targets: `OperationService` registers an
+`OperationTargetHandler<T>` per `OperationTargetId`, applies `DomainOperation`s atomically in transactions (join, new or
+reject nesting), returns receipts with their inverse operations and publishes `OperationEvent`s. Registered with
+`add_operations()` (a startup singleton) or `with_operation_service(..)`.
+
+- Ported whole, with its contract tests (`tests/operations.rs`); the `rayx_diagnostics` feature is `diagnostics`.
+- Left out: `OperationsAppContextExt` and `OperationsGpuxAppExt` (GPUI globals).

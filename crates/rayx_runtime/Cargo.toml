@@ -8,6 +8,11 @@ license.workspace = true
 publish.workspace = true
 repository.workspace = true
 
+[features]
+default = []
+# Read-only diagnostics of the operation, history and input map services.
+diagnostics = []
+
 [dependencies]
 futures = { workspace = true, features = ["alloc", "std"] }
 rayx_core.workspace = true

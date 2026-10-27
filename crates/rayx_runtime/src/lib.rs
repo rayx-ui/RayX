@@ -12,3 +12,8 @@
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
 pub mod services;
+
+/// The services' builder extensions: `use rayx_runtime::prelude::*;` to register them.
+pub mod prelude {
+    pub use crate::services::operations::OperationsAppBuilderExt;
+}
