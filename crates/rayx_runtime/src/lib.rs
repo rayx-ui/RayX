@@ -19,6 +19,7 @@ pub mod prelude {
     pub use crate::services::input_map::InputMapAppBuilderExt;
     pub use crate::services::navigation::NavigationAppBuilderExt;
     pub use crate::services::operations::OperationsAppBuilderExt;
+    pub use crate::services::platform::PlatformAppBuilderExt;
     pub use crate::services::selection::SelectionAppBuilderExt;
     pub use crate::services::storage::StorageAppBuilderExt;
 }

@@ -102,3 +102,20 @@ hear the changes. Registered with `add_input_map(|options| ..)`, which registers
 - Left out: `compile_input_layers` / `install_input_layers` (GPUI keymap layers and actions), the pointer binding
   recognizer (`PointerBindingRecognizer`, which reads GPUI mouse events), the migration of RayX.Old's legacy command
   keymap (GPUI's keymap format, and no NSH app stored one) and the diagnostics.
+
+## Platform (`services::platform`)
+
+`PlatformInfoService` holds a `PlatformSnapshot` of the device and the user's settings (OS family and version, form
+factor, desktop behaviour, input capabilities, viewport, scale, safe area, keyboard height, colour scheme, font scale,
+reduced motion, screen reader, locale, languages, time zone and regional settings) and notifies listeners of changes.
+The UI layer keeps it current: `rayx_app`'s `use_platform_sync()` copies NSH's environment into it. Registered with
+`add_platform()`.
+
+- Ported: the snapshot (reworked onto what NSH reports), the service and its change listeners.
+- Changed: per-window snapshots (`WindowHandle`, `current_for`, `try_update_window`) are gone: on NSH every surface
+  (window) has its own root provider, so a surface's service describes that surface. The locale snapshot carries
+  NSH's languages, time zone, hour cycle, first weekday, measurement system and temperature unit.
+- Left out: the display topology (several monitors, display ids) and high contrast, which NSH does not report;
+  `HostShape` (it was the form factor again); the provider traits (`PlatformInfoProvider`, `ViewportObserver`,
+  `SafeAreaProvider`, …), which GPUI hosts implemented: `rayx_app` updates the service directly; the user-writable
+  directory, which NSH does not expose (apps write through storage); `PlatformOptions` (it was empty).
