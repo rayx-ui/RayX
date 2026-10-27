@@ -6,6 +6,21 @@ file. The three crates share one version and one release tag `vX.Y.Z`. The forma
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.5.0] - 2026-10-27
+
+### Build and CI
+- *(nsh)* [**breaking**] Pin NSH to fork-0.3.0-1
+  - Migration: Gamify: patch NSH to `fork-0.3.0-1` (or a newer `fork-0.3.0-*` tag) in `[patch.crates-io]`, depend on the NSH crates at `0.3.0`, and move its own NSH imports to NSH 0.3's modules (`nsh_core::ui::*` to `nsh_core::prelude` or `nsh_core::element`, TSX `nsh/device` and `nsh/animated` to `nsh`, `Input` to `nsh/base`).
+
+### Features
+- *(core)* [**breaking**] Add configuration sources, .NET's options model and RayXAppBuilder
+  - Migration: Gamify: register options with `services_mut().add_options::<T>()` (`.bind("Section")`, `.configure(..)`, `.validate(..)`) or `services_mut().configure::<T>(move |o| *o = options.clone())` instead of `configuration_mut().options_value(options)`, and read them with `options::<T>()?` instead of `required_options::<T>()?`.
+  - Migration: Gamify: replace the test builders that implement `AppBuilder` and call `build_options_sync` and `with_added_options` with `RayXAppBuilder::new()` and `.build()?`, and rename `NshAppBuilder` to `RayXAppBuilder` (`set_app` takes `fn(RayXAppBuilder) -> RayXAppBuilder`).
+
+### Refactoring
+- *(core)* [**breaking**] Rename rayx_app_di to rayx_core
+  - Migration: Gamify: depend on `rayx_core` instead of `rayx_app_di` (same tag) and rename the `rayx_app_di::` paths to `rayx_core::`, including the xtask's dependency check.
+
 ## [0.4.0] - 2026-10-23
 
 The first release of RayX on [Native Shell (NSH)](https://github.com/dXnSix/nsh). RayX moves from
