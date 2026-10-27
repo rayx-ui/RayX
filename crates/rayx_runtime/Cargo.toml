@@ -19,6 +19,7 @@ rayx_core.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 serde_json.workspace = true
 thiserror.workspace = true
+url.workspace = true
 
 [dev-dependencies]
 futures = { workspace = true, features = ["executor"] }

@@ -59,3 +59,19 @@ store is registered) or `with_key_value_store(store)`.
   first one.
 - Left out: `SecureStorageService`: NSH has no keychain or keystore access yet, and the RayX.Old service only ever
   reported itself unavailable.
+
+## Navigation (`services::navigation`)
+
+Routes matched from URIs (`RouteMap`, `/sports/{sport}`, literal segments before parameters, query and fragment,
+external and not-found status), named regions with their own journals (push, replace, reset, none; back and forward),
+lifecycle subscribers (`on_navigated_from`, `on_navigated_to`), route and location events, and a
+`NavigationLocationSynchronizer`. Registered with `add_navigation(|options| ..)`: `NavigationOptions` bind from
+`RayX:Services:Navigation`, then the closure changes them; routes that do not build fail startup.
+
+- Ported: the routes, journals, regions, service and their tests (`tests/navigation.rs`).
+- Left out: `NavigationRouter`, `NavigationRegionView` and the transitions (`NavigationTransition`, screen effects,
+  snapshot origins): GPUI views and GPUI screen effects. On NSH a screen renders the current route itself, and NSH
+  animates its own screen changes; `NavigationOptions::default_transition` went with them.
+- Left out: `BrowserNavigationLocationSynchronizer` and the browser location read at startup (`web-sys`): the core
+  has no browser access. A synchronizer over NSH's web location is NSH glue for later; the default synchronizer does
+  nothing.
