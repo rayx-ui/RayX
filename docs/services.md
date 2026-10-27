@@ -45,3 +45,17 @@ both registering the operation service too.
   no browser dependency, and the in-memory stores of this iteration need none.
 - Left out: `HistoryAppContextExt` and `HistoryGpuxAppExt` (GPUI globals). A persistent store over NSH's storage is a
   later step; storage is in memory in this iteration (see Storage).
+
+## Storage (`services::storage`)
+
+Values as bytes under keys in named buckets, behind the `KeyValueStore` trait (sync methods, async ones that default to
+them), with JSON helpers on `store.bucket(name)`. Registered with `add_storage()` (an `InMemoryKeyValueStore`, unless a
+store is registered) or `with_key_value_store(store)`.
+
+- Kept: the provider trait (now `KeyValueStore`, with `keys` and `clear`), buckets of JSON values, async variants.
+- Left out, as agreed for this iteration: every persistent backend (the SurrealDB, RocksDB, TiKV, SQLite and IndexedDB
+  variants and their stand-ins, which were in-memory stores under persistent names), so there is no web persistence
+  plan to honour yet. A persistent store implements `KeyValueStore`; NSH's own storage (`nsh/storage`) is the natural
+  first one.
+- Left out: `SecureStorageService`: NSH has no keychain or keystore access yet, and the RayX.Old service only ever
+  reported itself unavailable.

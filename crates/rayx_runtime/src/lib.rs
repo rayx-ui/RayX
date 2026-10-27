@@ -17,4 +17,5 @@ pub mod services;
 pub mod prelude {
     pub use crate::services::history::HistoryAppBuilderExt;
     pub use crate::services::operations::OperationsAppBuilderExt;
+    pub use crate::services::storage::StorageAppBuilderExt;
 }
