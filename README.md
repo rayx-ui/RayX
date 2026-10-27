@@ -16,7 +16,8 @@ builder with the API of .NET's `Microsoft.Extensions` (as RayX's `rayx_runtime` 
 
 `rayx_runtime` holds RayX's app services on top of the core, NSH-free like it: in-memory key-value storage, operations
 with undo and redo history, navigation, input maps, the platform's and the app's lifecycle state, the app's
-configuration, assets from a neutral manifest, and fonts registered at run time. Each is registered with an
+configuration, assets from a neutral manifest, fonts registered at run time, and translations with MessageFormat 2
+messages ([dXn.I18n](https://github.com/dXnSix/dXn.I18n), [dXn.Intl](https://github.com/dXnSix/dXn.Intl)). Each is registered with an
 `AppBuilder` extension (`add_history()`, `add_navigation(..)`, …) and reads its options from `RayX:Services:<Name>`;
 `rayx_app` gives them what they need from NSH (the bundled `appsettings.json`, reading assets, registering fonts, the
 device's state). [docs/services.md](docs/services.md) lists each service and what it ports from RayX.Old.

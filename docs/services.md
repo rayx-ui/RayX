@@ -43,7 +43,26 @@ that RayX consumes by tag; the integration comes with it. Until then RayX has no
 
 ## I18n (`services::i18n`)
 
-Comes with `dXn.I18n` and `dXn.Intl`, which it wraps.
+`I18nService`, a startup service after the asset service, wraps [dXn.I18n](https://github.com/dXnSix/dXn.I18n)'s
+`Translator` (MessageFormat 2 messages, bundles, fallback lookup) and formats numbers, dates and plurals with
+[dXn.Intl](https://github.com/dXnSix/dXn.Intl) (ICU4X) for the same locale. It loads the asset catalog's translations
+(`locales/<language>.json`, or `locales/<language>/<namespace>.json` whose ids a namespace other than the default one
+prefixes: `checkout.title`); follows the platform service's preferred languages and clock (the best of the app's
+languages for the user's list, with the user's region and `-u-hc-` hour cycle) until the app picks a language with
+`set_language`; looks messages up through the language's parents, the fallback languages and the default one; and tells
+subscribers about every change. TSX reaches it through `rayx_app`'s `I18n` class (`I18n.of(app).t("cart", { n: 3 })`,
+`setLanguage`, `onChange`). Registered with `add_i18n(|options| ..)`, which registers the asset service too;
+`I18nOptions` bind from `RayX:Services:I18N`.
+
+- Ported: the default and fallback languages, the resources path, namespaces, the missing-key policy, language changes
+  and their subscribers, following the user's languages.
+- Changed: messages are MessageFormat 2 (RayX.Old's were i18next-style `{{name}}` interpolation with `_one`/`_other`
+  plural keys), with CLDR plurals for every language and numbers and dates formatted in Rust, the same on every
+  platform; resources come from the asset catalog, every language at startup, so changing the language is immediate.
+- Left out: the separators and interpolation markers (`namespace_separator`, `key_separator`, `interpolation_*`,
+  `plural_separator`, `context_separator`: MessageFormat 2 has its own syntax), `default_date_format` and
+  `default_number_format` (patterns: messages and `format_number`/`format_date_time` take MessageFormat 2 and dXn.Intl
+  options), and the scope helper (`I18nScope`): a key prefix is a namespace now.
 
 ## Operations (`services::operations`)
 
