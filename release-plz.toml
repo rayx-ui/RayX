@@ -38,8 +38,11 @@ version_group = "rayx"
 [[package]]
 name = "rayx_core"
 version_group = "rayx"
-# Released under `rayx_app`'s tag and changelog. It keeps the inherited `git_tag_name`: in
-# git-only mode that template is how it finds its previous version (`v*` tags).
+# Released under `rayx_app`'s tag and changelog. In git-only mode the inherited `git_tag_name` is
+# how it finds its previous version (`v*` tags), and release-plz looks for the package by name in
+# that tag's tree. `v0.4.0` has it as `rayx_app_di`, so until `v0.5.0` is tagged it matches no tag
+# (a first release); then this line goes, and it finds `v0.5.0` again.
+git_tag_name = "rayx_core-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
