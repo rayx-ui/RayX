@@ -75,3 +75,13 @@ lifecycle subscribers (`on_navigated_from`, `on_navigated_to`), route and locati
 - Left out: `BrowserNavigationLocationSynchronizer` and the browser location read at startup (`web-sys`): the core
   has no browser access. A synchronizer over NSH's web location is NSH glue for later; the default synchronizer does
   nothing.
+
+## Selection (`services::selection`)
+
+The app-wide summary of the active selection area: which area (`SelectionAreaId`) publishes, and its
+`SelectionStatus` (participants, selected characters, collapsed, selecting), never the selected content. Only the
+active area publishes; every route change clears it. Registered with `add_selection()` after the navigation.
+
+- Ported: the service, its revisions and tests (`tests/selection.rs`).
+- New: `subscribe(..)`, so a UI hears changes instead of polling the revisions (GPUI re-rendered and read them).
+- Left out: `SelectionContextExt` and `SelectionGpuxExt` (GPUI globals and the `SelectionArea` element they fed).
