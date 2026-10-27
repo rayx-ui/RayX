@@ -181,3 +181,21 @@ files in memory), keeping them within a byte budget. Manifest problems are diagn
   features of RayX.Old's asset manager, `AssetManager` and its snapshots, previews and filters); content sniffing of
   kinds (kinds come from the manifest or the file name); `AssetRenderSource` (GPUI image sources: NSH loads images
   from the URL).
+
+## Fonts (`services::fonts`)
+
+`FontService`, a startup service after the asset service, registers the asset catalog's font files (`ttf`, `otf`,
+`woff`, `woff2`) with the platform at run time through the `FontRegistrar` trait (`rayx_app` registers with NSH's
+`register_font`, which reads the family name), registers other fonts from their data while the app runs
+(`register_font(data)`), and resolves the aliases the app names fonts by: an alias's family, its load fallback
+(another alias or a family) when that family did not load, and its glyph fallbacks, as one family list for NSH's
+`font_family` / `fontFamily` fallback lists (`font_family("body")` is `Inter, Noto Color Emoji`). Registered with
+`add_fonts(|options| ..)`, which registers the asset service too; `FontOptions` bind from `RayX:Services:Fonts`.
+
+- Ported: the options (aliases, load and glyph fallbacks, default alias, automatic registration of font assets),
+  their validation, alias resolution and diagnostics.
+- Changed: fonts are registered while the app runs (NSH's `register_font`), not added to GPUI's text system before
+  the first window; the platform reads the family name, so WOFF and WOFF2 fonts work too; resolved aliases are family
+  lists instead of GPUI `Font` values with `FontFallbacks`.
+- Left out: reading font metadata with `ttf-parser` (weight, style, variable axes: NSH reads what it needs, and
+  `ttf-parser` reads no WOFF), the variable-axes diagnostic, and GPUI's `Font` conversions.

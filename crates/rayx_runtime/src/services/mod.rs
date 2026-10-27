@@ -2,6 +2,7 @@
 
 pub mod application_configuration;
 pub mod assets;
+pub mod fonts;
 pub mod history;
 pub mod input_map;
 pub mod navigation;
