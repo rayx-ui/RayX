@@ -30,6 +30,9 @@
 //!   `appsettings.json` as a configuration source ([`AppSettingsSource`]); and
 //!   [`use_platform_sync`], in the root component, keeps the platform and suspension services
 //!   current from NSH's environment and app state.
+//! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
+//!   and clock; the [`I18n`] class gives TSX its messages (`I18n.of(app).t("id", { n: 3 })`) and
+//!   its changes.
 //!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
 //! on [`rayx_core`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
@@ -39,6 +42,7 @@
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
+mod i18n_class;
 mod platform;
 mod scope_class;
 mod screen;
@@ -54,6 +58,7 @@ pub use rayx_core::{
     services,
 };
 
+pub use i18n_class::I18n;
 pub use platform::{
     NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
     use_platform_sync,
