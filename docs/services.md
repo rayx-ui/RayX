@@ -18,7 +18,32 @@ service left behind:
   (`services.required_service::<T>()`, or `rayx_app::services()` in a component).
 - `initialize_gpux` startup phases and anything else that touches a GPUI `App`, `Window` or `Entity`.
 
+On NSH (`rayx_app`): every surface's builder starts with `NshAssetReader` and `NshFontRegistrar` (the asset and font
+services' platform parts: `fetch` of `asset:/` URLs, `register_font`); `add_app_settings(package)` adds the package's
+bundled `appsettings.json` as a configuration source (`AppSettingsSource`, loaded asynchronously by
+`RayXAppBuilder::build_async`, which `start_app` uses); `use_platform_sync()`, in the root component, keeps the platform
+and suspension services current from NSH's environment and app state once the app is ready. TSX apps have no root
+component of their own to call it from; their platform and suspension services keep their defaults until a Rust
+component calls it.
+
 The services, and what each ports and leaves out:
+
+## App (`services::app` in RayX.Old)
+
+The builder (`AppBuilder`, `ConfigurationAppBuilderExt`, `ServiceAppBuilderExt`) went to `rayx_core::services::app` in
+`v0.5.0`, with `RayXAppBuilder`. Left out: `AppContext`, a GPUI global with the platform snapshot (on NSH, the surface's
+root provider is `rayx_app::app_services()`, and the platform service holds the snapshot), and `GpuxServiceAppExt`.
+
+## Collaboration (`services::collaboration` in RayX.Old): not ported yet
+
+It is a thin integration (sessions over one storage, operations projected onto the operation service, the origin
+policy, remote changes) of RayX.Old's `rayx_collab`, an Automerge engine that is RayX.Old's crate and cannot be a
+dependency here. By the agreed rule for reusable code, the engine becomes a standalone `dXn` crate (UI-free, wasm32)
+that RayX consumes by tag; the integration comes with it. Until then RayX has no collaboration service.
+
+## I18n (`services::i18n`)
+
+Comes with `dXn.I18n` and `dXn.Intl`, which it wraps.
 
 ## Operations (`services::operations`)
 

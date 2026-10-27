@@ -4,6 +4,7 @@ use std::{fmt, rc::Rc, sync::OnceLock, time::Duration};
 
 use futures::future::{FutureExt, LocalBoxFuture, Shared};
 
+use crate::NshServicesAppBuilderExt as _;
 use dxn_reactive::ReactiveError;
 use nsh_core::prelude::*;
 use rayx_core::{
@@ -210,7 +211,9 @@ pub fn start() {
 }
 
 async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
-    let root = build(RayXAppBuilder::new()).build_async().await?;
+    let root = build(RayXAppBuilder::new().add_nsh_services())
+        .build_async()
+        .await?;
     let registry = root.startup_registry().clone();
     registry
         .initialize_with_timer(

@@ -23,15 +23,26 @@
 //!   and activates it until the component's cleanup; [`ServiceScope`] activates what it resolves
 //!   for TSX until it is disposed.
 //!
+//! - **RayX's services on NSH.** Every surface's builder starts with NSH's [`NshAssetReader`]
+//!   and [`NshFontRegistrar`] (reading the app's files with `fetch` of their `asset:/` URLs,
+//!   registering fonts with `register_font`), which `rayx_runtime`'s asset and font services
+//!   use; [`AppSettingsAppBuilderExt::add_app_settings`] adds the app's bundled
+//!   `appsettings.json` as a configuration source ([`AppSettingsSource`]); and
+//!   [`use_platform_sync`], in the root component, keeps the platform and suspension services
+//!   current from NSH's environment and app state.
+//!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
 //! on [`rayx_core`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
-//! re-export it, so `#[derive(AppService)]` works in a crate that depends on `rayx_app` alone.
+//! re-export it, so `#[derive(AppService)]` works in a crate that depends on `rayx_app` alone,
+//! and [`rayx_runtime`] is re-exported whole.
 
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
+mod platform;
 mod scope_class;
 mod screen;
+mod settings;
 mod surface;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
@@ -43,8 +54,14 @@ pub use rayx_core::{
     services,
 };
 
+pub use platform::{
+    NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
+    use_platform_sync,
+};
+pub use rayx_runtime;
 pub use scope_class::{AppServices, ServiceScope};
 pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
+pub use settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
 pub use surface::{
     AppError, AppState, app_services, app_state, install, set_app, start, start_app,
 };

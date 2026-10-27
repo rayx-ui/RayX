@@ -3552,6 +3552,7 @@ dependencies = [
  "nsh-engine",
  "nsh-js",
  "rayx_core",
+ "rayx_runtime",
  "serde",
  "serde_json",
  "tokio",
