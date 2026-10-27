@@ -10,7 +10,7 @@ repository.workspace = true
 
 [features]
 default = []
-# Read-only diagnostics of the operation, history and input map services.
+# Read-only diagnostics of the operation and history services.
 diagnostics = []
 
 [dependencies]

@@ -85,3 +85,20 @@ active area publishes; every route change clears it. Registered with `add_select
 - Ported: the service, its revisions and tests (`tests/selection.rs`).
 - New: `subscribe(..)`, so a UI hears changes instead of polling the revisions (GPUI re-rendered and read them).
 - Left out: `SelectionContextExt` and `SelectionGpuxExt` (GPUI globals and the `SelectionArea` element they fed).
+
+## Input map (`services::input_map`)
+
+Which action a key sequence or pointer gesture runs in a context, in three layers: the framework's and the
+application's bindings (`InputMapOptions`, from code and `RayX:Services:InputMap`) and the user's document, kept in the
+app's `KeyValueStore` and over the other two (`unbind` entries remove a lower layer's binding). `resolve(contexts,
+binding)` tries contexts innermost first, then `""`; `bindings_for(action)` lists an action's shortcuts;
+`apply_user_document(expected_revision, document)` validates, stores and then switches to the next revision; listeners
+hear the changes. Registered with `add_input_map(|options| ..)`, which registers the storage too.
+
+- Ported: the document model (`InputMapDocument`, entries, keyboard and pointer bindings, modifiers, validation) and
+  the revisioned, stored user document.
+- Changed: key sequences are validated by the model itself (`valid_key_sequence`), not by GPUI's `Keystroke::parse`;
+  the service resolves bindings itself instead of compiling them into GPUI keymap layers, so any UI layer can feed it.
+- Left out: `compile_input_layers` / `install_input_layers` (GPUI keymap layers and actions), the pointer binding
+  recognizer (`PointerBindingRecognizer`, which reads GPUI mouse events), the migration of RayX.Old's legacy command
+  keymap (GPUI's keymap format, and no NSH app stored one) and the diagnostics.
