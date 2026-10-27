@@ -1,4 +1,5 @@
-//! Change listeners: [`Configuration::on_change`] and [`OptionsMonitor::on_change`].
+//! Change listeners: [`Configuration::on_change`], [`OptionsMonitor::on_change`], and
+//! services' own (a [`Listeners`] registry hands out [`ChangeSubscription`]s).
 //!
 //! [`Configuration::on_change`]: crate::configuration::Configuration::on_change
 //! [`OptionsMonitor::on_change`]: crate::options::OptionsMonitor::on_change
@@ -13,6 +14,13 @@ pub struct ChangeSubscription {
 }
 
 impl ChangeSubscription {
+    /// A subscription that calls `unsubscribe` when it is dropped (not when it is detached).
+    pub fn new(unsubscribe: impl FnOnce() + Send + Sync + 'static) -> Self {
+        Self {
+            unsubscribe: Some(Box::new(unsubscribe)),
+        }
+    }
+
     /// Keeps the listener registered for good.
     pub fn detach(mut self) {
         self.unsubscribe = None;
@@ -37,13 +45,48 @@ impl std::fmt::Debug for ChangeSubscription {
 }
 
 /// Listeners of type `F` (a `dyn Fn(..)`), called outside the lock in the order they were added.
-pub(crate) struct Listeners<F: ?Sized> {
+/// Clones share the listeners.
+///
+/// ```
+/// use rayx_core::change::Listeners;
+/// use std::sync::Arc;
+///
+/// let listeners = Listeners::<dyn Fn(u32) + Send + Sync>::default();
+/// let subscription = listeners.add(Arc::new(|value| assert_eq!(value, 7)));
+/// listeners.notify(|listener| listener(7));
+/// drop(subscription);
+/// assert!(listeners.is_empty());
+/// ```
+pub struct Listeners<F: ?Sized> {
     entries: Arc<Mutex<Entries<F>>>,
 }
 
 struct Entries<F: ?Sized> {
     next: u64,
     listeners: Vec<(u64, Arc<F>)>,
+}
+
+impl<F: ?Sized> Clone for Listeners<F> {
+    fn clone(&self) -> Self {
+        Self {
+            entries: Arc::clone(&self.entries),
+        }
+    }
+}
+
+impl<F: ?Sized> std::fmt::Debug for Listeners<F> {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let count = self
+            .entries
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .listeners
+            .len();
+        formatter
+            .debug_struct("Listeners")
+            .field("count", &count)
+            .finish()
+    }
 }
 
 impl<F: ?Sized> Default for Listeners<F> {
@@ -61,7 +104,8 @@ impl<F> Listeners<F>
 where
     F: ?Sized + Send + Sync + 'static,
 {
-    pub(crate) fn add(&self, listener: Arc<F>) -> ChangeSubscription {
+    /// Adds `listener` until the subscription is dropped.
+    pub fn add(&self, listener: Arc<F>) -> ChangeSubscription {
         let id = {
             let mut entries = self.entries.lock().unwrap_or_else(PoisonError::into_inner);
             let id = entries.next;
@@ -70,22 +114,27 @@ where
             id
         };
         let entries: Weak<Mutex<Entries<F>>> = Arc::downgrade(&self.entries);
-        ChangeSubscription {
-            unsubscribe: Some(Box::new(move || {
-                if let Some(entries) = entries.upgrade() {
-                    entries
-                        .lock()
-                        .unwrap_or_else(PoisonError::into_inner)
-                        .listeners
-                        .retain(|(entry, _)| *entry != id);
-                }
-            })),
+        ChangeSubscription::new(move || {
+            if let Some(entries) = entries.upgrade() {
+                entries
+                    .lock()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .listeners
+                    .retain(|(entry, _)| *entry != id);
+            }
+        })
+    }
+
+    /// Calls `call` with each listener, outside the lock, in the order they were added.
+    pub fn notify(&self, call: impl Fn(&F)) {
+        for listener in self.current() {
+            call(&listener);
         }
     }
 
     /// The listeners now, to call without holding the lock (a listener may add or remove
     /// listeners).
-    pub(crate) fn current(&self) -> Vec<Arc<F>> {
+    pub fn current(&self) -> Vec<Arc<F>> {
         self.entries
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
@@ -95,11 +144,23 @@ where
             .collect()
     }
 
-    pub(crate) fn len(&self) -> usize {
+    /// How many listeners there are.
+    pub fn len(&self) -> usize {
         self.entries
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .listeners
             .len()
+    }
+}
+
+impl<F: ?Sized> Listeners<F> {
+    /// Whether there are no listeners.
+    pub fn is_empty(&self) -> bool {
+        self.entries
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .listeners
+            .is_empty()
     }
 }

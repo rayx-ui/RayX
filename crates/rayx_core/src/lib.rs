@@ -39,7 +39,7 @@
 // Lets `#[derive(AppService)]` name `::rayx_core` from inside this crate too.
 extern crate self as rayx_core;
 
-mod change;
+pub mod change;
 pub mod configuration;
 pub mod di;
 pub mod options;
