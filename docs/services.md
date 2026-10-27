@@ -157,3 +157,27 @@ asset reading (`asset:/` URLs through `fetch`), asynchronously, so the app build
 - Left out: scrollbar behaviour (GPUI drew its own scrollbars; NSH shows the platform's), cursor styles (gpux's
   `CursorStyle`), the accessibility tree mode and the wasm worker count (gpux settings), and `MotionDependencies`
   (re-rendering GPUI window roots on motion changes: NSH re-renders what reads the settings).
+
+## Assets (`services::assets`)
+
+The files the app's packages ship in their `assets/` directories (the only place assets live), listed in a neutral
+manifest per package, `assets.toml` by default (`AssetOptions::manifest`): `files = [..]` for plain files, `[[asset]]`
+tables for files with a kind, density `scales`, tags, locale, theme, platform, title, description, size and custom
+data. Density variants are `@1.5x`, `@2x`, `@3x` and `@4x` file names (as NSH's images load them), declared with
+`scales` or listed and folded into their base; there are no density folders. `AssetService`, a startup service, reads
+the manifests of `AssetOptions::packages` (the app's own first) into an `AssetCatalog`, gives each asset's
+`asset:/@<package>/<path>` URL (and its variant for a scale) for NSH's elements, answers queries, and loads bytes,
+text and JSON through the platform's `AssetReader` (`rayx_app` reads with NSH's `fetch`; `MemoryAssetReader` holds
+files in memory), keeping them within a byte budget. Manifest problems are diagnostics or startup failures, as
+`AssetValidationPolicy` says. Registered with `add_assets(|options| ..)`, options bound from `RayX:Services:Assets`.
+
+- Ported: asset kinds and MIME types from file names, the byte cache, queries, validation policies and diagnostics,
+  the service's lookups and loads.
+- Changed: the manifest is TOML and neutral (RayX.Old's was a JSON index and manifest pair written by its tooling);
+  assets are read through NSH's bundled-file reading, so the same code serves desktop, mobile and web.
+- Left out: the filesystem and browser backends and their roots (development, installed, wasm public roots,
+  `RAYX_ASSETS_ROOT`): NSH packages each crate's `assets/` and serves `asset:/` URLs itself; hot reload and per-file
+  change events (a session restart reads assets again); writable assets, import, move and delete (the editor
+  features of RayX.Old's asset manager, `AssetManager` and its snapshots, previews and filters); content sniffing of
+  kinds (kinds come from the manifest or the file name); `AssetRenderSource` (GPUI image sources: NSH loads images
+  from the URL).
