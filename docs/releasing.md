@@ -34,7 +34,14 @@ mode (`git_only = true`): versions come from `v*` tags, not from a registry.
 `v0.4.0`, the first release, was tagged by hand: it renamed the crates of `nsh-app` `v0.3.0`, and
 in git-only mode release-plz looks a package up by its current name inside the previous tag, so it
 cannot release a rename. From `v0.4.0` on it finds the crates by name; its first run releases
-nothing. A later crate rename needs the [by-hand fallback](#by-hand-fallback) again.
+nothing.
+
+A later crate rename releases through release-plz with a package-level `git_tag_name` that matches
+no tag, such as `git_tag_name = "<crate>-v{{ version }}"` on the renamed crate's `[[package]]` in
+`release-plz.toml`: the crate then counts as a first release, while the version group keeps it on
+the others' version. Remove the line in the first commit after the release's tag, or every later
+release pull request counts the crate as new again and repeats its history. `rayx_app_di` became
+`rayx_core` this way in `v0.5.0`.
 
 ## Commit types and the 0.x policy
 
@@ -110,8 +117,7 @@ commit. A bad release is fixed forward with a new version.
 
 ## By-hand fallback
 
-If release-plz cannot cut a release (a crate rename, a broken workflow, an expired token you cannot
-replace yet), the owner releases by hand on an up-to-date `main` (tags are pushed only by
+If release-plz cannot cut a release (a broken workflow, an expired token you cannot replace yet), the owner releases by hand on an up-to-date `main` (tags are pushed only by
 release-plz or the owner):
 
 ```bash
