@@ -134,3 +134,26 @@ NSH's `app_state()`), with listeners for every event and for changes of state. R
   callbacks): NSH folds them into one app state, so the reason is `AppStateChanged` (or the host's start and stop);
   the browser visibility listener (`web-sys`); the platform snapshot inside each event (read the platform service);
   `SuspensionOptions` (it was empty).
+
+## Application configuration (`services::application_configuration`)
+
+The app's own settings, `ApplicationConfiguration` from the `RayX:Application` section and code: name and description
+(startup only), motion policy, programmatic scrolling, tooltip and hover-card timing, notifications and layout
+direction. `ApplicationConfigurationService` follows the configuration as it reloads (an options monitor), notifies
+listeners, and gives the effective motion (the system's setting from the platform service, the app's policy, a
+component's request) and programmatic scroll behaviour. Registered with `add_application_configuration(|options| ..)`,
+which registers the platform service too; invalid settings fail startup.
+
+The settings come from the app's bundled `appsettings.json`: `rayx_app`'s `AppSettingsSource` reads it with NSH's
+asset reading (`asset:/` URLs through `fetch`), asynchronously, so the app builds with `RayXAppBuilder::build_async`
+(`rayx_app::start_app` does).
+
+- Ported: the settings that describe behaviour any UI layer shares, their validation, startup-only rules, revisions,
+  effective motion and scrolling.
+- Changed: unknown keys are ignored (as .NET does) instead of failing the bind, so a shared `appsettings.json` may carry
+  keys of other parts; the app name no longer comes from the caller's `Cargo.toml` (`for_app_caller` read files at run
+  time, which packaged and web apps cannot): set it in `appsettings.json` or code; reloads reach the service through
+  the options monitor, where RayX.Old needed `replace_options` calls.
+- Left out: scrollbar behaviour (GPUI drew its own scrollbars; NSH shows the platform's), cursor styles (gpux's
+  `CursorStyle`), the accessibility tree mode and the wasm worker count (gpux settings), and `MotionDependencies`
+  (re-rendering GPUI window roots on motion changes: NSH re-renders what reads the settings).

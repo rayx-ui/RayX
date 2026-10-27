@@ -1,5 +1,6 @@
 //! The app services.
 
+pub mod application_configuration;
 pub mod history;
 pub mod input_map;
 pub mod navigation;
