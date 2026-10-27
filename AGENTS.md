@@ -2,7 +2,7 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../RayX.Old`), which is not a
-dependency. The workspace has four crates sharing one version:
+dependency. The workspace has five crates sharing one version:
 
 - `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), configuration sources, .NET's options model and the
@@ -18,16 +18,21 @@ dependency. The workspace has four crates sharing one version:
   NSH side of the services (bundled settings, asset reading, font registration, the device's
   state). It is the only crate that depends on `nsh-core`.
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers.
+- `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_core`, `rayx_runtime`,
+  `rayx_app`, `dxn_i18n` and `dxn_intl`, with a prelude. It holds no code of its own.
 
 ## Dependencies
 
-- `dxn_reactive` comes from [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) by release tag.
+- `dxn_reactive` comes from [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive), `dxn_i18n` and
+  `dxn_intl` from [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
+  [dXn.Intl](https://github.com/dXnSix/dXn.Intl), each by release tag.
 - NSH comes from the fork `github.com/dXnSix/nsh` through `[patch.crates-io]`, pinned to one of
   its integration tags `fork-*` (the newest RayX needs); a consumer's own patch decides which NSH
   it builds with.
 - Git tags only: never path, branch or commit dependencies.
 - GPUI, gpux and RayX.Old's crates (its `rayx`, `rayx_runtime`, `rayx_collab`, …) must not appear
-  in the dependency tree; this workspace's `rayx_runtime` is a port, not a dependency on them.
+  in the dependency tree; this workspace's `rayx` and `rayx_runtime` are new crates of the same
+  names, not dependencies on them.
 
 ## Validation
 
@@ -54,8 +59,8 @@ Raw diagnostic output goes to the ignored `artifacts-temp/`, never into commits.
 
 Consumers, the sportsbook demo Gamify (`../../Six/Six.Gamify`) first among them, depend on release
 tags only:
-`rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` (and `rayx_core` from the
-same tag for service crates). A change Gamify needs is released here first; then Gamify bumps its
+`rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` for apps (or `rayx_app`), and
+`rayx_core` from the same tag for service crates. A change Gamify needs is released here first; then Gamify bumps its
 tag by hand and validates its affected slices.
 
 ## Commits

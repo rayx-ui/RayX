@@ -12,7 +12,9 @@ builder with the API of .NET's `Microsoft.Extensions` (as RayX's `rayx_runtime` 
   cleanup), view-model activation on mount ([`dxn_reactive`](https://github.com/dXnSix/dXn.Reactive)'s
   activators), and access from `#[class]` bridges and Rust components.
 
-`rayx_app_macros` holds `#[derive(AppService)]`, which both layers re-export.
+`rayx_app_macros` holds `#[derive(AppService)]`, which both layers re-export. `rayx` is the umbrella an app depends on:
+it re-exports the core (`rayx::core`), the services (`rayx::runtime`), the NSH layer (`rayx::app`) and dXn.I18n and
+dXn.Intl (`rayx::i18n`, `rayx::intl`), with `use rayx::prelude::*;` for the builder, its extensions and the TSX classes.
 
 `rayx_runtime` holds RayX's app services on top of the core, NSH-free like it: in-memory key-value storage, operations
 with undo and redo history, navigation, input maps, the platform's and the app's lifecycle state, the app's
@@ -28,6 +30,7 @@ Releases are git tags `vX.Y.Z`; nothing is published to a registry. Depend on a 
 
 ```toml
 [dependencies]
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude (from the next release)
 rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "v0.5.0" }    # service crates
 rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services, from the next release
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "v0.5.0" }     # NSH bridge crates

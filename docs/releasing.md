@@ -1,9 +1,10 @@
 # Releasing RayX
 
 A release is a version tag `vX.Y.Z` on `main` plus a GitHub Release whose notes are that version's
-`CHANGELOG.md` section. The crates, `rayx_app`, `rayx_core`, `rayx_runtime` and
-`rayx_app_macros`, share one version, one tag, one GitHub Release and one root `CHANGELOG.md`;
-`rayx_core`, `rayx_runtime` and `rayx_app_macros` never get a tag or a Release of their own. Nothing is published to crates.io
+`CHANGELOG.md` section. The crates, `rayx` (the umbrella), `rayx_app`, `rayx_core`, `rayx_runtime`
+and `rayx_app_macros`, share one version, one tag, one GitHub Release and one root `CHANGELOG.md`;
+`rayx`, `rayx_core`, `rayx_runtime` and `rayx_app_macros` never get a tag or a Release of their
+own. Nothing is published to crates.io
 (`publish = false`).
 
 release-plz does all of it (`release-plz.toml`, `.github/workflows/release-plz.yml`) in git-only
@@ -41,8 +42,8 @@ no tag, such as `git_tag_name = "<crate>-v{{ version }}"` on the renamed crate's
 `release-plz.toml`: the crate then counts as a first release, while the version group keeps it on
 the others' version. Remove the line in the first commit after the release's tag, or every later
 release pull request counts the crate as new again and repeats its history. `rayx_app_di` became
-`rayx_core` this way in `v0.5.0`. A new crate takes the same route: `rayx_runtime`, which the
-`v0.5.0` tag does not have, carries the line until the first release with it is tagged.
+`rayx_core` this way in `v0.5.0`. A new crate takes the same route: `rayx_runtime` and `rayx`, which
+the `v0.5.0` tag does not have, carry the line until the first release with them is tagged.
 
 ## Commit types and the 0.x policy
 
@@ -141,6 +142,7 @@ crates.io:
 
 ```toml
 [dependencies]
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
 rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
 rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's app services
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates

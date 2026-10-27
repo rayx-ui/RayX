@@ -1,0 +1,19 @@
+[package]
+name = "rayx"
+description = "RayX, the app framework for NSH apps: its core, services and NSH layer in one dependency, with a prelude."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+rayx_core.workspace = true
+rayx_runtime.workspace = true
+rayx_app.workspace = true
+dxn_i18n.workspace = true
+dxn_intl.workspace = true

@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+    "crates/rayx",
     "crates/rayx_app",
     "crates/rayx_core",
     "crates/rayx_runtime",
@@ -18,6 +19,7 @@ repository = "https://github.com/rayx-ui/RayX"
 [workspace.dependencies]
 rayx_core = { path = "crates/rayx_core" }
 rayx_runtime = { path = "crates/rayx_runtime" }
+rayx_app = { path = "crates/rayx_app" }
 rayx_app_macros = { path = "crates/rayx_app_macros" }
 nsh-core = "0.3.0"
 nsh-base = "0.3.0"
