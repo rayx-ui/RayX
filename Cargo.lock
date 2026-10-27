@@ -3541,7 +3541,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "crossbeam-channel",
  "dxn_reactive",
@@ -3559,7 +3559,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app_macros"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -3569,7 +3569,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_core"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "futures",
  "rayx_app_macros",
