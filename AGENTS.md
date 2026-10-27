@@ -2,15 +2,21 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../RayX.Old`), which is not a
-dependency. The workspace has three crates sharing one version:
+dependency. The workspace has four crates sharing one version:
 
 - `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), configuration sources, .NET's options model and the
   `RayXAppBuilder`. It has no NSH dependency and must keep building for `wasm32-unknown-unknown`;
   service crates depend on it alone.
+- `crates/rayx_runtime`: RayX's app services (storage, operations and history, navigation, input
+  maps, platform and lifecycle state, app configuration, assets, fonts), ported from RayX.Old's
+  `rayx_runtime`. It depends on `rayx_core` alone, has no NSH dependency and builds for
+  `wasm32-unknown-unknown`; what a service needs from the platform is a trait here that
+  `rayx_app` implements. `docs/services.md` lists what each service ports and leaves out.
 - `crates/rayx_app`: the NSH layer: a root provider per engine surface, a scope per screen, view
-  models activated with their screen, and the `AppServices`/`ServiceScope` classes for TSX. It is
-  the only crate that depends on `nsh-core`.
+  models activated with their screen, the `AppServices`/`ServiceScope` classes for TSX, and the
+  NSH side of the services (bundled settings, asset reading, font registration, the device's
+  state). It is the only crate that depends on `nsh-core`.
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers.
 
 ## Dependencies
@@ -20,7 +26,8 @@ dependency. The workspace has three crates sharing one version:
   its integration tags `fork-*` (the newest RayX needs); a consumer's own patch decides which NSH
   it builds with.
 - Git tags only: never path, branch or commit dependencies.
-- GPUI, gpux and RayX.Old's crates (`rayx`, `rayx_runtime`) must not appear in the dependency tree.
+- GPUI, gpux and RayX.Old's crates (its `rayx`, `rayx_runtime`, `rayx_collab`, …) must not appear
+  in the dependency tree; this workspace's `rayx_runtime` is a port, not a dependency on them.
 
 ## Validation
 
@@ -31,7 +38,7 @@ committing:
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo check -p rayx_core --target wasm32-unknown-unknown
+cargo check -p rayx_core -p rayx_runtime --target wasm32-unknown-unknown
 ```
 
 CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`.

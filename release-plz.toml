@@ -25,14 +25,14 @@ semver_check = false
 # along in the next one.
 release_commits = "^(feat|fix|perf)"
 
-# One release unit: the three crates inherit `[workspace.package] version`, `rayx_app` builds on
-# `rayx_core` and both re-export `rayx_app_macros`' derive, so they share one version (the
-# version group), one tag `vX.Y.Z`, one GitHub Release and one root CHANGELOG.md, all owned by
-# `rayx_app`.
+# One release unit: the crates inherit `[workspace.package] version`, `rayx_app` builds on
+# `rayx_core` and `rayx_runtime`, and the layers re-export `rayx_app_macros`' derive, so they
+# share one version (the version group), one tag `vX.Y.Z`, one GitHub Release and one root
+# CHANGELOG.md, all owned by `rayx_app`.
 [[package]]
 name = "rayx_app"
 changelog_path = "./CHANGELOG.md"
-changelog_include = ["rayx_core", "rayx_app_macros"]
+changelog_include = ["rayx_core", "rayx_runtime", "rayx_app_macros"]
 version_group = "rayx"
 
 [[package]]
@@ -40,6 +40,18 @@ name = "rayx_core"
 version_group = "rayx"
 # Released under `rayx_app`'s tag and changelog. It keeps the inherited `git_tag_name`: in
 # git-only mode that template is how it finds its previous version (`v*` tags).
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_runtime"
+version_group = "rayx"
+# Released under `rayx_app`'s tag and changelog, like `rayx_core`. In git-only mode release-plz
+# looks for the package by name in the previous `v*` tag's tree, and `v0.5.0` has no
+# `rayx_runtime`: until the first release with it is tagged, this template matches no tag, so it
+# counts as a first release; then this line goes, and it finds its `v*` tag (docs/releasing.md).
+git_tag_name = "rayx_runtime-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false

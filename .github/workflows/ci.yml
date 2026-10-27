@@ -1,7 +1,7 @@
 name: RayX
 
-# Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the pure-Rust
-# DI core. Runs on every pull request (release-plz's release pull requests included) and every
+# Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the NSH-free
+# crates (the core and the services). Runs on every pull request (release-plz's release pull requests included) and every
 # push to `main`. The toolchain is rust-toolchain.toml's.
 on:
   pull_request:
@@ -35,4 +35,4 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
-      - run: cargo check -p rayx_core --target wasm32-unknown-unknown
+      - run: cargo check -p rayx_core -p rayx_runtime --target wasm32-unknown-unknown

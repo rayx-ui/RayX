@@ -14,14 +14,22 @@ builder with the API of .NET's `Microsoft.Extensions` (as RayX's `rayx_runtime` 
 
 `rayx_app_macros` holds `#[derive(AppService)]`, which both layers re-export.
 
+`rayx_runtime` holds RayX's app services on top of the core, NSH-free like it: in-memory key-value storage, operations
+with undo and redo history, navigation, input maps, the platform's and the app's lifecycle state, the app's
+configuration, assets from a neutral manifest, and fonts registered at run time. Each is registered with an
+`AppBuilder` extension (`add_history()`, `add_navigation(..)`, …) and reads its options from `RayX:Services:<Name>`;
+`rayx_app` gives them what they need from NSH (the bundled `appsettings.json`, reading assets, registering fonts, the
+device's state). [docs/services.md](docs/services.md) lists each service and what it ports from RayX.Old.
+
 ## Installation
 
 Releases are git tags `vX.Y.Z`; nothing is published to a registry. Depend on a tag:
 
 ```toml
 [dependencies]
-rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "v0.4.0" } # service crates
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "v0.4.0" }    # NSH bridge crates
+rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "v0.5.0" }    # service crates
+rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services, from the next release
+rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "v0.5.0" }     # NSH bridge crates
 ```
 
 Coming from `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths. Coming from `nsh-app`

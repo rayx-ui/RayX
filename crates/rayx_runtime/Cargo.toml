@@ -1,0 +1,22 @@
+[package]
+name = "rayx_runtime"
+description = "RayX's NSH-free app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets and fonts."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[dependencies]
+futures = { workspace = true, features = ["alloc", "std"] }
+rayx_core.workspace = true
+serde = { workspace = true, features = ["derive", "rc"] }
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+futures = { workspace = true, features = ["executor"] }
+
+[lints]
+workspace = true
