@@ -7,3 +7,4 @@ pub mod operations;
 pub mod platform;
 pub mod selection;
 pub mod storage;
+pub mod suspension;

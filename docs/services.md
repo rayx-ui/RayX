@@ -119,3 +119,18 @@ The UI layer keeps it current: `rayx_app`'s `use_platform_sync()` copies NSH's e
   `HostShape` (it was the form factor again); the provider traits (`PlatformInfoProvider`, `ViewportObserver`,
   `SafeAreaProvider`, …), which GPUI hosts implemented: `rayx_app` updates the service directly; the user-writable
   directory, which NSH does not expose (apps write through storage); `PlatformOptions` (it was empty).
+
+## Suspension (`services::suspension`)
+
+The app's lifecycle (not started, running, shutting down), activation (focus) and visibility (foreground,
+background) as a `SuspensionSnapshot`, moved by the `SuspensionEvent`s the UI layer publishes (`rayx_app` publishes
+NSH's `app_state()`), with listeners for every event and for changes of state. Registered with `add_suspension()`.
+
+- Ported: the states, events and their rules, the service and its listeners.
+- Changed: a change is a change of lifecycle, activation or visibility (an event that only moves the timestamp is not
+  one); timestamps are optional and come from the system clock where the target has one, not from `js_sys` in
+  WebAssembly (the core has no browser access); per-window snapshots are gone, as for the platform.
+- Left out: the platform-specific reasons (Android activity, iOS application and scene, desktop window, browser page
+  callbacks): NSH folds them into one app state, so the reason is `AppStateChanged` (or the host's start and stop);
+  the browser visibility listener (`web-sys`); the platform snapshot inside each event (read the platform service);
+  `SuspensionOptions` (it was empty).

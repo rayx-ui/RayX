@@ -22,4 +22,5 @@ pub mod prelude {
     pub use crate::services::platform::PlatformAppBuilderExt;
     pub use crate::services::selection::SelectionAppBuilderExt;
     pub use crate::services::storage::StorageAppBuilderExt;
+    pub use crate::services::suspension::SuspensionAppBuilderExt;
 }
