@@ -6,6 +6,26 @@ file. The three crates share one version and one release tag `vX.Y.Z`. The forma
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.5.2] - 2026-10-29
+
+### Build and CI
+- *(runtime)* Add the rayx_runtime crate for RayX's services
+
+### Features
+- *(runtime)* Add the operation service
+- *(runtime)* Add the history service
+- *(runtime)* Add the in-memory key-value storage service
+- *(runtime)* Add the navigation service
+- *(runtime)* Add the selection service
+- *(runtime)* Add the input map service
+- *(runtime)* Add the platform service
+- *(runtime)* Add the suspension service
+- *(runtime)* Add the application configuration service
+- *(runtime)* Add the asset service
+- *(runtime)* Add the font service
+- *(runtime)* Add the i18n service
+- *(rayx)* Add the rayx umbrella crate with a prelude
+
 ## [0.5.1] - 2026-10-29
 
 ### Build and CI
