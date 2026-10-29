@@ -95,6 +95,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9d4ee0d472d1cd2e28c97dfa124b3d8d992e10eb0a035f33f5d12e3a177ba3b"
 
 [[package]]
+name = "android_system_properties"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae221649c9976a6f6c56ae1facf410f3ddb33cc661c4b7b61020a912d4237fbc"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -232,9 +241,9 @@ dependencies = [
 
 [[package]]
 name = "bit-set"
-version = "0.10.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09ec2f926cc3060f09db9ebc5b52823d85268d24bb917e472c0c4bea35780a7d"
+checksum = "34ddef2995421ab6a5c779542c81ee77c115206f4ad9d5a8e05f4ff49716a3dd"
 dependencies = [
  "bit-vec 0.9.1",
 ]
@@ -488,6 +497,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "chrono"
+version = "0.4.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
+dependencies = [
+ "iana-time-zone",
+ "num-traits",
+ "windows-link",
+]
+
+[[package]]
 name = "cipher"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -582,6 +602,12 @@ checksum = "1af709f1f33454bf52eadfc8c78b3b9ef9cb26fb54d16dc9cd9a7299f899fd1b"
 dependencies = [
  "unicode-segmentation",
 ]
+
+[[package]]
+name = "core-foundation-sys"
+version = "0.8.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "core_maths"
@@ -1560,6 +1586,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexf-parse"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
+
+[[package]]
 name = "hkdf"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1628,6 +1660,30 @@ dependencies = [
  "subtle",
  "typenum",
  "zeroize",
+]
+
+[[package]]
+name = "iana-time-zone"
+version = "0.1.65"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e31bc9ad994ba00e440a8aa5c9ef0ec67d5cb5e5cb0cc7f8b744a35b389cc470"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "log",
+ "wasm-bindgen",
+ "windows-core",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -2474,39 +2530,27 @@ dependencies = [
 
 [[package]]
 name = "naga"
-version = "30.0.1"
+version = "29.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a616d2fb8c89516ac2723a581f69d6c18576046bed761bd6b305e5618e6ae130"
+checksum = "b2bf919621e7975acb27d881bae2fb993e0d45c8e0446e85e6272971e00dc8df"
 dependencies = [
  "arrayvec",
- "bit-set 0.10.0",
+ "bit-set 0.9.1",
  "bitflags 2.13.2",
  "cfg-if",
  "cfg_aliases",
  "codespan-reporting",
  "half",
- "hashbrown 0.17.1",
+ "hashbrown 0.16.1",
+ "hexf-parse",
  "indexmap",
  "libm",
  "log",
- "naga-types",
  "num-traits",
  "once_cell",
  "rustc-hash 1.1.0",
  "thiserror",
  "unicode-ident",
-]
-
-[[package]]
-name = "naga-types"
-version = "30.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "590afbf58a6f4f62873cd5cff4468061844bafa1cdf399cc954537c22d768d49"
-dependencies = [
- "hashbrown 0.17.1",
- "indexmap",
- "rustc-hash 1.1.0",
- "thiserror",
 ]
 
 [[package]]
@@ -2558,8 +2602,9 @@ checksum = "610a5acd306ec67f907abe5567859a3c693fb9886eb1f012ab8f2a47bef3db51"
 [[package]]
 name = "nsh-base"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
+ "chrono",
  "html5ever",
  "imara-diff",
  "log",
@@ -2579,7 +2624,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
  "anyhow",
  "dunce",
@@ -2604,7 +2649,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
  "cap-std",
  "crc32fast",
@@ -2614,10 +2659,12 @@ dependencies = [
  "imagesize 0.15.0",
  "libc",
  "log",
+ "naga",
  "nsh-macros",
- "nsh-shader",
+ "ordered-float",
  "resvg",
  "rustc-hash 2.1.3",
+ "rustls",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -2628,6 +2675,7 @@ dependencies = [
  "ttf-parser",
  "unicode-linebreak",
  "url",
+ "webpki-roots 1.0.10",
  "windows-sys 0.61.2",
  "wuff",
 ]
@@ -2635,7 +2683,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
  "crossbeam-channel",
  "libc",
@@ -2653,7 +2701,7 @@ dependencies = [
 [[package]]
 name = "nsh-js"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -2675,7 +2723,7 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
  "imagesize 0.15.0",
  "proc-macro2",
@@ -2688,7 +2736,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -2698,14 +2746,6 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "thiserror",
-]
-
-[[package]]
-name = "nsh-shader"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-1#960c314c910f37e99796225322753b03de2471fe"
-dependencies = [
- "naga",
 ]
 
 [[package]]
@@ -2772,6 +2812,15 @@ name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
+
+[[package]]
+name = "ordered-float"
+version = "5.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f59006ce1e204c30956638535b74d317bca99477b9356dfaec54c37f6f600ab"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "outref"
@@ -4630,6 +4679,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "once_cell",
+ "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
