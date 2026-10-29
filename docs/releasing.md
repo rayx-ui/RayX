@@ -43,7 +43,7 @@ no tag, such as `git_tag_name = "<crate>-v{{ version }}"` on the renamed crate's
 the others' version. Remove the line in the first commit after the release's tag, or every later
 release pull request counts the crate as new again and repeats its history. `rayx_app_di` became
 `rayx_core` this way in `v0.5.0`. A new crate takes the same route: `rayx_runtime` and `rayx`, which
-the `v0.5.0` tag does not have, carry the line until the first release with them is tagged.
+the `v0.5.0` tag does not have, carried the line until `v0.5.1`.
 
 ## Commit types and the 0.x policy
 

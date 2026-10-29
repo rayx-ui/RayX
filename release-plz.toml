@@ -47,11 +47,7 @@ changelog_update = false
 [[package]]
 name = "rayx_runtime"
 version_group = "rayx"
-# Released under `rayx_app`'s tag and changelog, like `rayx_core`. In git-only mode release-plz
-# looks for the package by name in the previous `v*` tag's tree, and `v0.5.0` has no
-# `rayx_runtime`: until the first release with it is tagged, this template matches no tag, so it
-# counts as a first release; then this line goes, and it finds its `v*` tag (docs/releasing.md).
-git_tag_name = "rayx_runtime-v{{ version }}"
+# Like `rayx_core`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -59,10 +55,7 @@ changelog_update = false
 [[package]]
 name = "rayx"
 version_group = "rayx"
-# The umbrella crate, released under `rayx_app`'s tag and changelog like `rayx_runtime`, and new
-# like it: until the first release with it is tagged, this template matches no tag, so it counts
-# as a first release; then this line goes (docs/releasing.md).
-git_tag_name = "rayx-v{{ version }}"
+# The umbrella crate, like `rayx_core`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
