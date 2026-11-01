@@ -11,7 +11,7 @@ members = [
 [workspace.package]
 version = "0.5.1"
 edition = "2024"
-rust-version = "1.97"
+rust-version = "1.99"
 license = "MIT"
 publish = false
 repository = "https://github.com/rayx-ui/RayX"
