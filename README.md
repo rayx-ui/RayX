@@ -130,3 +130,9 @@ same tag as the RayX release it depends on.
 
 Status: 0.x, on NSH 0.3. A minor release (`0.5` → `0.6`) may break the API; its changelog's `Migration:` notes say
 what to change. [CHANGELOG.md](CHANGELOG.md) lists every release.
+
+## License
+
+RayX is licensed under either of the [Apache License, Version 2.0](LICENSE-APACHE) or the [MIT license](LICENSE-MIT),
+at your option. Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in RayX,
+as defined in the Apache-2.0 license, is dual licensed as above, without any additional terms or conditions.
