@@ -6,6 +6,7 @@ members = [
     "crates/rayx_core",
     "crates/rayx_runtime",
     "crates/rayx_app_macros",
+    "crates/rayx_cli",
 ]
 
 [workspace.package]
