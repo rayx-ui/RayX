@@ -26,14 +26,15 @@ device's state). [docs/services.md](docs/services.md) lists each service and wha
 
 ## Installation
 
-Releases are git tags `vX.Y.Z`; nothing is published to a registry. Depend on a tag:
+Releases are git tags `vX.Y.Z` (the latest is on the repository's Releases page); nothing is published to a
+registry. Depend on a tag, the same one for every RayX crate:
 
 ```toml
 [dependencies]
-rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude (from the next release)
-rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "v0.5.0" }    # service crates
-rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services, from the next release
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "v0.5.0" }     # NSH bridge crates
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
+rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
+rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services
+rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
 ```
 
 Coming from `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths. Coming from `nsh-app`
@@ -123,7 +124,9 @@ it is synchronous.
 `use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
 component's cleanup; `ServiceScope::view_model::<T>()` does the same for TSX until the scope is disposed.
 
-NSH comes from the integration tag of the fork Gamify builds with (`[patch.crates-io]` in `Cargo.toml`); a consumer's
-own patch decides which NSH it builds with.
+NSH comes from an integration tag `fork-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh)
+(`[patch.crates-io]` in `Cargo.toml`); a consumer's own patch decides which NSH it builds with, and an app takes the
+same tag as the RayX release it depends on.
 
-Status: built for Gamify (github.com/dXnSix), consumed through git tags (`v0.4.0` on NSH 0.2.0; `main` on NSH 0.3.0).
+Status: 0.x, on NSH 0.3. A minor release (`0.5` → `0.6`) may break the API; its changelog's `Migration:` notes say
+what to change. [CHANGELOG.md](CHANGELOG.md) lists every release.
