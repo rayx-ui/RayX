@@ -1,6 +1,6 @@
 name: Release-plz
 
-# Releases the three crates under one version (see docs/releasing.md). It runs no tests: `ci.yml`
+# Releases the workspace's crates under one version (see docs/releasing.md). It runs no tests: `ci.yml`
 # tests pull requests (the release pull request included) and pushes to `main`.
 #
 # `release` tags `vX.Y.Z` when the version in Cargo.toml has no tag yet (the merged release pull
