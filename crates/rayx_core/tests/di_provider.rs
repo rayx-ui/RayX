@@ -394,17 +394,8 @@ fn di_scope_snapshots_registrations_at_creation() -> TestResult {
 }
 
 #[test]
-fn di_scope_wrappers_carry_service_provider() -> TestResult {
-    let provider = ServiceProvider::default().with_singleton(NonStartupService);
-    let app = AppScope(provider.clone());
-    let window = WindowScope(provider.clone());
-    let view = ViewScope(provider);
-
-    app.0.required_service::<NonStartupService>()?;
-    window.0.required_service::<NonStartupService>()?;
-    view.0.required_service::<NonStartupService>()?;
+fn the_default_provider_has_no_startup_services() {
     assert!(default_provider().startup_registry().is_empty());
-    Ok(())
 }
 
 #[test]

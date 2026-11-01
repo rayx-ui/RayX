@@ -65,15 +65,6 @@ recorder!(Unregistered);
 recorder!(CycleA, depends_on = CycleB);
 recorder!(CycleB, depends_on = CycleA);
 
-impl ShutdownService for Recorder {
-    fn shutdown(&self, services: &ServiceProvider) -> Result<(), String> {
-        services
-            .required_service::<Recorder>()
-            .map(|_| ())
-            .map_err(|error| error.to_string())
-    }
-}
-
 trait TraitStartupRecorder: StartupInitializable {
     fn was_initialized(&self) -> bool;
 }
@@ -187,7 +178,6 @@ fn di_startup_singleton_reuses_instance_and_registers_startup() -> TestResult {
     assert!(provider.has_startup_role::<Recorder>());
     initialize(&provider)?;
     assert!(service.is_initialized());
-    service.shutdown(&provider)?;
     Ok(())
 }
 

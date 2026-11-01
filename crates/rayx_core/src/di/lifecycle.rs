@@ -709,7 +709,3 @@ impl fmt::Debug for StartupRegistry {
             .finish()
     }
 }
-
-pub trait ShutdownService: Send + Sync + 'static {
-    fn shutdown(&self, services: &ServiceProvider) -> Result<(), String>;
-}

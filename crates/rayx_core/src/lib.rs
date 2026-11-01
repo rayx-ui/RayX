@@ -62,13 +62,12 @@ pub mod prelude {
         ConfigurationSource,
     };
     pub use crate::di::{
-        AppScope, AppService, AsyncInitializable, DIReady, DiReady, IntoServiceArc,
-        IntoSingletonService, ServiceLifetime, ServiceProvider, ServiceRegistry,
-        ServiceResolutionError, ShutdownService, StartupInitializable,
-        StartupInitializationContext, StartupInitializationError, StartupInitializationFailure,
-        StartupInitializationFailures, StartupInitializationPhase, StartupInitializationResult,
-        StartupInitializationState, StartupRegistry, StartupServiceError, StartupServiceType,
-        ViewScope, WindowScope, default_provider,
+        AppService, AsyncInitializable, DIReady, DiReady, IntoServiceArc, IntoSingletonService,
+        ServiceLifetime, ServiceProvider, ServiceRegistry, ServiceResolutionError,
+        StartupInitializable, StartupInitializationContext, StartupInitializationError,
+        StartupInitializationFailure, StartupInitializationFailures, StartupInitializationPhase,
+        StartupInitializationResult, StartupInitializationState, StartupRegistry,
+        StartupServiceError, StartupServiceType, default_provider,
     };
     pub use crate::options::{
         Options, OptionsBuilder, OptionsError, OptionsMonitor, OptionsSnapshot,
