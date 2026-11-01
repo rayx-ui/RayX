@@ -37,4 +37,6 @@ fn the_crates_are_reachable_by_name() {
     let message = rayx::i18n::Message::parse("Hello").unwrap();
     assert_eq!(message.format(&locale, &rayx::i18n::Args::new()), "Hello");
     let _: Option<&rayx::app::AppServices> = None;
+    // The screen's (or the surface root's) provider, for Rust components.
+    let _: fn() -> Result<ServiceProvider, AppError> = services;
 }

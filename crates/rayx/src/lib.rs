@@ -43,8 +43,8 @@ pub mod prelude {
     pub use rayx_app::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app::{
         AppError, AppServices, AppSettingsAppBuilderExt, AppState, I18n, NshServicesAppBuilderExt,
-        ScreenScope, ServiceScope, app_services, app_state, install, set_app, start, start_app,
-        use_platform_sync, use_screen_scope, use_view_model,
+        ScreenScope, ServiceScope, app_services, app_state, install, services, set_app, start,
+        start_app, use_platform_sync, use_screen_scope, use_view_model,
     };
     pub use rayx_runtime::services::i18n::{Args, I18nService};
 }
