@@ -4,13 +4,14 @@
 
 use std::sync::{Arc, Mutex};
 
-use rayx_core::RayXAppBuilder;
+use futures::executor::block_on;
+use rayx_core::di::{StartupInitializationContext, StartupInitializationError};
+use rayx_core::{RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::navigation::{
     NavigationAppBuilderExt, NavigationService, RouteDefinition,
 };
 use rayx_runtime::services::selection::{
-    SelectionAppBuilderExt, SelectionAreaId, SelectionService, SelectionStartupError,
-    SelectionStatus,
+    SelectionAppBuilderExt, SelectionAreaId, SelectionService, SelectionStatus,
 };
 
 fn selected(characters: usize) -> SelectionStatus {
@@ -29,7 +30,6 @@ fn services() -> (NavigationService, SelectionService) {
             options.add_route(RouteDefinition::new("/b"));
         })
         .add_selection()
-        .unwrap()
         .build()
         .unwrap();
     (
@@ -97,10 +97,53 @@ fn navigation_clears_the_selection() {
     assert_eq!(selection.navigation_revision(), revision + 1);
 }
 
+/// Builds the app and runs its startup, as the NSH layer does.
+fn start(builder: RayXAppBuilder) -> Result<ServiceProvider, StartupInitializationError> {
+    let services = builder.build().unwrap();
+    block_on(
+        services
+            .startup_registry()
+            .initialize(StartupInitializationContext::new(services.clone())),
+    )?;
+    Ok(services)
+}
+
 #[test]
-fn add_selection_needs_the_navigation() {
-    assert_eq!(
-        RayXAppBuilder::new().add_selection().err(),
-        Some(SelectionStartupError::MissingNavigation)
+fn the_selection_chains_and_follows_a_navigation_registered_after_it() {
+    let services = start(
+        RayXAppBuilder::new()
+            .add_selection()
+            .add_navigation(|options| {
+                options.default_route = "/a".to_string();
+                options.add_route(RouteDefinition::new("/a"));
+                options.add_route(RouteDefinition::new("/b"));
+            }),
+    )
+    .unwrap();
+    let selection = services.required_service::<SelectionService>().unwrap();
+    selection.activate(SelectionAreaId::from_raw(1), selected(5));
+    services
+        .required_service::<NavigationService>()
+        .unwrap()
+        .navigate_to("/b")
+        .unwrap();
+    assert_eq!(selection.active_area(), None);
+}
+
+#[test]
+fn startup_fails_without_the_navigation() {
+    let Err(StartupInitializationError::ServiceFailures { failures }) =
+        start(RayXAppBuilder::new().add_selection())
+    else {
+        panic!("startup should fail without a navigation");
+    };
+    let [failure] = failures.as_slice() else {
+        panic!("one service should fail: {failures:?}");
+    };
+    assert!(failure.service.name().ends_with("SelectionService"));
+    assert!(
+        failure.message.contains("NavigationService"),
+        "{}",
+        failure.message
     );
 }

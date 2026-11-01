@@ -20,7 +20,8 @@ type SelectionListener = dyn Fn(Option<SelectionAreaId>, SelectionStatus) + Send
 #[app_service(startup)]
 pub struct SelectionService {
     shared: Arc<SelectionServiceState>,
-    _navigation_subscription: Arc<NavigationSubscription>,
+    /// `None` for a service made without a navigation to follow: its startup fails.
+    _navigation_subscription: Option<Arc<NavigationSubscription>>,
     initialization: StartupInitializationState,
 }
 
@@ -41,7 +42,17 @@ impl SelectionService {
 
         Self {
             shared,
-            _navigation_subscription: Arc::new(subscription),
+            _navigation_subscription: Some(Arc::new(subscription)),
+            initialization: StartupInitializationState::default(),
+        }
+    }
+
+    /// A service that follows no navigation, for an app that registered none: its startup
+    /// initialization fails.
+    pub(super) fn without_navigation() -> Self {
+        Self {
+            shared: Arc::default(),
+            _navigation_subscription: None,
             initialization: StartupInitializationState::default(),
         }
     }
@@ -114,6 +125,12 @@ impl AsyncInitializable for SelectionService {
     ) -> LocalBoxFuture<'static, StartupInitializationResult> {
         let service = self.clone();
         async move {
+            if service._navigation_subscription.is_none() {
+                return Err(
+                    "SelectionService needs a NavigationService: register one with add_navigation"
+                        .into(),
+                );
+            }
             service.initialization.mark_initialized();
             Ok(())
         }

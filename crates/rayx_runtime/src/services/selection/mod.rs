@@ -7,7 +7,7 @@ mod selection_area_id;
 mod selection_status;
 mod service;
 
-pub use app_ext::{SelectionAppBuilderExt, SelectionStartupError};
+pub use app_ext::SelectionAppBuilderExt;
 pub use selection_area_id::SelectionAreaId;
 pub use selection_status::SelectionStatus;
 pub use service::SelectionService;

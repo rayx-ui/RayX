@@ -124,7 +124,8 @@ lifecycle subscribers (`on_navigated_from`, `on_navigated_to`), route and locati
 
 The app-wide summary of the active selection area: which area (`SelectionAreaId`) publishes, and its
 `SelectionStatus` (participants, selected characters, collapsed, selecting), never the selected content. Only the
-active area publishes; every route change clears it. Registered with `add_selection()` after the navigation.
+active area publishes; every route change clears it. Registered with `add_selection()`; it follows the navigation,
+registered before or after it, and startup fails without one.
 
 - Ported: the service, its revisions and tests (`tests/selection.rs`).
 - New: `subscribe(..)`, so a UI hears changes instead of polling the revisions (GPUI re-rendered and read them).
