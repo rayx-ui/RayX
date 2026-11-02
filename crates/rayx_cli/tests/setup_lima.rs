@@ -701,6 +701,12 @@ fn check_prints_every_command_and_runs_only_reads() {
     };
     script("sw_vers", "echo 14.5");
     script("brew", "exit 0");
+    // The volume Lima uses has room, whatever this machine's own disk holds.
+    script(
+        "df",
+        "echo 'Filesystem 1024-blocks Used Available Capacity Mounted on'\n\
+         echo '/dev/disk3s5 971350180 500000000 400000000 56% /System/Volumes/Data'",
+    );
     script(
         "limactl",
         &format!(
