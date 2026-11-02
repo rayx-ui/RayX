@@ -2,13 +2,15 @@
 //! writes (design §5, SERVE-1). One blocking HTTP/1.1 server on `std::net`, on 127.0.0.1 only:
 //! files with their MIME types (`.wasm` as `application/wasm`), `index.html` for a directory and,
 //! as a single-page app's host, for a path without a file extension that names no file, `GET
-//! /health`, nothing outside the site, and `Cache-Control: no-store` on every response.
+//! /health`, nothing outside the site, `Cache-Control: no-store` on every response, and a graceful
+//! close after each answer.
 //!
 //! It takes the place of the static host an app would otherwise carry in its own tooling.
 
-use std::io::{BufRead, BufReader, Write};
-use std::net::{TcpListener, TcpStream};
+use std::io::{BufRead, BufReader, Read, Write};
+use std::net::{Shutdown, TcpListener, TcpStream};
 use std::path::{Component, Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 
@@ -16,6 +18,9 @@ use crate::cli::ServeArgs;
 
 /// The port when neither `--port` nor `PORT` names one.
 pub const DEFAULT_PORT: u16 = 8080;
+
+/// How long a connection stays open after its answer for the client to close its side.
+const LINGER: Duration = Duration::from_secs(1);
 
 /// Runs `rayx serve` until the process stops; returns the exit code when it cannot start.
 pub fn run(args: &ServeArgs) -> u8 {
@@ -94,7 +99,8 @@ impl Server {
             let Ok(stream) = stream else { continue };
             let root = self.root.clone();
             std::thread::spawn(move || {
-                let _ = respond(&root, stream);
+                let _ = respond(&root, &stream);
+                close(&stream);
             });
         }
     }
@@ -196,9 +202,12 @@ pub fn resolve_route(root: &Path, target: &str) -> Option<PathBuf> {
     resolve(root, "/index.html")
 }
 
-/// Answers one request on `stream` (HTTP/1.1, `Connection: close`).
-fn respond(root: &Path, mut stream: TcpStream) -> std::io::Result<()> {
-    let mut reader = BufReader::new(stream.try_clone()?);
+/// Answers one request on `stream` (HTTP/1.1, `Connection: close`), reading and writing through
+/// the one handle `accept` gave: on Windows a handle from `try_clone` is inherited by every process
+/// started while it is open (rust-lang/rust#70719), and such a process keeps the connection open
+/// after the answer and resets it when it exits.
+fn respond(root: &Path, stream: &TcpStream) -> std::io::Result<()> {
+    let mut reader = BufReader::new(stream);
     let mut request_line = String::new();
     reader.read_line(&mut request_line)?;
     // Skip the headers.
@@ -213,7 +222,7 @@ fn respond(root: &Path, mut stream: TcpStream) -> std::io::Result<()> {
     );
     if method != "GET" && method != "HEAD" {
         return write_response(
-            &mut stream,
+            stream,
             "405 Method Not Allowed",
             "text/plain; charset=utf-8",
             b"",
@@ -221,20 +230,12 @@ fn respond(root: &Path, mut stream: TcpStream) -> std::io::Result<()> {
         );
     }
     if target.split(['?', '#']).next() == Some("/health") {
-        return write_response(
-            &mut stream,
-            "200 OK",
-            "text/plain; charset=utf-8",
-            b"ok",
-            method,
-        );
+        return write_response(stream, "200 OK", "text/plain; charset=utf-8", b"ok", method);
     }
     match resolve_route(root, target).and_then(|file| Some((std::fs::read(&file).ok()?, file))) {
-        Some((body, file)) => {
-            write_response(&mut stream, "200 OK", mime_type(&file), &body, method)
-        }
+        Some((body, file)) => write_response(stream, "200 OK", mime_type(&file), &body, method),
         None => write_response(
-            &mut stream,
+            stream,
             "404 Not Found",
             "text/plain; charset=utf-8",
             b"not found",
@@ -244,7 +245,7 @@ fn respond(root: &Path, mut stream: TcpStream) -> std::io::Result<()> {
 }
 
 fn write_response(
-    stream: &mut TcpStream,
+    mut stream: &TcpStream,
     status: &str,
     content_type: &str,
     body: &[u8],
@@ -259,4 +260,24 @@ fn write_response(
         stream.write_all(body)?;
     }
     stream.flush()
+}
+
+/// Ends a connection after its answer the way Windows documents a graceful close: a FIN once the
+/// answer is sent, then whatever the client still sends (a body no answer reads) read and dropped
+/// until it closes its side, for at most [`LINGER`]. A socket closed with input unread resets the
+/// connection, and a client the reset reaches before it has read the answer loses it.
+fn close(mut stream: &TcpStream) {
+    let _ = stream.shutdown(Shutdown::Write);
+    let deadline = Instant::now() + LINGER;
+    let mut input = [0; 8192];
+    loop {
+        let left = deadline.saturating_duration_since(Instant::now());
+        if left.is_zero() || stream.set_read_timeout(Some(left)).is_err() {
+            return;
+        }
+        match stream.read(&mut input) {
+            Ok(0) | Err(_) => return,
+            Ok(_) => {}
+        }
+    }
 }

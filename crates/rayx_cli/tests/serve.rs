@@ -1,14 +1,17 @@
 //! `rayx serve` (SERVE-1) against a running server on a free port: MIME types, `index.html` (for a
 //! directory and for an app's own routes), `/health`, nothing outside the site,
-//! `Cache-Control: no-store`, 127.0.0.1 only.
+//! `Cache-Control: no-store`, 127.0.0.1 only, and a connection that ends without a reset.
 
 mod common;
 
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, TcpStream};
+use std::process::{Command, Stdio};
+use std::time::Duration;
 
 use assert_cmd::cargo::cargo_bin_cmd;
 use common::Workspace;
+use common::proof::Running;
 use predicates::str::contains;
 use rayx_cli::serve::{DEFAULT_PORT, bind, mime_type, port};
 
@@ -38,6 +41,11 @@ fn request(port: u16, method: &str, target: &str) -> (String, Vec<String>, Vec<u
         "{method} {target} HTTP/1.1\r\nHost: localhost\r\n\r\n"
     )
     .expect("send");
+    response(stream)
+}
+
+/// The status line, the headers and the body of the answer `stream` reads to its end.
+fn response(mut stream: TcpStream) -> (String, Vec<String>, Vec<u8>) {
     let mut response = Vec::new();
     stream.read_to_end(&mut response).expect("read");
     let split = response
@@ -220,6 +228,51 @@ fn every_response_carries_no_store_and_head_has_no_body() {
     let (status, headers, _) = request(port, "POST", "/index.html");
     assert_eq!(status, "HTTP/1.1 405 Method Not Allowed");
     assert_eq!(header(&headers, "Cache-Control"), Some("no-store"));
+}
+
+#[test]
+fn input_no_answer_reads_does_not_reset_the_connection() {
+    let (_site, port) = serve_site();
+    // A body larger than what the server reads with the headers: a socket closed with it unread
+    // resets the connection, and a client the reset reaches first loses the answer.
+    let body = vec![b'x'; 64 * 1024];
+    for _ in 0..20 {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect");
+        write!(
+            stream,
+            "POST /index.html HTTP/1.1\r\nHost: localhost\r\nContent-Length: {}\r\n\r\n",
+            body.len()
+        )
+        .expect("send");
+        stream.write_all(&body).expect("send the body");
+        let (status, _, _) = response(stream);
+        assert_eq!(status, "HTTP/1.1 405 Method Not Allowed");
+    }
+}
+
+#[test]
+fn a_process_started_during_a_request_does_not_keep_its_connection() {
+    let (site, port) = serve_site();
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect");
+    // The request line alone: the server takes the connection and waits for the headers.
+    write!(stream, "GET /health HTTP/1.1\r\n").expect("send");
+    std::thread::sleep(Duration::from_millis(200));
+    // A process started now must inherit no handle to the connection: one it held (on Windows, a
+    // `TcpStream::try_clone`) would keep the connection open after the answer and reset it when
+    // the process exits.
+    let mut serve = Command::new(env!("CARGO_BIN_EXE_rayx"));
+    serve
+        .args(["serve", "--port", "0", "--dir"])
+        .arg(&site.root)
+        .stdout(Stdio::null());
+    let _serve = Running::start(serve, "rayx serve");
+    write!(stream, "Host: localhost\r\n\r\n").expect("send");
+    stream
+        .set_read_timeout(Some(Duration::from_secs(10)))
+        .expect("read timeout");
+    let (status, _, body) = response(stream);
+    assert_eq!(status, "HTTP/1.1 200 OK");
+    assert_eq!(body, b"ok");
 }
 
 #[test]
