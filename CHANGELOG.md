@@ -7,6 +7,22 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.6.1] - 2026-11-02
+
+### Build and CI
+- *(release)* Find rayx-cli by the v* tags
+
+### Documentation
+- *(services)* Describe the app services as a reference
+
+### Features
+- *(runtime)* Show instants in the platform's time zone
+- *(app)* Show instants in the user's time zone and format dates and numbers for TSX
+
+### Maintenance
+- Name no consumer app in code, tests and docs
+- Replace the betting examples in comments and tests with neutral ones
+
 ## [0.6.0] - 2026-11-02
 
 ### Build and CI
