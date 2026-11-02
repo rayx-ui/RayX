@@ -15,10 +15,10 @@ Inputs examined:
   pipeline for GPUI/gpux apps
 - the NSH fork `dXnSix/nsh` @ `327bb9e` (`fork-0.2.0-4`): `crates/nsh-cli`, `crates/xtask/src/dist.rs`, the release
   workflows, `website/docs/installation.md` and the fork docs on `private/fork-docs`
-- `Six.Gamify` @ `041d197`: the first NSH app on RayX, with its `xtask`, Aspire AppHost, Playwright support and CI
+- the first NSH app on RayX @ `041d197`, with its `xtask`, Aspire AppHost, Playwright support and CI
 - `RayX` @ `f6b2603` (`v0.4.0`): the `rayx_app` crates
 
-Paths name their repository first: `old:` (RayX.CLI.Old), `nsh:` (the fork), `gamify:` (Six.Gamify).
+Paths name their repository first: `old:` (RayX.CLI.Old), `nsh:` (the fork), `app:` (the first app).
 
 Purpose: agree on how the new `rayx` works before writing its AgentX epic. §15 is the proposed epic outline.
 
@@ -49,7 +49,7 @@ Rejected in D1:
 - **Building nsh into rayx as a library.** `nsh-cli` is a binary only (`nsh: crates/nsh-cli/Cargo.toml`; its `run` is
   private in `main.rs:506`), so the fork would need a library target. Each rayx release would then be welded to one
   NSH commit, and a project on any other commit would need another rayx.
-- **Using the `nsh` on `PATH`**, as Gamify does today. Homebrew's upstream `nsh` shadows the fork's, and nothing
+- **Using the `nsh` on `PATH`**, as the first app does today. Homebrew's upstream `nsh` shadows the fork's, and nothing
   checks the commit (§3).
 
 ## 1. Summary
@@ -80,7 +80,7 @@ rayx doctor                 # every requirement with its fix, the pins and the n
   Gradle, the asset catalog, the Playwright template) has nothing left to build.
 - **nsh already builds, runs, packages and tests apps** for the web, macOS, iOS, Android, Linux and Windows. What it
   lacks is what the old rayx is good at: installing a machine's toolchains, a `doctor` (nsh has none), guests and self update.
-- **The upstream CLI is not enough.** Gamify and RayX take NSH from the fork's `fork-*` tags (`--strict-port`,
+- **The upstream CLI is not enough.** The first app and RayX take NSH from the fork's `fork-*` tags (`--strict-port`,
   wasm-bindgen for app crates, SVG and multi-resolution images, shaders and more). Upstream's release (Homebrew,
   `install.sh`) is a different NSH, and the fork publishes no binaries.
 - **On GitHub, `rayx-ui/RayX.CLI` is now `rayx-ui/RayX.CLI.Old`**, as `RayX` became `RayX.Old`. The name is free for
@@ -96,7 +96,7 @@ Verified in the fork at `fork-0.2.0-4`.
 | `nsh --version` prints the commit (`nsh 0.2.0 (327bb9e)`), also when built in a shallow clone or by `cargo install --git`, as long as `git` was on `PATH` | `nsh: crates/nsh-cli/build.rs`, `main.rs:77` | rayx verifies a build by version and commit |
 | The CLI finds its runtimes (hosts, `nsh.wasm` and `nsh.js`, Android's `classes.dex`) through `NSH_RUNTIME`, else a distribution (`bin/../runtime/`), else a checkout (`<root>/target/<profile>/nsh` beside `crates/nsh-ios-host/Cargo.toml`), where it builds them on demand | `nsh: crates/nsh-cli/src/runtime.rs:141-216`, `:285-330`, `:360-414`, `:456-461` | `cargo install` gives none of the three: apps without Rust crates cannot run on a platform, and Android fails for every app. rayx installs a checkout or a distribution, never a bare binary |
 | A distribution is `nsh/bin/nsh` plus `nsh/runtime/{ios,macos,linux,windows,gpui,android,web}` and `nsh/embed/` | `nsh: crates/xtask/src/dist.rs:1-16` | The prebuilt form of a store entry (§10) |
-| The CLI runs `cargo` without a working directory of its own, and uses `$CARGO` when it is set | `nsh: rust_app.rs:1628-1650`, `:2088-2090`; `runtime.rs:317` | Cargo config, such as Gamify's `[patch.crates-io]` to the fork tag in `src/frontend/.cargo/config.toml`, applies only when nsh runs in the project. A `CARGO` set by `cargo run` makes nsh bypass rustup's proxy, and on macOS every web runtime link then fails (`gamify: src/frontend/xtask/src/web.rs:112-118`) |
+| The CLI runs `cargo` without a working directory of its own, and uses `$CARGO` when it is set | `nsh: rust_app.rs:1628-1650`, `:2088-2090`; `runtime.rs:317` | Cargo config, such as the first app's `[patch.crates-io]` to the fork tag in `src/frontend/.cargo/config.toml`, applies only when nsh runs in the project. A `CARGO` set by `cargo run` makes nsh bypass rustup's proxy, and on macOS every web runtime link then fails (`app: src/frontend/xtask/src/web.rs:112-118`) |
 | The fork's `rust-toolchain.toml` is `stable` with the iOS, Catalyst and three Android targets; `oxc` 0.153 needs rustc 1.97 or later | `nsh: rust-toolchain.toml` | Building in a checkout installs that toolchain |
 | Building the CLI needs a C toolchain (QuickJS, zstd, ring) and takes about four minutes on an M-class Mac; the binary is 40.7 MB | `nsh: crates/nsh-cli/Cargo.toml`, the workspace's `lto = "fat"` release profile | Only the fallback (§4.3) builds; the base set already installs a C toolchain |
 | Upstream's release builds `nsh-<platform>.tar.gz` for macos-arm64, linux-x86_64 and windows-x86_64 with `cargo xtask dist`, only on `v*` tags, as a draft. The fork never creates `v*` tags, so it has no binaries | `nsh: .github/workflows/release.yml`; the fork docs' `README.md` | The fork gets a release workflow of its own for `fork-*` tags (§10) |
@@ -141,7 +141,7 @@ rayx reads the pin in the directory it runs nsh in, so the two never disagree ab
    release of rayx was tested with (today `fork-0.2.0-4` at `327bb9e`). In an app, rayx says so on every command and
    shows the three lines that pin it; outside any app, `rayx setup` installs the default.
 
-Gamify needs no change for this: its `Cargo.lock` already names
+The first app needs no change for this: its `Cargo.lock` already names
 `git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea…` for every NSH package.
 
 ### 4.2 The store
@@ -224,7 +224,7 @@ them prebuilt.
 5. **Process:** on Unix rayx `exec`s nsh, so a process manager (Aspire, a terminal, a test harness) that stops rayx
    stops nsh. On Windows it waits for nsh and exits with nsh's code.
 
-Scripts that need the binary itself, such as Gamify's Playwright support, call `rayx nsh path`. It prints the CLI
+Scripts that need the binary itself, such as the first app's Playwright support, call `rayx nsh path`. It prints the CLI
 of the current project's pin, installing it first when it is missing.
 
 ### 4.5 Setup and doctor
@@ -241,10 +241,10 @@ of the current project's pin, installing it first when it is missing.
 
 - **A path dependency on an NSH checkout** (§4.1) is how to work on the fork against an app: rayx runs
   `cargo build --release -p nsh-cli` in that checkout and runs its `target/release/nsh`, without copying anything
-  into the store. Projects that must not depend on paths (Gamify, RayX) keep their own rule against it.
+  into the store. Projects that must not depend on paths (the first app, RayX) keep their own rule against it.
 - **`RAYX_NSH=<path>`** runs that binary instead of resolving a pin, with a warning on every command:
   `rayx: RAYX_NSH=<path> replaces the project's nsh 327bb9ea65d0`. It is for trying a locally built CLI against a
-  project that is pinned to a tag. It replaces Gamify's `NSH_CLI` and `NSH_E2E_CLI`.
+  project that is pinned to a tag. It replaces the first app's `NSH_CLI` and `NSH_E2E_CLI`.
 
 ### 4.7 New apps
 
@@ -255,7 +255,7 @@ every later `rayx` command in it finds the same nsh:
    templates are the only ones in 1.0.0: `mixed` (TSX with a Rust crate at the app's root, the shape of a RayX app,
    and rayx's default), `ts` and `rust`.
 2. For `mixed` and `rust`, write `.cargo/config.toml` in the app: a `[patch.crates-io]` entry for every NSH crate of
-   the default pin (its `crates/nsh-*`), pointing at its git URL and tag, as Gamify's does. A store entry from a
+   the default pin (its `crates/nsh-*`), pointing at its git URL and tag, as the first app's does. A store entry from a
    release has no checkout to list them from, so the defaults table carries the default pin's crate list with the pin.
    Then `cargo generate-lockfile`, so `Cargo.lock` holds the pin (§4.1).
 3. For `ts`, which has no Cargo project, write `rayx.toml` with the default pin's `[nsh]` table (D7, §4.1).
@@ -277,7 +277,7 @@ slices, run after step 2. What such a template contains is not designed here.
 | `rayx fmt [--check]` | Unchanged | |
 | `rayx app [-C <dir>] [--no-install] <command> …` | Runs the project's nsh: `init`, `build`, `check`, `dev`, `run`, `test`, `package`, `publish`, `keygen`, `certify`, `verify`, `revoke`, `symbolicate` | Replaces the old grammar (`rayx app <dir> build wasm`); targets are nsh's (`--target web`) |
 | `rayx nsh status\|path\|install\|prune` | The pin and its store entry, the CLI's path, installing, removing entries | New |
-| `rayx serve [--dir <site>] [--port <port>]` | A static host for what `nsh package --target web` writes: `.wasm` as `application/wasm`, `/health`, nothing outside the site | New; Gamify's `xtask web serve` |
+| `rayx serve [--dir <site>] [--port <port>]` | A static host for what `nsh package --target web` writes: `.wasm` as `application/wasm`, `/health`, nothing outside the site | New; the first app's `xtask web serve` |
 
 The old grammar (`build|run|pack|publish|deploy|test|assets` for `host|windows|linux|macos|mobile|ios|android|wasm`)
 is not kept as aliases. Its options (Android size knobs, the DevKit, `--webgpu`) mean nothing for NSH, and a
@@ -291,7 +291,7 @@ half-translation would hide nsh's own flags.
 | base, macOS | Command Line Tools, Homebrew | Unchanged |
 | base, Linux | 24 apt packages, including gpux's X11, Wayland and Vulkan libraries | NSH's: `build-essential`, `pkg-config`, `git`, `curl`, `clang`, `llvm`, `libclang-dev`, `libgtk-4-dev`, `libwebkitgtk-6.0-dev` and GStreamer's plugins (the packages NSH's release workflow installs, plus what its docs list). GTK 4.14 and WebKitGTK 6.0 mean Ubuntu 24.04 or Debian 13 and later |
 | base, Windows | winget, Build Tools, the VC++ redistributable, LLVM and its `PATH`, `fxc.exe` on `PATH`, rustup | Drops `fxc.exe` (gpux's shader compiler); adds a WebView2 probe (`Microsoft.EdgeWebView2Runtime`, already part of Windows 11) |
-| `--web` | The nightly with `rust-src` (threaded wasm), wasm32 on the project toolchain, `wasm-bindgen-cli` at the lock's version, Homebrew's LLVM on macOS | No nightly (D3). wasm32, `wasm-bindgen-cli` when the lock has `wasm-bindgen` (Gamify: 0.2.129), Homebrew's LLVM on macOS (Linux and Windows have LLVM in base) |
+| `--web` | The nightly with `rust-src` (threaded wasm), wasm32 on the project toolchain, `wasm-bindgen-cli` at the lock's version, Homebrew's LLVM on macOS | No nightly (D3). wasm32, `wasm-bindgen-cli` when the lock has `wasm-bindgen` (the first app: 0.2.129), Homebrew's LLVM on macOS (Linux and Windows have LLVM in base) |
 | `--test` | Node, pnpm, the project's Playwright package and its Chromium; xvfb on Linux | Unchanged, and that Chromium also serves `nsh test --target web` (§6.1) |
 | `--ios` | Xcode with its license and first launch, the Simulator runtime, XcodeGen, `aarch64-apple-ios[-sim]` | Drops XcodeGen (nsh generates its hosts); adds `aarch64-apple-ios-macabi` for Catalyst |
 | `--android` | JDK, `JAVA_HOME`, Android Studio, the SDK with platform 34 and an NDK, emulator, AVD, acceleration, `cargo-ndk`, two Android targets | Platform 35 and build-tools 35.0.1 (nsh's `TARGET_SDK` and its own hint); the targets `aarch64-linux-android`, `armv7-linux-androideabi` and `x86_64-linux-android`; drops `cargo-ndk`, since nsh drives the NDK itself |
@@ -328,7 +328,7 @@ then the built-in default (`old: src/project/pins.rs`).
 | `ubuntu` | none | 24.04 | |
 | `web_toolchain`, `playwright`, `android_ndk_api` | | | Removed: only the old pipeline used them |
 
-`[workspace.metadata.rayx] tools-node`, the Playwright package's directory, stays; Gamify's is `tests/e2e`.
+`[workspace.metadata.rayx] tools-node`, the Playwright package's directory, stays; the first app's is `tests/e2e`.
 
 ## 8. What ports from RayX.CLI.Old
 
@@ -369,17 +369,17 @@ The old repository's AgentX decisions that still hold (one `Runner`, one setup p
 layer and its records, release-plz with dist) move into this repository's memory when the epic starts; the
 app-pipeline ones stay behind.
 
-## 9. What moves out of Gamify's xtask
+## 9. What moves out of the first app's xtask
 
-| Gamify today | With the new rayx |
+| The first app today | With the new rayx |
 |---|---|
 | The README's prerequisites: the fork CLI through `cargo install --git … --tag …`, Homebrew's LLVM, `wasm-bindgen-cli`, `~/.cargo/bin` first on `PATH` | `rayx setup --web --ios --test` |
-| `cargo xtask nsh verify` (`gamify: src/frontend/xtask/src/nsh.rs`): one fork tag in the patches and the lock, the installed CLI from that tag and first on `PATH`, the tag pushed | Removed. The pin is the lock's commit and rayx runs exactly that build; Cargo keeps the patches and the lock in agreement, and a tag that is not pushed fails rayx's fetch |
-| `cargo xtask deps verify` (`deps.rs`) | Stays: its rules (the dXn and RayX tags, no `rayx` or `gpux`, services free of `nsh-core`) are Gamify's. Its "one NSH source" rule is also rayx's pin rule |
+| `cargo xtask nsh verify` (`app: src/frontend/xtask/src/nsh.rs`): one fork tag in the patches and the lock, the installed CLI from that tag and first on `PATH`, the tag pushed | Removed. The pin is the lock's commit and rayx runs exactly that build; Cargo keeps the patches and the lock in agreement, and a tag that is not pushed fails rayx's fetch |
+| `cargo xtask deps verify` (`deps.rs`) | Stays: its rules (the dXn and RayX tags, no `rayx` or `gpux`, services free of `nsh-core`) are the app's. Its "one NSH source" rule is also rayx's pin rule |
 | `web.rs`: `nsh_cli()` (`NSH_CLI`), `outside_cargo`, `wasm_toolchain` | Moves into rayx (§4.4). `NSH_CLI` goes |
 | `cargo xtask web dev`: writes `config/runtime.json`, then `exec`s `nsh run . --target web --strict-port --port $PORT` | Writes the config, then `exec`s `rayx app run . --target web --strict-port --port $PORT`. The AppHost does not change |
 | `cargo xtask web serve [--package]`: `nsh package` inside `with_config`, then its own static server | `--package` stays in xtask (it needs the config) and runs `rayx app package . --target web --out …`; serving becomes `rayx serve --dir … --port $PORT` |
-| `xtask config`, `assets`, `tokens`, `quality` | Stay: Gamify's configuration, GameX's assets, its theme and its quality gates. `quality frontend` drops `nsh verify` and runs `rayx app check .` |
+| `xtask config`, `assets`, `tokens`, `quality` | Stay: the app's configuration, GameX's assets, its theme and its quality gates. `quality frontend` drops `nsh verify` and runs `rayx app check .` |
 | Playwright's `forkCli` (a second CLI install under `artifacts-temp/nsh-cli/<tag>`), `NSH_E2E_CLI`, the tag in `support/app.ts` and four specs, `unlockNsh` | `rayx nsh path` |
 | `quality.yml`: `NSH_FORK_TAG`, `brew install llvm`, `cargo install … nsh-cli`, `wasm-bindgen-cli`, Playwright's Chromium | Install rayx, then `rayx setup --web --test --yes` |
 
@@ -387,7 +387,7 @@ The fork tag is written in seven files besides `Cargo.lock` today (`.cargo/confi
 `tests/e2e/support/app.ts` and four specs); afterwards only in `.cargo/config.toml`.
 
 `xtask tokens`, the design-token compiler, would suit any NSH app with a `design/tokens.json`, but it mirrors NSH
-0.2.0's built-in colours and Tailwind palette. It stays in Gamify until a second app needs it.
+0.2.0's built-in colours and Tailwind palette. It stays in the first app until a second app needs it.
 
 ## 10. Fork releases (D6)
 
@@ -431,7 +431,7 @@ so `sync-main.sh upstream` warns when a sync changes `release.yml`.
 **The fork docs change with it:** the `private/fork-docs` README describes `fork/*`, and its tag section says that a
 tag now produces a release, replacing "reinstall the CLI with `cargo install`" with `rayx setup`.
 
-**The first release** is a run by hand for `fork-0.2.0-4`, so Gamify's current pin downloads before the next tag.
+**The first release** is a run by hand for `fork-0.2.0-4`, so the first app's current pin downloads before the next tag.
 
 ## 11. Distribution and the move from the old rayx
 
@@ -476,7 +476,7 @@ into a temporary directory.
   source, into a temporary `RAYX_HOME`, then `rayx app build` of a fixture app, `rayx app run --target web` until `/nsh.version` answers, and
   `rayx app test --target web`. On the Mac also macOS and the iOS simulator; Linux in a Lima guest; Windows and WSL by
   hand, logged in `docs/manual-verification.md` as the old rayx does.
-- **Consumer proof:** Gamify on rayx (§9), with its Playwright specs and AppHost frontend tests passing on macOS.
+- **Consumer proof:** the first app on rayx (§9), with its Playwright specs and AppHost frontend tests passing on macOS.
 
 ## 13. Risks
 
@@ -501,8 +501,8 @@ All answered: Q1 (D4), Q2 (D6), Q3 (D7), Q4 (D15) and Q5 (D5). Nothing is open.
 The AgentX epic `rayx-1-0` (`.agentx/tasks/rayx-1-0/`) refines this outline into nine sprints: it splits the port in
 two, moves the NSH set changes into the port, and adds a proof sprint and an owner-run sprint. Its plan is the
 authority for the order of work. It changes this repository, the fork (`fork/release` and `private/fork-docs`) and,
-for its install links, `RayX.CLI.Old`'s README. It proves rayx against Gamify without changing it; Gamify's own move
-to rayx (S6 below) is a follow-up epic in Gamify.
+for its install links, `RayX.CLI.Old`'s README. It proves rayx against the first app without changing it; the app's own
+move to rayx (S6 below) is a follow-up epic in that app.
 
 The outline as first proposed:
 
@@ -513,6 +513,6 @@ The outline as first proposed:
 | S3 The pin and the store | §4.1 to §4.3 (releases first, source as the fallback), `rayx.toml`, `rayx nsh status\|path\|install\|prune`, the base-set `nsh` step, the doctor lines | `nsh_*` and `setup_nsh`; real installs of `fork-0.2.0-4` from its release and from source |
 | S4 Running nsh | `rayx app` (§4.4), the prerequisite map (§6.1), `RAYX_NSH`, path checkouts, `rayx new` (§4.7), `rayx serve` | `nsh_run`, `app_prereqs`, `new_app`, `serve`; an app made by `rayx new`, built and run on the web through rayx |
 | S5 Sets for NSH | §6: Linux, Windows, web, test, iOS, Android | `setup_*`; `rayx setup --all --check` on macOS and in a Lima guest |
-| S6 Gamify on rayx | §9, in Gamify | Gamify's Playwright specs and AppHost frontend tests; web, macOS and the iOS simulator on the Mac; Linux in Lima; Windows and WSL as available |
+| S6 The first app on rayx | §9, in that app | Its Playwright specs and AppHost frontend tests; web, macOS and the iOS simulator on the Mac; Linux in Lima; Windows and WSL as available |
 | S7 Release 1.0.0 | README, `docs/releasing.md`, the old repository's links (§11) | 1.0.0 through release-plz and dist; the installer over an old 1.4.1 install keeps its records and guests |
 | Later | App templates for `rayx new` (§4.7) | |

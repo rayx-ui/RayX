@@ -622,7 +622,7 @@ fn the_nsh_search_finds_app_output_and_never_looks_inside_target_node_modules_or
 #[test]
 fn clean_deletes_the_nsh_build_output_of_apps_and_nothing_merely_named_like_it() {
     let output = Outcome::success().with_stdout(format!(
-        "DF\t{}\t{}\nOUT\t{}\t/home/dev/Gamify/src/frontend/.nsh\nOUT\t{}\t/home/dev/Gamify/src/frontend/target\nOUT\t{}\t/home/dev/hello/.nsh\n",
+        "DF\t{}\t{}\nOUT\t{}\t/home/dev/notes/src/frontend/.nsh\nOUT\t{}\t/home/dev/notes/src/frontend/target\nOUT\t{}\t/home/dev/hello/.nsh\n",
         20 * GIB,
         80 * GIB,
         3 * GIB,
@@ -649,7 +649,7 @@ fn clean_deletes_the_nsh_build_output_of_apps_and_nothing_merely_named_like_it()
         .collect();
     assert_eq!(removed.len(), 3, "{removed:?}");
     assert!(
-        removed[0].contains("rm -rf -- '/home/dev/Gamify/src/frontend/.nsh'"),
+        removed[0].contains("rm -rf -- '/home/dev/notes/src/frontend/.nsh'"),
         "{removed:?}"
     );
     assert!(removed[2].contains("/home/dev/hello/.nsh"), "{removed:?}");

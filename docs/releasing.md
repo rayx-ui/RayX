@@ -77,7 +77,7 @@ feat(screen)!: Name the screen scope hook use_scope
 
 `use_screen_scope` is gone; `use_scope` does the same.
 
-Migration: Gamify: replace use_screen_scope with use_scope in the shell and home slices
+Migration: apps: replace use_screen_scope with use_scope where a screen makes its scope
 ```
 
 The changelog prints each `Migration:` footer under its entry, so the migration reaches the GitHub
@@ -173,7 +173,7 @@ archives downloaded by hand in a browser, not the installers' downloads.
 
 ## Consuming a release
 
-Consumers, Gamify first among them, depend on a release tag, never on a branch, a commit, a path or
+Consumers depend on a release tag, never on a branch, a commit, a path or
 crates.io, and install the `rayx` of the same release:
 
 ```toml
@@ -185,8 +185,8 @@ rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH
 ```
 
 `Cargo.lock` records the exact commit. Bump the tag by hand to take a new release; the latest one is
-on the repository's Releases page. A change Gamify needs is released here first; then Gamify bumps
-its tag and validates its affected slices.
+on the repository's Releases page. A change a consumer needs is released here first; then the
+consumer bumps its tag and validates what the change touches.
 
 ## Pushing to `main`
 

@@ -9,12 +9,12 @@ The automated proofs are the ignored `proof_*` groups, run on demand:
 cargo test -p rayx-cli --test proof_nsh_install -- --ignored --test-threads=1
 cargo test -p rayx-cli --test proof_app_web -- --ignored --test-threads=1
 cargo test -p rayx-cli --test proof_app_apple -- --ignored --test-threads=1
-cargo test -p rayx-cli --test proof_gamify -- --ignored --test-threads=1
+RAYX_PROOF_APP=<app> cargo test -p rayx-cli --test proof_existing_app -- --ignored --test-threads=1
 ```
 
 `proof_nsh_install` installs upstream's `v0.2.0` release and builds the fork from source;
 `proof_app_web` and `proof_app_apple` make a plain NSH app with `rayx new --nsh-only` and build, run,
-test and package it; `proof_gamify` reads Gamify's frontend and changes none of its tracked files. Each uses a
+test and package it; `proof_existing_app` reads the app at `RAYX_PROOF_APP` and changes none of its tracked files. Each uses a
 temporary `RAYX_HOME`, so a run leaves the machine's store alone.
 
 ## Linux (a Lima guest on the Mac)
@@ -101,7 +101,7 @@ distribution, in the clone, Playwright's Chromium as in the Lima guest
 | The release runs | `gh workflow run fork-release.yml --repo dXnSix/nsh -f tag=fork-0.2.0-4` | |
 | Four archives and their digests | `gh release view fork-0.2.0-4 --repo dXnSix/nsh` lists `nsh-macos-arm64.tar.gz`, `nsh-linux-x86_64.tar.gz`, `nsh-linux-arm64.tar.gz` and `nsh-windows-x86_64.zip` with a `.sha256` each (`nsh-windows-arm64.zip` when it built) | |
 | The archive's CLI | `nsh/bin/nsh --version` from `nsh-macos-arm64.tar.gz` prints `nsh 0.2.0 (327bb9e)` | |
-| A distribution entry | `rayx nsh install` in Gamify's `src/frontend`, then `rayx nsh status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
+| A distribution entry | `rayx nsh install` in an app pinned to `fork-0.2.0-4`, then `rayx nsh status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
 
 ### The first RayX release with `rayx`
 

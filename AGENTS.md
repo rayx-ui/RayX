@@ -96,18 +96,17 @@ when it moved here.
   is documented in the same change. Real proofs, which download or build NSH and run apps, are
   the `#[ignore]`d `proof_*` groups, run on demand:
   `cargo test -p rayx-cli --test proof_<name> -- --ignored`.
-- **Consumers.** Gamify and RayX's apps run through `rayx`: a change to `rayx app`, the pins,
-  `rayx.toml` or the store layout needs the matching consumer change; keep them paired.
+- **Consumers.** RayX's apps run through `rayx`: a change to `rayx app`, the pins, `rayx.toml` or
+  the store layout needs the matching change in the apps; keep them paired.
 - **Ported code** from RayX.CLI.Old names the commit it came from (`d006250`) in the commit
   message.
 
 ## Consumers
 
-Consumers, the sportsbook demo Gamify (`../../Six/Six.Gamify`) first among them, depend on release
-tags only:
+Consumers depend on release tags only:
 `rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` for apps (or `rayx_app`), and
-`rayx_core` from the same tag for service crates. A change Gamify needs is released here first; then Gamify bumps its
-tag by hand and validates its affected slices.
+`rayx_core` from the same tag for service crates. A change a consumer needs is released here first; then the consumer
+bumps its tag by hand and validates what the change touches.
 
 ## Commits
 
@@ -125,7 +124,7 @@ builds the `rayx` binaries for that tag and creates its GitHub Release; see
   change (`!` after the type or scope, or a `BREAKING CHANGE:` footer) → minor; other types ride
   along in the next release.
 - A breaking commit's body states the break and a `Migration:` footer tells each affected consumer
-  what to change (`Migration: Gamify: …`).
+  what to change (`Migration: <app>: …`).
 - `CHANGELOG.md` is written by release-plz; do not edit it in feature commits.
 - A release is the merge of release-plz's release pull request, after checking that it proposes
   the expected version and changes only `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`.

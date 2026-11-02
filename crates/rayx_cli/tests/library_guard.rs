@@ -6,7 +6,7 @@
 //! - `rayx-cli`'s dependency tree (`cargo tree -p rayx-cli`, every edge kind and target) holds a
 //!   RayX, gpux, GPUI or NSH crate (`rayx`, `rayx_core`, `rayx_runtime`, `rayx_app*`, `gpux*`,
 //!   `gpui*`, `nsh-*`);
-//! - non-test source under `src/` names `gpux`, `gpui`, `GameX` or `Gamify`, or reads
+//! - non-test source under `src/` names `gpux`, `gpui` or `GameX`, or reads
 //!   `env!("CARGO_MANIFEST_DIR")`;
 //! - an allowlist entry matches nothing any more.
 //!
@@ -30,7 +30,7 @@ const DENIED_CRATE_PREFIXES: &[&str] = &["rayx_app", "gpux", "gpui", "nsh_"];
 
 /// Name families non-test source must not contain: the gpux and GPUI libraries and the apps built
 /// on NSH.
-const DENIED_SOURCE_PREFIXES: &[&str] = &["gpux", "gpui", "gamex", "gamify"];
+const DENIED_SOURCE_PREFIXES: &[&str] = &["gpux", "gpui", "gamex"];
 
 /// The one compile-time path non-test source must not read: it ties rayx to its own checkout.
 const MANIFEST_DIR: &str = "env!(\"CARGO_MANIFEST_DIR\")";
@@ -451,7 +451,6 @@ fn source_naming_a_library_or_an_app_fails_with_its_line() {
         ("// Draws with gpux.", "gpux"),
         ("const T: &str = \"gpui\";", "gpui"),
         ("/// The GameX assets.", "GameX"),
-        ("const APP: &str = \"Gamify\";", "Gamify"),
     ] {
         let project = fixture(|p| p.append("src/lib.rs", &format!("{planted}\n")));
         let report = source_report(&project.root, &[]);
@@ -513,7 +512,7 @@ mod support;
 mod tests {
     #[test]
     fn inside() {
-        let _ = ("gpux-fonts gpui Gamify { '{' }", env!("CARGO_MANIFEST_DIR"));
+        let _ = ("gpux-fonts gpui GameX { '{' }", env!("CARGO_MANIFEST_DIR"));
     }
 }
 
@@ -522,7 +521,7 @@ fn after() { let _ = "gpui"; }
         );
         p.write(
             "src/support.rs",
-            "pub const ROOT: &str = env!(\"CARGO_MANIFEST_DIR\"); // Gamify fixtures\n",
+            "pub const ROOT: &str = env!(\"CARGO_MANIFEST_DIR\"); // GameX fixtures\n",
         );
     });
     let report = source_report(&project.root, &[]);
@@ -539,7 +538,7 @@ fn a_test_only_module_of_a_named_file_skips_its_own_file_only() {
         p.append("src/lib.rs", "pub mod app;\npub mod store;\n");
         p.write("src/app.rs", "#[cfg(test)]\nmod store;\n");
         // The test-only module of `app.rs` lives in `src/app/`.
-        p.write("src/app/store.rs", "const FIXTURE: &str = \"Gamify\";\n");
+        p.write("src/app/store.rs", "const FIXTURE: &str = \"GameX\";\n");
         // `src/store.rs` is a real module of the library and is still scanned.
         p.write("src/store.rs", "const APP: &str = \"GameX\";\n");
     });

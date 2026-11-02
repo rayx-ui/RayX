@@ -24,10 +24,10 @@ Conventional Commits by release-plz.
 - *(cli)* Scaffold RayX apps with rayx new
 - *(cli)* Serve index.html for an app's own routes in rayx serve
 - *(runtime)* [**breaking**] Chain add_selection like the other add_* methods
-  - Migration: Gamify: nothing to change, it does not register the selection service; an app that does drops the `?` (or `.unwrap()`) after `add_selection()`.
+  - Migration: an app that registers the selection service drops the `?` (or `.unwrap()`) after `add_selection()`.
 - *(runtime)* Keep history in the app's key-value store
 - *(runtime)* [**breaking**] Give navigation one location for all its regions, taken in from the platform
-  - Migration: Gamify: nothing to change, it implements no `NavigationLocationSynchronizer`; one that does takes `synchronize(&self, location: &str, mode)` and may answer `location()` with the platform's location at startup.
+  - Migration: a `NavigationLocationSynchronizer` takes `synchronize(&self, location: &str, mode)` and may answer `location()` with the platform's location at startup.
 - *(rayx)* Put rayx_app::services in the prelude
 - *(app)* Keep the app's key-value store in NSH's storage
 - *(app)* Give TSX the navigation, storage, configuration, asset, font and platform services
@@ -39,7 +39,7 @@ Conventional Commits by release-plz.
 
 ### Refactoring
 - *(core)* [**breaking**] Remove ShutdownService and the AppScope, WindowScope and ViewScope wrappers
-  - Migration: Gamify: nothing to change, it uses none of them; a service that implemented `ShutdownService` releases what it holds in `Drop` instead.
+  - Migration: a service that implemented `ShutdownService` releases what it holds in `Drop` instead.
 
 ### Tests
 - *(cli)* Give the Lima check test a df of its own
@@ -71,16 +71,16 @@ Conventional Commits by release-plz.
 
 ### Build and CI
 - *(nsh)* [**breaking**] Pin NSH to fork-0.3.0-1
-  - Migration: Gamify: patch NSH to `fork-0.3.0-1` (or a newer `fork-0.3.0-*` tag) in `[patch.crates-io]`, depend on the NSH crates at `0.3.0`, and move its own NSH imports to NSH 0.3's modules (`nsh_core::ui::*` to `nsh_core::prelude` or `nsh_core::element`, TSX `nsh/device` and `nsh/animated` to `nsh`, `Input` to `nsh/base`).
+  - Migration: patch NSH to `fork-0.3.0-1` (or a newer `fork-0.3.0-*` tag) in `[patch.crates-io]`, depend on the NSH crates at `0.3.0`, and move the app's own NSH imports to NSH 0.3's modules (`nsh_core::ui::*` to `nsh_core::prelude` or `nsh_core::element`, TSX `nsh/device` and `nsh/animated` to `nsh`, `Input` to `nsh/base`).
 
 ### Features
 - *(core)* [**breaking**] Add configuration sources, .NET's options model and RayXAppBuilder
-  - Migration: Gamify: register options with `services_mut().add_options::<T>()` (`.bind("Section")`, `.configure(..)`, `.validate(..)`) or `services_mut().configure::<T>(move |o| *o = options.clone())` instead of `configuration_mut().options_value(options)`, and read them with `options::<T>()?` instead of `required_options::<T>()?`.
-  - Migration: Gamify: replace the test builders that implement `AppBuilder` and call `build_options_sync` and `with_added_options` with `RayXAppBuilder::new()` and `.build()?`, and rename `NshAppBuilder` to `RayXAppBuilder` (`set_app` takes `fn(RayXAppBuilder) -> RayXAppBuilder`).
+  - Migration: register options with `services_mut().add_options::<T>()` (`.bind("Section")`, `.configure(..)`, `.validate(..)`) or `services_mut().configure::<T>(move |o| *o = options.clone())` instead of `configuration_mut().options_value(options)`, and read them with `options::<T>()?` instead of `required_options::<T>()?`.
+  - Migration: replace the test builders that implement `AppBuilder` and call `build_options_sync` and `with_added_options` with `RayXAppBuilder::new()` and `.build()?`, and rename `NshAppBuilder` to `RayXAppBuilder` (`set_app` takes `fn(RayXAppBuilder) -> RayXAppBuilder`).
 
 ### Refactoring
 - *(core)* [**breaking**] Rename rayx_app_di to rayx_core
-  - Migration: Gamify: depend on `rayx_core` instead of `rayx_app_di` (same tag) and rename the `rayx_app_di::` paths to `rayx_core::`, including the xtask's dependency check.
+  - Migration: depend on `rayx_core` instead of `rayx_app_di` (same tag) and rename the `rayx_app_di::` paths to `rayx_core::`, including any dependency checks.
 
 ## [0.4.0] - 2026-10-23
 
@@ -105,7 +105,7 @@ GPUI and gpux to NSH; the GPUI-based RayX is now `RayX.Old`. The workspace start
 
 - `rayx_app` activates view models with `dxn_reactive` `v1.1.0` (formerly `rayx_reactive`) and
   re-exports its `ActivatableViewModel`, `ActivationToken` and `ViewModelActivator`.
-- The workspace builds with the NSH fork's tag `fork-0.2.0-4`, the one Gamify uses; the NSH layer
+- The workspace builds with the NSH fork's tag `fork-0.2.0-4`; the NSH layer
   test builds its engine config with `EngineConfig::new`, which that tag added.
 
 ### Migration

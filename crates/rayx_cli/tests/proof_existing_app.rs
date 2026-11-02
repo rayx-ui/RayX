@@ -1,14 +1,14 @@
-//! Gamify through rayx (PROOF-3), ignored by default. It reads Gamify's frontend
-//! (`RAYX_PROOF_GAMIFY`, default `../../Six/Six.Gamify/src/frontend` from the repository's root) and
-//! changes none of its tracked files: rayx shows the pin from Gamify's `Cargo.lock`, installs it
-//! into a temporary `RAYX_HOME` (a source build of several minutes while the fork has no release),
-//! type checks the app, packages it for the web and serves the package.
+//! An existing app through rayx, ignored by default. It reads the NSH app at `RAYX_PROOF_APP` (the
+//! directory with its `nsh.json`, inside a git checkout) and changes none of its tracked files:
+//! rayx shows the pin from the app's project, installs it into a temporary `RAYX_HOME` (a source
+//! build of several minutes while the fork has no release), type checks the app, packages it for
+//! the web and serves the package.
 //!
-//! Gamify's app imports `config/runtime.json`, which its `cargo xtask config` writes; the proof
-//! needs that file and never writes it.
+//! Generated files the app needs to build (its configuration, for one) must exist before the
+//! proof runs; it never writes them.
 //!
 //! ```text
-//! cargo test -p rayx-cli --test proof_gamify -- --ignored --test-threads=1
+//! RAYX_PROOF_APP=<app> cargo test -p rayx-cli --test proof_existing_app -- --ignored --test-threads=1
 //! ```
 
 mod common;
@@ -20,24 +20,19 @@ use std::time::Duration;
 use common::Workspace;
 use common::proof::{Running, free_port, get, rayx, rayx_ok, rayx_output, wait_for_ok};
 
-fn frontend() -> PathBuf {
-    let dir = std::env::var_os("RAYX_PROOF_GAMIFY").map_or_else(
-        || Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../../Six/Six.Gamify/src/frontend"),
-        PathBuf::from,
-    );
-    std::fs::canonicalize(&dir).unwrap_or_else(|_| {
-        panic!(
-            "no Gamify frontend at {}: set RAYX_PROOF_GAMIFY to its src/frontend",
-            dir.display()
-        )
-    })
+fn app_dir() -> PathBuf {
+    let dir = std::env::var_os("RAYX_PROOF_APP")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| panic!("set RAYX_PROOF_APP to the directory of an NSH app"));
+    std::fs::canonicalize(&dir)
+        .unwrap_or_else(|_| panic!("no app at {}: set RAYX_PROOF_APP", dir.display()))
 }
 
-/// Gamify's tracked files as git sees them: the status of tracked paths and the diff against
+/// The app's tracked files as git sees them: the status of tracked paths and the diff against
 /// `HEAD`, so work in progress there is compared, not required to be committed.
 fn tracked_state(dir: &Path) -> (String, Vec<u8>) {
     let git = |args: &[&str]| {
-        // `--no-optional-locks`: a status refreshes Gamify's index otherwise, under the owner's
+        // `--no-optional-locks`: a status refreshes the app's index otherwise, under the owner's
         // feet.
         let output = Command::new("git")
             .arg("--no-optional-locks")
@@ -71,36 +66,35 @@ fn find(dir: &Path, suffix: &str) -> Option<PathBuf> {
 }
 
 #[test]
-#[ignore = "installs nsh and packages Gamify for the web (network, many minutes)"]
-fn gamify_shows_its_pin_checks_packages_and_serves_through_rayx_unchanged() {
-    let gamify = frontend();
-    assert!(
-        gamify.join("config/runtime.json").is_file(),
-        "Gamify has no config/runtime.json: run `cargo xtask config` in {} first",
-        gamify.display()
-    );
-    let before = tracked_state(&gamify);
+#[ignore = "installs nsh and packages an existing app for the web (network, many minutes)"]
+fn an_existing_app_shows_its_pin_checks_packages_and_serves_through_rayx_unchanged() {
+    let app = app_dir();
+    let before = tracked_state(&app);
     let home = Workspace::empty();
 
-    let status = rayx_output(&home.root, &gamify, &["nsh", "status"]);
+    let status = rayx_output(&home.root, &app, &["nsh", "status"]);
     let status_text = String::from_utf8_lossy(&status.stdout).into_owned();
     assert!(status.status.success(), "{status_text}");
     assert!(
-        status_text.contains("fork-0.3.0-3 (57713c3)") && status_text.contains("project"),
-        "{status_text}"
+        status_text.contains("project"),
+        "the pin comes from the app's project: {status_text}"
     );
 
-    rayx_ok(&home.root, &gamify, &["app", "check", "."]);
+    rayx_ok(&home.root, &app, &["app", "check", "."]);
 
     let out = Workspace::empty();
     let out_text = out.root.display().to_string();
     rayx_ok(
         &home.root,
-        &gamify,
+        &app,
         &["app", "package", ".", "--target", "web", "--out", &out_text],
     );
-    let site = out.path("Gamify");
-    assert!(site.join("index.html").is_file(), "{}", site.display());
+    let index = find(&out.root, "index.html").expect("the package has an index.html");
+    let site = out.root.join(
+        index
+            .parent()
+            .expect("index.html is in the package's directory"),
+    );
     let wasm = find(&site, ".wasm").expect("the package has a .wasm");
 
     let port = free_port();
@@ -141,7 +135,7 @@ fn gamify_shows_its_pin_checks_packages_and_serves_through_rayx_unchanged() {
     );
     drop(serve);
 
-    let after = tracked_state(&gamify);
-    assert_eq!(before.0, after.0, "the status of Gamify's tracked files");
-    assert!(before.1 == after.1, "Gamify's tracked files changed");
+    let after = tracked_state(&app);
+    assert_eq!(before.0, after.0, "the status of the app's tracked files");
+    assert!(before.1 == after.1, "the app's tracked files changed");
 }

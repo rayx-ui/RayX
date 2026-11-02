@@ -17,7 +17,7 @@ fn build(
     let mut builder = RayXAppBuilder::new().add_application_configuration(configure);
     builder.configuration.add_value(json!({
         "RayX": { "Application": {
-            "name": "Gamify",
+            "name": "Notes",
             "motion": { "policy": "System" },
             "tooltips": { "showDelayMs": 250 },
             "someKeyFromElsewhere": true
@@ -35,7 +35,7 @@ fn settings_bind_from_the_section_then_code() {
         .required_service::<ApplicationConfigurationService>()
         .unwrap();
     let options = configuration.options();
-    assert_eq!(options.name, "Gamify");
+    assert_eq!(options.name, "Notes");
     assert_eq!(options.tooltips.show_delay_ms, 250);
     assert_eq!(options.tooltips.grace_period_ms, 300);
     assert!(configuration.layout_direction().is_rtl());
@@ -67,7 +67,7 @@ fn the_service_follows_configuration_reloads_but_not_its_name() {
     assert_eq!(configuration.snapshot().revision, 1);
 
     root.set("RayX:Application:Name", "Renamed");
-    assert_eq!(configuration.options().name, "Gamify");
+    assert_eq!(configuration.options().name, "Notes");
     assert_eq!(*heard.lock().unwrap(), vec![1]);
 }
 
