@@ -278,11 +278,31 @@ pub fn resolve_in(runner: &mut Runner, dir: &Path) -> Result<Pin, Unreadable> {
     })
 }
 
-/// Whether a lock package is one of NSH's crates: the defaults table's list (its `crates/nsh-*`)
-/// and `nsh-platform-gpui`, from NSH's separate `crates/gpui` workspace, as nsh lists them
-/// (`NSH_CRATES`). An app's own crates (`nsh-app-*`, from `nsh init`) are the app's, not NSH's.
+/// NSH's crates an app can depend on, as nsh lists them (`NSH_CRATES` in nsh-cli's
+/// `rust_app.rs`), `nsh-platform-gpui` from NSH's separate `crates/gpui` workspace included.
+pub const NSH_CRATES: &[&str] = &[
+    "nsh-macros",
+    "nsh-core",
+    "nsh-base",
+    "nsh-package",
+    "nsh-js",
+    "nsh-engine",
+    "nsh-testing",
+    "nsh-bundler",
+    "nsh-dev",
+    "nsh-platform-ios",
+    "nsh-platform-android",
+    "nsh-platform-linux",
+    "nsh-platform-macos",
+    "nsh-platform-windows",
+    "nsh-platform-web",
+    "nsh-platform-gpui",
+];
+
+/// Whether a lock package is one of NSH's crates ([`NSH_CRATES`]). An app's own crates
+/// (`nsh-app-*`, from `nsh init`) are the app's, not NSH's.
 pub fn is_nsh_crate(name: &str) -> bool {
-    DEFAULTS.nsh.crates.contains(&name) || name == "nsh-platform-gpui"
+    NSH_CRATES.contains(&name)
 }
 
 /// Reads a `Cargo.lock` source: `git+<url>?<kind>=<name>#<commit>`, `registry+…` at `version`.

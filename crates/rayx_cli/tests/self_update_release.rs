@@ -201,10 +201,7 @@ fn an_unanswerable_existence_check_names_the_reason_and_changes_nothing() {
 
 #[test]
 fn a_rayx_without_an_install_receipt_is_never_replaced() {
-    for exe in [
-        "/work/RayX/target/debug/rayx",
-        "/home/dev/.cargo/bin/rayx",
-    ] {
+    for exe in ["/work/RayX/target/debug/rayx", "/home/dev/.cargo/bin/rayx"] {
         let mut fake = Fake::new();
         fake.receipt = false;
         fake.exe = PathBuf::from(exe);

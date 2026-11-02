@@ -70,14 +70,17 @@ pub struct Defaults {
     pub nsh: DefaultNsh,
 }
 
-/// The nsh this release of `rayx` was tested with, used where a project pins none, with the NSH
-/// crates of that commit (the `crates/nsh-*` a new app's `[patch.crates-io]` lists).
+/// The nsh this release of `rayx` was tested with, used where a project pins none: the NSH that
+/// RayX's own `[patch.crates-io]` names (its tag and its crates, which a new app's
+/// `[patch.crates-io]` lists), so `rayx new` makes an app on the NSH its RayX release builds with.
+/// `tests/nsh_pin_rayx.rs` keeps the two equal.
 pub struct DefaultNsh {
     pub git: &'static str,
     pub tag: &'static str,
     pub commit: &'static str,
     /// The NSH crates' version at that commit.
     pub version: &'static str,
+    /// The NSH crates RayX patches, which a new app patches too.
     pub crates: &'static [&'static str],
 }
 
@@ -92,36 +95,17 @@ pub const DEFAULTS: Defaults = Defaults {
     ubuntu: "24.04",
     nsh: DefaultNsh {
         git: "https://github.com/dXnSix/nsh",
-        tag: "fork-0.2.0-4",
-        commit: "327bb9ea65d08ffac4af498cc7fbbfa18a1b3623",
-        version: "0.2.0",
+        tag: "fork-0.3.0-2",
+        commit: "15fdd2a3fb70b21193bb80796b08f39aac5e098c",
+        version: "0.3.0",
         crates: &[
             "nsh-base",
             "nsh-bundler",
-            "nsh-cli",
             "nsh-core",
-            "nsh-dev",
             "nsh-engine",
-            "nsh-ios-app",
-            "nsh-ios-host",
             "nsh-js",
-            "nsh-linux-app",
-            "nsh-linux-host",
-            "nsh-macos-app",
-            "nsh-macos-host",
             "nsh-macros",
-            "nsh-metal",
             "nsh-package",
-            "nsh-platform-android",
-            "nsh-platform-ios",
-            "nsh-platform-linux",
-            "nsh-platform-macos",
-            "nsh-platform-web",
-            "nsh-platform-windows",
-            "nsh-shader",
-            "nsh-testing",
-            "nsh-windows-app",
-            "nsh-windows-host",
         ],
     },
 };

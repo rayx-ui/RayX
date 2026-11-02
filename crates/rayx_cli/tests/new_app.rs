@@ -20,9 +20,9 @@ use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::project::pins::DEFAULTS;
 use rayx_cli::setup::FakeMachine;
 
-const ID: &str = "327bb9ea65d0";
+const ID: &str = "15fdd2a3fb70";
 const FORK_SOURCE: &str =
-    "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623";
+    "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c";
 
 fn new_args(argv: &[&str]) -> NewArgs {
     let mut full = vec!["rayx", "new"];
@@ -52,7 +52,7 @@ fn with_default(home: &Workspace) -> PathBuf {
             id: ID.into(),
             kind: Kind::Distribution,
             url: "u".into(),
-            reference: Some("fork-0.2.0-4".into()),
+            reference: Some("fork-0.3.0-2".into()),
             commit: Some(DEFAULTS.nsh.commit.into()),
             nsh: "0.2.0".into(),
             cli: "nsh/bin/nsh".into(),
@@ -75,7 +75,7 @@ fn machine(home: &Workspace) -> FakeMachine {
 fn runner(refuse: bool) -> Runner {
     Runner::record().responder(move |spec| {
         if spec.args == ["--version"] {
-            return Some(Outcome::success().with_stdout("nsh 0.2.0 (327bb9e)\n"));
+            return Some(Outcome::success().with_stdout("nsh 0.3.0 (15fdd2a)\n"));
         }
         if spec.args.first().is_some_and(|a| a == "init") {
             if refuse {
@@ -170,7 +170,7 @@ fn a_mixed_app_is_made_by_the_default_pins_nsh_init_and_pinned_through_its_lock(
     let patched: Vec<&str> = config
         .lines()
         .filter(|l| {
-            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"fork-0.2.0-4\" }")
+            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"fork-0.3.0-2\" }")
         })
         .collect();
     assert_eq!(patched.len(), DEFAULTS.nsh.crates.len());
@@ -251,7 +251,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     let mac = run(&["hello"], &work.root, &home, Os::MacOs, false);
     assert!(
         mac.out
-            .contains("Created hello, pinned to nsh fork-0.2.0-4 (327bb9e). Next:"),
+            .contains("Created hello, pinned to nsh fork-0.3.0-2 (15fdd2a). Next:"),
         "{}",
         mac.out
     );
@@ -294,7 +294,7 @@ fn a_missing_default_pin_is_installed_first() {
     assert!(created.result.is_err());
     let first = created.runner.lines().first().cloned().unwrap_or_default();
     assert!(
-        first.contains("releases/download/fork-0.2.0-4/nsh-macos-arm64.tar.gz.sha256"),
+        first.contains("releases/download/fork-0.3.0-2/nsh-macos-arm64.tar.gz.sha256"),
         "{first}"
     );
     assert!(
@@ -328,13 +328,13 @@ fn the_files_rayx_writes_name_the_default_pin() {
         "{config}"
     );
     assert!(config.contains("[patch.crates-io]\n"), "{config}");
-    assert!(config.contains("fork-0.2.0-4 at 327bb9e"), "{config}");
+    assert!(config.contains("fork-0.3.0-2 at 15fdd2a"), "{config}");
     let table = rayx_toml(&DEFAULTS.nsh);
     for line in [
         "[nsh]",
         "git = \"https://github.com/dXnSix/nsh\"",
-        "tag = \"fork-0.2.0-4\"",
-        "commit = \"327bb9ea65d08ffac4af498cc7fbbfa18a1b3623\"",
+        "tag = \"fork-0.3.0-2\"",
+        "commit = \"15fdd2a3fb70b21193bb80796b08f39aac5e098c\"",
     ] {
         assert!(table.contains(line), "{table}");
     }

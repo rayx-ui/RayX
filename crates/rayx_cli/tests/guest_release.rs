@@ -33,9 +33,7 @@ fn r(text: &str) -> Release {
 }
 
 fn installer(version: &str) -> String {
-    format!(
-        "https://github.com/rayx-ui/RayX/releases/download/v{version}/rayx-cli-installer.sh"
-    )
+    format!("https://github.com/rayx-ui/RayX/releases/download/v{version}/rayx-cli-installer.sh")
 }
 
 fn parse(args: &[&str]) -> Result<SetupArgs, clap::Error> {

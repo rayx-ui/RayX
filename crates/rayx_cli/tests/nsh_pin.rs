@@ -13,9 +13,9 @@ use rayx_cli::nsh::pin::{
 };
 use rayx_cli::project::pins::DEFAULTS;
 
-const COMMIT: &str = "327bb9ea65d08ffac4af498cc7fbbfa18a1b3623";
+const COMMIT: &str = "15fdd2a3fb70b21193bb80796b08f39aac5e098c";
 const FORK_TAG: &str =
-    "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d08ffac4af498cc7fbbfa18a1b3623";
+    "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2#15fdd2a3fb70b21193bb80796b08f39aac5e098c";
 
 /// Reads the pin with real cargo queries (`locate-project`, `metadata`); nothing is installed.
 fn pin_of(dir: &Path) -> anyhow::Result<Pin> {
@@ -38,20 +38,20 @@ fn a_fork_tag_in_the_lock_is_a_git_pin_with_a_12_digit_id() {
         pin.source,
         Source::Git {
             url: "https://github.com/dXnSix/nsh".into(),
-            reference: Reference::Tag("fork-0.2.0-4".into()),
+            reference: Reference::Tag("fork-0.3.0-2".into()),
             commit: COMMIT.into(),
         }
     );
     assert_eq!(pin.origin, Origin::Project);
     assert_eq!(pin.origin.as_str(), "project");
-    assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
-    assert_eq!(pin.version.as_deref(), Some("0.2.0"));
-    assert_eq!(pin.label(), "fork-0.2.0-4 (327bb9e)");
+    assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
+    assert_eq!(pin.version.as_deref(), Some("0.3.0"));
+    assert_eq!(pin.label(), "fork-0.3.0-2 (15fdd2a)");
     assert_eq!(
         pin.release(),
         Some(ReleaseSource {
             repository: "dXnSix/nsh".into(),
-            tag: "fork-0.2.0-4".into(),
+            tag: "fork-0.3.0-2".into(),
         })
     );
     assert_eq!(pin.dir, app.root, "the pin is read where nsh will run");
@@ -65,8 +65,8 @@ fn a_branch_or_rev_source_is_a_git_pin_without_a_release() {
     for (query, reference) in [
         ("branch=feat%2Fx", Reference::Branch("feat/x".into())),
         ("branch=main", Reference::Branch("main".into())),
-        ("tag=fork%2D0.2.0-4", Reference::Tag("fork-0.2.0-4".into())),
-        ("rev=327bb9e", Reference::Rev("327bb9e".into())),
+        ("tag=fork%2D0.3.0-2", Reference::Tag("fork-0.3.0-2".into())),
+        ("rev=15fdd2a", Reference::Rev("15fdd2a".into())),
     ] {
         let app = fork_app_with(&format!(
             "git+https://github.com/dXnSix/nsh?{query}#{COMMIT}"
@@ -79,7 +79,7 @@ fn a_branch_or_rev_source_is_a_git_pin_without_a_release() {
             panic!("a git pin: {pin:?}");
         };
         assert_eq!(found, &reference);
-        assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
+        assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
         if !query.starts_with("tag=") {
             assert_eq!(
                 pin.release(),
@@ -110,7 +110,7 @@ fn another_git_url_is_a_git_pin_with_a_release_only_on_github() {
     };
     assert_eq!(reference, &Reference::Default);
     assert_eq!(pin.release(), None, "the default branch has no release");
-    assert_eq!(pin.label(), "327bb9e");
+    assert_eq!(pin.label(), "15fdd2a");
 }
 
 #[test]
@@ -120,23 +120,23 @@ fn a_crates_io_source_is_an_upstream_release_pin() {
     assert_eq!(
         pin.source,
         Source::Release {
-            version: "0.2.0".into()
+            version: "0.3.0".into()
         }
     );
-    assert_eq!(pin.id().as_deref(), Some("v0.2.0"));
-    assert_eq!(pin.label(), "v0.2.0");
+    assert_eq!(pin.id().as_deref(), Some("v0.3.0"));
+    assert_eq!(pin.label(), "v0.3.0");
     assert_eq!(
         pin.release(),
         Some(ReleaseSource {
             repository: "longbridge/nsh".into(),
-            tag: "v0.2.0".into(),
+            tag: "v0.3.0".into(),
         })
     );
     assert_eq!(
         pin.git_url().as_deref(),
         Some("https://github.com/longbridge/nsh")
     );
-    assert_eq!(pin.git_ref().as_deref(), Some("v0.2.0"));
+    assert_eq!(pin.git_ref().as_deref(), Some("v0.3.0"));
     assert_eq!(pin.commit(), None);
 }
 
@@ -193,7 +193,7 @@ fn two_sources_in_one_lock_stop_with_both_named() {
         "{error}"
     );
     assert!(
-        error.contains("?branch=main") && error.contains("?tag=fork-0.2.0-4"),
+        error.contains("?branch=main") && error.contains("?tag=fork-0.3.0-2"),
         "{error}"
     );
 }
@@ -204,7 +204,7 @@ fn the_lock_of_the_workspace_around_the_directory_is_read() {
     let nested = app.path("src/nested");
     std::fs::create_dir_all(&nested).expect("dir");
     let pin = pin_of(&nested).expect("pin");
-    assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
+    assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
     assert_eq!(
         pin.dir, nested,
         "the pin is read in the directory, not the root"
@@ -216,7 +216,7 @@ fn the_lock_of_the_workspace_around_the_directory_is_read() {
 fn outside_any_workspace_the_crates_nsh_json_lists_decide() {
     let app = Workspace::fixture("nsh-split-app");
     let pin = pin_of(&app.root).expect("pin");
-    assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
+    assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
     assert_eq!(pin.origin, Origin::Project);
 
     // The listed crates disagree: both are named.
@@ -252,8 +252,8 @@ fn an_app_without_nsh_crates_takes_the_nsh_table_of_rayx_toml() {
     let pin = pin_of(&app.root).expect("pin");
     assert_eq!(pin.origin, Origin::RayxToml);
     assert_eq!(pin.origin.as_str(), "rayx.toml");
-    assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
-    assert_eq!(pin.label(), "fork-0.2.0-4 (327bb9e)");
+    assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
+    assert_eq!(pin.label(), "fork-0.3.0-2 (15fdd2a)");
     assert_eq!(pin.version, None, "rayx.toml names no NSH version");
     assert_eq!(pin.default_warning(), None);
 
@@ -277,7 +277,7 @@ fn a_broken_nsh_table_is_an_error() {
             "without `git` and `commit`",
         ),
         (
-            "[nsh]\ngit = \"https://github.com/dXnSix/nsh\"\ncommit = \"327bb9e\"\n",
+            "[nsh]\ngit = \"https://github.com/dXnSix/nsh\"\ncommit = \"15fdd2a\"\n",
             "full commit",
         ),
         ("[nsh\n", "reading"),
@@ -309,13 +309,13 @@ fn an_app_that_pins_nothing_gets_the_default_with_a_warning_showing_the_three_li
     std::fs::remove_file(app.path("rayx.toml")).expect("remove");
     let pin = pin_of(&app.root).expect("pin");
     assert_eq!(pin.origin, Origin::Default);
-    assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
+    assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
     let warning = pin.default_warning().expect("an app is warned");
     for line in [
         "[nsh]",
         "git = \"https://github.com/dXnSix/nsh\"",
-        "tag = \"fork-0.2.0-4\"",
-        "commit = \"327bb9ea65d08ffac4af498cc7fbbfa18a1b3623\"",
+        "tag = \"fork-0.3.0-2\"",
+        "commit = \"15fdd2a3fb70b21193bb80796b08f39aac5e098c\"",
     ] {
         assert!(warning.contains(line), "{warning}");
     }
@@ -340,22 +340,23 @@ fn outside_any_app_the_default_is_used_and_reported_as_default() {
 fn the_defaults_table_holds_the_default_pin_and_its_crate_list() {
     let default = &DEFAULTS.nsh;
     assert_eq!(default.git, "https://github.com/dXnSix/nsh");
-    assert_eq!(default.tag, "fork-0.2.0-4");
+    assert_eq!(default.tag, "fork-0.3.0-2");
     assert_eq!(default.commit, COMMIT);
-    assert_eq!(default.version, "0.2.0");
-    assert_eq!(default.crates.len(), 26, "{:?}", default.crates);
+    assert_eq!(default.version, "0.3.0");
+    // The crates RayX patches (`tests/nsh_pin_rayx.rs` checks them against RayX's manifest), all
+    // NSH crates an app can depend on.
+    assert_eq!(default.crates.len(), 7, "{:?}", default.crates);
     for name in default.crates {
-        assert!(name.starts_with("nsh-"), "{name}");
+        assert!(is_nsh_crate(name), "{name}");
     }
-    for name in [
-        "nsh-core",
-        "nsh-cli",
-        "nsh-macros",
-        "nsh-platform-web",
-        "nsh-ios-host",
-    ] {
+    for name in ["nsh-core", "nsh-base", "nsh-macros"] {
         assert!(default.crates.contains(&name), "{name}");
     }
+    // NSH's own list decides what counts as an NSH crate in a lock, whatever the default patches.
+    for name in ["nsh-platform-web", "nsh-testing", "nsh-platform-gpui"] {
+        assert!(is_nsh_crate(name), "{name}");
+    }
+    assert!(!is_nsh_crate("nsh-app-hello"), "an app's own crate");
     let mut sorted = default.crates.to_vec();
     sorted.sort_unstable();
     sorted.dedup();
@@ -375,8 +376,8 @@ fn lock_sources_are_classified() {
         }
     );
     for bad in [
-        "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4",
-        "git+https://github.com/dXnSix/nsh#327bb9e",
+        "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-2",
+        "git+https://github.com/dXnSix/nsh#15fdd2a",
         "sparse+https://index.example/",
     ] {
         assert!(classify(bad, "0.2.0").is_err(), "{bad}");
@@ -410,7 +411,7 @@ fn a_locked_project_is_read_from_its_files_when_cargo_cannot_run() {
     let pin = resolve(&mut no_cargo(), &split.root).expect("read from the files");
     assert_eq!(
         (pin.origin, pin.id().as_deref()),
-        (Origin::Project, Some("327bb9ea65d0"))
+        (Origin::Project, Some("15fdd2a3fb70"))
     );
 }
 
@@ -437,7 +438,7 @@ fn without_cargo_on_the_path_the_lock_still_names_the_pin() {
     let status = rayx_without_cargo(&home, &app.root, &["status"]).success();
     let text = String::from_utf8(status.get_output().stdout.clone()).expect("UTF-8");
     assert!(
-        text.contains("main (327bb9e)") && text.contains("project"),
+        text.contains("main (15fdd2a)") && text.contains("project"),
         "{text}"
     );
 }
@@ -506,7 +507,7 @@ fn a_tag_whose_commit_is_not_the_recorded_one_is_an_error() {
     let app = Workspace::fixture("nsh-ts-app");
     let pin = pin_of(&app.root).expect("pin");
     let answer = |commit: &str| {
-        let line = format!("{commit}\trefs/tags/fork-0.2.0-4\n");
+        let line = format!("{commit}\trefs/tags/fork-0.3.0-2\n");
         Runner::record().respond(
             |spec| spec.program == "git" && spec.args.first().is_some_and(|a| a == "ls-remote"),
             Outcome::success().with_stdout(line),
@@ -516,7 +517,7 @@ fn a_tag_whose_commit_is_not_the_recorded_one_is_an_error() {
     verify_tag(&mut same, &pin).expect("the tag gives the recorded commit");
     let command = same.lines().join("\n");
     assert!(
-        command.contains("git ls-remote https://github.com/dXnSix/nsh refs/tags/fork-0.2.0-4"),
+        command.contains("git ls-remote https://github.com/dXnSix/nsh refs/tags/fork-0.3.0-2"),
         "{command}"
     );
 
@@ -525,13 +526,13 @@ fn a_tag_whose_commit_is_not_the_recorded_one_is_an_error() {
         .expect_err("a moved tag")
         .to_string();
     assert!(
-        error.contains(&other[..12]) && error.contains("327bb9ea65d0"),
+        error.contains(&other[..12]) && error.contains("15fdd2a3fb70"),
         "{error}"
     );
 
     // The peeled commit of an annotated tag wins over the tag object.
     let peeled = format!(
-        "{}\trefs/tags/fork-0.2.0-4\n{COMMIT}\trefs/tags/fork-0.2.0-4^{{}}\n",
+        "{}\trefs/tags/fork-0.3.0-2\n{COMMIT}\trefs/tags/fork-0.3.0-2^{{}}\n",
         "c".repeat(40)
     );
     let mut annotated = Runner::record().respond(|_| true, Outcome::success().with_stdout(peeled));
@@ -549,6 +550,6 @@ fn the_pin_of_a_relative_directory_is_absolute() {
     let app = Workspace::fixture("nsh-fork-app");
     let pin = pin_of(&app.root.join("src").join("..")).expect("pin");
     assert!(pin.dir.is_absolute());
-    assert_eq!(pin.id().as_deref(), Some("327bb9ea65d0"));
+    assert_eq!(pin.id().as_deref(), Some("15fdd2a3fb70"));
     let _: PathBuf = pin.dir;
 }
