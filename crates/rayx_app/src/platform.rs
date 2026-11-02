@@ -26,7 +26,9 @@ use rayx_runtime::services::suspension::{
     SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionService,
 };
 
-use crate::{AppState, NshKeyValueStore, app_services, app_state};
+use rayx_runtime::services::navigation::NavigationLocationSynchronizer;
+
+use crate::{AppState, NshKeyValueStore, NshLocationSynchronizer, app_services, app_state};
 
 /// Reads the app's files with NSH's `fetch` of their `asset:/` URLs (from the app's package on
 /// device, the dev server during `nsh run`, the page's assets on the web).
@@ -60,10 +62,11 @@ impl FontRegistrar for NshFontRegistrar {
 }
 
 /// Registers NSH's [`NshAssetReader`] and [`NshFontRegistrar`] as the app's `dyn AssetReader`
-/// and `dyn FontRegistrar`, and its [`NshKeyValueStore`] (a startup service, which loads on the
-/// engine thread) as its `dyn KeyValueStore`, unless others are registered. Every surface's
-/// builder starts with them ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps
-/// NSH's persistent store.
+/// and `dyn FontRegistrar`, its [`NshKeyValueStore`] (a startup service, which loads on the
+/// engine thread) as its `dyn KeyValueStore` and its [`NshLocationSynchronizer`] as its
+/// `dyn NavigationLocationSynchronizer`, unless others are registered. Every surface's builder
+/// starts with them ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps NSH's
+/// persistent store and `add_navigation()` shows its location as NSH's.
 pub trait NshServicesAppBuilderExt: AppBuilder {
     fn add_nsh_services(mut self) -> Self {
         let services = self.services_mut();
@@ -74,6 +77,16 @@ pub trait NshServicesAppBuilderExt: AppBuilder {
             services
                 .required_service::<NshKeyValueStore>()
                 .unwrap_or_else(|error| panic!("NSH's key-value store is registered: {error}"))
+        });
+        services.try_add_service_factory_as::<NshLocationSynchronizer>(|_| {
+            Arc::new(NshLocationSynchronizer::new())
+        });
+        services.try_add_service_factory_as::<dyn NavigationLocationSynchronizer>(|services| {
+            services
+                .required_service::<NshLocationSynchronizer>()
+                .unwrap_or_else(|error| {
+                    panic!("NSH's location synchronizer is registered: {error}")
+                })
         });
         self
     }

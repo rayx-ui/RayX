@@ -26,6 +26,26 @@ let panel = navigation_view("panel", |route| side_panel(route))?;
 
 Both are called in a component's body, under the app's services.
 
+## The location on NSH
+
+On NSH the navigation's location is NSH's own (`location()`, `navigate()`): the web shows it in the address bar and
+keeps it in the browser's history, and an embedding app sets it and hears it through its host channel
+(`set_location`, `handle_navigate`). `rayx_app` registers `NshLocationSynchronizer` for it, so nothing is to set up:
+
+- **Startup** goes to NSH's location (a deep link, an address typed in), else to the default route.
+- **Navigations** show their location there: a push as a new history entry, the other modes (replace, reset, back,
+  forward, refresh) in place of the current one. Closing a region is a navigation of the default mode, a push, so
+  back opens it again.
+- **The navigations of one turn share one history entry**, as everything an NSH app shows in one turn does: a TSX
+  handler that navigates the main region and opens a panel leaves one entry, a push when any of them was one.
+- **The platform's moves** (the browser's back and forward, a typed address, the embedding app) take the navigation
+  along: each region goes to the nearest journal entry with its route, or to a new one, and a query region the
+  location no longer names closes. They are not sent back.
+
+Keep the navigation's `base_path` empty on NSH: NSH's location is a path from the app's base already, and on the web
+`nsh.json`'s `web.base` is that base. `synchronize_location: false` in the navigation's options keeps navigations
+out of NSH's location and the platform's moves out of the navigation; startup still goes to NSH's location.
+
 ## From TSX
 
 `Navigation.of(app)` drives the URL region: `navigate(uri)`, `back()`, `forward()`, `current()` and `onChange`.

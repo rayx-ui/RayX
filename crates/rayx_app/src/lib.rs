@@ -26,6 +26,10 @@
 //!   an NSH navigation stack whose pages are its journal up to the current entry (a native pop
 //!   takes the journal back), [`navigation_view`] as its current route alone, and
 //!   [`NavigationRegion`] gives TSX the same.
+//! - **The location.** [`NshLocationSynchronizer`] shows the navigation's location as NSH's
+//!   (`location()`, `navigate()`: the web's address bar and history, an embedding app's host
+//!   channel), starts the navigation at it (a deep link) and follows the platform's moves of it
+//!   (back, forward, a typed address).
 //! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
 //!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
@@ -58,6 +62,7 @@
 
 mod binding;
 mod i18n_class;
+mod location;
 mod platform;
 mod region;
 mod scope_class;
@@ -81,6 +86,7 @@ pub use binding::{
     use_two_way,
 };
 pub use i18n_class::{DateFormat, DateLength, I18n, NumberFormat, NumberKind, TimeDetail};
+pub use location::NshLocationSynchronizer;
 pub use platform::{
     NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
     use_platform_sync,
