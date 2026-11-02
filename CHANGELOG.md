@@ -7,6 +7,43 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.6.0] - 2026-11-02
+
+### Build and CI
+- Check rayx-cli on Linux, macOS and Windows
+- *(nsh)* Pin NSH to fork-0.3.0-3, in RayX and as rayx's default
+
+### Documentation
+- *(cli)* Fold RayX.CLI's contributor rules and decisions into RayX's docs
+
+### Features
+- *(cli)* Import RayX.CLI as the rayx-cli crate
+- *(cli)* Ship rayx with RayX's releases, on RayX's version
+- *(cli)* Install and update rayx from rayx-ui/RayX
+- *(cli)* Make rayx's default NSH pin RayX's own
+- *(cli)* Scaffold RayX apps with rayx new
+- *(cli)* Serve index.html for an app's own routes in rayx serve
+- *(runtime)* [**breaking**] Chain add_selection like the other add_* methods
+  - Migration: Gamify: nothing to change, it does not register the selection service; an app that does drops the `?` (or `.unwrap()`) after `add_selection()`.
+- *(runtime)* Keep history in the app's key-value store
+- *(runtime)* [**breaking**] Give navigation one location for all its regions, taken in from the platform
+  - Migration: Gamify: nothing to change, it implements no `NavigationLocationSynchronizer`; one that does takes `synchronize(&self, location: &str, mode)` and may answer `location()` with the platform's location at startup.
+- *(rayx)* Put rayx_app::services in the prelude
+- *(app)* Keep the app's key-value store in NSH's storage
+- *(app)* Give TSX the navigation, storage, configuration, asset, font and platform services
+- *(app)* Bind dXn.Reactive view models to NSH signals and TSX classes
+- *(app)* Show navigation regions as NSH navigation stacks, with a TSX class
+
+### Fixes
+- *(macros)* Let #[derive(AppService)] name the rayx umbrella
+
+### Refactoring
+- *(core)* [**breaking**] Remove ShutdownService and the AppScope, WindowScope and ViewScope wrappers
+  - Migration: Gamify: nothing to change, it uses none of them; a service that implemented `ShutdownService` releases what it holds in `Drop` instead.
+
+### Tests
+- *(cli)* Give the Lima check test a df of its own
+
 ## [0.5.1] - 2026-10-29
 
 ### Build and CI
