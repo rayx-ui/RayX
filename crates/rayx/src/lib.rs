@@ -7,7 +7,8 @@
 //!   navigation, input maps, platform and lifecycle state, configuration, assets, fonts and
 //!   translations), without NSH.
 //! - [`app`] ([`rayx_app`]): the NSH layer: a root provider per surface, a scope per screen, the
-//!   TSX classes (`AppServices`, `ServiceScope`, `I18n`) and the services' NSH side.
+//!   TSX classes (`AppServices`, `ServiceScope`, `I18n`, `Navigation`, `Storage`,
+//!   `AppConfiguration`, `Assets`, `Fonts`, `Platform`) and the services' NSH side.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
 //!   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), which the i18n service wraps, for their
 //!   message, number and date types.
@@ -42,9 +43,10 @@ pub mod prelude {
 
     pub use rayx_app::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app::{
-        AppError, AppServices, AppSettingsAppBuilderExt, AppState, I18n, NshServicesAppBuilderExt,
-        ScreenScope, ServiceScope, app_services, app_state, install, services, set_app, start,
-        start_app, use_platform_sync, use_screen_scope, use_view_model,
+        AppConfiguration, AppError, AppServices, AppSettingsAppBuilderExt, AppState, Assets, Fonts,
+        I18n, Navigation, NshServicesAppBuilderExt, Platform, ScreenScope, ServiceScope, Storage,
+        app_services, app_state, install, services, set_app, start, start_app, use_platform_sync,
+        use_screen_scope, use_view_model,
     };
     pub use rayx_runtime::services::i18n::{Args, I18nService};
 }

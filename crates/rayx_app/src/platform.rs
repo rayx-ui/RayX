@@ -9,9 +9,10 @@ use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
 use nsh_core::platform::{AppState as NshAppState, Idiom, Os};
 use nsh_core::prelude::{
-    dark, effect, fetch, first_day_of_week, font_scale, hour_cycle, idiom, is_desktop,
-    keyboard_height, languages, locale, measurement_system, os, os_version, pixel_ratio,
-    reduce_motion, register_font, safe_area, screen_reader, temperature_unit, time_zone, window,
+    Owner, cleanup, dark, effect, fetch, first_day_of_week, font_scale, global, hour_cycle, idiom,
+    is_desktop, keyboard_height, languages, locale, measurement_system, os, os_version,
+    pixel_ratio, reduce_motion, register_font, safe_area, screen_reader, temperature_unit,
+    time_zone, window,
 };
 use rayx_core::{AppBuilder, ServiceProvider};
 use rayx_runtime::services::assets::AssetReader;
@@ -163,6 +164,33 @@ fn text_direction(language: &str) -> TextDirection {
 /// app state (active, inactive, background). Call it in the app's root component; it stops
 /// with the component.
 pub fn use_platform_sync() {
+    if global::<PlatformSync>().with_untracked(|sync| sync.running) {
+        return;
+    }
+    global::<PlatformSync>().set(PlatformSync { running: true });
+    cleanup(|| global::<PlatformSync>().set(PlatformSync { running: false }));
+    sync_platform();
+}
+
+/// Whether this surface's platform and suspension services are kept current already (by a Rust
+/// root's [`use_platform_sync`] or `AppServices.load()`), so they are not kept twice.
+#[derive(Default)]
+struct PlatformSync {
+    running: bool,
+}
+
+/// [`use_platform_sync`] for the surface's life: what `AppServices.load()` starts, since a TSX
+/// app has no root component. Call it where the engine runs Rust code (a task).
+pub(crate) fn keep_platform_current() {
+    if global::<PlatformSync>().with_untracked(|sync| sync.running) {
+        return;
+    }
+    global::<PlatformSync>().set(PlatformSync { running: true });
+    Owner::detached().run(sync_platform);
+}
+
+/// The effect that copies NSH's environment and app state into the services.
+fn sync_platform() {
     let started = Rc::new(Cell::new(false));
     let last_state = Rc::new(Cell::new(None::<NshAppState>));
     effect(move || {

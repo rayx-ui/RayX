@@ -33,6 +33,12 @@
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
 //!   and clock; the [`I18n`] class gives TSX its messages (`I18n.of(app).t("id", { n: 3 })`) and
 //!   its changes.
+//! - **The services for TSX.** Besides [`I18n`], [`Navigation`], [`Storage`],
+//!   [`AppConfiguration`], [`Assets`] (asset URLs), [`Fonts`] (font aliases) and [`Platform`]
+//!   (the device and the app's lifecycle) are classes made with `X.of(app)`, whose `onChange`
+//!   hears the service's changes. A TSX app has no root component, so `AppServices.load()` keeps
+//!   the platform and suspension services current itself, as [`use_platform_sync`] does in a
+//!   Rust root.
 //!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
 //! on [`rayx_core`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
@@ -46,6 +52,7 @@ mod i18n_class;
 mod platform;
 mod scope_class;
 mod screen;
+mod service_classes;
 mod settings;
 mod storage;
 mod surface;
@@ -67,6 +74,7 @@ pub use platform::{
 pub use rayx_runtime;
 pub use scope_class::{AppServices, ServiceScope};
 pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
+pub use service_classes::{AppConfiguration, Assets, Fonts, Navigation, Platform, Storage};
 pub use settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
 pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
 pub use surface::{

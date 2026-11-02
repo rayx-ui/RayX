@@ -24,11 +24,13 @@ pub struct AppServices {
 
 #[class]
 impl AppServices {
-    /// Starts the app on this surface (once; later calls resolve with the same root).
+    /// Starts the app on this surface (once; later calls resolve with the same root), and
+    /// keeps its platform and suspension services current from NSH from then on: a TSX app has
+    /// no root component to call `use_platform_sync` in.
     pub async fn load() -> Result<Instance<AppServices>, AppError> {
-        Ok(Instance::new(AppServices {
-            provider: start_app().await?,
-        }))
+        let provider = start_app().await?;
+        crate::platform::keep_platform_current();
+        Ok(Instance::new(AppServices { provider }))
     }
 
     /// A new scope for a screen: make it when the screen mounts, dispose it in its cleanup.

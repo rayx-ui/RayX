@@ -123,7 +123,13 @@ fn Root() -> impl IntoElement {
 
 `AppServices.load()` is asynchronous because startup awaits the services; it runs as an NSH task, where NSH's timers
 and the surface's slot are reachable (a class's synchronous calls run outside the reactive runtime). Everything after
-it is synchronous.
+it is synchronous. A TSX app has no root component, so `load()` also keeps the platform and suspension services
+current from NSH, as `use_platform_sync()` does in a Rust root.
+
+The services have TSX classes too, each made with `X.of(app)` and told about changes with `onChange`: `I18n`
+(messages), `Navigation` (`navigate`, `back`, `forward`, `current`), `Storage` (text and JSON values by bucket and
+key, in NSH's storage), `AppConfiguration`, `Assets` (asset URLs), `Fonts` (font aliases) and `Platform` (the device
+and the app's lifecycle). Register the ones the app uses in its UI set beside `AppServices`.
 
 ## Lifetimes on NSH
 
