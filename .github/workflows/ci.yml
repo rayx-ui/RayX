@@ -1,8 +1,10 @@
 name: RayX
 
 # Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the NSH-free
-# crates (the core and the services). Runs on every pull request (release-plz's release pull requests included) and every
-# push to `main`. The toolchain is rust-toolchain.toml's.
+# crates (the core and the services), on Ubuntu; and the `rayx` command-line tool (`rayx-cli`),
+# which runs on every desktop, on Linux, macOS and Windows. Runs on every pull request
+# (release-plz's release pull requests included) and every push to `main`. The toolchain is
+# rust-toolchain.toml's.
 on:
   pull_request:
   push:
@@ -36,3 +38,29 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
       - run: cargo check -p rayx_core -p rayx_runtime --target wasm32-unknown-unknown
+
+  cli:
+    name: rayx-cli on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@1.99.0
+        with:
+          components: clippy, rustfmt
+
+      # rayx-cli's own dependencies; it builds none of NSH.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: rayx-cli
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - run: cargo fmt -p rayx-cli --check
+      - run: cargo clippy -p rayx-cli --all-targets -- -D warnings
+      # The real proofs (the `proof_*` groups) are `#[ignore]`d: they install nsh and run apps,
+      # and run on demand with `cargo test -p rayx-cli --test proof_<name> -- --ignored`.
+      - run: cargo test -p rayx-cli

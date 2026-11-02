@@ -106,7 +106,8 @@ header must stay identical to `[changelog] header`.
 
 A release pull request runs `ci.yml`, like any other pull request: one `ubuntu-24.04` job with
 `cargo fmt --all --check`, Clippy, `cargo test --workspace` and the `wasm32-unknown-unknown` check
-of `rayx_core` and `rayx_runtime`. It also runs dist's Release workflow, which plans the release and
+of `rayx_core` and `rayx_runtime`, and the `rayx-cli` job, which formats, lints and tests the CLI on
+Linux, macOS and Windows. It also runs dist's Release workflow, which plans the release and
 builds the binaries without publishing anything. `ci.yml` also runs on every push to `main`;
 `release-plz.yml` runs no tests.
 
