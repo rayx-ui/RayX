@@ -1,0 +1,10 @@
+// The Rust root tested from TypeScript: `nsh test` runs this file in a headless runner it builds
+// with the crate, and `open(".")` starts the root (`nsh.json` "root"), which starts the app's
+// services.
+import { expect, open, test } from "nsh/test";
+
+test("starts the app's services", async () => {
+  const app = await open(".");
+  await app.waitFor("text:Ready");
+  expect(app.texts()).toContain("Ready");
+});

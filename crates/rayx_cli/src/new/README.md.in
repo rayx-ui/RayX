@@ -1,0 +1,20 @@
+# __APP_NAME__
+
+A [RayX](https://github.com/rayx-ui/RayX) app on [NSH](https://github.com/dXnSix/nsh), made by
+`rayx new`. __TEMPLATE__
+
+- `Cargo.toml` depends on `rayx` at the tag of the `rayx` that made the app (`__RAYX_TAG__`);
+  `.cargo/config.toml` patches NSH to the fork tag that RayX release builds with, and `Cargo.lock`
+  records its commit, which is the nsh every `rayx app` command runs. Move them together: a newer
+  `rayx` tag with that release's NSH patch.
+- `src/lib.rs` names the app's services (`fn app`): RayX's are listed in its `docs/services.md`.
+
+```sh
+rayx app run                      # this machine's backend; --target ios, android, web, macos, linux, windows
+rayx app check                    # cargo check of the crate, then the type checks
+rayx app test                     # cargo test, then App.test.tsx, headless
+rayx app package --target web     # or ios, android, macos, linux, windows
+```
+
+`rayx app` runs nsh's own commands with the nsh the app pins, installing it and what the target
+needs first; `rayx doctor` shows the pins and what is missing.

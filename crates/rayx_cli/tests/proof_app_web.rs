@@ -1,9 +1,11 @@
-//! An app made by `rayx new` on the web (PROOF-1), ignored by default: it installs rayx's default
-//! nsh into a temporary `RAYX_HOME` (a source build of several minutes while the fork has no
-//! release), builds the app and runs it in Chrome, which needs the network.
+//! An app made by `rayx new --nsh-only` on the web (PROOF-1), ignored by default: it installs
+//! rayx's default nsh into a temporary `RAYX_HOME` (a source build of several minutes while the fork
+//! has no release), builds the app and runs it in Chrome, which needs the network. A plain NSH app:
+//! a RayX app depends on `rayx` at this `rayx`'s release tag, which a development build's version
+//! does not have yet.
 //!
 //! ```text
-//! cargo test --test proof_app_web -- --ignored --test-threads=1
+//! cargo test -p rayx-cli --test proof_app_web -- --ignored --test-threads=1
 //! ```
 
 mod common;
@@ -18,7 +20,7 @@ use common::proof::{Running, free_port, get, rayx, rayx_ok, wait_for_ok};
 fn a_new_mixed_app_builds_runs_tests_and_packages_for_the_web() {
     let home = Workspace::empty();
     let work = Workspace::empty();
-    rayx_ok(&home.root, &work.root, &["new", "hello"]);
+    rayx_ok(&home.root, &work.root, &["new", "hello", "--nsh-only"]);
     let app = work.path("hello");
     assert!(
         app.join("Cargo.lock").is_file(),

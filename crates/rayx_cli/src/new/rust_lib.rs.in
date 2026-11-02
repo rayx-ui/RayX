@@ -1,0 +1,39 @@
+//! The app's Rust UI: its root component, which `nsh run`, `nsh package` and `cargo run` mount,
+//! and its RayX services.
+
+use nsh_base::theme;
+use nsh_core::prelude::*;
+use rayx::prelude::*;
+
+/// The app's UI set (`nsh.json` `"rust"`): what a TSX entry may import from `__SPECIFIER__`.
+#[native_module("__SPECIFIER__")]
+fn native(registry: &mut Registry) {
+    registry.register::<App>();
+}
+
+/// The app's composition root: its configuration and the services every surface starts with.
+/// RayX's services are listed in its `docs/services.md`.
+fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
+    builder.add_storage().add_history()
+}
+
+/// The application's root component: it starts the app's services and shows where they are.
+#[component]
+pub fn App() -> impl IntoElement {
+    set_app(build_app);
+    rayx::app::start();
+    view()
+        .flex_1()
+        .bg(move || theme().background)
+        .text_color(move || theme().foreground)
+        .items_center()
+        .justify_center()
+        .child(
+            text(move || match rayx::app::app_state() {
+                rayx::app::AppState::Ready => "Ready".to_owned(),
+                rayx::app::AppState::Failed(message) => format!("Failed: {message}"),
+                _ => "Starting".to_owned(),
+            })
+            .text_size(px(22.0)),
+        )
+}

@@ -1,0 +1,29 @@
+import { mount, signal, Text, View } from "nsh";
+import { AppServices } from "__SPECIFIER__";
+
+// RayX starts the app's services (`src/lib.rs`) once; `AppServices.load()` resolves when every
+// one of them is ready, and everything after it is synchronous.
+const status = signal("Starting");
+AppServices.load().then(
+  () => status.set("Ready"),
+  (error) => status.set(`Failed: ${error}`),
+);
+
+function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        paddingTop: "env(safe-area-inset-top)",
+        paddingRight: "env(safe-area-inset-right)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingLeft: "env(safe-area-inset-left)",
+        alignItems: "center", justifyContent: "center", gap: 16,
+      }}
+    >
+      <Text style={{ fontSize: 22 }}>{status()}</Text>
+    </View>
+  );
+}
+
+mount(App);

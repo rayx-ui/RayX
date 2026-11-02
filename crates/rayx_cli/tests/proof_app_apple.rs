@@ -1,10 +1,11 @@
-//! An app made by `rayx new` on macOS and the iOS simulator (PROOF-2), ignored by default: each
-//! test installs rayx's default nsh into a temporary `RAYX_HOME` of its own (a source build of
-//! several minutes while the fork has no release) and runs the app's tests in the AppKit host or
-//! in a simulator, which nsh boots when none is booted.
+//! An app made by `rayx new --nsh-only` on macOS and the iOS simulator (PROOF-2), ignored by
+//! default: each test installs rayx's default nsh into a temporary `RAYX_HOME` of its own (a source
+//! build of several minutes while the fork has no release) and runs the app's tests in the AppKit
+//! host or in a simulator, which nsh boots when none is booted. A plain NSH app, as in
+//! `proof_app_web`.
 //!
 //! ```text
-//! cargo test --test proof_app_apple -- --ignored --test-threads=1
+//! cargo test -p rayx-cli --test proof_app_apple -- --ignored --test-threads=1
 //! ```
 
 mod common;
@@ -12,7 +13,7 @@ mod common;
 use common::Workspace;
 use common::proof::rayx_ok;
 
-/// `rayx new hello` in a temporary directory with its own store, then `rayx app test --target
+/// `rayx new hello --nsh-only` in a temporary directory with its own store, then `rayx app test --target
 /// <target>` in it.
 fn new_app_passes_its_tests_on(target: &str) {
     if !cfg!(target_os = "macos") {
@@ -21,7 +22,7 @@ fn new_app_passes_its_tests_on(target: &str) {
     }
     let home = Workspace::empty();
     let work = Workspace::empty();
-    rayx_ok(&home.root, &work.root, &["new", "hello"]);
+    rayx_ok(&home.root, &work.root, &["new", "hello", "--nsh-only"]);
     rayx_ok(
         &home.root,
         &work.path("hello"),

@@ -1,0 +1,24 @@
+//! The app's Rust code: its RayX services, and the classes `App.tsx` imports from
+//! `__SPECIFIER__`. Their TypeScript declarations are generated from these types into
+//! `.nsh/types/__SPECIFIER__.d.ts`.
+
+use nsh_core::prelude::*;
+use rayx::prelude::*;
+
+/// The crate's UI set (`nsh.json` `"rust"`): RayX's classes, through which `App.tsx` starts the
+/// app and reaches its services, and the app's own (`registry.register::<…>()` for components,
+/// `.module::<…>()`, `.class::<…>()`).
+#[native_module("__SPECIFIER__")]
+fn native(registry: &mut Registry) {
+    set_app(build_app);
+    registry
+        .class::<AppServices>()
+        .class::<ServiceScope>()
+        .class::<I18n>();
+}
+
+/// The app's composition root: its configuration and the services every surface starts with.
+/// RayX's services are listed in its `docs/services.md`.
+fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
+    builder.add_storage().add_history()
+}

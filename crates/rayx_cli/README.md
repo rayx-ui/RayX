@@ -76,7 +76,7 @@ stay there.
 | `rayx fmt` | Formats the project, one workspace member at a time. |
 | `rayx app` | Runs an nsh command with the project's pinned nsh. |
 | `rayx nsh` | Shows, installs, locates and prunes the nsh builds `rayx` keeps. |
-| `rayx new` | Creates a new NSH app pinned to `rayx`'s default nsh. |
+| `rayx new` | Creates a new RayX app (or, with `--nsh-only`, a plain NSH app) pinned to `rayx`'s default nsh. |
 | `rayx serve` | Serves a packaged web app on `127.0.0.1`. |
 
 Run `rayx --help`, or `rayx <command> --help`, for the options of each command.
@@ -362,14 +362,27 @@ runtime (the fork's release archives bring every runtime prebuilt).
 
 ### `rayx new`
 
-`rayx new <dir> [--name <name>] [--template mixed|ts|rust]` creates an app that names its nsh from
-its first commit: it installs the default pin, runs its `nsh init`, and pins it in the app. `mixed`
-(the default: TSX with a Rust crate at the app's root) and `rust` get a `.cargo/config.toml` that
-patches every NSH crate to the default pin's tag and a `Cargo.lock` from `cargo generate-lockfile`;
-`ts` gets a `rayx.toml` with the `[nsh]` table. Then it prints the next steps: `rayx setup --web`
-(with `--ios` on a Mac) and `rayx app run --target web`. A directory nsh refuses (one with files in
-it) is left unchanged, and so is one that already has the file `rayx new` would write
-(`.cargo/config.toml`, or `rayx.toml` for `ts`).
+`rayx new <dir> [--name <name>] [--template mixed|ts|rust] [--nsh-only]` creates a RayX app that
+names its nsh from its first commit: it installs the default pin, runs its `nsh init`, makes the app
+a RayX app and pins it.
+
+- **RayX:** the app's `Cargo.toml` depends on `rayx` at this `rayx`'s own tag (git
+  `https://github.com/rayx-ui/RayX`, `tag = "vX.Y.Z"`), and RayX's files take the place of nsh's:
+  for `mixed` (the default: TSX with a Rust crate at the app's root) a `src/lib.rs` whose
+  `#[native_module]` registers RayX's TSX classes (`AppServices`, `ServiceScope`, `I18n`) and names
+  the app's services with `set_app`, an `App.tsx` that starts them with `AppServices.load()`, its
+  test and a README; for `rust` a root component that starts them. `ts` has no Rust crate to
+  register RayX's classes, so it needs `--nsh-only`.
+- **`--nsh-only`:** a plain NSH app, as `nsh init` writes it.
+- **The pin:** `mixed` and `rust` get a `.cargo/config.toml` that patches to the default pin's tag
+  the NSH crates RayX patches and any other NSH crate the app's `Cargo.toml` names (a `rust` app's
+  desktop platforms), and a `Cargo.lock` from `cargo generate-lockfile`; `ts` gets a `rayx.toml`
+  with the `[nsh]` table.
+
+Then it prints the next steps: `rayx setup --web` (with `--ios` on a Mac) and
+`rayx app run --target web`. A directory nsh refuses (one with files in it) is left unchanged, and
+so is one that already has the file `rayx new` would write (`.cargo/config.toml`, or `rayx.toml`
+for `ts`).
 
 ### `rayx serve`
 

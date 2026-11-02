@@ -333,6 +333,9 @@ pub struct NewArgs {
     /// The app template
     #[arg(long, value_enum, default_value_t = Template::Mixed)]
     pub template: Template,
+    /// A plain NSH app, without RayX (the only kind --template ts makes)
+    #[arg(long)]
+    pub nsh_only: bool,
 }
 
 /// Arguments of `rayx serve`.

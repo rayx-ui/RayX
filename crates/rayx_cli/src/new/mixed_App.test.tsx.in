@@ -1,0 +1,9 @@
+// `nsh test` runs this file in a headless runner it builds with the crate: the app's services
+// start through RayX's `AppServices` (`src/lib.rs`).
+import { expect, open, test } from "nsh/test";
+
+test("starts the app's services", async () => {
+  const app = await open("./App.tsx");
+  await app.waitFor("text:Ready");
+  expect(app.texts()).toContain("Ready");
+});
