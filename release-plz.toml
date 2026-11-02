@@ -71,9 +71,7 @@ changelog_update = false
 name = "rayx-cli"
 version_group = "rayx"
 # The `rayx` command-line tool, like `rayx_core`; dist builds and publishes its binaries for the
-# tag. Its first release: no `v*` tag has the package yet, so this name, which matches no tag,
-# makes it a new package (docs/releasing.md). Remove the line right after that release's tag.
-git_tag_name = "rayx-cli-v{{ version }}"
+# tag.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false

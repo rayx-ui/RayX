@@ -117,8 +117,7 @@ fn releasing_md_covers_the_first_release_of_rayx_cli() {
     for needle in [
         "builds the `rayx` binaries for all six targets without publishing them",
         "The tag starts dist's Release workflow",
-        "`git_tag_name = \"rayx-cli-v{{ version }}\"`",
-        "until its first release",
+        "carried `git_tag_name = \"rayx-cli-v{{ version }}\"` until `v0.6.0`",
         "Remove the line in the first commit after the release's tag",
     ] {
         assert!(
@@ -126,7 +125,7 @@ fn releasing_md_covers_the_first_release_of_rayx_cli() {
             "the release section lacks `{needle}`"
         );
     }
-    // The line is there until that release, and release-plz.toml says to remove it.
+    // `v0.6.0` has the package, so it finds its previous version by the `v*` tags.
     let config = release_plz();
     let cli = config["package"]
         .as_array()
@@ -134,12 +133,7 @@ fn releasing_md_covers_the_first_release_of_rayx_cli() {
         .iter()
         .find(|package| package["name"].as_str() == Some("rayx-cli"))
         .expect("rayx-cli");
-    if let Some(name) = cli.get("git_tag_name").and_then(toml::Value::as_str) {
-        assert_eq!(name, "rayx-cli-v{{ version }}");
-        assert!(
-            read("release-plz.toml").contains("Remove the line right after that release's tag")
-        );
-    }
+    assert!(cli.get("git_tag_name").is_none());
 }
 
 #[test]

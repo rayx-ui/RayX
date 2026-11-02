@@ -56,8 +56,8 @@ the others' version. Remove the line in the first commit after the release's tag
 release pull request counts the crate as new again and repeats its history. `rayx_app_di` became
 `rayx_core` this way in `v0.5.0`. A new crate takes the same route: `rayx_runtime` and `rayx`, which
 the `v0.5.0` tag does not have, carried the line until `v0.5.1`, and `rayx-cli`, which moved here
-from `rayx-ui/RayX.CLI` (never released there), carries `git_tag_name = "rayx-cli-v{{ version }}"`
-until its first release, the next one after `v0.5.1`.
+from `rayx-ui/RayX.CLI` (never released there), carried `git_tag_name = "rayx-cli-v{{ version }}"`
+until `v0.6.0`.
 
 ## Commit types and the 0.x policy
 
