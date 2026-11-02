@@ -44,10 +44,11 @@ pub mod prelude {
     pub use rayx_app::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app::{
         AppConfiguration, AppError, AppServices, AppSettingsAppBuilderExt, AppState, Assets, Fonts,
-        I18n, Navigation, NshServicesAppBuilderExt, Observable, Platform, ReactiveCommand,
-        ScreenScope, ServiceScope, Storage, UiCommand, app_services, app_state, install, services,
-        set_app, start, start_app, use_command, use_list, use_platform_sync, use_reactive,
-        use_screen_scope, use_stream, use_two_way, use_view_model,
+        I18n, Navigation, NavigationRegion, NshServicesAppBuilderExt, Observable, Platform,
+        ReactiveCommand, ScreenScope, ServiceScope, Storage, UiCommand, app_services, app_state,
+        install, navigation_region, navigation_view, services, set_app, start, start_app,
+        use_command, use_list, use_platform_sync, use_reactive, use_screen_scope, use_stream,
+        use_two_way, use_view_model,
     };
     pub use rayx_runtime::services::i18n::{Args, I18nService};
 }

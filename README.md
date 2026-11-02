@@ -142,6 +142,21 @@ and the app's lifecycle). Register the ones the app uses in its UI set beside `A
 `use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
 component's cleanup; `ServiceScope::view_model::<T>()` does the same for TSX until the scope is disposed.
 
+## Navigation regions
+
+A region of the navigation service is an NSH navigation stack whose pages are the region's journal up to its current
+entry: navigating pushes, replaces, resets, goes back or forward, and a page the user pops natively (a swipe back, the
+system back button) takes the journal back to the page below. The URL region's route is the location's path, the
+other regions' routes are in its query.
+
+```rust
+let pages = navigation_region("root", |route| nav_page().title(route.path.clone()).child(screen_for(route)))?;
+let panel = navigation_view("panel", |route| side_panel(route))?; // the current route alone
+```
+
+TSX: `NavigationRegion.of(app, "panel")` with `navigate`, `back`, `forward`, `goTo(index)`, `close`, `pages()` (for a
+`NavStack` of `NavPage`s, each `onDismiss` going to the page below) and `onChange`.
+
 ## Binding view models
 
 A view model's [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) state reaches the UI as NSH state. A view model

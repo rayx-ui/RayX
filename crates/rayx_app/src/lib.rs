@@ -22,6 +22,10 @@
 //! - **Activation.** [`use_view_model`] resolves an [`ActivatableViewModel`] in the screen's scope
 //!   and activates it until the component's cleanup; [`ServiceScope`] activates what it resolves
 //!   for TSX until it is disposed.
+//! - **Navigation regions.** [`navigation_region`] shows a region of the navigation service as
+//!   an NSH navigation stack whose pages are its journal up to the current entry (a native pop
+//!   takes the journal back), [`navigation_view`] as its current route alone, and
+//!   [`NavigationRegion`] gives TSX the same.
 //! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
 //!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
@@ -55,6 +59,7 @@
 mod binding;
 mod i18n_class;
 mod platform;
+mod region;
 mod scope_class;
 mod screen;
 mod service_classes;
@@ -81,6 +86,7 @@ pub use platform::{
     use_platform_sync,
 };
 pub use rayx_runtime;
+pub use region::{NavigationRegion, navigation_region, navigation_view};
 pub use scope_class::{AppServices, ServiceScope};
 pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
 pub use service_classes::{AppConfiguration, Assets, Fonts, Navigation, Platform, Storage};
