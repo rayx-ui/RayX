@@ -37,7 +37,7 @@ Each is made with `X.of(app)`, and its `onChange` hears the service's changes.
 
 | Class | What it does |
 | --- | --- |
-| `I18n` | `t(id, args)`, `has(id)`, `locale()`, `languages()`, `direction()`, `setLanguage(language)` |
+| `I18n` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, `setLanguage(language)` ([I18n](services/i18n.md#tsx)) |
 | `Navigation` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()` |
 | `NavigationRegion` | A named region: `NavigationRegion.of(app, name)`, `navigate`, `back`, `forward`, `goTo`, `close`, `pages()` ([Navigation](navigation.md)) |
 | `Storage` | Text and JSON values by bucket and key, in NSH's storage: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear` |

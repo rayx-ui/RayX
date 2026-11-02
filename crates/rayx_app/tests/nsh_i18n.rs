@@ -1,5 +1,5 @@
 //! The i18n service for TSX through NSH's engine, headless: the `I18n` class formats messages,
-//! changes the language and tells TSX about it.
+//! instants in the user's time zone and numbers, changes the language and tells TSX about it.
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -28,9 +28,10 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
         .add_resource(
             "en",
             None,
-            r#"{ "hello": "Hello, {$name}!", "cart": ".input {$n :number}\n.match $n\none {{One item}}\n* {{{$n} items}}" }"#,
+            r#"{ "hello": "Hello, {$name}!", "cart": ".input {$n :number}\n.match $n\none {{One item}}\n* {{{$n} items}}", "kickoff": "Kick-off at {$when :time timeStyle=short}" }"#,
         )
         .unwrap();
+    service.set_time_zone("Europe/Zagreb").unwrap();
     service
         .add_resource(
             "hr",
@@ -53,6 +54,20 @@ setTimeout(async () => {
   lines.push(i18n.t("cart", { n: 1 }));
   lines.push(i18n.has("cart") && !i18n.has("nope") ? "has" : "lacks");
   lines.push(i18n.languages().sort().join(","));
+  // Instants (a Date's `toISOString()`) are dates in the user's zone; a Date itself throws.
+  const kickoff = new Date(Date.UTC(2026, 10, 2, 19, 45));
+  lines.push(i18n.t("kickoff", { when: kickoff.toISOString() }));
+  try {
+    i18n.t("kickoff", { when: kickoff });
+    lines.push("no throw");
+  } catch (error) {
+    lines.push(String(error).includes("toISOString") ? "throws" : `threw ${error}`);
+  }
+  lines.push(i18n.formatDate(kickoff.toISOString(), { length: "long", time: "minute", hourCycle: "h23" }));
+  lines.push(i18n.formatDate(kickoff.toISOString(), { date: false, time: "minute", hourCycle: "h23" }));
+  lines.push(i18n.formatNumber(0.256, { style: "percent" }));
+  lines.push(i18n.formatNumber(1234.5, { style: "currency", currency: "EUR" }));
+  lines.push(i18n.timeZone());
   i18n.onChange((locale) => {
     lines.push(`changed ${locale} ${i18n.direction()}`);
     lines.push(i18n.t("cart", { n: 3 }));
@@ -112,6 +127,6 @@ fn nsh_i18n_gives_tsx_messages_and_language_changes() {
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(
         last,
-        "done Hello, Ana!|One item|has|en,hr|changed hr ltr|3 artikla"
+        "done Hello, Ana!|One item|has|en,hr|Kick-off at 8:45\u{202f}PM|throws|November 2, 2026 at 20:45|20:45|26%|€1,234.50|Europe/Zagreb|changed hr ltr|3 artikla"
     );
 }

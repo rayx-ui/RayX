@@ -80,7 +80,7 @@ pub use binding::{
     Observable, ReactiveCommand, UiCommand, use_command, use_list, use_reactive, use_stream,
     use_two_way,
 };
-pub use i18n_class::I18n;
+pub use i18n_class::{DateFormat, DateLength, I18n, NumberFormat, NumberKind, TimeDetail};
 pub use platform::{
     NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
     use_platform_sync,
