@@ -15,7 +15,7 @@ use super::lima::sizing::Prompter;
 use super::lima::{Tool, VmFlags, VmName, lima_path_dir, list_instances, list_instances_strict};
 use super::migrate::{LimaMigration, LimaOld, Migration, WslMigration, migrate_lima, migrate_wsl};
 use super::records::{self, GuestRecord};
-use crate::release::{MIN_REFRESH_RELEASE, Release};
+use crate::release::Release;
 
 /// What a refresh needs besides the host and the guests.
 #[derive(Clone, Debug)]
@@ -412,23 +412,6 @@ fn install_binary(
     )
 }
 
-/// Whether the inner `rayx setup --update` exists in the Linux `rayx` the guest has now: a chosen
-/// release older than the first one with the refresh does not have it.
-fn inner_update_exists(options: &RefreshOptions) -> bool {
-    options
-        .release
-        .as_ref()
-        .is_none_or(|release| *release >= MIN_REFRESH_RELEASE)
-}
-
-fn predates_refresh(options: &RefreshOptions) -> String {
-    let release = options.release.as_ref().map(Release::to_string);
-    format!(
-        "rayx {} predates the guest refresh: the inner update was skipped",
-        release.unwrap_or_else(|| options.version.clone())
-    )
-}
-
 /// The refresh of a guest that is up.
 fn refresh_inside(
     options: &RefreshOptions,
@@ -448,10 +431,6 @@ fn refresh_inside(
     let _ = writeln!(out, "==> {}: {upgrade}", guest.kind.label());
     if let Err(error) = runner.run_checked(&guest.script(&upgrade).interactive()) {
         return GuestOutcome::Failed(format!("upgrading the packages: {error}"));
-    }
-    if !inner_update_exists(options) {
-        let _ = writeln!(out, "{}", predates_refresh(options));
-        return GuestOutcome::Refreshed;
     }
     match guest::run_setup_inside(guest, &inner_flags(options), None, runner, out) {
         Ok(()) => GuestOutcome::Refreshed,
@@ -601,10 +580,6 @@ fn check_one(
     let yes = if options.yes { " -y" } else { "" };
     let upgrade = format!("sudo apt-get update && sudo apt-get upgrade{yes}");
     let _ = runner.run_checked(&guest.script(&upgrade).interactive());
-    if !inner_update_exists(options) {
-        let _ = writeln!(out, "{}", predates_refresh(options));
-        return GuestOutcome::Refreshed;
-    }
     let mut flags = inner_flags(options);
     flags.push("--check".to_string());
     let script = format!("\"{}\" setup {}", guest::LINUX_BINARY, flags.join(" "));

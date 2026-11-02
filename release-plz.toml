@@ -1,6 +1,7 @@
 # release-plz: keeps a release pull request with the version bump and the CHANGELOG.md section
-# open on `main`; merging it pushes the tag `vX.Y.Z` and creates the GitHub Release whose notes
-# are that section. See docs/releasing.md.
+# open on `main`; merging it pushes the tag `vX.Y.Z`, which starts dist's Release workflow
+# (`.github/workflows/release.yml`): dist, not release-plz, builds the `rayx` binaries and creates
+# the GitHub Release whose notes are that section. See docs/releasing.md.
 #
 # 0.x policy: `fix`, `perf` and `feat` bump the patch (0.4.0 -> 0.4.1); a breaking change (`!`
 # after the type or scope, or a `BREAKING CHANGE:` footer) bumps the minor (0.4.x -> 0.5.0). A
@@ -12,11 +13,8 @@ git_only = true
 publish = false
 git_tag_enable = true
 git_tag_name = "v{{ version }}"
-# The GitHub Release is titled like the tag; release-plz's multi-package default would be
-# `rayx_app-vX.Y.Z`.
-git_release_name = "v{{ version }}"
-# No cargo-dist here: release-plz creates the GitHub Release from the changelog section.
-git_release_enable = true
+# dist creates the GitHub Release from the tag, with the binaries, installers and attestations.
+git_release_enable = false
 changelog_update = true
 # Breaking changes are declared by their commits. cargo-semver-checks would also build NSH for
 # both the tag and `main` on every run.
@@ -26,13 +24,14 @@ semver_check = false
 release_commits = "^(feat|fix|perf)"
 
 # One release unit: the crates inherit `[workspace.package] version`, `rayx_app` builds on
-# `rayx_core` and `rayx_runtime`, the layers re-export `rayx_app_macros`' derive and the `rayx`
-# umbrella re-exports them all, so they share one version (the version group), one tag `vX.Y.Z`,
-# one GitHub Release and one root CHANGELOG.md, all owned by `rayx_app`.
+# `rayx_core` and `rayx_runtime`, the layers re-export `rayx_app_macros`' derive, the `rayx`
+# umbrella re-exports them all and `rayx-cli` scaffolds apps on the same tag, so they share one
+# version (the version group), one tag `vX.Y.Z`, one GitHub Release and one root CHANGELOG.md,
+# all owned by `rayx_app`.
 [[package]]
 name = "rayx_app"
 changelog_path = "./CHANGELOG.md"
-changelog_include = ["rayx", "rayx_core", "rayx_runtime", "rayx_app_macros"]
+changelog_include = ["rayx", "rayx_core", "rayx_runtime", "rayx_app_macros", "rayx-cli"]
 version_group = "rayx"
 
 [[package]]
@@ -68,17 +67,30 @@ git_tag_enable = false
 git_release_enable = false
 changelog_update = false
 
+[[package]]
+name = "rayx-cli"
+version_group = "rayx"
+# The `rayx` command-line tool, like `rayx_core`; dist builds and publishes its binaries for the
+# tag. Its first release: no `v*` tag has the package yet, so this name, which matches no tag,
+# makes it a new package (docs/releasing.md). Remove the line right after that release's tag.
+git_tag_name = "rayx-cli-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
 [changelog]
 header = """# Changelog
 
-All notable changes to `rayx`, `rayx_app`, `rayx_core`, `rayx_runtime` and `rayx_app_macros`
-are documented in this file. The crates share one version and one release tag `vX.Y.Z`. The format follows
+All notable changes to `rayx`, `rayx_app`, `rayx_core`, `rayx_runtime`, `rayx_app_macros` and
+`rayx-cli` (the `rayx` command-line tool) are documented in this file. They share one version and
+one release tag `vX.Y.Z`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the crates follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
 """
-# Each `Migration:` footer of a commit is printed as a nested line under its entry.
+# Each `Migration:` footer of a commit is printed as a nested line under its entry. The
+# `## [X.Y.Z] - YYYY-MM-DD` heading is the form dist's changelog parser reads for the release notes.
 body = """
 ## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
 {% for group, commits in commits | group_by(attribute="group") %}

@@ -1,7 +1,8 @@
 # Changelog
 
-All notable changes to `rayx`, `rayx_app`, `rayx_core`, `rayx_runtime` and `rayx_app_macros`
-are documented in this file. The crates share one version and one release tag `vX.Y.Z`. The format follows
+All notable changes to `rayx`, `rayx_app`, `rayx_core`, `rayx_runtime`, `rayx_app_macros` and
+`rayx-cli` (the `rayx` command-line tool) are documented in this file. They share one version and
+one release tag `vX.Y.Z`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the crates follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.

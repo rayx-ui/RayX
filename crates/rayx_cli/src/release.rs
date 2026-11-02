@@ -14,14 +14,6 @@ use crate::host::{CommandSpec, Runner};
 /// Where releases are published from.
 pub const RELEASES: &str = "https://github.com/rayx-ui/RayX.CLI/releases/download";
 
-/// The first release of this `rayx`, and the oldest one `--release` can name. `--release` names
-/// this CLI's releases only; the old CLI's (1.0.0 to 1.4.1) are in `rayx-ui/RayX.CLI.Old`.
-pub const OLDEST_RELEASE: Release = Release(Version::new(1, 0, 0));
-
-/// The first release with `setup --update` and the refresh offer after `self update`: every
-/// release of this `rayx`. A guest older than this has no `setup --update` to run.
-pub const MIN_REFRESH_RELEASE: Release = OLDEST_RELEASE;
-
 /// A published release: `X.Y.Z`, without a prerelease or build part.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Release(Version);
@@ -30,26 +22,15 @@ pub struct Release(Version);
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ReleaseError {
     text: String,
-    /// It is a version, but older than [`OLDEST_RELEASE`].
-    too_old: bool,
 }
 
 impl fmt::Display for ReleaseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.too_old {
-            write!(
-                f,
-                "`{}` is older than {OLDEST_RELEASE}, the first release of this rayx; there is none \
-                 before it (the old CLI's releases are in rayx-ui/RayX.CLI.Old)",
-                self.text
-            )
-        } else {
-            write!(
-                f,
-                "`{}` is not a release name: use the form X.Y.Z, for example 1.0.1",
-                self.text
-            )
-        }
+        write!(
+            f,
+            "`{}` is not a release name: use the form X.Y.Z, for example 0.6.1",
+            self.text
+        )
     }
 }
 
@@ -121,19 +102,15 @@ pub fn installer_url_for(version: &str) -> String {
 }
 
 /// Parses `X.Y.Z`; a leading `v` is accepted and dropped. Prereleases, build metadata, ranges,
-/// `latest`, releases older than [`OLDEST_RELEASE`] and everything else are refused.
+/// `latest` and everything else are refused. Whether the release has a `rayx` (RayX's releases
+/// before the CLI joined them have none) is [`exists`]'s question.
 pub fn parse(text: &str) -> Result<Release, ReleaseError> {
-    let error = |too_old| ReleaseError {
+    let error = || ReleaseError {
         text: text.to_string(),
-        too_old,
     };
     let bare = text.strip_prefix('v').unwrap_or(text);
-    let version = Version::parse(bare).map_err(|_| error(false))?;
-    let release = Release::from_version(&version).ok_or_else(|| error(false))?;
-    if release < OLDEST_RELEASE {
-        return Err(error(true));
-    }
-    Ok(release)
+    let version = Version::parse(bare).map_err(|_| error())?;
+    Release::from_version(&version).ok_or_else(error)
 }
 
 /// Asks whether `release` is published with a headers-only request for its installer, so nothing

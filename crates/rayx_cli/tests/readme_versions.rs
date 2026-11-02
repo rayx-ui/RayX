@@ -71,24 +71,24 @@ fn the_readme_documents_choosing_a_release_in_both_directions() {
         &releases,
         "the release section",
         &[
-            "`rayx self update --release 1.0.1 [--yes] [--check]`",
+            "`rayx self update --release 0.6.1 [--yes] [--check]`",
             "`--release`, not `--version`",
             "the install receipt",
             "release X was not found",
             "`upgrade`, `downgrade` or `same`",
-            "`rayx setup --lima|--wsl --release 1.0.1`",
-            "`rayx setup --update --release 1.0.1`",
+            "`rayx setup --lima|--wsl --release 0.6.1`",
+            "`rayx setup --update --release 0.6.1`",
             "that tag's own installer",
             "nothing changes if it is missing",
             "`RAYX_LIMA_BINARY` or `RAYX_WSL_BINARY`",
-            "Install rayx 1.0.1 over 1.2.0, an older release? [y/N]",
-            "Install rayx 1.0.1 in <guest> over 1.2.0, an older release? [y/N]",
+            "Install rayx 0.6.1 over 0.7.0, an older release? [y/N]",
+            "Install rayx 0.6.1 in <guest> over 0.7.0, an older release? [y/N]",
             "`--yes` skips the question",
             "no terminal and no `--yes` refuses",
             "Nothing is remembered",
             "a later plain `rayx self update` installs the latest release",
             "brings the guests back to the running version",
-            "`1.0.0` is the oldest release that can be named",
+            "a RayX release with a `rayx`, 0.6.0 or later",
             "`rayx-ui/RayX.CLI.Old` and cannot be installed by this `rayx`",
             "Every release of this CLI has `setup --update` and the refresh offer",
         ],
@@ -158,7 +158,7 @@ fn the_commands_table_and_the_install_section_point_at_the_release_choice() {
     assert_says(
         &install,
         "the install section",
-        &["`rayx self update --release 1.0.1`"],
+        &["`rayx self update --release 0.6.1`"],
     );
     let setup = section(&readme, "`rayx setup`");
     assert_says(
@@ -213,7 +213,7 @@ fn the_help_of_self_update_says_what_release_and_yes_do() {
         "`rayx self update --help`",
         &[
             "--release <RELEASE>",
-            "Install exactly this release (X.Y.Z, for example 1.0.1), also an older one after asking; it is not remembered",
+            "Install exactly this release (X.Y.Z, for example 0.6.1), also an older one after asking; it is not remembered",
             "Skip the question before installing an older release",
             "refresh this machine's setup and guests",
         ],

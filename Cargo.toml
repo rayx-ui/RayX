@@ -42,6 +42,11 @@ thiserror = "2.0"
 toml = { version = "0.9", default-features = false, features = ["parse", "serde"] }
 url = "2.5"
 
+# The profile dist builds the `rayx` binaries with (dist-workspace.toml).
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
 [workspace.lints.rust]
 unsafe_code = "deny"
 missing_docs = "allow"

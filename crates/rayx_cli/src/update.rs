@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use axoupdater::{AxoUpdater, ReleaseSource, ReleaseSourceType, UpdateRequest};
 use semver::Version;
 
-use crate::release::{self, Direction, Existence, MIN_REFRESH_RELEASE, Release};
+use crate::release::{self, Direction, Existence, Release};
 
 /// The cargo-dist application name: the package the releases are built from.
 pub const APP_NAME: &str = "rayx-cli";
@@ -289,15 +289,6 @@ pub fn run_release(
         }
     };
     let _ = writeln!(out, "Updated rayx {installed} -> {installed_now}.");
-    let has_refresh =
-        Release::from_version(&installed_now).is_some_and(|release| release >= MIN_REFRESH_RELEASE);
-    if !has_refresh {
-        let _ = writeln!(
-            out,
-            "rayx {installed_now} predates the guest refresh: no refresh was offered"
-        );
-        return 0;
-    }
     if direction == Direction::Downgrade {
         return 0;
     }

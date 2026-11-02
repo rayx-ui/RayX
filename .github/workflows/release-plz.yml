@@ -4,14 +4,14 @@ name: Release-plz
 # tests pull requests (the release pull request included) and pushes to `main`.
 #
 # `release` tags `vX.Y.Z` when the version in Cargo.toml has no tag yet (the merged release pull
-# request) and creates the GitHub Release with that version's CHANGELOG.md section as notes;
-# release-plz itself creates the Release, there is no cargo-dist here. `v0.4.0` was tagged by hand,
-# so the first run finds it and releases nothing. `release-pr` then keeps the next release pull
-# request up to date. It waits for `release`, so the release pull request is always computed after
-# the newest tag exists.
+# request). The tag starts `release.yml`, where dist builds the `rayx` binaries and creates the
+# GitHub Release with that version's CHANGELOG.md section as notes. `release-pr` then keeps the
+# next release pull request up to date. It waits for `release`, so the release pull request is
+# always computed after the newest tag exists.
 #
 # RELEASE_PLZ_TOKEN is a fine-grained personal access token (see docs/releasing.md). Events made with
-# the default GITHUB_TOKEN start no workflows, so with it the release pull request would get no CI.
+# the default GITHUB_TOKEN start no workflows, so with it the release pull request would get no CI
+# and the pushed tag would not start the Release workflow.
 on:
   push:
     branches: [main]

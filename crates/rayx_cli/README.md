@@ -18,18 +18,18 @@ Latest release, Windows (PowerShell):
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/rayx-ui/RayX.CLI/releases/latest/download/rayx-cli-installer.ps1 | iex"
 ```
 
-A pinned version (here 1.0.0) uses the same installers from that release:
+A pinned version (here 0.6.0) uses the same installers from that release:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rayx-ui/RayX.CLI/releases/download/v1.0.0/rayx-cli-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rayx-ui/RayX.CLI/releases/download/v0.6.0/rayx-cli-installer.sh | sh
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/rayx-ui/RayX.CLI/releases/download/v1.0.0/rayx-cli-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/rayx-ui/RayX.CLI/releases/download/v0.6.0/rayx-cli-installer.ps1 | iex"
 ```
 
 An installed `rayx` can switch release, in either direction, with `rayx self update --release
-1.0.1` (see [Choosing a release](#choosing-a-release-and-going-back)).
+0.6.1` (see [Choosing a release](#choosing-a-release-and-going-back)).
 
 The installer puts `rayx` in `~/.rayx/bin` (`$RAYX_HOME/bin` when `RAYX_HOME` is set), adds that
 directory to your `PATH` (open a new shell afterwards) and writes the install receipt that
@@ -44,13 +44,14 @@ gh attestation verify rayx-cli-aarch64-apple-darwin.tar.xz --repo rayx-ui/RayX.C
 
 If you download an archive by hand in a browser on macOS, remove the quarantine flag with
 `xattr -d com.apple.quarantine rayx` (the binaries are not notarized yet); the installers need no
-such step. How releases are made, and how to check one, is in [Releasing `rayx`](../../docs/releasing.md).
+such step. How releases are made, and how to check one, is in [Releasing RayX](../../docs/releasing.md).
 
 ## A new CLI, and the old one
 
-This `rayx` is a new CLI with its own history, starting at 1.0.0. The previous `rayx`, for GPUI and
-gpux apps, lives on as [`rayx-ui/RayX.CLI.Old`](https://github.com/rayx-ui/RayX.CLI.Old); its
-releases (up to 1.4.1) stay there.
+This `rayx` ships with RayX: every RayX release `vX.Y.Z` from 0.6.0 on has a `rayx` X.Y.Z, built
+from this workspace's `crates/rayx_cli`. The previous `rayx`, for GPUI and gpux apps, lives on as
+[`rayx-ui/RayX.CLI.Old`](https://github.com/rayx-ui/RayX.CLI.Old); its releases (up to 1.4.1)
+stay there.
 
 - **The machine side carried over:** `setup`, `doctor`, the WSL and Lima guests, `self update` and
   `fmt` work as before, without the GPU set (NSH draws with the system's own graphics stack).
@@ -58,7 +59,7 @@ releases (up to 1.4.1) stay there.
   the old grammar (`rayx app <dir> build wasm`) is gone, and GPUI apps stay on the old CLI.
 - **The installer replaces the old binary:** both install `~/.rayx/bin/rayx`. A machine that still
   builds GPUI apps keeps the old `rayx` by not installing this one. The old `rayx self update` does
-  not move to this CLI by itself (it sees 1.0.0 as older than 1.4.1); run this installer instead.
+  not move to this CLI by itself (it sees 0.6.0 as older than 1.4.1); run this installer instead.
 - **Records and guests carry over:** `setup.json` and `guests.json` stay where the old CLI keeps
   them, in the same format, so `rayx setup --update` re-runs the recorded setups and refreshes the
   WSL and Lima guests the old CLI created, putting this `rayx` into them.
@@ -157,27 +158,26 @@ cannot be read.
 By default a machine runs the latest `rayx` and its guests run the version of the `rayx` that
 refreshes them. To try another release, in either direction:
 
-- `rayx self update --release 1.0.1 [--yes] [--check]` installs exactly that release over the
+- `rayx self update --release 0.6.1 [--yes] [--check]` installs exactly that release over the
   installed one, for a `rayx` the release installers made (the install receipt). The name is
   `--release`, not `--version`. A release that does not exist exits 1 with `release X was not found`,
   and `--check` prints the installed release, the requested one and the direction (`upgrade`,
   `downgrade` or `same`) and installs nothing.
-- `rayx setup --lima|--wsl --release 1.0.1` and `rayx setup --update --release 1.0.1` put that
+- `rayx setup --lima|--wsl --release 0.6.1` and `rayx setup --update --release 0.6.1` put that
   release of the Linux `rayx` in the guest, from that tag's own installer, instead of the running
   version. The release is looked for first (a header request, nothing downloaded) and nothing
   changes if it is missing. It cannot be combined with `RAYX_LIMA_BINARY` or `RAYX_WSL_BINARY`.
 
 Installing an older release than the one in place is a downgrade and is confirmed:
-`Install rayx 1.0.1 over 1.2.0, an older release? [y/N]` for the host and `Install rayx 1.0.1 in
-<guest> over 1.2.0, an older release? [y/N]` for a guest. `--yes` skips the question, no terminal
+`Install rayx 0.6.1 over 0.7.0, an older release? [y/N]` for the host and `Install rayx 0.6.1 in
+<guest> over 0.7.0, an older release? [y/N]` for a guest. `--yes` skips the question, no terminal
 and no `--yes` refuses, and a no changes nothing (exit 1). Nothing is remembered: a later plain
 `rayx self update` installs the latest release, and a later plain `rayx setup --update` brings the
 guests back to the running version.
 
-`1.0.0` is the oldest release that can be named, the first of this CLI; an older version is refused.
-`--release` names this CLI's releases only: the old CLI's (1.0.0 to 1.4.1) are in
-`rayx-ui/RayX.CLI.Old` and cannot be installed by this `rayx`. Every release of this CLI has
-`setup --update` and the refresh offer.
+`--release` names a RayX release with a `rayx`, 0.6.0 or later: an older RayX release has none and
+is not found. The old CLI's releases (1.0.0 to 1.4.1) are in `rayx-ui/RayX.CLI.Old` and cannot be
+installed by this `rayx`. Every release of this CLI has `setup --update` and the refresh offer.
 
 ### Records, `rayx setup --update` and the refresh
 

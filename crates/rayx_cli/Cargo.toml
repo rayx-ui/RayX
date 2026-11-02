@@ -1,6 +1,6 @@
 [package]
 name = "rayx-cli"
-version = "1.0.0"
+version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 description = "The RayX command-line tool: machine setup, doctor, WSL and Lima guests, self update, and any Native Shell (NSH) app run through the nsh it pins."

@@ -465,7 +465,7 @@ pub fn wsl_is_running(name: &str, runner: &mut Runner) -> bool {
         .is_some_and(|outcome| text(&outcome).lines().any(|line| line.trim() == name))
 }
 
-/// The version the guest's Linux `rayx` reports (`rayx 1.0.0`), when it has one.
+/// The version the guest's Linux `rayx` reports (`rayx 0.6.0`), when it has one.
 pub fn linux_binary_version(guest: &Guest, runner: &mut Runner) -> Option<String> {
     runner
         .query(&guest.script(&format!("\"{LINUX_BINARY}\" --version")))

@@ -107,7 +107,7 @@ pub struct SetupArgs {
         ]
     )]
     pub update: bool,
-    /// With --lima, --wsl or --update: put exactly this release (X.Y.Z, for example 1.0.1, also an older one) of the Linux rayx in the guest instead of this rayx's version; it is not remembered
+    /// With --lima, --wsl or --update: put exactly this release (X.Y.Z, for example 0.6.1, also an older one) of the Linux rayx in the guest instead of this rayx's version; it is not remembered
     #[arg(long, requires = "release_target", value_name = "RELEASE")]
     pub release: Option<String>,
     /// With --lima or --update: the Lima VM by name (default `rayx`; one VM per project). With --update, repeat it to refresh only these recorded guests and skip this machine's own update
@@ -203,7 +203,7 @@ pub enum SelfCommand {
         /// Report whether a newer release exists without installing it
         #[arg(long)]
         check: bool,
-        /// Install exactly this release (X.Y.Z, for example 1.0.1), also an older one after asking; it is not remembered
+        /// Install exactly this release (X.Y.Z, for example 0.6.1), also an older one after asking; it is not remembered
         #[arg(long, value_name = "RELEASE")]
         release: Option<String>,
         /// Skip the question before installing an older release, and refresh this machine's setup and guests with the new rayx without asking

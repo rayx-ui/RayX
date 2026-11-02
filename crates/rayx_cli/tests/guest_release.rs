@@ -161,7 +161,7 @@ fn a_chosen_release_is_validated_and_names_the_version_the_guest_gets() {
         let args = parse(&["--lima", "--release", bad]).expect("clap takes any text");
         let error = chosen_release(&args).expect_err(bad);
         assert!(error.contains("is not a release name"), "{bad}: {error}");
-        assert!(error.contains("1.0.1"), "an example is given: {error}");
+        assert!(error.contains("0.6.1"), "an example is given: {error}");
     }
 }
 
@@ -179,7 +179,7 @@ fn a_bad_release_exits_1_before_anything_runs_for_every_guest_target() {
             stderr.contains("is not a release name"),
             "{target}: {stderr}"
         );
-        assert!(stderr.contains("1.0.1"), "{target}: {stderr}");
+        assert!(stderr.contains("0.6.1"), "{target}: {stderr}");
         assert!(
             output.stdout.is_empty(),
             "{target}: nothing was run or printed"

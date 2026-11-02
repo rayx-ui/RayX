@@ -56,13 +56,25 @@ fn help_lists_exactly_the_ten_commands_with_one_line_each() {
 }
 
 #[test]
-fn version_prints_rayx_1_0_0() {
+fn version_prints_rayx_and_rayx_s_version() {
     rayx()
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicate::str::diff("rayx 1.0.0\n"));
-    assert_eq!(env!("CARGO_PKG_VERSION"), "1.0.0");
+        .stdout(predicate::str::diff(format!(
+            "rayx {}\n",
+            env!("CARGO_PKG_VERSION")
+        )));
+    // rayx ships with RayX, under the workspace's one version.
+    let manifest: toml::Table =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.toml"))
+            .expect("the workspace's Cargo.toml")
+            .parse()
+            .expect("it parses");
+    assert_eq!(
+        manifest["workspace"]["package"]["version"].as_str(),
+        Some(env!("CARGO_PKG_VERSION"))
+    );
 }
 
 #[test]

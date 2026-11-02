@@ -339,29 +339,10 @@ fn a_downgrade_offers_no_refresh() {
 }
 
 #[test]
-fn no_release_of_this_rayx_predates_the_refresh() {
-    // A downgrade to 1.0.0 offers no refresh because it is a downgrade, not because 1.0.0 lacks it.
+fn an_upgrade_to_a_0_x_release_offers_the_refresh() {
     let (mut fake, mut spy) = (Fake::new(), Spy::new(Some(true)));
-    let run = release_run("1.0.0", false, true, "1.1.0", &mut fake, &mut spy);
+    let run = release_run("0.6.0", false, true, "0.5.9", &mut fake, &mut spy);
     assert_eq!(run.code, 0);
-    assert!(
-        !run.out.contains("predates the guest refresh"),
-        "{}",
-        run.out
-    );
-    assert!(spy.questions.is_empty() && spy.refreshes.is_empty());
-}
-
-#[test]
-fn an_upgrade_to_1_0_0_offers_the_refresh() {
-    let (mut fake, mut spy) = (Fake::new(), Spy::new(Some(true)));
-    let run = release_run("1.0.0", false, true, "0.9.0", &mut fake, &mut spy);
-    assert_eq!(run.code, 0);
-    assert!(
-        !run.out.contains("predates the guest refresh"),
-        "{}",
-        run.out
-    );
     assert_eq!(spy.refreshes.len(), 1, "{}", run.out);
 }
 
@@ -404,30 +385,10 @@ fn a_bad_release_name_is_refused_before_the_network_is_asked() {
         assert_eq!(output.status.code(), Some(1), "{bad}");
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(stderr.contains("is not a release name"), "{bad}: {stderr}");
-        assert!(stderr.contains("1.0.1"), "an example is given: {stderr}");
+        assert!(stderr.contains("0.6.1"), "an example is given: {stderr}");
         assert!(
             output.stdout.is_empty(),
             "{bad}: nothing was installed or checked"
         );
-    }
-}
-
-#[test]
-fn a_release_older_than_1_0_0_is_refused_before_anything_is_asked() {
-    use assert_cmd::cargo::cargo_bin_cmd;
-    use predicates::str::contains;
-
-    for args in [
-        &["self", "update", "--release", "0.9.0"][..],
-        &["self", "update", "--release", "0.9.0", "--check"][..],
-    ] {
-        cargo_bin_cmd!("rayx")
-            .args(args)
-            .env("RAYX_HOME", "/nonexistent/rayx-home")
-            .assert()
-            .code(1)
-            .stderr(contains(
-                "`0.9.0` is older than 1.0.0, the first release of this rayx",
-            ));
     }
 }

@@ -1,10 +1,7 @@
-//! `release`: what a release is called, how releases compare, where a release's installer lives
-//! and the floors: 1.0.0 is the first release of this rayx, and every release has the refresh
-//! (whether a release is published is `tests/release_probe.rs`).
+//! `release`: what a release is called, how releases compare and where a release's installer
+//! lives (whether a release is published is `tests/release_probe.rs`).
 
-use rayx_cli::release::{
-    Direction, MIN_REFRESH_RELEASE, OLDEST_RELEASE, Release, installer_url_for, parse,
-};
+use rayx_cli::release::{Direction, Release, installer_url_for, parse};
 use semver::Version;
 
 fn release(text: &str) -> Release {
@@ -34,7 +31,7 @@ fn everything_else_is_refused_with_an_example() {
         "1.x.0",
     ] {
         let error = parse(text).expect_err(text).to_string();
-        assert!(error.contains("1.0.1"), "{text:?}: {error}");
+        assert!(error.contains("0.6.1"), "{text:?}: {error}");
         assert!(error.contains(&format!("`{text}`")), "{text:?}: {error}");
     }
 }
@@ -84,24 +81,9 @@ fn the_installer_lives_under_the_release_tag() {
 }
 
 #[test]
-fn every_release_of_this_rayx_has_the_refresh() {
-    assert_eq!(MIN_REFRESH_RELEASE.to_string(), "1.0.0");
-    assert_eq!(MIN_REFRESH_RELEASE, OLDEST_RELEASE);
-    assert!(release("1.0.0") >= MIN_REFRESH_RELEASE);
-    assert!(release("1.1.0") >= MIN_REFRESH_RELEASE);
-}
-
-#[test]
-fn a_release_older_than_1_0_0_cannot_be_named() {
-    assert_eq!(OLDEST_RELEASE.to_string(), "1.0.0");
-    assert_eq!(release("1.0.0"), OLDEST_RELEASE);
-    for text in ["0.9.0", "v0.1.2", "0.99.99"] {
-        let error = parse(text).expect_err(text).to_string();
-        assert!(error.contains(&format!("`{text}`")), "{error}");
-        assert!(
-            error.contains("older than 1.0.0, the first release of this rayx"),
-            "{error}"
-        );
-        assert!(error.contains("rayx-ui/RayX.CLI.Old"), "{error}");
-    }
+fn a_0_x_version_names_a_release() {
+    // rayx ships with RayX's releases, on RayX's 0.x versions; there is no floor.
+    assert_eq!(release("0.6.0").to_string(), "0.6.0");
+    assert_eq!(release("v0.0.1").to_string(), "0.0.1");
+    assert!(release("0.6.0") < release("0.10.0"));
 }

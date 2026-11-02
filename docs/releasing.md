@@ -1,14 +1,21 @@
 # Releasing RayX
 
 A release is a version tag `vX.Y.Z` on `main` plus a GitHub Release whose notes are that version's
-`CHANGELOG.md` section. The crates, `rayx` (the umbrella), `rayx_app`, `rayx_core`, `rayx_runtime`
-and `rayx_app_macros`, share one version, one tag, one GitHub Release and one root `CHANGELOG.md`;
-`rayx`, `rayx_core`, `rayx_runtime` and `rayx_app_macros` never get a tag or a Release of their
-own. Nothing is published to crates.io
-(`publish = false`).
+`CHANGELOG.md` section and whose assets are the `rayx` command-line tool for six targets, with its
+installers. The crates, `rayx` (the umbrella), `rayx_app`, `rayx_core`, `rayx_runtime`,
+`rayx_app_macros` and `rayx-cli` (the `rayx` binary), share one version, one tag, one GitHub
+Release and one root `CHANGELOG.md`; none of them gets a tag or a Release of its own. Nothing is
+published to crates.io (`publish = false`).
 
-release-plz does all of it (`release-plz.toml`, `.github/workflows/release-plz.yml`) in git-only
-mode (`git_only = true`): versions come from `v*` tags, not from a registry.
+Two tools split the work:
+
+- **release-plz** (`release-plz.toml`, `.github/workflows/release-plz.yml`), in git-only mode
+  (`git_only = true`: versions come from `v*` tags, not from a registry), turns Conventional
+  Commits into a release pull request and, when that pull request is merged, pushes the tag. It
+  creates no GitHub Release (`git_release_enable = false`).
+- **cargo-dist** (`.github/workflows/release.yml`, generated from `dist-workspace.toml`) starts on
+  the tag, builds `rayx-cli` for the six targets, writes the checksums, attestations and installers,
+  and creates the GitHub Release with the notes from the matching `CHANGELOG.md` section.
 
 - [How a release happens](#how-a-release-happens)
 - [Commit types and the 0.x policy](#commit-types-and-the-0x-policy)
@@ -18,6 +25,7 @@ mode (`git_only = true`): versions come from `v*` tags, not from a registry.
 - [The `RELEASE_PLZ_TOKEN` secret](#the-release_plz_token-secret)
 - [Tags never move](#tags-never-move)
 - [By-hand fallback](#by-hand-fallback)
+- [Checking a release](#checking-a-release)
 - [Consuming a release](#consuming-a-release)
 - [Pushing to `main`](#pushing-to-main)
 
@@ -27,10 +35,14 @@ mode (`git_only = true`): versions come from `v*` tags, not from a registry.
    types decide the next version (see below).
 2. On every push to `main` the Release-plz workflow's `release-pr` job opens or updates the
    release pull request (head branch `release-plz-…`): the `[workspace.package]` version bump in
-   `Cargo.toml`, `Cargo.lock` and a new `CHANGELOG.md` section.
+   `Cargo.toml`, `Cargo.lock` and a new `CHANGELOG.md` section. Its CI builds the `rayx` binaries
+   for all six targets without publishing them (`pr-run-mode = "upload"`), so they are proven
+   before the merge.
 3. Review it (see [before merging](#before-merging-a-release-pull-request)) and merge it.
-4. On that push the `release` job finds a version in `Cargo.toml` with no tag, pushes `vX.Y.Z` and
-   creates the GitHub Release with the new changelog section as its notes.
+4. On that push the `release` job finds a version in `Cargo.toml` with no tag and pushes `vX.Y.Z`.
+5. The tag starts dist's Release workflow. When it is green the GitHub Release exists, with the new
+   changelog section as its notes and the archives, checksums, `rayx-cli-installer.sh`,
+   `rayx-cli-installer.ps1` and `sha256.sum` as its assets.
 
 `v0.4.0`, the first release, was tagged by hand: it renamed the crates of `nsh-app` `v0.3.0`, and
 in git-only mode release-plz looks a package up by its current name inside the previous tag, so it
@@ -43,7 +55,9 @@ no tag, such as `git_tag_name = "<crate>-v{{ version }}"` on the renamed crate's
 the others' version. Remove the line in the first commit after the release's tag, or every later
 release pull request counts the crate as new again and repeats its history. `rayx_app_di` became
 `rayx_core` this way in `v0.5.0`. A new crate takes the same route: `rayx_runtime` and `rayx`, which
-the `v0.5.0` tag does not have, carried the line until `v0.5.1`.
+the `v0.5.0` tag does not have, carried the line until `v0.5.1`, and `rayx-cli`, which moved here
+from `rayx-ui/RayX.CLI` (never released there), carries `git_tag_name = "rayx-cli-v{{ version }}"`
+until its first release, the next one after `v0.5.1`.
 
 ## Commit types and the 0.x policy
 
@@ -76,6 +90,7 @@ cargo-semver-checks would build NSH for both the tag and `main` on every run.
   breaking.
 - The pull request changes only `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`.
 - The changelog section reads well (see below).
+- Its Release workflow built the binaries for all six targets.
 
 ## The changelog
 
@@ -89,16 +104,18 @@ header must stay identical to `[changelog] header`.
 
 ## CI on a release pull request
 
-A release pull request runs only `ci.yml`, like any other pull request: one `ubuntu-24.04` job with
+A release pull request runs `ci.yml`, like any other pull request: one `ubuntu-24.04` job with
 `cargo fmt --all --check`, Clippy, `cargo test --workspace` and the `wasm32-unknown-unknown` check
-of `rayx_core` and `rayx_runtime`. `ci.yml` also runs on every push to `main`; `release-plz.yml` runs no tests.
+of `rayx_core` and `rayx_runtime`. It also runs dist's Release workflow, which plans the release and
+builds the binaries without publishing anything. `ci.yml` also runs on every push to `main`;
+`release-plz.yml` runs no tests.
 
 ## The `RELEASE_PLZ_TOKEN` secret
 
 Events made with the workflow's default `GITHUB_TOKEN` start no other workflows, so a release pull
-request opened with it would get no CI. release-plz therefore checks out and pushes with a
-fine-grained personal access token stored as the repository's Actions secret `RELEASE_PLZ_TOKEN`.
-The crates never read it.
+request opened with it would get no CI and the tag it pushed would not start the Release workflow.
+release-plz therefore checks out and pushes with a fine-grained personal access token stored as the
+repository's Actions secret `RELEASE_PLZ_TOKEN`. Neither the crates nor `rayx` ever read it.
 
 - resource owner `rayx-ui`;
 - repository access: RayX;
@@ -110,7 +127,8 @@ Release pull requests, tags, Releases and release-plz's commits appear as the to
 
 **When it expires, nothing fails loudly:** the Release-plz runs turn red at checkout or push, no
 release pull request is updated and no tag is pushed; releases silently stop until the token is
-replaced. Rotate it before the expiry date with the same settings; nothing else changes.
+replaced. Rotate before the expiry date: generate a new token with the same settings and replace
+the secret's value. Nothing else changes.
 
 ## Tags never move
 
@@ -119,8 +137,9 @@ commit. A bad release is fixed forward with a new version.
 
 ## By-hand fallback
 
-If release-plz cannot cut a release (a broken workflow, an expired token you cannot replace yet), the owner releases by hand on an up-to-date `main` (tags are pushed only by
-release-plz or the owner):
+If release-plz cannot cut a release (a broken workflow, an expired token you cannot replace yet),
+the owner releases by hand on an up-to-date `main` (tags are pushed only by release-plz or the
+owner):
 
 ```bash
 # 1. Set X.Y.Z in [workspace.package] version of the root Cargo.toml, then:
@@ -129,16 +148,32 @@ cargo update --workspace
 # 3. Commit and push it (see "Pushing to main"), then tag that commit and push the tag
 git tag -a vX.Y.Z -m vX.Y.Z
 git push origin vX.Y.Z
-# 4. Save that section's body to notes.md and create the GitHub Release with it
-gh release create vX.Y.Z --repo rayx-ui/RayX --title vX.Y.Z --notes-file notes.md
 ```
 
-release-plz continues from the by-hand tag on its next run.
+The tag starts the Release workflow exactly as release-plz's tag does, and dist creates the GitHub
+Release. Tags always have the form `vX.Y.Z`, because dist's trigger, the WSL and Lima guests' installs
+(`rayx setup --wsl`, `--lima`) and `rayx self update` all read it. release-plz continues from the
+by-hand tag on its next run.
+
+## Checking a release
+
+```bash
+gh release view vX.Y.Z --repo rayx-ui/RayX
+gh release download vX.Y.Z --repo rayx-ui/RayX --pattern 'rayx-cli-aarch64-apple-darwin.tar.xz'
+gh attestation verify rayx-cli-aarch64-apple-darwin.tar.xz --repo rayx-ui/RayX
+```
+
+Each archive has a `.sha256` file next to it, and `sha256.sum` lists all of them. The shell
+installer verifies the download against its checksum; the CLI's
+[README](../crates/rayx_cli/README.md#install) has the install one-liners.
+
+macOS binaries and Windows executables are not signed or notarized yet; Gatekeeper only quarantines
+archives downloaded by hand in a browser, not the installers' downloads.
 
 ## Consuming a release
 
 Consumers, Gamify first among them, depend on a release tag, never on a branch, a commit, a path or
-crates.io:
+crates.io, and install the `rayx` of the same release:
 
 ```toml
 [dependencies]

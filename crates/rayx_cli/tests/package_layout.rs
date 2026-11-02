@@ -52,9 +52,11 @@ fn package_has_library_and_binary_targets() {
     assert_eq!(package["edition"], "2024");
     assert_eq!(package["license"], "MIT OR Apache-2.0");
     assert_eq!(package["repository"], "https://github.com/rayx-ui/RayX.CLI");
+    let workspace = read_toml(&repository().join("Cargo.toml"));
     assert_eq!(
-        package["version"], "1.0.0",
-        "the new CLI starts at 1.0.0 (D4)"
+        package["version"].as_str(),
+        workspace["workspace"]["package"]["version"].as_str(),
+        "rayx ships under RayX's one version"
     );
     assert_eq!(package["publish"], serde_json::json!([]), "publish = false");
 

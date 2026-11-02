@@ -71,7 +71,8 @@ Never add Claude co-author or other AI attribution lines.
 
 ## Releases
 
-release-plz releases the workspace's crates under one version and one tag `vX.Y.Z`; see
+release-plz releases the workspace's crates under one version and one tag `vX.Y.Z`, and cargo-dist
+builds the `rayx` binaries for that tag and creates its GitHub Release; see
 [docs/releasing.md](docs/releasing.md).
 
 - Conventional Commits drive the version. 0.x policy: `fix`, `perf` and `feat` → patch; a breaking
