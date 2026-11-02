@@ -12,7 +12,7 @@ use semver::Version;
 use crate::host::{CommandSpec, Runner};
 
 /// Where releases are published from.
-pub const RELEASES: &str = "https://github.com/rayx-ui/RayX.CLI/releases/download";
+pub const RELEASES: &str = "https://github.com/rayx-ui/RayX/releases/download";
 
 /// A published release: `X.Y.Z`, without a prerelease or build part.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -15,7 +15,7 @@ use rayx_cli::setup::wsl::{Checkout, WslRequest, distribution, run_with};
 use rayx_cli::wsl::{Distribution, status_script};
 
 const INSTALLER: &str =
-    "https://github.com/rayx-ui/RayX.CLI/releases/download/v1.0.0/rayx-cli-installer.sh";
+    "https://github.com/rayx-ui/RayX/releases/download/v1.0.0/rayx-cli-installer.sh";
 
 fn binary() -> LinuxBinary {
     LinuxBinary {

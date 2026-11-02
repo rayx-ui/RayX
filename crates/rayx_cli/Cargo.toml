@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 description = "The RayX command-line tool: machine setup, doctor, WSL and Lima guests, self update, and any Native Shell (NSH) app run through the nsh it pins."
 license.workspace = true
-repository = "https://github.com/rayx-ui/RayX.CLI"
+repository.workspace = true
 readme = "README.md"
 publish.workspace = true
 

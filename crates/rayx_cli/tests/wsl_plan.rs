@@ -240,7 +240,7 @@ fn the_release_installer_of_the_same_version_runs_and_setup_runs_with_the_same_f
         .unwrap_or_else(|| panic!("a download in {all:?}"));
     assert!(
         download.contains(
-            "https://github.com/rayx-ui/RayX.CLI/releases/download/v0.3.0/rayx-cli-installer.sh"
+            "https://github.com/rayx-ui/RayX/releases/download/v0.3.0/rayx-cli-installer.sh"
         ),
         "{download}"
     );

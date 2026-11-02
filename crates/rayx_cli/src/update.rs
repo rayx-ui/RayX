@@ -19,14 +19,14 @@ use crate::release::{self, Direction, Existence, Release};
 /// The cargo-dist application name: the package the releases are built from.
 pub const APP_NAME: &str = "rayx-cli";
 const OWNER: &str = "rayx-ui";
-const REPOSITORY: &str = "RayX.CLI";
+const REPOSITORY: &str = "RayX";
 
 /// The commands that install a release from scratch.
 pub const INSTALL_HELP: &str = "install a release:\n  \
      macOS and Linux: curl --proto '=https' --tlsv1.2 -LsSf \
-     https://github.com/rayx-ui/RayX.CLI/releases/latest/download/rayx-cli-installer.sh | sh\n  \
+     https://github.com/rayx-ui/RayX/releases/latest/download/rayx-cli-installer.sh | sh\n  \
      Windows:         powershell -ExecutionPolicy Bypass -c \"irm \
-     https://github.com/rayx-ui/RayX.CLI/releases/latest/download/rayx-cli-installer.ps1 | iex\"";
+     https://github.com/rayx-ui/RayX/releases/latest/download/rayx-cli-installer.ps1 | iex\"";
 
 /// Where the running `rayx` came from.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -84,7 +84,7 @@ impl InstallSource {
             InstallSource::Installer => String::new(),
             InstallSource::DevelopmentBuild => format!(
                 "this rayx is a development build, so `self update` leaves it alone. Rebuild it \
-                 from the checkout (`cargo build --release`), or {INSTALL_HELP}"
+                 from the checkout (`cargo build --release -p rayx-cli`), or {INSTALL_HELP}"
             ),
             InstallSource::Cargo => format!(
                 "this rayx was installed with cargo, not by the release installers, so `self \

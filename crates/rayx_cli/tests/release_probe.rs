@@ -44,7 +44,7 @@ fn existence_asks_for_the_headers_of_the_installer_only() {
             "-sIL",
             "-w",
             "\nstatus=%{http_code}\n",
-            "https://github.com/rayx-ui/RayX.CLI/releases/download/v1.0.1/rayx-cli-installer.sh"
+            "https://github.com/rayx-ui/RayX/releases/download/v1.0.1/rayx-cli-installer.sh"
         ]
     );
 }

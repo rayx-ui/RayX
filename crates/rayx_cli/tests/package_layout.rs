@@ -51,7 +51,7 @@ fn package_has_library_and_binary_targets() {
     assert_eq!(package["name"], "rayx-cli");
     assert_eq!(package["edition"], "2024");
     assert_eq!(package["license"], "MIT OR Apache-2.0");
-    assert_eq!(package["repository"], "https://github.com/rayx-ui/RayX.CLI");
+    assert_eq!(package["repository"], "https://github.com/rayx-ui/RayX");
     let workspace = read_toml(&repository().join("Cargo.toml"));
     assert_eq!(
         package["version"].as_str(),

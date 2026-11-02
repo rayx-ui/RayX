@@ -34,7 +34,7 @@ fn r(text: &str) -> Release {
 
 fn installer(version: &str) -> String {
     format!(
-        "https://github.com/rayx-ui/RayX.CLI/releases/download/v{version}/rayx-cli-installer.sh"
+        "https://github.com/rayx-ui/RayX/releases/download/v{version}/rayx-cli-installer.sh"
     )
 }
 

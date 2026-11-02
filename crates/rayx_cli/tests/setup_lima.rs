@@ -462,7 +462,7 @@ fn the_guest_steps_run_through_limactl_shell_with_the_same_flags() {
     assert_eq!(scripts[1], "\"$HOME/.rayx/bin/rayx\" --version");
     assert!(
         scripts[2].contains(
-            "https://github.com/rayx-ui/RayX.CLI/releases/download/v1.0.0/rayx-cli-installer.sh"
+            "https://github.com/rayx-ui/RayX/releases/download/v1.0.0/rayx-cli-installer.sh"
         ),
         "{}",
         scripts[2]

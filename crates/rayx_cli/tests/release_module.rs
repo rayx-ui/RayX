@@ -71,7 +71,7 @@ fn a_development_version_has_no_release_name() {
 fn the_installer_lives_under_the_release_tag() {
     assert_eq!(
         release("1.0.1").installer_url(),
-        "https://github.com/rayx-ui/RayX.CLI/releases/download/v1.0.1/rayx-cli-installer.sh"
+        "https://github.com/rayx-ui/RayX/releases/download/v1.0.1/rayx-cli-installer.sh"
     );
     assert_eq!(
         installer_url_for("1.1.0"),

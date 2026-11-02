@@ -109,7 +109,7 @@ fn check_reports_both_versions_and_never_installs() {
 
 #[test]
 fn check_works_for_a_rayx_the_installers_did_not_make() {
-    let mut backend = Fake::new("0.2.0", false, "/work/RayX.CLI/target/release/rayx");
+    let mut backend = Fake::new("0.2.0", false, "/work/RayX/target/release/rayx");
 
     let (code, out, _) = run(true, "0.1.0", &mut backend);
 
@@ -143,7 +143,7 @@ fn nothing_is_installed_when_the_release_is_not_newer() {
 #[test]
 fn a_rayx_without_a_receipt_is_told_how_to_update_and_left_alone() {
     for (exe, words) in [
-        ("/work/RayX.CLI/target/release/rayx", "development build"),
+        ("/work/RayX/target/release/rayx", "development build"),
         (r"C:\work\rayx\target\debug\rayx.exe", "development build"),
         ("/home/dev/.cargo/bin/rayx", "installed with cargo"),
         ("/opt/tools/rayx", "not installed by the release installers"),
@@ -165,7 +165,7 @@ fn a_rayx_without_a_receipt_is_told_how_to_update_and_left_alone() {
 
 #[test]
 fn the_install_source_follows_the_receipt_before_the_path() {
-    let target = Path::new("/work/RayX.CLI/target/release/rayx");
+    let target = Path::new("/work/RayX/target/release/rayx");
     assert_eq!(classify(target, true), InstallSource::Installer);
     assert_eq!(classify(target, false), InstallSource::DevelopmentBuild);
     assert_eq!(
