@@ -211,6 +211,7 @@ pub fn start() {
 }
 
 async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
+    crate::binding::start_dispatcher();
     let root = build(RayXAppBuilder::new().add_nsh_services())
         .build_async()
         .await?;

@@ -142,6 +142,26 @@ and the app's lifecycle). Register the ones the app uses in its UI set beside `A
 `use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
 component's cleanup; `ServiceScope::view_model::<T>()` does the same for TSX until the scope is disposed.
 
+## Binding view models
+
+A view model's [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) state reaches the UI as NSH state. A view model
+notifies on the thread that changed it; the bindings carry each change to the engine's thread.
+
+```rust
+// A Rust component: NSH signals, starting at the view model's values, until the component's cleanup.
+let count = use_reactive(&vm.count.read_only())?; // ReadSignal<u32>
+let name = use_two_way(&vm.name)?;             // Signal<String>: what the UI writes goes back
+let odds = use_list(&vm.odds)?;                // ReadSignal<Vec<Odd>> from an ObservableList
+let place = use_command(&vm.place_bet)?;       // can_execute, is_executing, execute()
+```
+
+```tsx
+// TSX: a view model class returns `Observable`s (`Observable::of(&signal)`) and `ReactiveCommand`s.
+const count = signal(vm.count.value);
+vm.count.bind(count.set);                      // now and on every change
+vm.placeBet.execute();                         // throws when it refuses
+```
+
 NSH comes from an integration tag `fork-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh)
 (`[patch.crates-io]` in `Cargo.toml`); a consumer's own patch decides which NSH it builds with, and an app takes the
 same tag as the RayX release it depends on.

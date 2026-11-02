@@ -22,6 +22,10 @@
 //! - **Activation.** [`use_view_model`] resolves an [`ActivatableViewModel`] in the screen's scope
 //!   and activates it until the component's cleanup; [`ServiceScope`] activates what it resolves
 //!   for TSX until it is disposed.
+//! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
+//!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
+//!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
+//!   [`ReactiveCommand`]); a change from any thread reaches the UI on the engine's thread.
 //!
 //! - **RayX's services on NSH.** Every surface's builder starts with NSH's [`NshAssetReader`]
 //!   and [`NshFontRegistrar`] (reading the app's files with `fetch` of their `asset:/` URLs,
@@ -48,6 +52,7 @@
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
+mod binding;
 mod i18n_class;
 mod platform;
 mod scope_class;
@@ -66,6 +71,10 @@ pub use rayx_core::{
     services,
 };
 
+pub use binding::{
+    Observable, ReactiveCommand, UiCommand, use_command, use_list, use_reactive, use_stream,
+    use_two_way,
+};
 pub use i18n_class::I18n;
 pub use platform::{
     NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
