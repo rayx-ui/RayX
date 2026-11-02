@@ -1,5 +1,6 @@
-//! `rayx serve` (SERVE-1) against a running server on a free port: MIME types, `index.html`,
-//! `/health`, nothing outside the site, `Cache-Control: no-store`, 127.0.0.1 only.
+//! `rayx serve` (SERVE-1) against a running server on a free port: MIME types, `index.html` (for a
+//! directory and for an app's own routes), `/health`, nothing outside the site,
+//! `Cache-Control: no-store`, 127.0.0.1 only.
 
 mod common;
 
@@ -133,6 +134,34 @@ fn a_directory_serves_its_index_html_and_queries_are_ignored() {
 }
 
 #[test]
+fn an_extensionless_path_that_names_no_file_serves_the_index_html() {
+    let (_site, port) = serve_site();
+    // The app's routes: the browser loads them by address, the app reads them from its location.
+    for target in [
+        "/teams/12",
+        "/teams/12/?tab=odds",
+        "/live#top",
+        "/%C3%A9quipes",
+    ] {
+        let (status, headers, body) = request(port, "GET", target);
+        assert_eq!(status, "HTTP/1.1 200 OK", "{target}");
+        assert_eq!(
+            header(&headers, "Content-Type"),
+            Some("text/html; charset=utf-8"),
+            "{target}"
+        );
+        assert_eq!(body, b"<!doctype html><title>app</title>", "{target}");
+    }
+    // A file the site has is still that file, and a missing file stays missing.
+    let (_, _, body) = request(port, "GET", "/chunks/");
+    assert_eq!(body, b"<p>chunks</p>");
+    for target in ["/nsh.missing.wasm", "/icons/gone.png", "/chunks/a.nshc"] {
+        let (status, _, _) = request(port, "GET", target);
+        assert_eq!(status, "HTTP/1.1 404 Not Found", "{target}");
+    }
+}
+
+#[test]
 fn health_answers_200() {
     let (_site, port) = serve_site();
     let (status, headers, body) = request(port, "GET", "/health");
@@ -162,6 +191,11 @@ fn nothing_outside_the_site_is_served() {
         "/..%5csecret.txt".to_string(),
         "/%zz".to_string(),
         "/missing.js".to_string(),
+        // Routes that leave the site get no index either.
+        "/../secret".to_string(),
+        "/%2e%2e/secret".to_string(),
+        "/a/%2e%2e/%2e%2e/secret".to_string(),
+        "/..%5csecret".to_string(),
         "/link.txt".to_string(),
     ] {
         let (status, headers, body) = request(port, "GET", &target);

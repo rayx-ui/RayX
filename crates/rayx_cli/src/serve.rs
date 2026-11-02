@@ -1,7 +1,8 @@
 //! `rayx serve [--dir <site>] [--port <port>]`: a static host for what `nsh package --target web`
 //! writes (design §5, SERVE-1). One blocking HTTP/1.1 server on `std::net`, on 127.0.0.1 only:
-//! files with their MIME types (`.wasm` as `application/wasm`), `index.html` for a directory,
-//! `GET /health`, nothing outside the site, and `Cache-Control: no-store` on every response.
+//! files with their MIME types (`.wasm` as `application/wasm`), `index.html` for a directory and,
+//! as a single-page app's host, for a path without a file extension that names no file, `GET
+//! /health`, nothing outside the site, and `Cache-Control: no-store` on every response.
 //!
 //! It takes the place of the static host an app would otherwise carry in its own tooling.
 
@@ -172,6 +173,29 @@ pub fn resolve(root: &Path, target: &str) -> Option<PathBuf> {
     real.starts_with(root).then_some(file)
 }
 
+/// [`resolve`], else the site's `index.html` for a path without a file extension that names no
+/// file (`/teams/12`): one of the app's own routes, which the app reads from its location. A path
+/// with an extension (`/missing.js`) stays missing, and one [`resolve`] refuses for leaving the
+/// site gets nothing either.
+pub fn resolve_route(root: &Path, target: &str) -> Option<PathBuf> {
+    if let Some(file) = resolve(root, target) {
+        return Some(file);
+    }
+    let path = target.split(['?', '#']).next().unwrap_or_default();
+    let decoded = percent_decode(path)?;
+    if decoded.contains('\\') {
+        return None;
+    }
+    let relative = Path::new(decoded.trim_start_matches('/'));
+    let inside = relative
+        .components()
+        .all(|component| matches!(component, Component::Normal(_) | Component::CurDir));
+    if !inside || relative.extension().is_some() {
+        return None;
+    }
+    resolve(root, "/index.html")
+}
+
 /// Answers one request on `stream` (HTTP/1.1, `Connection: close`).
 fn respond(root: &Path, mut stream: TcpStream) -> std::io::Result<()> {
     let mut reader = BufReader::new(stream.try_clone()?);
@@ -205,7 +229,7 @@ fn respond(root: &Path, mut stream: TcpStream) -> std::io::Result<()> {
             method,
         );
     }
-    match resolve(root, target).and_then(|file| Some((std::fs::read(&file).ok()?, file))) {
+    match resolve_route(root, target).and_then(|file| Some((std::fs::read(&file).ok()?, file))) {
         Some((body, file)) => {
             write_response(&mut stream, "200 OK", mime_type(&file), &body, method)
         }

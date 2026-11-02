@@ -388,8 +388,10 @@ for `ts`).
 
 `rayx serve [--dir <site>] [--port <port>]` serves what `rayx app package --target web` writes, on
 `127.0.0.1` only (the port from `--port`, else `PORT`, else 8080): files with their MIME types
-(`.wasm` as `application/wasm`), `index.html` for a directory, `GET /health`, nothing outside the
-site, and `Cache-Control: no-store` on every response.
+(`.wasm` as `application/wasm`), `index.html` for a directory, `index.html` too for a path without
+a file extension that names no file (`/teams/12`, a single-page app's own route, which the app reads
+from its location; `/missing.js` stays a 404), `GET /health`, nothing outside the site, and
+`Cache-Control: no-store` on every response.
 
 ### `rayx fmt`
 
