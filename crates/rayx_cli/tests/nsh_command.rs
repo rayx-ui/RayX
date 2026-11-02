@@ -18,7 +18,7 @@ use rayx_cli::nsh::install::RustTools;
 use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::nsh::{install_in, path_in};
 
-const ID: &str = "15fdd2a3fb70";
+const ID: &str = "57713c3c55c9";
 
 /// `rayx` with its store and records in `home`.
 fn rayx(home: &Workspace) -> Command {
@@ -43,10 +43,10 @@ fn installed(home: &Workspace, id: &str, kind: Kind) -> PathBuf {
             version: 1,
             id: id.into(),
             kind,
-            url: "https://github.com/dXnSix/nsh/releases/download/fork-0.3.0-2/nsh-macos-arm64.tar.gz"
+            url: "https://github.com/dXnSix/nsh/releases/download/fork-0.3.0-3/nsh-macos-arm64.tar.gz"
                 .into(),
-            reference: Some("fork-0.3.0-2".into()),
-            commit: Some("15fdd2a3fb70b21193bb80796b08f39aac5e098c".into()),
+            reference: Some("fork-0.3.0-3".into()),
+            commit: Some("57713c3c55c997ae91b5a04bcbb769f1155b0be5".into()),
             nsh: "0.2.0".into(),
             cli: cli.into(),
             installed: "2026-10-24T01:30:00Z".into(),
@@ -78,7 +78,7 @@ fn status_shows_the_pin_its_source_the_entry_its_size_and_the_cli() {
         .get_output()
         .clone();
     let text = String::from_utf8(output.stdout).expect("UTF-8");
-    assert!(text.starts_with("nsh fork-0.3.0-2 (15fdd2a)\n"), "{text}");
+    assert!(text.starts_with("nsh fork-0.3.0-3 (57713c3)\n"), "{text}");
     for line in [
         "  source     project\n".to_string(),
         format!("  id         {ID}\n"),
@@ -103,7 +103,7 @@ fn status_json_has_the_same_fields() {
         .get_output()
         .clone();
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).expect("JSON");
-    assert_eq!(json["value"], "fork-0.3.0-2 (15fdd2a)");
+    assert_eq!(json["value"], "fork-0.3.0-3 (57713c3)");
     assert_eq!(json["source"], "project");
     assert_eq!(json["id"], ID);
     assert_eq!(json["kind"], "source");
@@ -116,7 +116,7 @@ fn status_json_has_the_same_fields() {
             .is_some_and(|c| Path::new(c).ends_with(Path::new("source/target/release/nsh"))),
         "{json}"
     );
-    assert_eq!(json["commit"], "15fdd2a3fb70b21193bb80796b08f39aac5e098c");
+    assert_eq!(json["commit"], "57713c3c55c997ae91b5a04bcbb769f1155b0be5");
     assert_eq!(json["version"], "0.3.0");
 }
 
@@ -154,7 +154,7 @@ fn status_of_a_missing_pin_and_of_each_source() {
         .current_dir(&app.root)
         .assert()
         .success()
-        .stderr(contains("pins no nsh").and(contains("tag = \"fork-0.3.0-2\"")));
+        .stderr(contains("pins no nsh").and(contains("tag = \"fork-0.3.0-3\"")));
 }
 
 #[test]
@@ -181,7 +181,7 @@ fn path_without_install_on_a_missing_pin_exits_1_with_the_setup_command() {
         .code(1)
         .stdout(predicate::str::is_empty())
         .stderr(
-            contains("nsh fork-0.3.0-2 (15fdd2a) is not installed")
+            contains("nsh fork-0.3.0-3 (57713c3) is not installed")
                 .and(contains(format!("cd {} && rayx setup", app.root.display()))),
         );
     assert!(

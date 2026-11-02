@@ -113,7 +113,7 @@ fn upstream_v0_2_0_installs_from_its_release_and_again_changes_nothing() {
 #[ignore = "builds the fork's nsh-cli from source (network, several minutes)"]
 fn the_default_pin_s_commit_installs_from_source_and_again_changes_nothing() {
     let home = Workspace::empty();
-    // fork-0.3.0-2's commit as a rev pin, which has no release whatever the fork publishes, so it
+    // fork-0.3.0-3's commit as a rev pin, which has no release whatever the fork publishes, so it
     // always builds from source.
     let app = Workspace::fixture("nsh-ts-app");
     app.write(
@@ -129,7 +129,7 @@ fn the_default_pin_s_commit_installs_from_source_and_again_changes_nothing() {
         cli,
         home.path(&format!("nsh/{id}/source/target/release/nsh"))
     );
-    assert_eq!(version_of(&cli), "nsh 0.3.0 (15fdd2a)");
+    assert_eq!(version_of(&cli), "nsh 0.3.0 (57713c3)");
     let receipt: serde_json::Value =
         serde_json::from_str(&home.read(&format!("nsh/{id}/receipt.json"))).expect("receipt");
     assert_eq!(receipt["kind"], "source");

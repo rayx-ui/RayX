@@ -86,7 +86,7 @@ fn gamify_shows_its_pin_checks_packages_and_serves_through_rayx_unchanged() {
     let status_text = String::from_utf8_lossy(&status.stdout).into_owned();
     assert!(status.status.success(), "{status_text}");
     assert!(
-        status_text.contains("fork-0.3.0-2 (15fdd2a)") && status_text.contains("project"),
+        status_text.contains("fork-0.3.0-3 (57713c3)") && status_text.contains("project"),
         "{status_text}"
     );
 

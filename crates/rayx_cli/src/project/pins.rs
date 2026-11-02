@@ -95,8 +95,8 @@ pub const DEFAULTS: Defaults = Defaults {
     ubuntu: "24.04",
     nsh: DefaultNsh {
         git: "https://github.com/dXnSix/nsh",
-        tag: "fork-0.3.0-2",
-        commit: "15fdd2a3fb70b21193bb80796b08f39aac5e098c",
+        tag: "fork-0.3.0-3",
+        commit: "57713c3c55c997ae91b5a04bcbb769f1155b0be5",
         version: "0.3.0",
         crates: &[
             "nsh-base",
