@@ -77,7 +77,7 @@ feat(screen)!: Name the screen scope hook use_scope
 
 `use_screen_scope` is gone; `use_scope` does the same.
 
-Migration: Gamify: replace use_screen_scope with use_scope in the shell and sportsbook slices
+Migration: Gamify: replace use_screen_scope with use_scope in the shell and home slices
 ```
 
 The changelog prints each `Migration:` footer under its entry, so the migration reaches the GitHub

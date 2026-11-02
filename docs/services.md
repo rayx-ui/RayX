@@ -113,14 +113,14 @@ another thread) waits until a task on the engine thread writes it.
 
 ## Navigation (`services::navigation`)
 
-Routes matched from URIs (`RouteMap`, `/sports/{sport}`, literal segments before parameters, query and fragment,
+Routes matched from URIs (`RouteMap`, `/projects/{id}`, literal segments before parameters, query and fragment,
 external and not-found status), named regions with their own journals (push, replace, reset, none; back and forward),
 lifecycle subscribers (`on_navigated_from`, `on_navigated_to`), route and location events, and one location for the
 whole app. Registered with `add_navigation(|options| ..)`: `NavigationOptions` bind from `RayX:Services:Navigation`,
 then the closure changes them; routes that do not build fail startup.
 
 The location is the URL region's route (`url_region`, the root region by default) behind `base_path`, with every other
-region's route in its query (`/app/teams/12?panel=%2Fbets`). After every navigation in any region the service shows it
+region's route in its query (`/app/projects/12?panel=%2Fsettings`). After every navigation in any region the service shows it
 through the app's `NavigationLocationSynchronizer`, which `add_navigation` takes from DI
 (`with_navigation_location_synchronizer`): a new navigation as a new history entry, back, forward and refresh in place.
 `apply_location` takes a location the platform moved to (its back and forward, a typed address): each region goes to the

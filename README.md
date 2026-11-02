@@ -1,188 +1,81 @@
 # RayX
 
-RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps; it replaces the GPUI and gpux
-stack of the previous RayX (now `RayX.Old`). It starts with dependency injection, configuration, options and an app
-builder with the API of .NET's `Microsoft.Extensions` (as RayX's `rayx_runtime` had it), which until `v0.3.0` were the
-`nsh-app` repository's `nsh_app*` crates. They come in two layers:
+RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps, written in Rust and used from
+Rust and TSX.
 
-- `rayx_core`: the pure-Rust core: a `ServiceProvider` with singleton, scoped and transient services, scopes,
-  configuration sources, options and the `RayXAppBuilder`. No NSH dependency, so service crates use it and stay
-  testable with `cargo test` and buildable for every target, wasm32 included.
-- `rayx_app`: the NSH layer: one root provider per NSH surface, a scope per screen (created on mount, dropped on
-  cleanup), view-model activation on mount ([`dxn_reactive`](https://github.com/dXnSix/dXn.Reactive)'s
-  activators), and access from `#[class]` bridges and Rust components.
+- **Dependency injection, configuration and options** with the API of .NET's `Microsoft.Extensions`: singleton, scoped
+  and transient services, services that initialize asynchronously at startup, and typed options bound from
+  configuration.
+- **App services:** storage, operations with undo and redo, navigation, input maps, platform and lifecycle state,
+  assets, fonts, and translations with MessageFormat 2 messages.
+- **NSH integration:** a scope per screen, view models bound to NSH signals, navigation regions as native navigation
+  stacks, and a TSX class for every service.
+- **The `rayx` CLI:** sets a machine up for NSH work, runs apps through the NSH their project pins, and creates new RayX
+  apps.
 
-`rayx_app_macros` holds `#[derive(AppService)]`, which both layers re-export. `rayx` is the umbrella an app depends on:
-it re-exports the core (`rayx::core`), the services (`rayx::runtime`), the NSH layer (`rayx::app`) and dXn.I18n and
-dXn.Intl (`rayx::i18n`, `rayx::intl`), with `use rayx::prelude::*;` for the builder, its extensions and the TSX classes.
+## Quick start
 
-`rayx-cli` (`crates/rayx_cli`) is `rayx`, RayX's command-line tool: it sets a machine up for NSH work, runs every NSH
-app through the `nsh` its project pins, and `rayx new` creates a RayX app on its own release; its
-[README](crates/rayx_cli/README.md) has the installers. Every release `vX.Y.Z` ships a `rayx` of that version.
-
-`rayx_runtime` holds RayX's app services on top of the core, NSH-free like it: in-memory key-value storage, operations
-with undo and redo history, navigation, input maps, the platform's and the app's lifecycle state, the app's
-configuration, assets from a neutral manifest, fonts registered at run time, and translations with MessageFormat 2
-messages ([dXn.I18n](https://github.com/dXnSix/dXn.I18n), [dXn.Intl](https://github.com/dXnSix/dXn.Intl)). Each is registered with an
-`AppBuilder` extension (`add_history()`, `add_navigation(..)`, …) and reads its options from `RayX:Services:<Name>`;
-`rayx_app` gives them what they need from NSH (the bundled `appsettings.json`, reading assets, registering fonts, the
-device's state). [docs/services.md](docs/services.md) lists each service and what it ports from RayX.Old.
-
-## Installation
-
-Releases are git tags `vX.Y.Z` (the latest is on the repository's Releases page); nothing is published to a
-registry. Depend on a tag, the same one for every RayX crate:
-
-```toml
-[dependencies]
-rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
-rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
-rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
-```
-
-The `rayx` command-line tool installs from the same releases (macOS and Linux; the CLI's
-[README](crates/rayx_cli/README.md#install) has the Windows one-liner), and `rayx new` creates an app on that release:
+Install the CLI (macOS and Linux; Windows is in the [CLI's README](crates/rayx_cli/README.md#install)) and create an
+app:
 
 ```bash
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rayx-ui/RayX/releases/latest/download/rayx-cli-installer.sh | sh
 rayx new my-app
 ```
 
-Coming from `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths. Coming from `nsh-app`
-`v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_core`) and their paths, and move to
-`dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.
+Or add RayX to an existing crate. Releases are git tags `vX.Y.Z`; nothing is published to a registry:
 
-## Configuration and options
-
-The app builder's `configuration` collects sources (values in memory, a JSON tree or text, and `ConfigurationSource`
-for files, the app's bundled settings or a server, which may load asynchronously); later sources' values go over
-earlier ones'. The built `Configuration` is a singleton, read by path (`"Feed:Retry:Limit"`) and section; `set` and
-`reload` change it and notify its listeners.
-
-Options follow .NET's options model. Register them on the services and read them by type:
-
-```rust
-#[derive(Default, Serialize, Deserialize)]
-struct FeedOptions { label: String, retry_limit: u32 }
-
-let mut app = RayXAppBuilder::new();
-app.configuration.add_json(SETTINGS); // { "Feed": { "label": "live", "retryLimit": 3 } }
-app.services
-    .add_options::<FeedOptions>()
-    .bind("Feed")                                       // the section over the defaults
-    .configure(|options| options.label.push_str("!"))   // configure steps run in registration order,
-    .post_configure(|options| options.retry_limit = options.retry_limit.min(5)) // then post-configure,
-    .validate(|options| !options.label.is_empty(), "the feed needs a label") // then every validation
-    .validate_on_start();                               // fail startup, not the first use
-let services = app.build()?;
-let options = services.options::<FeedOptions>()?;       // IOptions<T>: made once
+```toml
+[dependencies]
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }
 ```
 
-- Options are made from `T::default()`; ones nobody registered are just that. `bind` needs `Serialize` and
-  `Deserialize`; its keys match ignoring case, `_` and `-` (`retryLimit` binds `retry_limit`), a list is replaced as
-  a whole (.NET appends to it), and a `null` binds nothing.
-- Named options: `add_named_options::<T>(name)`, `configure_named`, `configure_all`, `post_configure_all`; steps that
-  take a service: `configure_with::<D>`, `post_configure_with::<D>`, `validate_with::<D>`.
-- `services.options_snapshot::<T>()` (`IOptionsSnapshot<T>`) makes them once per scope; `services.options_monitor::<T>()`
-  (`IOptionsMonitor<T>`) makes them again when the configuration a name is bound to changes and calls its `on_change`
-  listeners.
-- Startup makes the options registered with `validate_on_start` before it initializes any startup service; an invalid
-  one fails it.
-
-## Startup
-
-Services can initialize asynchronously: register them with `add_startup_singleton` (or `_scoped`, `_transient`, the
-`_as` forms) and implement `AsyncInitializable` (`initialize`) and `StartupInitializable` (`initialization_depends_on`).
-Starting the app builds the root provider and initializes every startup service in dependency order, a layer's
-services concurrently. The app is ready, and services resolve, only once all of them initialized.
-
-- **Failure:** one failing service fails startup, with the services that failed and why; nothing is installed.
-- **Timeout:** each service may set `initialization_timeout()`; one that sets none gets the builder's default
-  (`default_initialization_timeout(..)`, 30 s unless set). A service past its timeout fails startup (`timed_out`).
-
-```tsx
-// TSX: register `AppServices` and `ServiceScope` in the app's UI set, then
-const app = await AppServices.load(); // once: starts the app; rejects if a service failed or timed out
-const scope = app.scope();            // on a screen's mount; Rust bridges take it as Instance<ServiceScope>
-scope.dispose();                      // in its cleanup
-```
+An app names the function that builds its services, and its UI starts them:
 
 ```rust
-// A Rust root: start the app and show a splash until it is ready.
-#[component]
-fn Root() -> impl IntoElement {
-    rayx_app::start();
-    dynamic(|| match rayx_app::app_state() {
-        AppState::Ready => app().into_element(),
-        AppState::Failed(message) => error_screen(message).into_element(),
-        _ => splash().into_element(),
-    })
+use rayx::prelude::*;
+
+fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
+    builder.add_app_settings("my-app").add_storage().add_history()
 }
 ```
 
-`AppServices.load()` is asynchronous because startup awaits the services; it runs as an NSH task, where NSH's timers
-and the surface's slot are reachable (a class's synchronous calls run outside the reactive runtime). Everything after
-it is synchronous. A TSX app has no root component, so `load()` also keeps the platform and suspension services
-current from NSH, as `use_platform_sync()` does in a Rust root.
-
-The services have TSX classes too, each made with `X.of(app)` and told about changes with `onChange`: `I18n`
-(messages), `Navigation` (`navigate`, `back`, `forward`, `current`), `Storage` (text and JSON values by bucket and
-key, in NSH's storage), `AppConfiguration`, `Assets` (asset URLs), `Fonts` (font aliases) and `Platform` (the device
-and the app's lifecycle). Register the ones the app uses in its UI set beside `AppServices`.
-
-## Lifetimes on NSH
-
-| Lifetime | Core | On NSH |
-| --- | --- | --- |
-| Singleton | one per root provider, shared by its scopes | one per engine surface: `rayx_app::set_app(build)` names the builder function, each surface builds its root from it when the app starts there |
-| Scoped | one per scope, dropped with it | one per screen: `use_screen_scope()` in a Rust component (dropped on the component's cleanup); `app.scope()` in TSX, `scope.dispose()` in its cleanup |
-| Transient | one per resolve | the same |
-
-`use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
-component's cleanup; `ServiceScope::view_model::<T>()` does the same for TSX until the scope is disposed.
-
-## Navigation regions
-
-A region of the navigation service is an NSH navigation stack whose pages are the region's journal up to its current
-entry: navigating pushes, replaces, resets, goes back or forward, and a page the user pops natively (a swipe back, the
-system back button) takes the journal back to the page below. The URL region's route is the location's path, the
-other regions' routes are in its query.
-
-```rust
-let pages = navigation_region("root", |route| nav_page().title(route.path.clone()).child(screen_for(route)))?;
-let panel = navigation_view("panel", |route| side_panel(route))?; // the current route alone
-```
-
-TSX: `NavigationRegion.of(app, "panel")` with `navigate`, `back`, `forward`, `goTo(index)`, `close`, `pages()` (for a
-`NavStack` of `NavPage`s, each `onDismiss` going to the page below) and `onChange`.
-
-## Binding view models
-
-A view model's [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) state reaches the UI as NSH state. A view model
-notifies on the thread that changed it; the bindings carry each change to the engine's thread.
-
-```rust
-// A Rust component: NSH signals, starting at the view model's values, until the component's cleanup.
-let count = use_reactive(&vm.count.read_only())?; // ReadSignal<u32>
-let name = use_two_way(&vm.name)?;             // Signal<String>: what the UI writes goes back
-let odds = use_list(&vm.odds)?;                // ReadSignal<Vec<Odd>> from an ObservableList
-let place = use_command(&vm.place_bet)?;       // can_execute, is_executing, execute()
-```
-
 ```tsx
-// TSX: a view model class returns `Observable`s (`Observable::of(&signal)`) and `ReactiveCommand`s.
-const count = signal(vm.count.value);
-vm.count.bind(count.set);                      // now and on every change
-vm.placeBet.execute();                         // throws when it refuses
+const app = await AppServices.load(); // resolves once every startup service is ready
 ```
 
-NSH comes from an integration tag `fork-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh)
-(`[patch.crates-io]` in `Cargo.toml`); a consumer's own patch decides which NSH it builds with, and an app takes the
-same tag as the RayX release it depends on.
+[Getting started](docs/getting-started.md) walks through it.
 
-Status: 0.x, on NSH 0.3. A minor release (`0.5` → `0.6`) may break the API; its changelog's `Migration:` notes say
-what to change. [CHANGELOG.md](CHANGELOG.md) lists every release.
+## Crates
+
+| Crate | What it is |
+| --- | --- |
+| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;` |
+| `rayx_core` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
+| `rayx_runtime` | The app services; no NSH, builds for wasm32 |
+| `rayx_app` | The NSH layer: surfaces, screens, view-model binding, navigation regions, TSX classes |
+| `rayx_app_macros` | `#[derive(AppService)]` |
+| `rayx-cli` | The `rayx` command-line tool |
+
+## Documentation
+
+The [documentation index](docs/INDEX.md) lists every guide:
+
+- [Getting started](docs/getting-started.md)
+- [Architecture](docs/architecture.md)
+- [Dependency injection](docs/dependency-injection.md)
+- [Configuration and options](docs/configuration.md)
+- [Startup](docs/startup.md)
+- [View models](docs/view-models.md)
+- [Navigation](docs/navigation.md)
+- [TSX](docs/tsx.md)
+- [App services](docs/services.md)
+- [The `rayx` CLI](crates/rayx_cli/README.md)
+
+## Status
+
+0.x, on NSH 0.3. A minor release (`0.5` → `0.6`) may break the API; [CHANGELOG.md](CHANGELOG.md) lists every release,
+with `Migration:` notes for each break.
 
 ## License
 
