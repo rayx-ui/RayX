@@ -24,9 +24,9 @@ The NSH an app is built with, read in the directory nsh runs in:
 
 | Where | What | Example |
 | --- | --- | --- |
-| `Cargo.lock` | the one `source` of every NSH package (NSH's own crates, not an app's `nsh-app-*`) | `git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5` |
+| `Cargo.lock` | the one `source` of every NSH package (NSH's own crates, not an app's `nsh-app-*`) | `git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161` |
 | `rayx.toml` beside `nsh.json` | the `[nsh]` table, for an app with no NSH crates | see below |
-| built in | the nsh this release of `rayx` was tested with | `fork-0.3.0-3` at `57713c3` |
+| built in | the nsh this release of `rayx` was tested with | `fork-0.3.0-4` at `bf1b1d0` |
 
 A `Cargo.lock` source is one of:
 
@@ -49,8 +49,8 @@ next to `nsh.json`:
 ```toml
 [nsh]
 git = "https://github.com/dXnSix/nsh"
-tag = "fork-0.3.0-3"
-commit = "57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+tag = "fork-0.3.0-4"
+commit = "bf1b1d036ee639cfc171b0563f86599984a25161"
 ```
 
 `tag` may be `branch` or `rev` instead, and an upstream release is `version = "0.2.0"` alone. The

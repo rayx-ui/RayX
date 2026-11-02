@@ -780,7 +780,7 @@ version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af491d569909a7e4dee0ad7db7f5341fef5c614d5b8ec8cf765732aba3cff681"
 dependencies = [
- "unicode-width 0.1.14",
+ "unicode-width 0.2.2",
 ]
 
 [[package]]
@@ -2040,7 +2040,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.61.2",
+ "windows-core 0.62.2",
 ]
 
 [[package]]
@@ -3091,7 +3091,7 @@ checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
 [[package]]
 name = "nsh-base"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "chrono",
  "html5ever",
@@ -3113,7 +3113,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "anyhow",
  "dunce",
@@ -3138,7 +3138,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "cap-std",
  "crc32fast",
@@ -3172,7 +3172,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "crossbeam-channel",
  "libc",
@@ -3190,7 +3190,7 @@ dependencies = [
 [[package]]
 name = "nsh-js"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -3211,7 +3211,7 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "imagesize 0.15.0",
  "proc-macro2",
@@ -3224,7 +3224,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c3c55c997ae91b5a04bcbb769f1155b0be5"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",

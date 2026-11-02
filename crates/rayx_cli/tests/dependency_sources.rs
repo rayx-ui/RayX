@@ -354,7 +354,7 @@ fn resolved_sources_are_registry_or_tagged_public_git() {
     assert_eq!(
         source_violation(
             "g",
-            "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-3#57713c33c4b6e9f0a1b2c3d4e5f60718293a4b5c"
+            "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d03c4b6e9f0a1b2c3d4e5f60718293a4b5c"
         ),
         None
     );
