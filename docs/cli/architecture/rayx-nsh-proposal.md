@@ -1,5 +1,9 @@
 # rayx on Native Shell (NSH): design proposal
 
+> The design `rayx` was built from in `rayx-ui/RayX.CLI`, kept as it was accepted. The CLI has since
+> moved into RayX (`crates/rayx_cli`): D4 (a repository of its own, starting at 1.0.0) and D14
+> (naming nothing above NSH) changed, as [the CLI's decisions](../decisions.md) say.
+
 Status: **accepted, revision 4** · 2026-10-24. Every decision in §0 is yours, made on 2026-10-23 and 2026-10-24:
 revision 2 recorded a new CLI starting at 1.0.0 (D4) and `rayx new` without app templates (D5); revision 3 the fork's
 releases (D6, D8, D9) and `rayx.toml` (D7); revision 4 accepts the remaining proposals (D10 to D15). Nothing is left

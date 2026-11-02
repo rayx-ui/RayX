@@ -6,15 +6,15 @@ names the machine, the command, the result and the date. A row without a result 
 The automated proofs are the ignored `proof_*` groups, run on demand:
 
 ```bash
-cargo test --test proof_nsh_install -- --ignored --test-threads=1
-cargo test --test proof_app_web -- --ignored --test-threads=1
-cargo test --test proof_app_apple -- --ignored --test-threads=1
-cargo test --test proof_gamify -- --ignored --test-threads=1
+cargo test -p rayx-cli --test proof_nsh_install -- --ignored --test-threads=1
+cargo test -p rayx-cli --test proof_app_web -- --ignored --test-threads=1
+cargo test -p rayx-cli --test proof_app_apple -- --ignored --test-threads=1
+cargo test -p rayx-cli --test proof_gamify -- --ignored --test-threads=1
 ```
 
 `proof_nsh_install` installs upstream's `v0.2.0` release and builds the fork from source;
-`proof_app_web` and `proof_app_apple` make an app with `rayx new` and build, run, test and package
-it; `proof_gamify` reads Gamify's frontend and changes none of its tracked files. Each uses a
+`proof_app_web` and `proof_app_apple` make a plain NSH app with `rayx new --nsh-only` and build, run,
+test and package it; `proof_gamify` reads Gamify's frontend and changes none of its tracked files. Each uses a
 temporary `RAYX_HOME`, so a run leaves the machine's store alone.
 
 ## Linux (a Lima guest on the Mac)
@@ -103,13 +103,14 @@ distribution, in the clone, Playwright's Chromium as in the Lima guest
 | The archive's CLI | `nsh/bin/nsh --version` from `nsh-macos-arm64.tar.gz` prints `nsh 0.2.0 (327bb9e)` | |
 | A distribution entry | `rayx nsh install` in Gamify's `src/frontend`, then `rayx nsh status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
 
-### `rayx` 1.0.0
+### The first RayX release with `rayx`
 
 | Check | Command | Result |
 |---|---|---|
-| The old README's links | `RayX.CLI.Old`'s install links name `rayx-ui/RayX.CLI.Old`, pushed before this repository exists | |
-| The repository | `rayx-ui/RayX.CLI` created public, `RELEASE_PLZ_TOKEN` set, the `1.0.0` section of `CHANGELOG.md` dated | |
-| The first release | the first push to `main`: release-plz tags `v1.0.0` (no release pull request) and cargo-dist publishes six targets | |
+| The old README's links | `RayX.CLI.Old`'s install links name `rayx-ui/RayX.CLI.Old`, and `rayx-ui/RayX.CLI` points at RayX | |
+| The release pull request | its Release workflow builds the six targets (dist's `plan` and `build` jobs green) | |
+| The release | the merge: release-plz tags `vX.Y.Z`, and dist publishes the six targets with the installers and attestations | |
+| A new RayX app | `rayx new hello`, then `rayx app test` in it, with the released `rayx` | |
 | Over the old rayx | the installer over a rayx 1.4.1 install keeps `setup.json` and `guests.json`, and `rayx setup --update` refreshes the recorded setup and guests | |
 
-How a release is made and checked is in [Releasing `rayx`](releasing.md).
+How a release is made and checked is in [Releasing RayX](../releasing.md).

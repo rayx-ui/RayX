@@ -2,7 +2,7 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../RayX.Old`), which is not a
-dependency. The workspace has five crates sharing one version:
+dependency. The workspace has six crates sharing one version:
 
 - `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), configuration sources, .NET's options model and the
@@ -20,6 +20,10 @@ dependency. The workspace has five crates sharing one version:
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers.
 - `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_core`, `rayx_runtime`,
   `rayx_app`, `dxn_i18n` and `dxn_intl`, with a prelude. It holds no code of its own.
+- `crates/rayx_cli`: `rayx`, the command-line tool (package `rayx-cli`, library `rayx_cli`, binary
+  `rayx`): machine setup, doctor, WSL and Lima guests, self update, `rayx new` for RayX apps, and
+  every NSH app run through the nsh it pins. It moved here from `rayx-ui/RayX.CLI`; see
+  [The CLI](#the-cli) below and `docs/cli/`.
 
 ## Dependencies
 
@@ -30,6 +34,8 @@ dependency. The workspace has five crates sharing one version:
   its integration tags `fork-*` (the newest RayX needs); a consumer's own patch decides which NSH
   it builds with.
 - Git tags only: never path, branch or commit dependencies.
+- What RayX needs from NSH goes into the fork first, on its own rules (the README of its
+  `private/fork-docs` branch): never a push to upstream (`longbridge/nsh`), never a `v*` tag there.
 - GPUI, gpux and RayX.Old's crates (its `rayx`, `rayx_runtime`, `rayx_collab`, …) must not appear
   in the dependency tree; this workspace's `rayx` and `rayx_runtime` are new crates of the same
   names, not dependencies on them.
@@ -46,7 +52,8 @@ cargo test --workspace
 cargo check -p rayx_core -p rayx_runtime --target wasm32-unknown-unknown
 ```
 
-CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`.
+CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`, and
+formats, lints and tests `rayx-cli` on Linux, macOS and Windows too.
 
 Test only what you changed: run the touched crate's focused tests while iterating, and the full
 list above once before committing. Each feature has its own integration-test group in
@@ -54,6 +61,45 @@ list above once before committing. Each feature has its own integration-test gro
 `cargo test -p <crate> --test <feature>`. A new feature or behavior change gets a new group.
 
 Raw diagnostic output goes to the ignored `artifacts-temp/`, never into commits.
+
+## The CLI
+
+`crates/rayx_cli` keeps the rules of RayX.CLI, where it was built; its design is
+[docs/cli/architecture/rayx-nsh-proposal.md](docs/cli/architecture/rayx-nsh-proposal.md), and
+[docs/cli/decisions.md](docs/cli/decisions.md) holds the decisions that still stand, with what changed
+when it moved here.
+
+- **Layout.** One package: a library `rayx_cli` (`src/lib.rs`) and a thin binary `rayx`
+  (`src/main.rs`). Modules follow the CLI: `cli`, `host`, `project`, `setup` (with `doctor` and the
+  WSL and Lima guests), `nsh` (the pin, the store, installing and running nsh), `app`, `new`,
+  `serve`, `fmt`, `update`. Add a crate only when a second consumer needs a module.
+- **Lints.** It keeps its own (it needs `unsafe` for Win32 and `libc`, and its tests use `expect`),
+  not the workspace's.
+- **No RayX or NSH crate.** `rayx-cli` runs the `nsh` CLI the project pins and links no RayX,
+  NSH, gpux or GPUI crate (`tests/library_guard.rs`, over `cargo tree -p rayx-cli`); `rayx new`
+  names RayX only in the files it writes into an app. Its dependencies follow the repository's
+  rule above (`tests/dependency_sources.rs`).
+- **No build-time project.** Nothing decides which project to work on from where `rayx` was
+  compiled: no `env!("CARGO_MANIFEST_DIR")` outside tests. Pins come from the project
+  (`Cargo.lock`, `rust-toolchain.toml`, `[workspace.metadata.rayx]`, an app's `rayx.toml`);
+  built-in defaults live in one table in `project::pins`, whose nsh is RayX's own
+  `[patch.crates-io]` tag (`tests/nsh_pin_rayx.rs`): move both together.
+- **One runner.** Every external program runs through `host::Runner`. `rayx` never reads, stores or
+  forwards a password or token, never relaunches itself elevated, and accepts licenses only with
+  `--yes`.
+- **Never the `nsh` on `PATH`.** `rayx` runs the build of the project's pin from its store
+  (`$RAYX_HOME/nsh`, else `~/.rayx/nsh`), in the directory it read the pin in, without `CARGO` in
+  the environment.
+- **Tests.** Its feature groups are `crates/rayx_cli/tests/<feature>.rs`, with fixture projects in
+  `tests/fixtures/<name>/`, each carrying its own empty `[workspace]` table. The README and
+  `docs/cli/projects.md` are checked against the CLI (`readme_*`): a new command, flag or default
+  is documented in the same change. Real proofs, which download or build NSH and run apps, are
+  the `#[ignore]`d `proof_*` groups, run on demand:
+  `cargo test -p rayx-cli --test proof_<name> -- --ignored`.
+- **Consumers.** Gamify and RayX's apps run through `rayx`: a change to `rayx app`, the pins,
+  `rayx.toml` or the store layout needs the matching consumer change; keep them paired.
+- **Ported code** from RayX.CLI.Old names the commit it came from (`d006250`) in the commit
+  message.
 
 ## Consumers
 

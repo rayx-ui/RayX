@@ -420,16 +420,20 @@ built-in default. `rayx doctor` shows each pin with its source, `project` or `de
 
 ## Building from source
 
+`rayx` is the package `rayx-cli` of the RayX workspace:
+
 ```bash
-cargo build
-cargo test --test <group>
+cargo build -p rayx-cli
+cargo test -p rayx-cli --test <group>
 ```
 
-The package builds from a clean clone with crates.io dependencies only. The real proofs, which
-install nsh and run apps, are the ignored `proof_*` groups (`cargo test --test proof_<name> --
---ignored`); what is checked by hand on Linux, Windows and WSL is in
-[Manual verification](../../docs/cli/manual-verification.md).
+It builds from a clean clone with crates.io dependencies only, and links none of RayX or NSH. The
+real proofs, which install nsh and run apps, are the ignored `proof_*` groups
+(`cargo test -p rayx-cli --test proof_<name> -- --ignored`); what is checked by hand on Linux,
+Windows and WSL is in [Manual verification](../../docs/cli/manual-verification.md), and the
+decisions behind the CLI are in [the CLI's decisions](../../docs/cli/decisions.md).
 
 ## License
 
-Apache-2.0, see [LICENSE-APACHE](LICENSE-APACHE).
+`MIT OR Apache-2.0`, as all of RayX: see [LICENSE-MIT](../../LICENSE-MIT) and
+[LICENSE-APACHE](../../LICENSE-APACHE).

@@ -16,6 +16,10 @@ builder with the API of .NET's `Microsoft.Extensions` (as RayX's `rayx_runtime` 
 it re-exports the core (`rayx::core`), the services (`rayx::runtime`), the NSH layer (`rayx::app`) and dXn.I18n and
 dXn.Intl (`rayx::i18n`, `rayx::intl`), with `use rayx::prelude::*;` for the builder, its extensions and the TSX classes.
 
+`rayx-cli` (`crates/rayx_cli`) is `rayx`, RayX's command-line tool: it sets a machine up for NSH work, runs every NSH
+app through the `nsh` its project pins, and `rayx new` creates a RayX app on its own release; its
+[README](crates/rayx_cli/README.md) has the installers. Every release `vX.Y.Z` ships a `rayx` of that version.
+
 `rayx_runtime` holds RayX's app services on top of the core, NSH-free like it: in-memory key-value storage, operations
 with undo and redo history, navigation, input maps, the platform's and the app's lifecycle state, the app's
 configuration, assets from a neutral manifest, fonts registered at run time, and translations with MessageFormat 2
@@ -35,6 +39,14 @@ rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # app
 rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
 rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
+```
+
+The `rayx` command-line tool installs from the same releases (macOS and Linux; the CLI's
+[README](crates/rayx_cli/README.md#install) has the Windows one-liner), and `rayx new` creates an app on that release:
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rayx-ui/RayX/releases/latest/download/rayx-cli-installer.sh | sh
+rayx new my-app
 ```
 
 Coming from `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths. Coming from `nsh-app`

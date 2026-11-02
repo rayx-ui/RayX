@@ -43,7 +43,7 @@ as the fork's git source, which is how `rayx new` pins `mixed` and `rust` apps.
 
 ### `rayx.toml`
 
-An app of TSX only has no Cargo project to lock NSH, so `rayx new --template ts` writes its pin
+An app of TSX only has no Cargo project to lock NSH, so `rayx new --template ts --nsh-only` writes its pin
 next to `nsh.json`:
 
 ```toml
