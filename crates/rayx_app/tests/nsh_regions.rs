@@ -42,8 +42,8 @@ fn serial() -> MutexGuard<'static, ()> {
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     builder.add_navigation(|options| {
         options.add_route(RouteDefinition::new("/"));
-        options.add_route(RouteDefinition::new("/teams/{id}"));
-        options.add_route(RouteDefinition::new("/bets"));
+        options.add_route(RouteDefinition::new("/projects/{id}"));
+        options.add_route(RouteDefinition::new("/settings"));
     })
 }
 
@@ -120,21 +120,21 @@ fn a_region_s_pages_follow_its_journal() {
         .expect("the app started");
     let navigation = services.required_service::<NavigationService>().unwrap();
     // A push adds a page over the first; the panel shows its route.
-    navigation.navigate_to("/teams/1").unwrap();
+    navigation.navigate_to("/projects/1").unwrap();
     navigation
-        .navigate_in_region("panel", NavigationArgs::new("/bets"))
+        .navigate_in_region("panel", NavigationArgs::new("/settings"))
         .unwrap();
     shown.clear();
     pump(&mut engine, &rx, &mut shown, |shown| {
-        shown.iter().any(|text| text == "page /teams/1")
-            && shown.iter().any(|text| text == "panel /bets")
+        shown.iter().any(|text| text == "page /projects/1")
+            && shown.iter().any(|text| text == "panel /settings")
     });
     assert!(
-        shown.iter().any(|text| text == "page /teams/1"),
+        shown.iter().any(|text| text == "page /projects/1"),
         "shown: {shown:?}"
     );
     assert!(
-        shown.iter().any(|text| text == "panel /bets"),
+        shown.iter().any(|text| text == "panel /settings"),
         "shown: {shown:?}"
     );
 
@@ -167,8 +167,8 @@ setTimeout(async () => {
     const panel = NavigationRegion.of(app, "panel");
     const heard = [];
     panel.onChange((pages) => heard.push(pages.map((page) => page.path).join(">")));
-    lines.push(panel.navigate("/bets").status);
-    panel.navigate("/teams/2");
+    lines.push(panel.navigate("/settings").status);
+    panel.navigate("/projects/2");
     lines.push(panel.pages().map((page) => page.path).join(">"));
     // A page's onDismiss goes to the page below it.
     lines.push(panel.goTo(0).route.path);
@@ -236,6 +236,6 @@ fn tsx_navigates_a_region_and_hears_its_pages() {
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(
         last,
-        "done Success|/bets>/teams/2|/bets|true 0|heard /bets|/bets>/teams/2|/bets|"
+        "done Success|/settings>/projects/2|/settings|true 0|heard /settings|/settings>/projects/2|/settings|"
     );
 }

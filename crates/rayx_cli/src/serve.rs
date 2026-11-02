@@ -174,7 +174,7 @@ pub fn resolve(root: &Path, target: &str) -> Option<PathBuf> {
 }
 
 /// [`resolve`], else the site's `index.html` for a path without a file extension that names no
-/// file (`/teams/12`): one of the app's own routes, which the app reads from its location. A path
+/// file (`/projects/12`): one of the app's own routes, which the app reads from its location. A path
 /// with an extension (`/missing.js`) stays missing, and one [`resolve`] refuses for leaving the
 /// site gets nothing either.
 pub fn resolve_route(root: &Path, target: &str) -> Option<PathBuf> {

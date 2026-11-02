@@ -24,9 +24,9 @@ pub struct NavigationOptions {
     /// The region whose route is the location's path (default: the root region).
     pub url_region: Option<String>,
     /// The location's prefix before the app's routes (`/app`; default none): the location of
-    /// `/teams/12` is `/app/teams/12`.
+    /// `/projects/12` is `/app/projects/12`.
     pub base_path: String,
-    /// The other regions the location carries in its query, by name (`?panel=%2Fbets`), so a
+    /// The other regions the location carries in its query, by name (`?panel=%2Fsettings`), so a
     /// location read at startup reaches them before they exist; a region made at run time is
     /// carried too.
     pub query_regions: Vec<String>,
@@ -144,7 +144,7 @@ pub struct NavigationLifecycleData {
 
 /// Where the app's location is shown and comes from: the browser's address bar, an embedding
 /// app, a deep link. The location is the URL region's route (behind the base path) with the
-/// other regions' routes in its query: `/teams/12?panel=%2Fbets%2Fslip`.
+/// other regions' routes in its query: `/projects/12?panel=%2Fsettings%2Fprofile`.
 pub trait NavigationLocationSynchronizer: Send + Sync + 'static {
     /// The platform's location as the app starts (a deep link, the address bar), if it has one.
     fn location(&self) -> Option<String> {
@@ -553,7 +553,7 @@ impl NavigationService {
     }
 
     /// The app's location: the URL region's route behind the base path, with the other
-    /// regions' routes in its query (`/app/teams/12?panel=%2Fbets`), the regions sorted by name.
+    /// regions' routes in its query (`/app/projects/12?panel=%2Fsettings`), the regions sorted by name.
     pub fn location(&self) -> Result<String> {
         let state = self.state.lock().map_err(|_| NavigationError::Poisoned)?;
         let url_region = self.url_region();

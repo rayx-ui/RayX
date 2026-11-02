@@ -1,4 +1,4 @@
-//! Navigation: routes matched from URIs (`/sports/{sport}`), named regions with their own
+//! Navigation: routes matched from URIs (`/projects/{id}`), named regions with their own
 //! journals (back, forward, push, replace, reset), lifecycle subscribers and a location
 //! synchronizer, without any view: the NSH layer renders the current route.
 

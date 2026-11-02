@@ -60,11 +60,11 @@ impl Assets for AppAssets {
             }"#
             .to_vec()),
             "asset:/@app/assets.toml" => Ok(br#"
-files = ["fonts/Pacifico-Regular.woff2", "data/odds.json"]
+files = ["fonts/Pacifico-Regular.woff2", "data/weather.json"]
 "#
             .to_vec()),
             "asset:/@app/fonts/Pacifico-Regular.woff2" => Ok(PACIFICO.to_vec()),
-            "asset:/@app/data/odds.json" => Ok(br#"{ "home": 1.85 }"#.to_vec()),
+            "asset:/@app/data/weather.json" => Ok(br#"{ "temperature": 21.5 }"#.to_vec()),
             _ => Err(format!("{uri} is not bundled")),
         }
     }
@@ -106,17 +106,17 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 fn Root() -> impl IntoElement {
     rayx_app::start();
     rayx_app::use_platform_sync();
-    let odds = signal(String::new());
+    let temperature = signal(String::new());
     dynamic(move || match app_state() {
         AppState::Ready => {
             let services = app_services().unwrap();
             ROOT.with_borrow_mut(|root| *root = Some(services.clone()));
             let assets = services.required_service::<AssetService>().unwrap();
             spawn(async move {
-                let value: serde_json::Value = assets.load_json("data/odds.json").await.unwrap();
-                odds.set(value["home"].to_string());
+                let value: serde_json::Value = assets.load_json("data/weather.json").await.unwrap();
+                temperature.set(value["temperature"].to_string());
             });
-            text(move || format!("ready {}", odds.get())).into_element()
+            text(move || format!("ready {}", temperature.get())).into_element()
         }
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
         _ => text("starting").into_element(),
@@ -176,9 +176,9 @@ fn missing_settings_fail_startup_unless_optional() {
     );
     drop(engine);
     let (mut engine, rx) = start(MISSING_OPTIONAL);
-    let shown = pump_until(&mut engine, &rx, "ready 1.85");
+    let shown = pump_until(&mut engine, &rx, "ready 21.5");
     assert!(
-        shown.iter().any(|text| text == "ready 1.85"),
+        shown.iter().any(|text| text == "ready 21.5"),
         "shown: {shown:?}"
     );
 }
@@ -187,9 +187,9 @@ fn missing_settings_fail_startup_unless_optional() {
 fn services_run_on_nsh() {
     let _serial = serial();
     let (mut engine, rx) = start(BUNDLED);
-    let shown = pump_until(&mut engine, &rx, "ready 1.85");
+    let shown = pump_until(&mut engine, &rx, "ready 21.5");
     assert!(
-        shown.iter().any(|text| text == "ready 1.85"),
+        shown.iter().any(|text| text == "ready 21.5"),
         "shown: {shown:?}"
     );
 

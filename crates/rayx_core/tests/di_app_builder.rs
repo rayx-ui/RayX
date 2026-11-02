@@ -1,5 +1,5 @@
-//! The `AppBuilder` extension pattern service crates use (`with_sportsbook`,
-//! `with_sportsbook_slips`) on `RayXAppBuilder`: options registered with the options model,
+//! The `AppBuilder` extension pattern service crates use (`with_catalog`,
+//! `with_catalog_search`) on `RayXAppBuilder`: options registered with the options model,
 //! services reading them when they are made.
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 

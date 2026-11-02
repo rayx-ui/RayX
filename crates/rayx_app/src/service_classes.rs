@@ -73,7 +73,7 @@ fn service<T: Send + Sync + 'static>(app: &Instance<AppServices>) -> Result<Arc<
         .map_err(AppError::from)
 }
 
-/// The app's navigation, for TSX: `Navigation.of(app)`, then `navigate("/teams/12")`, `back()`
+/// The app's navigation, for TSX: `Navigation.of(app)`, then `navigate("/projects/12")`, `back()`
 /// and `current()`; `onChange` hears every route change, with `{ region, from, to }`.
 #[class]
 pub struct Navigation {

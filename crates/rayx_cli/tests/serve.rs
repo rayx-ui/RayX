@@ -124,7 +124,7 @@ fn files_are_served_with_their_mime_types() {
 #[test]
 fn a_directory_serves_its_index_html_and_queries_are_ignored() {
     let (_site, port) = serve_site();
-    for target in ["/", "/?sportsDataUrl=http://x&codec=json", "/#top"] {
+    for target in ["/", "/?dataUrl=http://x&codec=json", "/#top"] {
         let (status, _, body) = request(port, "GET", target);
         assert_eq!(status, "HTTP/1.1 200 OK", "{target}");
         assert_eq!(body, b"<!doctype html><title>app</title>", "{target}");
@@ -138,8 +138,8 @@ fn an_extensionless_path_that_names_no_file_serves_the_index_html() {
     let (_site, port) = serve_site();
     // The app's routes: the browser loads them by address, the app reads them from its location.
     for target in [
-        "/teams/12",
-        "/teams/12/?tab=odds",
+        "/projects/12",
+        "/projects/12/?tab=files",
         "/live#top",
         "/%C3%A9quipes",
     ] {

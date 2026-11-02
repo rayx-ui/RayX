@@ -44,7 +44,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     builder
         .add_navigation(|options| {
             options.add_route(RouteDefinition::new("/"));
-            options.add_route(RouteDefinition::new("/teams/{id}"));
+            options.add_route(RouteDefinition::new("/projects/{id}"));
         })
         .add_storage()
         .add_application_configuration(|_| {})
@@ -68,7 +68,7 @@ setTimeout(async () => {
     const navigation = Navigation.of(app);
     const changes = [];
     navigation.onChange((event) => changes.push(event.to.path));
-    lines.push(navigation.navigate("/teams/12").status);
+    lines.push(navigation.navigate("/projects/12").status);
     lines.push(navigation.current().route.path);
     lines.push(navigation.back().route.path);
     // Listeners are called on a later turn.
@@ -77,8 +77,8 @@ setTimeout(async () => {
 
     const storage = Storage.of(app);
     storage.set("prefs", "lang", "hr");
-    storage.setJson("prefs", "odds", { home: 1.85 });
-    lines.push(`${storage.get("prefs", "lang")} ${storage.getJson("prefs", "odds").home}`);
+    storage.setJson("prefs", "theme", { scale: 1.25 });
+    lines.push(`${storage.get("prefs", "lang")} ${storage.getJson("prefs", "theme").scale}`);
     lines.push(storage.keys("prefs").join(","));
     lines.push(`${storage.remove("prefs", "lang")} ${storage.get("prefs", "lang")}`);
 
@@ -156,6 +156,6 @@ fn nsh_tsx_reaches_the_services_and_load_keeps_the_platform_current() {
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(
         last,
-        "done Success|/teams/12|/|changes /teams/12,/|hr 1.85|lang,odds|true null|ltr object|asset:/@app/images/logo.png|serif|string|synced"
+        "done Success|/projects/12|/|changes /projects/12,/|hr 1.25|lang,theme|true null|ltr object|asset:/@app/images/logo.png|serif|string|synced"
     );
 }

@@ -51,7 +51,7 @@ fn json_values_round_trip_through_a_bucket() {
     let store: &dyn KeyValueStore = &InMemoryKeyValueStore::new();
     let drafts = store.bucket("drafts");
     let draft = Draft {
-        title: "Odds".into(),
+        title: "Ideas".into(),
         words: 120,
     };
     drafts.set_json("today", &draft).unwrap();

@@ -28,7 +28,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
         .add_resource(
             "en",
             None,
-            r#"{ "hello": "Hello, {$name}!", "cart": ".input {$n :number}\n.match $n\none {{One item}}\n* {{{$n} items}}", "kickoff": "Kick-off at {$when :time timeStyle=short}" }"#,
+            r#"{ "hello": "Hello, {$name}!", "cart": ".input {$n :number}\n.match $n\none {{One item}}\n* {{{$n} items}}", "meeting": "Meeting at {$when :time timeStyle=short}" }"#,
         )
         .unwrap();
     service.set_time_zone("Europe/Zagreb").unwrap();
@@ -55,16 +55,16 @@ setTimeout(async () => {
   lines.push(i18n.has("cart") && !i18n.has("nope") ? "has" : "lacks");
   lines.push(i18n.languages().sort().join(","));
   // Instants (a Date's `toISOString()`) are dates in the user's zone; a Date itself throws.
-  const kickoff = new Date(Date.UTC(2026, 10, 2, 19, 45));
-  lines.push(i18n.t("kickoff", { when: kickoff.toISOString() }));
+  const meeting = new Date(Date.UTC(2026, 10, 2, 19, 45));
+  lines.push(i18n.t("meeting", { when: meeting.toISOString() }));
   try {
-    i18n.t("kickoff", { when: kickoff });
+    i18n.t("meeting", { when: meeting });
     lines.push("no throw");
   } catch (error) {
     lines.push(String(error).includes("toISOString") ? "throws" : `threw ${error}`);
   }
-  lines.push(i18n.formatDate(kickoff.toISOString(), { length: "long", time: "minute", hourCycle: "h23" }));
-  lines.push(i18n.formatDate(kickoff.toISOString(), { date: false, time: "minute", hourCycle: "h23" }));
+  lines.push(i18n.formatDate(meeting.toISOString(), { length: "long", time: "minute", hourCycle: "h23" }));
+  lines.push(i18n.formatDate(meeting.toISOString(), { date: false, time: "minute", hourCycle: "h23" }));
   lines.push(i18n.formatNumber(0.256, { style: "percent" }));
   lines.push(i18n.formatNumber(1234.5, { style: "currency", currency: "EUR" }));
   lines.push(i18n.timeZone());
@@ -127,6 +127,6 @@ fn nsh_i18n_gives_tsx_messages_and_language_changes() {
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(
         last,
-        "done Hello, Ana!|One item|has|en,hr|Kick-off at 8:45\u{202f}PM|throws|November 2, 2026 at 20:45|20:45|26%|€1,234.50|Europe/Zagreb|changed hr ltr|3 artikla"
+        "done Hello, Ana!|One item|has|en,hr|Meeting at 8:45\u{202f}PM|throws|November 2, 2026 at 20:45|20:45|26%|€1,234.50|Europe/Zagreb|changed hr ltr|3 artikla"
     );
 }

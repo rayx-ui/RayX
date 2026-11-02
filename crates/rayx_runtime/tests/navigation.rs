@@ -225,10 +225,10 @@ mod service {
     #[test]
     fn route_params_match_braced_segments() {
         let mut routes = RouteMap::default();
-        routes.route("/sports/{league}").finish();
-        let matched = routes.process_route("/sports/nba", None).unwrap();
+        routes.route("/projects/{project}").finish();
+        let matched = routes.process_route("/projects/rayx", None).unwrap();
         assert_eq!(matched.status, RoutingStatus::Success);
-        assert_eq!(matched.route.params.get("league"), Some("nba"));
+        assert_eq!(matched.route.params.get("project"), Some("rayx"));
     }
 
     #[test]
@@ -334,18 +334,18 @@ mod service {
         }
 
         let mut routes = RouteMap::default();
-        routes.route("/sports/{league}").finish();
+        routes.route("/projects/{project}").finish();
         let recorder = Arc::new(Recorder::default());
         let navigation =
             NavigationService::new(routes).with_location_synchronizer(recorder.clone());
         let result = navigation.navigate(NavigationRequest {
             region: "root".to_string(),
-            args: NavigationArgs::new("/sports/nba"),
+            args: NavigationArgs::new("/projects/rayx"),
         })?;
-        assert_eq!(result.route.params.get("league"), Some("nba"));
+        assert_eq!(result.route.params.get("project"), Some("rayx"));
         assert_eq!(
             recorder.calls.lock().unwrap().as_slice(),
-            &[("/sports/nba".to_string(), NavigationHistoryMode::Push)]
+            &[("/projects/rayx".to_string(), NavigationHistoryMode::Push)]
         );
         Ok(())
     }
