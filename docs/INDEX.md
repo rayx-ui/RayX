@@ -13,7 +13,12 @@
 
 ## Reference
 
-- [App services](services.md): every service in `rayx_runtime`, how it is registered and configured.
+- [App services](services.md): what a service is in RayX, how it is registered and configured, and how to write one.
+  - [I18n](services/i18n.md), [Operations](services/operations.md), [History](services/history.md),
+    [Storage](services/storage.md), [Navigation](services/navigation.md), [Selection](services/selection.md),
+    [Input map](services/input-map.md), [Platform](services/platform.md), [Suspension](services/suspension.md),
+    [Application configuration](services/application-configuration.md), [Assets](services/assets.md),
+    [Fonts](services/fonts.md)
 - [CHANGELOG](../CHANGELOG.md): every release, with `Migration:` notes for breaking changes.
 
 ## The CLI
