@@ -7,6 +7,11 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.6.2] - 2026-11-02
+
+### Fixes
+- *(cli)* Close rayx serve's connections without a reset
+
 ## [0.6.1] - 2026-11-02
 
 ### Build and CI
