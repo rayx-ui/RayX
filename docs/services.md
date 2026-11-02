@@ -96,13 +96,18 @@ the app's `KeyValueStore`, so it persists wherever the store does: on NSH, in th
 
 Values as bytes under keys in named buckets, behind the `KeyValueStore` trait (sync methods, async ones that default to
 them), with JSON helpers on `store.bucket(name)`. Registered with `add_storage()` (an `InMemoryKeyValueStore`, unless a
-store is registered) or `with_key_value_store(store)`.
+store is registered) or `with_key_value_store(store)`. On NSH, `rayx_app`'s `NshKeyValueStore` is registered first, so
+`add_storage()` keeps it: values persist in NSH's storage (`nsh/storage`: a file in the app's data directory, the
+browser's `localStorage`; strings only, 5 MB in all, shared with the app's TSX) under `rayx/<bucket>/<key>`, UTF-8 as
+it is and other bytes in base64. NSH's storage is reachable only while the engine runs Rust code, so the store mirrors
+its entries (loaded at startup on the engine thread): reads come from the mirror on any thread, a write where the
+storage is reachable goes through at once (failing when it is full), and one elsewhere (a TSX class's synchronous call,
+another thread) waits until a task on the engine thread writes it.
 
 - Kept: the provider trait (now `KeyValueStore`, with `keys` and `clear`), buckets of JSON values, async variants.
-- Left out, as agreed for this iteration: every persistent backend (the SurrealDB, RocksDB, TiKV, SQLite and IndexedDB
-  variants and their stand-ins, which were in-memory stores under persistent names), so there is no web persistence
-  plan to honour yet. A persistent store implements `KeyValueStore`; NSH's own storage (`nsh/storage`) is the natural
-  first one.
+- Left out: RayX.Old's persistent backends (the SurrealDB, RocksDB, TiKV, SQLite and IndexedDB variants and their
+  stand-ins, which were in-memory stores under persistent names): NSH's storage is RayX's persistent store on every
+  platform (`tests/nsh_storage.rs` in `rayx_app`).
 - Left out: `SecureStorageService`: NSH has no keychain or keystore access yet, and the RayX.Old service only ever
   reported itself unavailable.
 

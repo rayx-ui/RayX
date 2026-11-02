@@ -20,11 +20,12 @@ use rayx_runtime::services::platform::{
     ColorScheme, FormFactor, InputCapabilities, Insets, LocaleSnapshot, PlatformFamily,
     PlatformInfoService, PlatformSnapshot, TextDirection, ViewportSnapshot,
 };
+use rayx_runtime::services::storage::KeyValueStore;
 use rayx_runtime::services::suspension::{
     SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionService,
 };
 
-use crate::{AppState, app_services, app_state};
+use crate::{AppState, NshKeyValueStore, app_services, app_state};
 
 /// Reads the app's files with NSH's `fetch` of their `asset:/` URLs (from the app's package on
 /// device, the dev server during `nsh run`, the page's assets on the web).
@@ -58,13 +59,21 @@ impl FontRegistrar for NshFontRegistrar {
 }
 
 /// Registers NSH's [`NshAssetReader`] and [`NshFontRegistrar`] as the app's `dyn AssetReader`
-/// and `dyn FontRegistrar`, unless others are registered. Every surface's builder starts with
-/// them ([`start_app`](crate::start_app)).
+/// and `dyn FontRegistrar`, and its [`NshKeyValueStore`] (a startup service, which loads on the
+/// engine thread) as its `dyn KeyValueStore`, unless others are registered. Every surface's
+/// builder starts with them ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps
+/// NSH's persistent store.
 pub trait NshServicesAppBuilderExt: AppBuilder {
     fn add_nsh_services(mut self) -> Self {
         let services = self.services_mut();
         services.try_add_service_factory_as::<dyn AssetReader>(|_| Arc::new(NshAssetReader));
         services.try_add_service_factory_as::<dyn FontRegistrar>(|_| Arc::new(NshFontRegistrar));
+        services.try_add_app_service_factory::<NshKeyValueStore>(|_| NshKeyValueStore::new());
+        services.try_add_service_factory_as::<dyn KeyValueStore>(|services| {
+            services
+                .required_service::<NshKeyValueStore>()
+                .unwrap_or_else(|error| panic!("NSH's key-value store is registered: {error}"))
+        });
         self
     }
 }

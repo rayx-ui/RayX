@@ -12,6 +12,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+base64.workspace = true
 futures = { workspace = true, features = ["std"] }
 serde_json.workspace = true
 rayx_core.workspace = true

@@ -26,7 +26,7 @@
 //! - **RayX's services on NSH.** Every surface's builder starts with NSH's [`NshAssetReader`]
 //!   and [`NshFontRegistrar`] (reading the app's files with `fetch` of their `asset:/` URLs,
 //!   registering fonts with `register_font`), which `rayx_runtime`'s asset and font services
-//!   use; [`AppSettingsAppBuilderExt::add_app_settings`] adds the app's bundled
+//!   use, and [`NshKeyValueStore`], the app's persistent key-value store in NSH's storage; [`AppSettingsAppBuilderExt::add_app_settings`] adds the app's bundled
 //!   `appsettings.json` as a configuration source ([`AppSettingsSource`]); and
 //!   [`use_platform_sync`], in the root component, keeps the platform and suspension services
 //!   current from NSH's environment and app state.
@@ -47,6 +47,7 @@ mod platform;
 mod scope_class;
 mod screen;
 mod settings;
+mod storage;
 mod surface;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
@@ -67,6 +68,7 @@ pub use rayx_runtime;
 pub use scope_class::{AppServices, ServiceScope};
 pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
 pub use settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
+pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
 pub use surface::{
     AppError, AppState, app_services, app_state, install, set_app, start, start_app,
 };
