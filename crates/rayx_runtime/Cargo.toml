@@ -15,7 +15,7 @@ diagnostics = []
 
 [dependencies]
 dxn_i18n.workspace = true
-dxn_intl.workspace = true
+dxn_intl = { workspace = true, features = ["tz"] }
 futures = { workspace = true, features = ["alloc", "std"] }
 rayx_core.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }

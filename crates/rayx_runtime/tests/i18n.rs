@@ -152,6 +152,45 @@ fn numbers_and_dates_format_for_the_locale() {
 }
 
 #[test]
+fn instants_show_in_the_user_s_time_zone() {
+    let services = start(|_| {}, true);
+    let i18n = services.required_service::<I18nService>().unwrap();
+    let platform = services.required_service::<PlatformInfoService>().unwrap();
+    assert_eq!(i18n.time_zone(), "UTC", "before the platform says");
+    let heard = Arc::new(Mutex::new(0));
+    let count = Arc::clone(&heard);
+    let _subscription = i18n.subscribe(move |_| *count.lock().unwrap() += 1);
+
+    // The zone follows the platform, even where the app picked the language: formatted
+    // instants change with it.
+    i18n.set_language("hr").unwrap();
+    let before = *heard.lock().unwrap();
+    platform.modify(|snapshot| snapshot.locale.time_zone = "Europe/Zagreb".into());
+    assert_eq!(i18n.time_zone(), "Europe/Zagreb");
+    assert_eq!(*heard.lock().unwrap(), before + 1);
+    let local = i18n.local_time("2026-11-02T09:30:00.000Z").unwrap();
+    assert_eq!((local.day, local.hour, local.minute), (2, 10, 30));
+    assert_eq!(
+        i18n.local_time_from_millis(1_793_611_800_000).unwrap(),
+        local
+    );
+    assert_eq!(
+        i18n.format_date_time(
+            &local,
+            dxn_intl::DateTimeOptions::time(dxn_intl::Length::Short)
+        )
+        .unwrap(),
+        "10:30"
+    );
+
+    // The app may set one itself; an unknown zone and a wall time without offset are refused.
+    i18n.set_time_zone("Asia/Tokyo").unwrap();
+    assert_eq!(i18n.local_time("2026-11-02T09:30:00Z").unwrap().hour, 18);
+    assert!(i18n.set_time_zone("Europe/Atlantis").is_err());
+    assert!(i18n.local_time("2026-11-02T09:30:00").is_err());
+}
+
+#[test]
 fn options_bind_from_configuration_and_resources_add_at_run_time() {
     let mut builder = RayXAppBuilder::new().add_i18n(|options| {
         options.auto_load_assets(false);

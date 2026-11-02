@@ -50,6 +50,8 @@ struct State {
     translator: Translator,
     /// The app picked the language itself: the platform's languages no longer apply.
     chosen: bool,
+    /// The user's time zone (an IANA name), which instants are shown in.
+    time_zone: String,
     version: u64,
 }
 
@@ -93,6 +95,7 @@ impl I18nService {
             state: Arc::new(RwLock::new(State {
                 translator,
                 chosen: false,
+                time_zone: "UTC".to_owned(),
                 version: 0,
             })),
             listeners: Listeners::default(),
@@ -147,10 +150,14 @@ impl I18nService {
         self.apply_platform(snapshot);
     }
 
-    /// Takes the user's preferred languages and clock from the platform, unless the app picked
-    /// a language: the best of the app's languages for them, with the user's region (for
-    /// separators and date order) and hour cycle.
+    /// Takes the user's time zone from the platform, and their preferred languages and clock
+    /// unless the app picked a language: the best of the app's languages for them, with the
+    /// user's region (for separators and date order) and hour cycle.
     pub fn apply_platform(&self, snapshot: &LocaleSnapshot) {
+        if !snapshot.time_zone.is_empty() && self.read().time_zone != snapshot.time_zone {
+            let zone = snapshot.time_zone.clone();
+            self.change(|state| state.time_zone = zone);
+        }
         if self.read().chosen {
             return;
         }
@@ -295,6 +302,37 @@ impl I18nService {
     ) -> Result<String, I18nServiceError> {
         DateTimeFormatter::new(&self.locale(), options)
             .and_then(|formatter| formatter.format(value))
+            .map_err(|error| I18nServiceError::Format(error.to_string()))
+    }
+
+    /// The user's time zone (an IANA name such as `Europe/Zagreb`), which instants are shown
+    /// in: the platform's, else UTC.
+    pub fn time_zone(&self) -> String {
+        self.read().time_zone.clone()
+    }
+
+    /// Shows instants in `time_zone` (an IANA name) from now on, until the platform reports
+    /// another.
+    pub fn set_time_zone(&self, time_zone: &str) -> Result<(), I18nServiceError> {
+        DateTime::from_unix_millis_in(0, time_zone)
+            .map_err(|error| I18nServiceError::Format(error.to_string()))?;
+        let zone = time_zone.to_owned();
+        self.change(|state| state.time_zone = zone);
+        Ok(())
+    }
+
+    /// The wall time in the user's [time zone](Self::time_zone) at `instant`, an RFC 3339
+    /// timestamp with its offset (`2026-11-02T09:30:00Z`, as JavaScript's `toISOString()`
+    /// writes one), to format with [`format_date_time`](Self::format_date_time) or pass as a
+    /// message's date.
+    pub fn local_time(&self, instant: &str) -> Result<DateTime, I18nServiceError> {
+        DateTime::from_instant(instant, &self.time_zone())
+            .map_err(|error| I18nServiceError::Format(error.to_string()))
+    }
+
+    /// The wall time in the user's time zone `millis` milliseconds after the Unix epoch.
+    pub fn local_time_from_millis(&self, millis: i64) -> Result<DateTime, I18nServiceError> {
+        DateTime::from_unix_millis_in(millis, &self.time_zone())
             .map_err(|error| I18nServiceError::Format(error.to_string()))
     }
 
