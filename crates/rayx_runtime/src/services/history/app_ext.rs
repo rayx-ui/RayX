@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
-use super::{HistoryService, HistoryStore};
+use super::{HistoryService, HistoryStore, KeyValueHistoryStore};
 use crate::services::operations::{OperationService, OperationsAppBuilderExt};
+use crate::services::storage::{KeyValueStore, StorageAppBuilderExt};
 use rayx_core::{AppBuilder, ServiceProvider};
 
 /// Registers the [`HistoryService`] (undo and redo of operations) on an app builder.
@@ -28,6 +29,30 @@ pub trait HistoryAppBuilderExt: AppBuilder {
         builder
             .services_mut()
             .replace_app_service::<dyn HistoryStore>(store);
+        builder
+            .services_mut()
+            .replace_app_service_factory::<HistoryService>(|services| {
+                HistoryService::with_configured_store(operations(services))
+                    .unwrap_or_else(|error| panic!("the history service did not start: {error}"))
+            });
+        builder
+    }
+
+    /// Like [`add_history`](Self::add_history), with each scope's history kept in the app's
+    /// [`KeyValueStore`] (registered too when missing) by a [`KeyValueHistoryStore`], so it
+    /// persists wherever the store does: on NSH, in the device's storage.
+    fn add_persistent_history(self) -> Self {
+        let mut builder = self.add_operations().add_storage();
+        builder
+            .services_mut()
+            .replace_app_service_factory_as::<dyn HistoryStore>(|services| {
+                let store = services
+                    .required_service::<dyn KeyValueStore>()
+                    .unwrap_or_else(|error| {
+                        panic!("the history store needs a key-value store: {error}")
+                    });
+                Arc::new(KeyValueHistoryStore::new(store))
+            });
         builder
             .services_mut()
             .replace_app_service_factory::<HistoryService>(|services| {
