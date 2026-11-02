@@ -1,4 +1,6 @@
-use super::{NavigationOptions, NavigationService};
+use std::sync::Arc;
+
+use super::{NavigationLocationSynchronizer, NavigationOptions, NavigationService};
 use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// The configuration section [`NavigationOptions`] bind from.
@@ -32,9 +34,27 @@ pub trait NavigationAppBuilderExt: AppBuilder {
                     .options::<NavigationOptions>()
                     .unwrap_or_else(|error| panic!("the navigation's options are invalid: {error}"))
                     .cloned();
-                NavigationService::with_options(options)
-                    .unwrap_or_else(|error| panic!("the navigation's routes are invalid: {error}"))
+                let service = NavigationService::with_options(options)
+                    .unwrap_or_else(|error| panic!("the navigation's routes are invalid: {error}"));
+                // Where the location is shown and comes from (the NSH layer registers one).
+                match services.service::<dyn NavigationLocationSynchronizer>() {
+                    Some(synchronizer) => service.with_location_synchronizer(synchronizer),
+                    None => service,
+                }
             });
+        self
+    }
+
+    /// Registers `synchronizer` as the app's `dyn NavigationLocationSynchronizer`, replacing
+    /// any other: [`add_navigation`](Self::add_navigation) shows the location through it and
+    /// starts at its location.
+    fn with_navigation_location_synchronizer(
+        mut self,
+        synchronizer: impl NavigationLocationSynchronizer,
+    ) -> Self {
+        let synchronizer: Arc<dyn NavigationLocationSynchronizer> = Arc::new(synchronizer);
+        self.services_mut()
+            .replace_service::<dyn NavigationLocationSynchronizer>(synchronizer);
         self
     }
 

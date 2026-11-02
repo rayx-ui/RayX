@@ -324,11 +324,11 @@ mod service {
         }
 
         impl NavigationLocationSynchronizer for Recorder {
-            fn synchronize(&self, route: &Route, mode: NavigationHistoryMode) -> Result<()> {
+            fn synchronize(&self, location: &str, mode: NavigationHistoryMode) -> Result<()> {
                 self.calls
                     .lock()
                     .unwrap()
-                    .push((route.location.clone(), mode));
+                    .push((location.to_string(), mode));
                 Ok(())
             }
         }

@@ -91,6 +91,26 @@ impl NavigationJournal {
         self.current_index
     }
 
+    /// Makes the entry at `index` the current one and returns it (`None` past the end).
+    pub fn go_to(&mut self, index: usize) -> Option<Route> {
+        let route = self.entries.get(index)?.clone();
+        self.current_index = Some(index);
+        Some(route)
+    }
+
+    /// The index of the entry nearest the current one whose location is `location`, looking
+    /// back first (the platform's back is the usual move).
+    pub fn nearest(&self, location: &str) -> Option<usize> {
+        let current = self.current_index?;
+        let back = (0..=current)
+            .rev()
+            .find(|&index| self.entries[index].location == location);
+        back.or_else(|| {
+            (current + 1..self.entries.len())
+                .find(|&index| self.entries[index].location == location)
+        })
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &Route> {
         self.entries.iter()
     }

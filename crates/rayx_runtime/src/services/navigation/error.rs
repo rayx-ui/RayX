@@ -8,6 +8,10 @@ pub enum NavigationError {
     InvalidUrl(String),
     #[error("navigation state lock was poisoned")]
     Poisoned,
+    /// A location the service cannot follow (outside the base path, a journal entry it does
+    /// not have).
+    #[error("{0}")]
+    Location(String),
 }
 
 pub type Result<T> = std::result::Result<T, NavigationError>;

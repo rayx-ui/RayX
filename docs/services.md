@@ -115,17 +115,29 @@ another thread) waits until a task on the engine thread writes it.
 
 Routes matched from URIs (`RouteMap`, `/sports/{sport}`, literal segments before parameters, query and fragment,
 external and not-found status), named regions with their own journals (push, replace, reset, none; back and forward),
-lifecycle subscribers (`on_navigated_from`, `on_navigated_to`), route and location events, and a
-`NavigationLocationSynchronizer`. Registered with `add_navigation(|options| ..)`: `NavigationOptions` bind from
-`RayX:Services:Navigation`, then the closure changes them; routes that do not build fail startup.
+lifecycle subscribers (`on_navigated_from`, `on_navigated_to`), route and location events, and one location for the
+whole app. Registered with `add_navigation(|options| ..)`: `NavigationOptions` bind from `RayX:Services:Navigation`,
+then the closure changes them; routes that do not build fail startup.
+
+The location is the URL region's route (`url_region`, the root region by default) behind `base_path`, with every other
+region's route in its query (`/app/teams/12?panel=%2Fbets`). After every navigation in any region the service shows it
+through the app's `NavigationLocationSynchronizer`, which `add_navigation` takes from DI
+(`with_navigation_location_synchronizer`): a new navigation as a new history entry, back, forward and refresh in place.
+`apply_location` takes a location the platform moved to (its back and forward, a typed address): each region goes to the
+nearest journal entry with its route (back or forward) or to a new one, and the query regions it no longer names close
+(`close_region`, `subscribe_region_closed`); `query_regions` names the regions a location may carry before they exist.
+`go_to_entry(region, index)` reaches a journal entry by its index. Startup goes to the synchronizer's `location()` (the
+deep link), else to the default route.
 
 - Ported: the routes, journals, regions, service and their tests (`tests/navigation.rs`).
 - Left out: `NavigationRouter`, `NavigationRegionView` and the transitions (`NavigationTransition`, screen effects,
   snapshot origins): GPUI views and GPUI screen effects. On NSH a screen renders the current route itself, and NSH
   animates its own screen changes; `NavigationOptions::default_transition` went with them.
+- Changed: the synchronizer gets the whole location (`synchronize(location, mode)`), and back, forward and refresh in
+  a region other than the root no longer write that region's route as the URL (`tests/navigation_location.rs`).
 - Left out: `BrowserNavigationLocationSynchronizer` and the browser location read at startup (`web-sys`): the core
-  has no browser access. A synchronizer over NSH's web location is NSH glue for later; the default synchronizer does
-  nothing.
+  has no browser access. The NSH layer's synchronizer goes through NSH's own `location()` and `navigate()`; the default
+  synchronizer does nothing.
 
 ## Selection (`services::selection`)
 
