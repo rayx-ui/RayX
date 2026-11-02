@@ -12,7 +12,7 @@ dependency. The workspace has six crates sharing one version:
   maps, platform and lifecycle state, app configuration, assets, fonts), ported from RayX.Old's
   `rayx_runtime`. It depends on `rayx_core` alone, has no NSH dependency and builds for
   `wasm32-unknown-unknown`; what a service needs from the platform is a trait here that
-  `rayx_app` implements. `docs/services.md` lists what each service ports and leaves out.
+  `rayx_app` implements. `docs/services.md` describes each service and how it is registered.
 - `crates/rayx_app`: the NSH layer: a root provider per engine surface, a scope per screen, view
   models activated with their screen, the `AppServices`/`ServiceScope` classes for TSX, and the
   NSH side of the services (bundled settings, asset reading, font registration, the device's

@@ -3,7 +3,7 @@
 The navigation service (`add_navigation(..)`) keeps a journal per region: the main region follows the app's URL, and
 any number of named regions (a side panel, tabs, a dialog) navigate on their own. The URL region's route is the
 location's path; the other regions' routes are in its query (`/projects/12?panel=%2Fsettings`). The service itself,
-its routes and options are in [App services](services.md#navigation-servicesnavigation).
+its routes and options are in [App services](services.md#navigation).
 
 ## Regions as NSH navigation stacks
 

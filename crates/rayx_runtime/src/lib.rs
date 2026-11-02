@@ -6,7 +6,7 @@
 //! device's state) is a trait here that the NSH layer, `rayx_app`, implements. It builds for
 //! every target, wasm32 included.
 //!
-//! `docs/services.md` lists what each service brings over from RayX and what it leaves out.
+//! `docs/services.md` describes each service and how it is registered.
 
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
