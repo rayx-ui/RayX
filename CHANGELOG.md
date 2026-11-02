@@ -7,6 +7,14 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.6.3] - 2026-11-02
+
+### Build and CI
+- *(nsh)* Pin NSH to fork-0.3.0-4, in RayX and as rayx's default
+
+### Features
+- *(app)* Show the navigation's location as NSH's and follow the platform's moves
+
 ## [0.6.2] - 2026-11-02
 
 ### Fixes
