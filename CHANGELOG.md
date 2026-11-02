@@ -7,6 +7,26 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.6.1] - 2026-11-02
+
+### Build and CI
+- Check rayx-cli on Linux, macOS and Windows
+- *(nsh)* Pin NSH to fork-0.3.0-3, in RayX and as rayx's default
+
+### Documentation
+- *(cli)* Fold RayX.CLI's contributor rules and decisions into RayX's docs
+
+### Features
+- *(cli)* Import RayX.CLI as the rayx-cli crate
+- *(cli)* Ship rayx with RayX's releases, on RayX's version
+- *(cli)* Install and update rayx from rayx-ui/RayX
+- *(cli)* Make rayx's default NSH pin RayX's own
+- *(cli)* Scaffold RayX apps with rayx new
+- *(cli)* Serve index.html for an app's own routes in rayx serve
+
+### Tests
+- *(cli)* Give the Lima check test a df of its own
+
 ## [0.6.0] - 2026-11-02
 
 ### Build and CI
