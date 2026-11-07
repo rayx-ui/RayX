@@ -20,7 +20,7 @@ use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::project::Pins;
 use rayx_cli::setup::{Cx, FakeMachine, PlanEnv, Set};
 
-const ID: &str = "bf1b1d036ee6";
+const ID: &str = "1d64f049d809";
 
 fn app_args(argv: &[&str]) -> AppArgs {
     let mut full = vec!["rayx", "app"];
@@ -60,10 +60,10 @@ fn installed(home: &Workspace) -> PathBuf {
             version: 1,
             id: ID.into(),
             kind: Kind::Distribution,
-            url: "https://github.com/dXnSix/nsh/releases/download/fork-0.3.0-4/nsh-macos-arm64.tar.gz"
+            url: "https://github.com/dXnSix/nsh/releases/download/fork-0.4.0-1/nsh-macos-arm64.tar.gz"
                 .into(),
-            reference: Some("fork-0.3.0-4".into()),
-            commit: Some("bf1b1d036ee639cfc171b0563f86599984a25161".into()),
+            reference: Some("fork-0.4.0-1".into()),
+            commit: Some("1d64f049d8096803740f65515b46941d47702344".into()),
             nsh: "0.2.0".into(),
             cli: "nsh/bin/nsh".into(),
             installed: "2026-10-24T01:30:00Z".into(),
@@ -290,7 +290,7 @@ fn a_pin_that_is_not_installed_names_the_setup_command() {
     .expect_err("not installed")
     .to_string();
     assert!(
-        error.contains("nsh fork-0.3.0-4 (bf1b1d0) is not installed"),
+        error.contains("nsh fork-0.4.0-1 (1d64f04) is not installed"),
         "{error}"
     );
     assert!(error.contains("rayx setup"), "{error}");

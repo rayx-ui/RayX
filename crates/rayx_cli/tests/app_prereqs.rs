@@ -503,7 +503,7 @@ fn on_a_host_setup_cannot_install_for_the_pinned_nsh_is_still_ensured() {
     .to_string();
     let text = String::from_utf8(out).expect("UTF-8");
     assert!(text.contains("prerequisites not checked"), "{text}");
-    assert!(error.contains("nsh fork-0.3.0-4 (bf1b1d0)"), "{error}");
+    assert!(error.contains("nsh fork-0.4.0-1 (1d64f04)"), "{error}");
     assert!(
         error.contains("`rayx nsh install -C /work/app`") && !error.contains("rayx setup"),
         "the command that works on this host: {error}"
@@ -538,7 +538,7 @@ fn the_pinned_nsh_installs_without_asking_like_any_silent_step() {
     let text = String::from_utf8(out).expect("UTF-8");
     assert!(
         text.contains(
-            "rayx: installing missing prerequisites: nsh fork-0.3.0-4 (bf1b1d0) (default)"
+            "rayx: installing missing prerequisites: nsh fork-0.4.0-1 (1d64f04) (default)"
         ),
         "{text}"
     );

@@ -22,11 +22,11 @@ rayx_core = { path = "crates/rayx_core" }
 rayx_runtime = { path = "crates/rayx_runtime" }
 rayx_app = { path = "crates/rayx_app" }
 rayx_app_macros = { path = "crates/rayx_app_macros" }
-nsh-core = "0.3.0"
-nsh-base = "0.3.0"
-nsh-engine = { version = "0.3.0", default-features = false }
-nsh-bundler = "0.3.0"
-nsh-js = "0.3.0"
+nsh-core = "0.4.0"
+nsh-base = "0.4.0"
+nsh-engine = { version = "0.4.0", default-features = false }
+nsh-bundler = "0.4.0"
+nsh-js = "0.4.0"
 base64 = "0.22"
 crossbeam-channel = "0.5"
 dxn_reactive = { git = "https://github.com/dXnSix/dXn.Reactive", tag = "v1.1.0" }
@@ -61,10 +61,10 @@ expect_used = "deny"
 # NSH comes from an integration tag of the fork (github.com/dXnSix/nsh,
 # `fork-*`); a consumer's own patch decides there.
 [patch.crates-io]
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.3.0-4" }
+nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }

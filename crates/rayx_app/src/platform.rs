@@ -7,12 +7,11 @@ use std::sync::Arc;
 
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
-use nsh_core::platform::{AppState as NshAppState, Idiom, Os};
+use nsh_core::platform::{Idiom, Lifecycle, Os};
 use nsh_core::prelude::{
-    Owner, cleanup, dark, effect, fetch, first_day_of_week, font_scale, global, hour_cycle, idiom,
-    is_desktop, keyboard_height, languages, locale, measurement_system, os, os_version,
-    pixel_ratio, reduce_motion, register_font, safe_area, screen_reader, temperature_unit,
-    time_zone, window,
+    Owner, cleanup, dark, effect, fetch, font_scale, global, idiom, is_desktop, keyboard_height,
+    lifecycle, locale, locale_settings, os, os_version, pixel_ratio, reduce_motion, register_font,
+    safe_area, screen_reader, window,
 };
 use rayx_core::{AppBuilder, ServiceProvider};
 use rayx_runtime::services::assets::AssetReader;
@@ -101,11 +100,14 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         Idiom::Phone => FormFactor::Phone,
         Idiom::Pad => FormFactor::Tablet,
         Idiom::Tv => FormFactor::Tv,
-        Idiom::Mac | Idiom::Desktop => FormFactor::Desktop,
+        // A terminal keeps desktop behavior (NSH's `Idiom::desktop_on`).
+        Idiom::Mac | Idiom::Desktop | Idiom::Terminal => FormFactor::Desktop,
     };
     let viewport = window();
     let insets = safe_area();
-    let languages: Vec<String> = languages()
+    let settings = locale_settings();
+    let languages: Vec<String> = settings
+        .languages
         .iter()
         .map(|tag| tag.as_str().to_owned())
         .collect();
@@ -151,11 +153,11 @@ pub fn platform_snapshot() -> PlatformSnapshot {
             locale: locale().as_str().to_owned(),
             text_direction: text_direction(first_language),
             languages,
-            time_zone: time_zone().as_str().to_owned(),
-            hour_cycle: hour_cycle().name().to_owned(),
-            first_day_of_week: format!("{:?}", first_day_of_week()).to_lowercase(),
-            measurement_system: measurement_system().name().to_owned(),
-            temperature_unit: temperature_unit().name().to_owned(),
+            time_zone: settings.time_zone.as_str().to_owned(),
+            hour_cycle: settings.hour_cycle.name().to_owned(),
+            first_day_of_week: format!("{:?}", settings.first_day_of_week).to_lowercase(),
+            measurement_system: settings.measurement_system.name().to_owned(),
+            temperature_unit: settings.temperature_unit.name().to_owned(),
         },
     }
 }
@@ -205,7 +207,7 @@ pub(crate) fn keep_platform_current() {
 /// The effect that copies NSH's environment and app state into the services.
 fn sync_platform() {
     let started = Rc::new(Cell::new(false));
-    let last_state = Rc::new(Cell::new(None::<NshAppState>));
+    let last_state = Rc::new(Cell::new(None::<Lifecycle>));
     effect(move || {
         // Reading the app's state subscribes: the effect runs again once it is ready.
         if app_state() != AppState::Ready {
@@ -218,7 +220,7 @@ fn sync_platform() {
     });
 }
 
-fn sync(root: &ServiceProvider, started: &Cell<bool>, last_state: &Cell<Option<NshAppState>>) {
+fn sync(root: &ServiceProvider, started: &Cell<bool>, last_state: &Cell<Option<Lifecycle>>) {
     if let Some(platform) = root.service::<PlatformInfoService>() {
         platform.update(platform_snapshot());
     }
@@ -231,7 +233,7 @@ fn sync(root: &ServiceProvider, started: &Cell<bool>, last_state: &Cell<Option<N
             SuspensionEventReason::HostStarted,
         ));
     }
-    let state = nsh_core::prelude::app_state();
+    let state = lifecycle();
     let previous = last_state.replace(Some(state));
     if previous == Some(state) {
         return;
@@ -243,18 +245,18 @@ fn sync(root: &ServiceProvider, started: &Cell<bool>, last_state: &Cell<Option<N
         ));
     };
     match state {
-        NshAppState::Active => {
-            if previous == Some(NshAppState::Background) {
+        Lifecycle::Active => {
+            if previous == Some(Lifecycle::Background) {
                 publish(SuspensionEventKind::Foregrounded);
             }
             publish(SuspensionEventKind::Activated);
         }
-        NshAppState::Inactive => {
-            if previous == Some(NshAppState::Background) {
+        Lifecycle::Inactive => {
+            if previous == Some(Lifecycle::Background) {
                 publish(SuspensionEventKind::Foregrounded);
             }
             publish(SuspensionEventKind::Deactivated);
         }
-        NshAppState::Background => publish(SuspensionEventKind::Backgrounded),
+        Lifecycle::Background => publish(SuspensionEventKind::Backgrounded),
     }
 }

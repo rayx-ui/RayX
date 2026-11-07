@@ -380,7 +380,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "shlex 1.3.0",
  "syn 2.0.119",
 ]
@@ -391,16 +391,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08807e080ed7f9d5433fa9b275196cfc35414f66a0c79d864dc51a0d825231a3"
 dependencies = [
- "bit-vec 0.8.0",
-]
-
-[[package]]
-name = "bit-set"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34ddef2995421ab6a5c779542c81ee77c115206f4ad9d5a8e05f4ff49716a3dd"
-dependencies = [
- "bit-vec 0.9.1",
+ "bit-vec",
 ]
 
 [[package]]
@@ -408,12 +399,6 @@ name = "bit-vec"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
-
-[[package]]
-name = "bit-vec"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b71798fca2c1fe1086445a7258a4bc81e6e49dcd24c8d0dd9a1e57395b603f51"
 
 [[package]]
 name = "bitflags"
@@ -772,15 +757,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa961b519f0b462e3a3b4a34b64d119eeaca1d59af726fe450bbba07a9fc0a1"
 dependencies = [
  "thiserror",
-]
-
-[[package]]
-name = "codespan-reporting"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af491d569909a7e4dee0ad7db7f5341fef5c614d5b8ec8cf765732aba3cff681"
-dependencies = [
- "unicode-width 0.2.2",
 ]
 
 [[package]]
@@ -1444,7 +1420,7 @@ version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "998b056554fbe42e03ae0e152895cd1a7e1002aec800fdc6635d20270260c46f"
 dependencies = [
- "bit-set 0.8.0",
+ "bit-set",
  "regex-automata",
  "regex-syntax",
 ]
@@ -1792,7 +1768,6 @@ checksum = "6ea2d84b969582b4b1864a92dc5d27cd2b77b622a8d79306834f1be5ba20d84b"
 dependencies = [
  "cfg-if",
  "crunchy",
- "num-traits",
  "zerocopy",
 ]
 
@@ -1857,12 +1832,6 @@ dependencies = [
  "outref",
  "vsimd",
 ]
-
-[[package]]
-name = "hexf-parse"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hkdf"
@@ -3000,31 +2969,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "naga"
-version = "29.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2bf919621e7975acb27d881bae2fb993e0d45c8e0446e85e6272971e00dc8df"
-dependencies = [
- "arrayvec",
- "bit-set 0.9.1",
- "bitflags 2.13.2",
- "cfg-if",
- "cfg_aliases",
- "codespan-reporting",
- "half",
- "hashbrown 0.16.1",
- "hexf-parse",
- "indexmap",
- "libm",
- "log",
- "num-traits",
- "once_cell",
- "rustc-hash 1.1.0",
- "thiserror",
- "unicode-ident",
-]
-
-[[package]]
 name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3090,8 +3034,8 @@ checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
 
 [[package]]
 name = "nsh-base"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "chrono",
  "html5ever",
@@ -3102,18 +3046,20 @@ dependencies = [
  "nsh-core",
  "regex",
  "ropey",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
  "syntect",
  "two-face",
  "unicode-segmentation",
+ "unicode-width 0.2.2",
+ "vte",
 ]
 
 [[package]]
 name = "nsh-bundler"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "anyhow",
  "dunce",
@@ -3137,8 +3083,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-core"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "cap-std",
  "crc32fast",
@@ -3148,11 +3094,11 @@ dependencies = [
  "imagesize 0.15.0",
  "libc",
  "log",
- "naga",
  "nsh-macros",
+ "nsh-updater",
  "ordered-float",
  "resvg",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "rustls",
  "serde",
  "serde_json",
@@ -3163,6 +3109,7 @@ dependencies = [
  "tokio-tungstenite",
  "ttf-parser",
  "unicode-linebreak",
+ "unicode-properties",
  "url",
  "webpki-roots 1.0.10",
  "windows-sys 0.61.2",
@@ -3171,8 +3118,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-engine"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "crossbeam-channel",
  "libc",
@@ -3181,7 +3128,7 @@ dependencies = [
  "nsh-js",
  "nsh-package",
  "oxc_sourcemap",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde_json",
  "tokio",
  "windows-sys 0.61.2",
@@ -3189,8 +3136,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-js"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -3200,7 +3147,7 @@ dependencies = [
  "percent-encoding",
  "quickjs-jit",
  "quickjs-jit-stdlib",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde_json",
  "thiserror",
  "tokio",
@@ -3210,8 +3157,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-macros"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "imagesize 0.15.0",
  "proc-macro2",
@@ -3223,8 +3170,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-package"
-version = "0.3.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.3.0-4#bf1b1d036ee639cfc171b0563f86599984a25161"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -3234,6 +3181,23 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "thiserror",
+]
+
+[[package]]
+name = "nsh-updater"
+version = "0.4.0"
+source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
+dependencies = [
+ "base64 0.22.1",
+ "ed25519-dalek 2.2.0",
+ "flate2",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "tar",
+ "thiserror",
+ "zip",
 ]
 
 [[package]]
@@ -3292,7 +3256,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
- "libm",
 ]
 
 [[package]]
@@ -3362,7 +3325,7 @@ dependencies = [
  "libc",
  "miniz_oxide 0.9.1",
  "postcard",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "thiserror",
 ]
@@ -3377,7 +3340,7 @@ dependencies = [
  "hashbrown 0.17.1",
  "oxc_data_structures",
  "oxc_estree",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
 ]
 
@@ -3441,7 +3404,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "smallvec",
 ]
 
@@ -3454,7 +3417,7 @@ dependencies = [
  "cow-utils",
  "oxc-browserslist",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
 ]
 
@@ -3543,7 +3506,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -3562,7 +3525,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -3588,7 +3551,7 @@ dependencies = [
  "oxc_str",
  "oxc_syntax",
  "oxc_traverse",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -3611,7 +3574,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "seq-macro",
 ]
 
@@ -3628,7 +3591,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "phf 0.14.0",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "unicode-id-start",
 ]
 
@@ -3648,7 +3611,7 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pnp",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "rustix",
  "self_cell",
  "serde",
@@ -3678,7 +3641,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "self_cell",
  "smallvec",
 ]
@@ -3691,7 +3654,7 @@ checksum = "1133371a5fadc14b9f66a8fec14be3564a77647c7ab21b1ef0ec973bd82613ce"
 dependencies = [
  "base64-simd",
  "json-escape-simd",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
 ]
@@ -3769,7 +3732,7 @@ dependencies = [
  "oxc_str",
  "oxc_syntax",
  "oxc_traverse",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
 ]
@@ -3794,7 +3757,7 @@ dependencies = [
  "oxc_syntax",
  "oxc_transformer",
  "oxc_traverse",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -3813,7 +3776,7 @@ dependencies = [
  "oxc_span",
  "oxc_str",
  "oxc_syntax",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -4098,7 +4061,7 @@ dependencies = [
  "pathdiff",
  "radix_trie",
  "regress",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
  "thiserror",
@@ -4279,9 +4242,9 @@ checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
 
 [[package]]
 name = "quickjs-jit"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70d41722208581628761f6e7c3ada5c357cc4df244c238c880e64a541bb32d0e"
+checksum = "f5f4423709e8709eb3ee02d23b30fba4cc6f3ab0ee90c3fc08edfb968b3c8b73"
 dependencies = [
  "quickjs-jit-core",
  "quickjs-jit-macro",
@@ -4289,9 +4252,9 @@ dependencies = [
 
 [[package]]
 name = "quickjs-jit-core"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d05311dece4caaf4f49a170d95ba34f82de26910128ad1d302ce607da81407b5"
+checksum = "c3dbd3a4da98e06d0bbc0f65a4719155b7923461194c3b26860b87e1568aff09"
 dependencies = [
  "async-lock",
  "half",
@@ -4302,9 +4265,9 @@ dependencies = [
 
 [[package]]
 name = "quickjs-jit-macro"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95d84c7d9ea1fbd6682660cc6d1357537d014ed1d14c87a57b5f8bb04f5f0685"
+checksum = "0e8f4ad21cdeaceb5e65e5b8ae8a3695a4a1b4e368a5dc65709da27d03110bbb"
 dependencies = [
  "convert_case",
  "indexmap",
@@ -4317,9 +4280,9 @@ dependencies = [
 
 [[package]]
 name = "quickjs-jit-stdlib"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0599ae2a818de29d5e7618df383deb38a7c827dbe2dd57dcebf1694bc766d90"
+checksum = "a3ad9800d6824112e3d1032078c8e8bcabc47870bbedc858ef6b6fae12de3070"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -4376,9 +4339,9 @@ dependencies = [
 
 [[package]]
 name = "quickjs-jit-sys"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de70d3b7f215521a57a1da2843ef54e0cdfcae1fadf2cfc712cb92d965931f77"
+checksum = "44983d24261238e3db9f543729c1ec806dc199f7dd360560699498608ff7cfb8"
 dependencies = [
  "bindgen",
  "cc",
@@ -4395,7 +4358,7 @@ dependencies = [
  "pin-project-lite",
  "quinn-proto",
  "quinn-udp",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "rustls",
  "socket2",
  "thiserror",
@@ -4417,7 +4380,7 @@ dependencies = [
  "rand 0.10.3",
  "rand_pcg",
  "ring",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "rustls",
  "rustls-pki-types",
  "slab",
@@ -4870,7 +4833,7 @@ dependencies = [
  "rolldown_std_utils",
  "rolldown_tracing",
  "rolldown_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
  "smallvec",
@@ -4919,7 +4882,7 @@ dependencies = [
  "rolldown_sourcemap",
  "rolldown_std_utils",
  "rolldown_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
  "simdutf8",
@@ -4949,7 +4912,7 @@ checksum = "742f4183c897d4774054c8419fefd2c5b7c6880f0520e2bb685e56083a56612c"
 dependencies = [
  "blake3",
  "rolldown_devtools_action",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
  "tracing",
@@ -5006,7 +4969,7 @@ dependencies = [
  "oxc",
  "oxc_resolver",
  "rolldown-ariadne",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "sugar_path",
 ]
 
@@ -5041,7 +5004,7 @@ dependencies = [
  "rolldown_resolver",
  "rolldown_sourcemap",
  "rolldown_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
  "serde_json",
  "string_wizard",
@@ -5062,7 +5025,7 @@ dependencies = [
  "rolldown_plugin",
  "rolldown_plugin_utils",
  "rolldown_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -5075,7 +5038,7 @@ dependencies = [
  "rolldown_common",
  "rolldown_plugin",
  "rolldown_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde_json",
  "xxhash-rust",
 ]
@@ -5092,7 +5055,7 @@ dependencies = [
  "rolldown_plugin",
  "rolldown_plugin_utils",
  "rolldown_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -5246,7 +5209,7 @@ dependencies = [
  "regress",
  "rolldown_error",
  "rolldown_std_utils",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde_json",
  "simdutf8",
  "sugar_path",
@@ -5292,12 +5255,6 @@ dependencies = [
  "spki 0.8.1",
  "zeroize",
 ]
-
-[[package]]
-name = "rustc-hash"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
 name = "rustc-hash"
@@ -5902,7 +5859,7 @@ dependencies = [
  "oxc_index",
  "oxc_sourcemap",
  "regex",
- "rustc-hash 2.1.3",
+ "rustc-hash",
  "serde",
 ]
 
@@ -6474,6 +6431,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-properties"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "993ad287eb20e8ba755312801cfe1413e0f25d604075863acaddca10b04c1833"
+
+[[package]]
 name = "unicode-segmentation"
 version = "1.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6626,6 +6589,16 @@ name = "vsimd"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64"
+
+[[package]]
+name = "vte"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5924018406ce0063cd67f8e008104968b74b563ee1b85dde3ed1f7cb87d3dbd"
+dependencies = [
+ "arrayvec",
+ "memchr",
+]
 
 [[package]]
 name = "wait-timeout"

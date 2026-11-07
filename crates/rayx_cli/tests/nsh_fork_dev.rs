@@ -87,7 +87,7 @@ fn rayx_nsh_runs_that_binary_and_warns_naming_the_pin_it_replaces() {
         assert_eq!(
             prepared.warnings.trim(),
             format!(
-                "rayx: RAYX_NSH={} replaces the project's nsh bf1b1d036ee6",
+                "rayx: RAYX_NSH={} replaces the project's nsh 1d64f049d809",
                 built.display()
             ),
             "{command}: the warning comes with every command"
@@ -113,11 +113,11 @@ fn rayx_nsh_runs_that_binary_and_warns_naming_the_pin_it_replaces() {
 fn an_empty_rayx_nsh_is_no_replacement() {
     let home = Workspace::empty();
     let app = Workspace::fixture("nsh-fork-app");
-    home.write("rayx-home/nsh/bf1b1d036ee6/nsh/bin/nsh", "#!");
+    home.write("rayx-home/nsh/1d64f049d809/nsh/bin/nsh", "#!");
     rayx_cli::nsh::store::Store::at(home.path("rayx-home/nsh"))
         .complete(&rayx_cli::nsh::store::Receipt {
             version: 1,
-            id: "bf1b1d036ee6".into(),
+            id: "1d64f049d809".into(),
             kind: rayx_cli::nsh::store::Kind::Distribution,
             url: "u".into(),
             reference: None,
@@ -134,7 +134,7 @@ fn an_empty_rayx_nsh_is_no_replacement() {
     let prepared = run_prepare(&app_args(&["build"]), &app.root, &machine);
     assert_eq!(
         prepared.launch.program,
-        home.path("rayx-home/nsh/bf1b1d036ee6/nsh/bin/nsh")
+        home.path("rayx-home/nsh/1d64f049d809/nsh/bin/nsh")
     );
     assert!(prepared.warnings.is_empty(), "{}", prepared.warnings);
     assert_eq!(prepared.nsh_step, [true]);
@@ -271,7 +271,7 @@ fn rayx_nsh_path_prints_the_replacement_with_the_warning() {
     let warning = String::from_utf8_lossy(&output.stderr);
     assert!(
         warning.contains(&format!(
-            "rayx: RAYX_NSH={} replaces the project's nsh bf1b1d036ee6",
+            "rayx: RAYX_NSH={} replaces the project's nsh 1d64f049d809",
             app.path("nsh-dev").display()
         )),
         "{warning}"
