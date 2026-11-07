@@ -30,3 +30,9 @@ precise-builds = true
 [dist.github-custom-runners.aarch64-pc-windows-msvc]
 runner = "windows-2022"
 host = "x86_64-pc-windows-msvc"
+
+# GitHub retired the macos-14 image dist picks for Apple silicon ("The configuration
+# 'macos-14-arm64-us-default' is not supported"): macos-15 is Apple silicon too.
+[dist.github-custom-runners.aarch64-apple-darwin]
+runner = "macos-15"
+host = "aarch64-apple-darwin"
