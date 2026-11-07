@@ -7,6 +7,12 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.7.0] - 2026-11-07
+
+### Features
+- *(nsh)* [**breaking**] Move to NSH 0.4, pinned to fork-0.4.0-1
+  - Migration: gamify: set the NSH crates to "0.4.0" in src/frontend/Cargo.toml, patch every NSH crate in src/frontend/.cargo/config.toml to `fork-0.4.0-1`, install the nsh CLI from that tag, and move rayx_core and rayx_app to this release's tag.
+
 ## [0.6.3] - 2026-11-02
 
 ### Build and CI
