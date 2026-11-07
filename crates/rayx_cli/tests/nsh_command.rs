@@ -43,9 +43,9 @@ fn installed(home: &Workspace, id: &str, kind: Kind) -> PathBuf {
             version: 1,
             id: id.into(),
             kind,
-            url: "https://github.com/dXnSix/nsh/releases/download/fork-0.4.0-1/nsh-macos-arm64.tar.gz"
+            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.4.0-1/nsh-macos-arm64.tar.gz"
                 .into(),
-            reference: Some("fork-0.4.0-1".into()),
+            reference: Some("nshx-0.4.0-1".into()),
             commit: Some("1d64f049d8096803740f65515b46941d47702344".into()),
             nsh: "0.2.0".into(),
             cli: cli.into(),
@@ -78,7 +78,7 @@ fn status_shows_the_pin_its_source_the_entry_its_size_and_the_cli() {
         .get_output()
         .clone();
     let text = String::from_utf8(output.stdout).expect("UTF-8");
-    assert!(text.starts_with("nsh fork-0.4.0-1 (1d64f04)\n"), "{text}");
+    assert!(text.starts_with("nsh nshx-0.4.0-1 (1d64f04)\n"), "{text}");
     for line in [
         "  source     project\n".to_string(),
         format!("  id         {ID}\n"),
@@ -103,7 +103,7 @@ fn status_json_has_the_same_fields() {
         .get_output()
         .clone();
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).expect("JSON");
-    assert_eq!(json["value"], "fork-0.4.0-1 (1d64f04)");
+    assert_eq!(json["value"], "nshx-0.4.0-1 (1d64f04)");
     assert_eq!(json["source"], "project");
     assert_eq!(json["id"], ID);
     assert_eq!(json["kind"], "source");
@@ -154,7 +154,7 @@ fn status_of_a_missing_pin_and_of_each_source() {
         .current_dir(&app.root)
         .assert()
         .success()
-        .stderr(contains("pins no nsh").and(contains("tag = \"fork-0.4.0-1\"")));
+        .stderr(contains("pins no nsh").and(contains("tag = \"nshx-0.4.0-1\"")));
 }
 
 #[test]
@@ -181,7 +181,7 @@ fn path_without_install_on_a_missing_pin_exits_1_with_the_setup_command() {
         .code(1)
         .stdout(predicate::str::is_empty())
         .stderr(
-            contains("nsh fork-0.4.0-1 (1d64f04) is not installed")
+            contains("nsh nshx-0.4.0-1 (1d64f04) is not installed")
                 .and(contains(format!("cd {} && rayx setup", app.root.display()))),
         );
     assert!(

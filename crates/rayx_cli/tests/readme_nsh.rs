@@ -234,7 +234,7 @@ fn the_readme_says_how_rayx_chooses_and_installs_nsh() {
         "`Cargo.lock`",
         "`rayx.toml`",
         "`[nsh]`",
-        "`fork-0.4.0-1` at `1d64f04`",
+        "`nshx-0.4.0-1` at `1d64f04`",
         "`$RAYX_HOME/nsh/<id>` (`~/.rayx/nsh`)",
         "`1d64f049d809`",
         "`v0.2.0`",

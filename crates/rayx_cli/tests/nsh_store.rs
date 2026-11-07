@@ -20,9 +20,9 @@ fn receipt(id: &str, kind: Kind) -> Receipt {
         version: 1,
         id: id.to_string(),
         kind,
-        url: "https://github.com/dXnSix/nsh/releases/download/fork-0.4.0-1/nsh-macos-arm64.tar.gz"
+        url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.4.0-1/nsh-macos-arm64.tar.gz"
             .into(),
-        reference: Some("fork-0.4.0-1".into()),
+        reference: Some("nshx-0.4.0-1".into()),
         commit: Some("1d64f049d8096803740f65515b46941d47702344".into()),
         nsh: "0.2.0".into(),
         cli: match kind {
@@ -119,7 +119,7 @@ fn a_receipt_written_last_makes_an_entry_complete() {
     }
     assert_eq!(json["version"], 1);
     assert_eq!(json["kind"], "distribution");
-    assert_eq!(json["ref"], "fork-0.4.0-1");
+    assert_eq!(json["ref"], "nshx-0.4.0-1");
     assert_eq!(
         store.cli(&written),
         home.path("nsh/1d64f049d809")
@@ -306,7 +306,7 @@ fn prune_keeps_the_default_pin_and_every_recorded_projects_pin() {
     // A recorded project pinned to a branch, and a vanished one.
     let project = Workspace::fixture("nsh-fork-app");
     let lock = project.read("Cargo.lock").replace(
-        "?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344",
+        "?tag=nshx-0.4.0-1#1d64f049d8096803740f65515b46941d47702344",
         "?branch=main#5f0c2a91be4700000000000000000000000000aa",
     );
     project.write("Cargo.lock", &lock);
@@ -467,7 +467,7 @@ fn setup_update_offers_prune_after_its_runs_unless_it_only_checks_or_targets_gue
     let project = Workspace::fixture("nsh-fork-app");
     let machine = recorded(&home, &config, &project, |lock| {
         lock.replace(
-            "?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344",
+            "?tag=nshx-0.4.0-1#1d64f049d8096803740f65515b46941d47702344",
             "?branch=main#5f0c2a91be4700000000000000000000000000aa",
         )
     });

@@ -38,7 +38,7 @@ bundled `appsettings.json`.
 
 - View-model state comes from [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) (`dxn_reactive`); translations
   use MessageFormat 2 messages from dXn.I18n and dXn.Intl.
-- NSH comes from an integration tag `fork-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh), through
+- NSH comes from an integration tag `nshx-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh), through
   `[patch.crates-io]` in `Cargo.toml`. A consumer's own patch decides which NSH it builds with.
 - Every dependency is a git tag: no path, branch or commit dependencies.
 

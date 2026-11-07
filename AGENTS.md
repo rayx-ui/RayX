@@ -40,7 +40,7 @@ repository, this file governs. Nothing here depends on the root or a sibling by 
   `dxn_intl` from [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), each by release tag.
 - NSH comes from the fork `github.com/dXnSix/nsh` through `[patch.crates-io]`, pinned to one of
-  its integration tags `fork-*` (the newest RayX needs); a consumer's own patch decides which NSH
+  its integration tags `nshx-*` (the newest RayX needs); a consumer's own patch decides which NSH
   it builds with.
 - Git tags only: never path, branch or commit dependencies.
 - What RayX needs from NSH goes into the fork first, on its own rules (the README of its

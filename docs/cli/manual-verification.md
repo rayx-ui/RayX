@@ -47,7 +47,7 @@ sudo apparmor_parser -r /etc/apparmor.d/playwright-chromium
 | The web and test sets are complete | `rayx setup --web --test --check` | pass (2026-10-24): every step `ok`, "Everything is installed.", exit 0 |
 | The browser rayx passes | `ls ~/.cache/ms-playwright` shows a `chromium-<revision>`, and `command -v chromium chromium-browser google-chrome google-chrome-stable` prints nothing | pass: `chromium-1248` (`chrome-linux-arm64`), no system browser |
 | It starts sandboxed | `~/.cache/ms-playwright/chromium-*/chrome-linux*/chrome --headless=new --dump-dom about:blank` prints `<html>` (no "No usable sandbox!") | pass: without the profile Chromium stops with "No usable sandbox!" (`kernel.apparmor_restrict_unprivileged_userns = 1`); with it, it prints `<html><head></head><body></body></html>` |
-| Doctor in the guest | `rayx doctor` | pass: 13 requirements, 0 missing; `nsh  fork-0.2.0-4 (327bb9e)  default  installed  1.6 GiB` |
+| Doctor in the guest | `rayx doctor` | pass: 13 requirements, 0 missing; `nsh  nshx-0.2.0-4 (327bb9e)  default  installed  1.6 GiB` |
 | The web proof | `cargo test --test proof_app_web -- --ignored --test-threads=1` | pass after the fix below: 1 passed in 367 s (the default nsh built from source in a temporary `RAYX_HOME`, the app built, run, tested on the web in Playwright's Chromium, packaged and served) |
 
 Run on macOS 26.6.2 on an Apple M5 with Lima 2.2.1, in the VM `rayx` (Ubuntu 24.04.5, kernel
@@ -61,7 +61,7 @@ Deviations from the steps above:
   which the guest reads through its read-only home mount.
 - The guest's earlier clone `~/RayX.CLI` held the old CLI's history (the checkout was renamed to
   RayX.CLI.Old), so it was moved to `~/RayX.CLI.old-history` and `--clone` cloned afresh.
-- The fork has no release of `fork-0.2.0-4` yet, so the guest built the default nsh from source
+- The fork has no release of `nshx-0.2.0-4` yet, so the guest built the default nsh from source
   (`nsh-linux-arm64.tar.gz` was missing, as rayx said).
 
 Findings fixed while verifying:
@@ -93,15 +93,15 @@ distribution, in the clone, Playwright's Chromium as in the Lima guest
 
 ## Releases
 
-### The fork's first release (`fork-0.2.0-4`)
+### The fork's first release (`nshx-0.2.0-4`)
 
 | Check | Command | Result |
 |---|---|---|
 | `fork/release` merged | its pull request into the fork's `main`, merged with a merge commit after the fork's CI | |
-| The release runs | `gh workflow run fork-release.yml --repo dXnSix/nsh -f tag=fork-0.2.0-4` | |
-| Four archives and their digests | `gh release view fork-0.2.0-4 --repo dXnSix/nsh` lists `nsh-macos-arm64.tar.gz`, `nsh-linux-x86_64.tar.gz`, `nsh-linux-arm64.tar.gz` and `nsh-windows-x86_64.zip` with a `.sha256` each (`nsh-windows-arm64.zip` when it built) | |
+| The release runs | `gh workflow run fork-release.yml --repo dXnSix/nsh -f tag=nshx-0.2.0-4` | |
+| Four archives and their digests | `gh release view nshx-0.2.0-4 --repo dXnSix/nsh` lists `nsh-macos-arm64.tar.gz`, `nsh-linux-x86_64.tar.gz`, `nsh-linux-arm64.tar.gz` and `nsh-windows-x86_64.zip` with a `.sha256` each (`nsh-windows-arm64.zip` when it built) | |
 | The archive's CLI | `nsh/bin/nsh --version` from `nsh-macos-arm64.tar.gz` prints `nsh 0.2.0 (327bb9e)` | |
-| A distribution entry | `rayx nsh install` in an app pinned to `fork-0.2.0-4`, then `rayx nsh status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
+| A distribution entry | `rayx nsh install` in an app pinned to `nshx-0.2.0-4`, then `rayx nsh status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
 
 ### The first RayX release with `rayx`
 

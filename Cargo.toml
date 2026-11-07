@@ -59,12 +59,12 @@ unwrap_used = "deny"
 expect_used = "deny"
 
 # NSH comes from an integration tag of the fork (github.com/dXnSix/nsh,
-# `fork-*`); a consumer's own patch decides there.
+# `nshx-*`); a consumer's own patch decides there.
 [patch.crates-io]
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "fork-0.4.0-1" }
+nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }
+nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }
+nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }
+nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }
+nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }
+nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }
+nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.4.0-1" }

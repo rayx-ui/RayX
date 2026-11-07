@@ -13,7 +13,7 @@ Inputs examined:
 
 - `RayX.CLI.Old` @ `d006250` (rayx 1.4.1): the previous `rayx`, its setup engine, guests, releases and the `rayx app`
   pipeline for GPUI/gpux apps
-- the NSH fork `dXnSix/nsh` @ `327bb9e` (`fork-0.2.0-4`): `crates/nsh-cli`, `crates/xtask/src/dist.rs`, the release
+- the NSH fork `dXnSix/nsh` @ `327bb9e` (`nshx-0.2.0-4`): `crates/nsh-cli`, `crates/xtask/src/dist.rs`, the release
   workflows, `website/docs/installation.md` and the fork docs on `private/fork-docs`
 - the first NSH app on RayX @ `041d197`, with its `xtask`, Aspire AppHost, Playwright support and CI
 - `RayX` @ `f6b2603` (`v0.4.0`): the `rayx_app` crates
@@ -33,7 +33,7 @@ Purpose: agree on how the new `rayx` works before writing its AgentX epic. §15 
 | D3 | NSH web stays single-threaded: `--web` installs no nightly and no `rust-src` | Decided 2026-10-24 |
 | D4 | This is a new CLI: a new repository `rayx-ui/RayX.CLI`, first release **1.0.0**. It keeps the crate name, binary and install path | Decided 2026-10-24 (§11) |
 | D5 | `rayx new` is part of 1.0.0, built so app templates can be added later; the templates themselves are not designed now | Decided 2026-10-24 (§4.7) |
-| D6 | Every `fork-*` tag gets a GitHub release with the compiled NSH distribution for each platform, built by a workflow in the fork; rayx downloads it | Decided 2026-10-24 (§10) |
+| D6 | Every `nshx-*` tag gets a GitHub release with the compiled NSH distribution for each platform, built by a workflow in the fork; rayx downloads it | Decided 2026-10-24 (§10) |
 | D7 | An app without Rust crates keeps its pin in a `rayx.toml` beside `nsh.json`, which `rayx new` writes | Decided 2026-10-24 (§4.1, §4.7) |
 | D8 | The fork's releases cover `macos-arm64`, `linux-x86_64`, `windows-x86_64` and `linux-arm64` (Lima guests on Apple silicon), and `windows-arm64` once NSH builds there | Decided 2026-10-24 (§10) |
 | D9 | The release workflow is a fork-only file on a new kind of fork branch, `fork/*` (`fork/release`), for changes that never go upstream | Decided 2026-10-24 (§10) |
@@ -80,7 +80,7 @@ rayx doctor                 # every requirement with its fix, the pins and the n
   Gradle, the asset catalog, the Playwright template) has nothing left to build.
 - **nsh already builds, runs, packages and tests apps** for the web, macOS, iOS, Android, Linux and Windows. What it
   lacks is what the old rayx is good at: installing a machine's toolchains, a `doctor` (nsh has none), guests and self update.
-- **The upstream CLI is not enough.** The first app and RayX take NSH from the fork's `fork-*` tags (`--strict-port`,
+- **The upstream CLI is not enough.** The first app and RayX take NSH from the fork's `nshx-*` tags (`--strict-port`,
   wasm-bindgen for app crates, SVG and multi-resolution images, shaders and more). Upstream's release (Homebrew,
   `install.sh`) is a different NSH, and the fork publishes no binaries.
 - **On GitHub, `rayx-ui/RayX.CLI` is now `rayx-ui/RayX.CLI.Old`**, as `RayX` became `RayX.Old`. The name is free for
@@ -88,18 +88,18 @@ rayx doctor                 # every requirement with its fix, the pins and the n
 
 ## 3. NSH facts that shape the design
 
-Verified in the fork at `fork-0.2.0-4`.
+Verified in the fork at `nshx-0.2.0-4`.
 
 | Fact | Where | Consequence |
 |---|---|---|
-| The CLI only checks that the app's NSH crates have its version, and every `fork-0.2.0-*` tag is version 0.2.0 | `nsh: crates/nsh-cli/src/rust_app.rs:172-232`, `:2022-2027` | A CLI from another fork tag builds the app with different code and says nothing. The store is keyed by commit, not by version |
+| The CLI only checks that the app's NSH crates have its version, and every `nshx-0.2.0-*` tag is version 0.2.0 | `nsh: crates/nsh-cli/src/rust_app.rs:172-232`, `:2022-2027` | A CLI from another fork tag builds the app with different code and says nothing. The store is keyed by commit, not by version |
 | `nsh --version` prints the commit (`nsh 0.2.0 (327bb9e)`), also when built in a shallow clone or by `cargo install --git`, as long as `git` was on `PATH` | `nsh: crates/nsh-cli/build.rs`, `main.rs:77` | rayx verifies a build by version and commit |
 | The CLI finds its runtimes (hosts, `nsh.wasm` and `nsh.js`, Android's `classes.dex`) through `NSH_RUNTIME`, else a distribution (`bin/../runtime/`), else a checkout (`<root>/target/<profile>/nsh` beside `crates/nsh-ios-host/Cargo.toml`), where it builds them on demand | `nsh: crates/nsh-cli/src/runtime.rs:141-216`, `:285-330`, `:360-414`, `:456-461` | `cargo install` gives none of the three: apps without Rust crates cannot run on a platform, and Android fails for every app. rayx installs a checkout or a distribution, never a bare binary |
 | A distribution is `nsh/bin/nsh` plus `nsh/runtime/{ios,macos,linux,windows,gpui,android,web}` and `nsh/embed/` | `nsh: crates/xtask/src/dist.rs:1-16` | The prebuilt form of a store entry (§10) |
 | The CLI runs `cargo` without a working directory of its own, and uses `$CARGO` when it is set | `nsh: rust_app.rs:1628-1650`, `:2088-2090`; `runtime.rs:317` | Cargo config, such as the first app's `[patch.crates-io]` to the fork tag in `src/frontend/.cargo/config.toml`, applies only when nsh runs in the project. A `CARGO` set by `cargo run` makes nsh bypass rustup's proxy, and on macOS every web runtime link then fails (`app: src/frontend/xtask/src/web.rs:112-118`) |
 | The fork's `rust-toolchain.toml` is `stable` with the iOS, Catalyst and three Android targets; `oxc` 0.153 needs rustc 1.97 or later | `nsh: rust-toolchain.toml` | Building in a checkout installs that toolchain |
 | Building the CLI needs a C toolchain (QuickJS, zstd, ring) and takes about four minutes on an M-class Mac; the binary is 40.7 MB | `nsh: crates/nsh-cli/Cargo.toml`, the workspace's `lto = "fat"` release profile | Only the fallback (§4.3) builds; the base set already installs a C toolchain |
-| Upstream's release builds `nsh-<platform>.tar.gz` for macos-arm64, linux-x86_64 and windows-x86_64 with `cargo xtask dist`, only on `v*` tags, as a draft. The fork never creates `v*` tags, so it has no binaries | `nsh: .github/workflows/release.yml`; the fork docs' `README.md` | The fork gets a release workflow of its own for `fork-*` tags (§10) |
+| Upstream's release builds `nsh-<platform>.tar.gz` for macos-arm64, linux-x86_64 and windows-x86_64 with `cargo xtask dist`, only on `v*` tags, as a draft. The fork never creates `v*` tags, so it has no binaries | `nsh: .github/workflows/release.yml`; the fork docs' `README.md` | The fork gets a release workflow of its own for `nshx-*` tags (§10) |
 | `nsh check` downloads TypeScript 7.0.2 from npm into nsh's own cache (`NSH_CACHE`) | `nsh: crates/nsh-cli/src/check.rs:19`, `:130`, `:173-190` | The first `check` needs the network; rayx leaves nsh's caches alone |
 | nsh has no `doctor` and no setup; its host requirements are in its installation docs | `nsh: website/docs/installation.md` | rayx's setup sets carry them (§6) |
 | Web needs the `wasm32-unknown-unknown` target, a clang that targets wasm32 and `llvm-ar` (Apple's clang cannot), and `wasm-bindgen-cli` at the exact version an app's crates use. iOS needs Xcode, a simulator runtime and the iOS targets. Android needs `platforms;android-35`, build-tools (`aapt2`, `zipalign`, `apksigner`), an NDK, a JDK and the Android targets. Linux needs GTK 4.14+ and WebKitGTK 6.0. Windows needs Build Tools with the Windows SDK, LLVM (libclang) and WebView2 | `nsh: android.rs:15-51`, `bindgen.rs:31`, `runtime.rs:326-329`, `run.rs:757-769`, `cdp.rs:60-110`, `website/docs/installation.md:159-203` | §6 |
@@ -120,7 +120,7 @@ rayx reads the pin in the directory it runs nsh in, so the two never disagree ab
 
 | Source in `Cargo.lock` | Pin | Store id | Installed from |
 |---|---|---|---|
-| `git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea65d0…` | git URL, tag, full commit | `327bb9ea65d0` (12 hex digits) | the tag's release archive for this host (§10), else a checkout of the commit (§4.3) |
+| `git+https://github.com/dXnSix/nsh?tag=nshx-0.2.0-4#327bb9ea65d0…` | git URL, tag, full commit | `327bb9ea65d0` (12 hex digits) | the tag's release archive for this host (§10), else a checkout of the commit (§4.3) |
 | `git+…?branch=…#<commit>` or `?rev=…#<commit>`, or any other git URL | git URL, ref, full commit | the commit's 12 hex digits | a checkout of the commit: a branch or a bare commit has no release |
 | `registry+https://github.com/rust-lang/crates.io-index` at 0.2.0 | upstream release 0.2.0 | `v0.2.0` | upstream's `v0.2.0` release archive for this host, else a checkout of `longbridge/nsh` at `v0.2.0` |
 | none (a path dependency) | an NSH checkout on this machine | none | nothing to install: rayx builds and runs that checkout's CLI (§4.6) |
@@ -131,18 +131,18 @@ rayx reads the pin in the directory it runs nsh in, so the two never disagree ab
    ```toml
    [nsh]
    git = "https://github.com/dXnSix/nsh"
-   tag = "fork-0.2.0-4"
+   tag = "nshx-0.2.0-4"
    commit = "327bb9ea65d08ffac4af498cc7fbbfa18a1b3623"
    ```
 
    An upstream release is `version = "0.2.0"` instead. The commit is checked against what the tag gives. An app that
    has NSH crates and an `[nsh]` table stops with both named: its pin is `Cargo.lock`'s.
 5. **Neither** (an app made by plain `nsh init --template ts`, or no app at all): rayx's built-in default, the NSH that
-   release of rayx was tested with (today `fork-0.2.0-4` at `327bb9e`). In an app, rayx says so on every command and
+   release of rayx was tested with (today `nshx-0.2.0-4` at `327bb9e`). In an app, rayx says so on every command and
    shows the three lines that pin it; outside any app, `rayx setup` installs the default.
 
 The first app needs no change for this: its `Cargo.lock` already names
-`git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-4#327bb9ea…` for every NSH package.
+`git+https://github.com/dXnSix/nsh?tag=nshx-0.2.0-4#327bb9ea…` for every NSH package.
 
 ### 4.2 The store
 
@@ -150,7 +150,7 @@ The first app needs no change for this: its `Cargo.lock` already names
 ~/.rayx/                         $RAYX_HOME, as the installer already uses it
   bin/rayx                       the installer's, unchanged
   nsh/
-    327bb9ea65d0/                one NSH commit (fork-0.2.0-4)
+    327bb9ea65d0/                one NSH commit (nshx-0.2.0-4)
       nsh/bin/nsh                the release's distribution for this host
       nsh/runtime/…              its prebuilt hosts and runtimes
       receipt.json               written last
@@ -234,7 +234,7 @@ of the current project's pin, installing it first when it is missing.
   `--yes` does not change it.
 - `rayx setup --update` already re-runs setup in every recorded project, so each project's current pin gets
   installed; then it offers `rayx nsh prune`.
-- `rayx doctor` shows one line per pin, for example `nsh  fork-0.2.0-4 (327bb9e)  project  installed  3.1 GB` (the
+- `rayx doctor` shows one line per pin, for example `nsh  nshx-0.2.0-4 (327bb9e)  project  installed  3.1 GB` (the
   source is `project` or `default`, as for the other pins), and `--json` has the same fields.
 
 ### 4.6 Fork development
@@ -315,7 +315,7 @@ then the built-in default (`old: src/project/pins.rs`).
 
 | Pin | Project source | Default | Change |
 |---|---|---|---|
-| `nsh` | the NSH crates' source in `Cargo.lock` | `fork-0.2.0-4` at `327bb9e` | New |
+| `nsh` | the NSH crates' source in `Cargo.lock` | `nshx-0.2.0-4` at `327bb9e` | New |
 | `rust_toolchain` | `rust-toolchain.toml` | stable | |
 | `wasm_bindgen` | `Cargo.lock` | none | |
 | `node` | `node` | 22 | |
@@ -391,15 +391,15 @@ The fork tag is written in seven files besides `Cargo.lock` today (`.cargo/confi
 
 ## 10. Fork releases (D6)
 
-Every `fork-*` tag gets a GitHub release on `dXnSix/nsh` with NSH's distribution compiled for each platform: the same
+Every `nshx-*` tag gets a GitHub release on `dXnSix/nsh` with NSH's distribution compiled for each platform: the same
 archives upstream builds for its `v*` releases. rayx downloads them (§4.3), so nobody compiles NSH on their machine
 unless their host has no archive.
 
 **The workflow** is `.github/workflows/fork-release.yml` in the fork:
 
-- **Runs** when a `fork-*` tag is pushed (`scripts/sync-main.sh tag` pushes it), and by hand with a tag, which builds
-  an existing tag such as `fork-0.2.0-4`.
-- **Checks** that the tag is `fork-<workspace version>-<n>` and that its commit is on `main`.
+- **Runs** when a `nshx-*` tag is pushed (`scripts/sync-main.sh tag` pushes it), and by hand with a tag, which builds
+  an existing tag such as `nshx-0.2.0-4`.
+- **Checks** that the tag is `nshx-<workspace version>-<n>` and that its commit is on `main`.
 - **Builds** each platform with upstream's own steps (`nsh: .github/workflows/release.yml`, job `dist`): Java 17 and
   Android 35, stable Rust with wasm32, LLVM, GTK 4 on Linux, then `cargo xtask dist` and its smoke test
   (`--version`, `init`, `build --release`). A run takes about an hour.
@@ -431,7 +431,7 @@ so `sync-main.sh upstream` warns when a sync changes `release.yml`.
 **The fork docs change with it:** the `private/fork-docs` README describes `fork/*`, and its tag section says that a
 tag now produces a release, replacing "reinstall the CLI with `cargo install`" with `rayx setup`.
 
-**The first release** is a run by hand for `fork-0.2.0-4`, so the first app's current pin downloads before the next tag.
+**The first release** is a run by hand for `nshx-0.2.0-4`, so the first app's current pin downloads before the next tag.
 
 ## 11. Distribution and the move from the old rayx
 
@@ -470,9 +470,9 @@ into a temporary directory.
   missing archive falling back to source, the source build's commands, the version and commit check), `nsh_run` (arguments, working directory, environment, `RAYX_NSH`, `exec`),
   `app_prereqs` (§6.1), `new_app` (§4.7: each template, the patches, the lock, an existing directory), `serve` and
   `setup_nsh` (the base-set step, `--check`, the doctor lines).
-- **Fork release proof:** the workflow run by hand for `fork-0.2.0-4` publishes an archive per platform (§10), and
+- **Fork release proof:** the workflow run by hand for `nshx-0.2.0-4` publishes an archive per platform (§10), and
   each unpacks to a CLI that prints `nsh 0.2.0 (327bb9e)`.
-- **Real proof** (ignored by default, run on demand): an install of `fork-0.2.0-4` from its release, and one from
+- **Real proof** (ignored by default, run on demand): an install of `nshx-0.2.0-4` from its release, and one from
   source, into a temporary `RAYX_HOME`, then `rayx app build` of a fixture app, `rayx app run --target web` until `/nsh.version` answers, and
   `rayx app test --target web`. On the Mac also macOS and the iOS simulator; Linux in a Lima guest; Windows and WSL by
   hand, logged in `docs/manual-verification.md` as the old rayx does.
@@ -509,8 +509,8 @@ The outline as first proposed:
 | Sprint | Content | Proof |
 |---|---|---|
 | S1 The machine side | The repository; `host`, the setup engine and base sets, `doctor`, records, guests, `self update`, `fmt`, the release configuration; no `app/` | The ported groups; `rayx setup --check` and `rayx doctor` on macOS |
-| S2 Fork releases | `fork/release` with `fork-release.yml` (§10), its pull request into the fork's `main`, the `sync-main.sh` warning and the fork docs; a run by hand for `fork-0.2.0-4` | The release `fork-0.2.0-4` with an archive and digest per platform, each printing `nsh 0.2.0 (327bb9e)` |
-| S3 The pin and the store | §4.1 to §4.3 (releases first, source as the fallback), `rayx.toml`, `rayx nsh status\|path\|install\|prune`, the base-set `nsh` step, the doctor lines | `nsh_*` and `setup_nsh`; real installs of `fork-0.2.0-4` from its release and from source |
+| S2 Fork releases | `fork/release` with `fork-release.yml` (§10), its pull request into the fork's `main`, the `sync-main.sh` warning and the fork docs; a run by hand for `nshx-0.2.0-4` | The release `nshx-0.2.0-4` with an archive and digest per platform, each printing `nsh 0.2.0 (327bb9e)` |
+| S3 The pin and the store | §4.1 to §4.3 (releases first, source as the fallback), `rayx.toml`, `rayx nsh status\|path\|install\|prune`, the base-set `nsh` step, the doctor lines | `nsh_*` and `setup_nsh`; real installs of `nshx-0.2.0-4` from its release and from source |
 | S4 Running nsh | `rayx app` (§4.4), the prerequisite map (§6.1), `RAYX_NSH`, path checkouts, `rayx new` (§4.7), `rayx serve` | `nsh_run`, `app_prereqs`, `new_app`, `serve`; an app made by `rayx new`, built and run on the web through rayx |
 | S5 Sets for NSH | §6: Linux, Windows, web, test, iOS, Android | `setup_*`; `rayx setup --all --check` on macOS and in a Lima guest |
 | S6 The first app on rayx | §9, in that app | Its Playwright specs and AppHost frontend tests; web, macOS and the iOS simulator on the Mac; Linux in Lima; Windows and WSL as available |

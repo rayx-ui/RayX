@@ -15,7 +15,7 @@ use rayx_cli::project::pins::DEFAULTS;
 
 const COMMIT: &str = "1d64f049d8096803740f65515b46941d47702344";
 const FORK_TAG: &str =
-    "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344";
+    "git+https://github.com/dXnSix/nsh?tag=nshx-0.4.0-1#1d64f049d8096803740f65515b46941d47702344";
 
 /// Reads the pin with real cargo queries (`locate-project`, `metadata`); nothing is installed.
 fn pin_of(dir: &Path) -> anyhow::Result<Pin> {
@@ -38,7 +38,7 @@ fn a_fork_tag_in_the_lock_is_a_git_pin_with_a_12_digit_id() {
         pin.source,
         Source::Git {
             url: "https://github.com/dXnSix/nsh".into(),
-            reference: Reference::Tag("fork-0.4.0-1".into()),
+            reference: Reference::Tag("nshx-0.4.0-1".into()),
             commit: COMMIT.into(),
         }
     );
@@ -46,12 +46,12 @@ fn a_fork_tag_in_the_lock_is_a_git_pin_with_a_12_digit_id() {
     assert_eq!(pin.origin.as_str(), "project");
     assert_eq!(pin.id().as_deref(), Some("1d64f049d809"));
     assert_eq!(pin.version.as_deref(), Some("0.4.0"));
-    assert_eq!(pin.label(), "fork-0.4.0-1 (1d64f04)");
+    assert_eq!(pin.label(), "nshx-0.4.0-1 (1d64f04)");
     assert_eq!(
         pin.release(),
         Some(ReleaseSource {
             repository: "dXnSix/nsh".into(),
-            tag: "fork-0.4.0-1".into(),
+            tag: "nshx-0.4.0-1".into(),
         })
     );
     assert_eq!(pin.dir, app.root, "the pin is read where nsh will run");
@@ -65,7 +65,7 @@ fn a_branch_or_rev_source_is_a_git_pin_without_a_release() {
     for (query, reference) in [
         ("branch=feat%2Fx", Reference::Branch("feat/x".into())),
         ("branch=main", Reference::Branch("main".into())),
-        ("tag=fork%2D0.4.0-1", Reference::Tag("fork-0.4.0-1".into())),
+        ("tag=nshx%2D0.4.0-1", Reference::Tag("nshx-0.4.0-1".into())),
         ("rev=1d64f04", Reference::Rev("1d64f04".into())),
     ] {
         let app = fork_app_with(&format!(
@@ -193,7 +193,7 @@ fn two_sources_in_one_lock_stop_with_both_named() {
         "{error}"
     );
     assert!(
-        error.contains("?branch=main") && error.contains("?tag=fork-0.4.0-1"),
+        error.contains("?branch=main") && error.contains("?tag=nshx-0.4.0-1"),
         "{error}"
     );
 }
@@ -223,7 +223,7 @@ fn outside_any_workspace_the_crates_nsh_json_lists_decide() {
     let two = app.read("rust/two/Cargo.lock").replace(
         FORK_TAG,
         &format!(
-            "git+https://github.com/dXnSix/nsh?tag=fork-0.2.0-3#{}",
+            "git+https://github.com/dXnSix/nsh?tag=nshx-0.2.0-3#{}",
             "a".repeat(40)
         ),
     );
@@ -253,7 +253,7 @@ fn an_app_without_nsh_crates_takes_the_nsh_table_of_rayx_toml() {
     assert_eq!(pin.origin, Origin::RayxToml);
     assert_eq!(pin.origin.as_str(), "rayx.toml");
     assert_eq!(pin.id().as_deref(), Some("1d64f049d809"));
-    assert_eq!(pin.label(), "fork-0.4.0-1 (1d64f04)");
+    assert_eq!(pin.label(), "nshx-0.4.0-1 (1d64f04)");
     assert_eq!(pin.version, None, "rayx.toml names no NSH version");
     assert_eq!(pin.default_warning(), None);
 
@@ -314,7 +314,7 @@ fn an_app_that_pins_nothing_gets_the_default_with_a_warning_showing_the_three_li
     for line in [
         "[nsh]",
         "git = \"https://github.com/dXnSix/nsh\"",
-        "tag = \"fork-0.4.0-1\"",
+        "tag = \"nshx-0.4.0-1\"",
         "commit = \"1d64f049d8096803740f65515b46941d47702344\"",
     ] {
         assert!(warning.contains(line), "{warning}");
@@ -340,7 +340,7 @@ fn outside_any_app_the_default_is_used_and_reported_as_default() {
 fn the_defaults_table_holds_the_default_pin_and_its_crate_list() {
     let default = &DEFAULTS.nsh;
     assert_eq!(default.git, "https://github.com/dXnSix/nsh");
-    assert_eq!(default.tag, "fork-0.4.0-1");
+    assert_eq!(default.tag, "nshx-0.4.0-1");
     assert_eq!(default.commit, COMMIT);
     assert_eq!(default.version, "0.4.0");
     // The crates RayX patches (`tests/nsh_pin_rayx.rs` checks them against RayX's manifest), all
@@ -376,7 +376,7 @@ fn lock_sources_are_classified() {
         }
     );
     for bad in [
-        "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1",
+        "git+https://github.com/dXnSix/nsh?tag=nshx-0.4.0-1",
         "git+https://github.com/dXnSix/nsh#1d64f04",
         "sparse+https://index.example/",
     ] {
@@ -507,7 +507,7 @@ fn a_tag_whose_commit_is_not_the_recorded_one_is_an_error() {
     let app = Workspace::fixture("nsh-ts-app");
     let pin = pin_of(&app.root).expect("pin");
     let answer = |commit: &str| {
-        let line = format!("{commit}\trefs/tags/fork-0.4.0-1\n");
+        let line = format!("{commit}\trefs/tags/nshx-0.4.0-1\n");
         Runner::record().respond(
             |spec| spec.program == "git" && spec.args.first().is_some_and(|a| a == "ls-remote"),
             Outcome::success().with_stdout(line),
@@ -517,7 +517,7 @@ fn a_tag_whose_commit_is_not_the_recorded_one_is_an_error() {
     verify_tag(&mut same, &pin).expect("the tag gives the recorded commit");
     let command = same.lines().join("\n");
     assert!(
-        command.contains("git ls-remote https://github.com/dXnSix/nsh refs/tags/fork-0.4.0-1"),
+        command.contains("git ls-remote https://github.com/dXnSix/nsh refs/tags/nshx-0.4.0-1"),
         "{command}"
     );
 
@@ -532,7 +532,7 @@ fn a_tag_whose_commit_is_not_the_recorded_one_is_an_error() {
 
     // The peeled commit of an annotated tag wins over the tag object.
     let peeled = format!(
-        "{}\trefs/tags/fork-0.4.0-1\n{COMMIT}\trefs/tags/fork-0.4.0-1^{{}}\n",
+        "{}\trefs/tags/nshx-0.4.0-1\n{COMMIT}\trefs/tags/nshx-0.4.0-1^{{}}\n",
         "c".repeat(40)
     );
     let mut annotated = Runner::record().respond(|_| true, Outcome::success().with_stdout(peeled));

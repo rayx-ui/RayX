@@ -32,7 +32,7 @@ rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # Ray
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
 ```
 
-NSH comes from an integration tag `fork-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh), through
+NSH comes from an integration tag `nshx-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh), through
 `[patch.crates-io]`. An app takes the same tag as the RayX release it depends on: copy the `[patch.crates-io]` table
 from RayX's `Cargo.toml` at that tag.
 

@@ -3,7 +3,7 @@ version = 4
 [[package]]
 name = "nsh-core"
 version = "0.4.0"
-source = "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.4.0-1#1d64f049d8096803740f65515b46941d47702344"
 
 [[package]]
 name = "split-one"

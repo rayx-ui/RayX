@@ -50,7 +50,7 @@ fn fork_pin(reference: Reference) -> Pin {
 }
 
 fn tag_pin() -> Pin {
-    fork_pin(Reference::Tag("fork-0.4.0-1".into()))
+    fork_pin(Reference::Tag("nshx-0.4.0-1".into()))
 }
 
 /// A `nsh-<platform>.tar.gz` holding `nsh/bin/nsh` and a runtime file.
@@ -169,7 +169,7 @@ fn release_url(platform: &str) -> String {
     archive_url(
         &ReleaseSource {
             repository: "dXnSix/nsh".into(),
-            tag: "fork-0.4.0-1".into(),
+            tag: "nshx-0.4.0-1".into(),
         },
         &archive_name(platform),
     )
@@ -242,7 +242,7 @@ fn archive_names_and_urls_are_the_releases() {
     assert_eq!(archive_name("windows-x86_64"), "nsh-windows-x86_64.zip");
     assert_eq!(
         release_url("linux-x86_64"),
-        "https://github.com/dXnSix/nsh/releases/download/fork-0.4.0-1/nsh-linux-x86_64.tar.gz"
+        "https://github.com/dXnSix/nsh/releases/download/nshx-0.4.0-1/nsh-linux-x86_64.tar.gz"
     );
     let upstream = Pin {
         source: Source::Release {
@@ -283,7 +283,7 @@ fn a_release_install_checks_the_digest_unpacks_nsh_and_writes_a_distribution_rec
     let receipt = store.receipt(ID).expect("complete");
     assert_eq!(receipt.kind, Kind::Distribution);
     assert_eq!(receipt.url, release_url("macos-arm64"));
-    assert_eq!(receipt.reference.as_deref(), Some("fork-0.4.0-1"));
+    assert_eq!(receipt.reference.as_deref(), Some("nshx-0.4.0-1"));
     assert_eq!(receipt.commit.as_deref(), Some(COMMIT));
     assert_eq!(receipt.nsh, "0.2.0");
     assert_eq!(receipt.cli, "nsh/bin/nsh");
@@ -310,7 +310,7 @@ fn a_release_install_checks_the_digest_unpacks_nsh_and_writes_a_distribution_rec
             .any(|l| l.starts_with("git") || l.starts_with("cargo"))
     );
     assert!(
-        out.contains("Installed nsh fork-0.4.0-1 (1d64f04) (distribution)"),
+        out.contains("Installed nsh nshx-0.4.0-1 (1d64f04) (distribution)"),
         "{out}"
     );
     #[cfg(unix)]
@@ -354,7 +354,7 @@ fn a_release_without_an_archive_for_the_host_falls_back_to_source_naming_it() {
     let (result, out) = install(&mut runner, &store, &mac(), &tag_pin());
     let installed = result.expect("installs from source");
     assert!(
-        out.contains("the release fork-0.4.0-1 of dXnSix/nsh has no nsh-macos-arm64.tar.gz; building nsh 1d64f049d809 from source"),
+        out.contains("the release nshx-0.4.0-1 of dXnSix/nsh has no nsh-macos-arm64.tar.gz; building nsh 1d64f049d809 from source"),
         "{out}"
     );
     assert_eq!(installed.receipt.kind, Kind::Source);
@@ -714,7 +714,7 @@ fn a_rayx_toml_tag_that_moved_is_refused_before_anything_is_installed() {
     let served = serve_release(tar_gz(&[]), None);
     let mut runner = runner(&served, VERSION_LINE).respond(
         |spec| spec.program == "git" && spec.args.first().is_some_and(|a| a == "ls-remote"),
-        Outcome::success().with_stdout(format!("{}\trefs/tags/fork-0.4.0-1\n", "d".repeat(40))),
+        Outcome::success().with_stdout(format!("{}\trefs/tags/nshx-0.4.0-1\n", "d".repeat(40))),
     );
     let error = format!(
         "{:#}",
@@ -763,7 +763,7 @@ fn a_broken_entry_loses_its_receipt_before_it_is_installed_again() {
     let (result, out) = install(&mut broken, &store, &mac(), &tag_pin());
     assert!(result.is_err(), "the repair fails: {out}");
     assert!(
-        out.contains("rayx: nsh 1d64f049d809 does not answer as nsh fork-0.4.0-1 (1d64f04) should; installing it again"),
+        out.contains("rayx: nsh 1d64f049d809 does not answer as nsh nshx-0.4.0-1 (1d64f04) should; installing it again"),
         "{out}"
     );
     assert_eq!(

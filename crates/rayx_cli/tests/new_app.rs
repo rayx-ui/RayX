@@ -26,7 +26,7 @@ use rayx_cli::setup::FakeMachine;
 
 const ID: &str = "1d64f049d809";
 const FORK_SOURCE: &str =
-    "git+https://github.com/dXnSix/nsh?tag=fork-0.4.0-1#1d64f049d8096803740f65515b46941d47702344";
+    "git+https://github.com/dXnSix/nsh?tag=nshx-0.4.0-1#1d64f049d8096803740f65515b46941d47702344";
 
 fn new_args(argv: &[&str]) -> NewArgs {
     let mut full = vec!["rayx", "new"];
@@ -56,7 +56,7 @@ fn with_default(home: &Workspace) -> PathBuf {
             id: ID.into(),
             kind: Kind::Distribution,
             url: "u".into(),
-            reference: Some("fork-0.4.0-1".into()),
+            reference: Some("nshx-0.4.0-1".into()),
             commit: Some(DEFAULTS.nsh.commit.into()),
             nsh: "0.2.0".into(),
             cli: "nsh/bin/nsh".into(),
@@ -185,7 +185,7 @@ fn a_mixed_app_is_made_by_the_default_pins_nsh_init_and_pinned_through_its_lock(
     let patched: Vec<&str> = config
         .lines()
         .filter(|l| {
-            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"fork-0.4.0-1\" }")
+            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.4.0-1\" }")
         })
         .collect();
     assert_eq!(patched.len(), DEFAULTS.nsh.crates.len());
@@ -231,7 +231,7 @@ fn a_rust_app_gets_the_same_patches_and_lock() {
     );
     assert!(
         config.contains(
-            "\nnsh-platform-macos = { git = \"https://github.com/dXnSix/nsh\", tag = \"fork-0.4.0-1\" }\n"
+            "\nnsh-platform-macos = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.4.0-1\" }\n"
         ),
         "{config}"
     );
@@ -292,7 +292,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     let mac = run(&["hello"], &work.root, &home, Os::MacOs, false);
     assert!(
         mac.out.contains(&format!(
-            "Created hello, a RayX app on rayx v{}, pinned to nsh fork-0.4.0-1 (1d64f04). Next:",
+            "Created hello, a RayX app on rayx v{}, pinned to nsh nshx-0.4.0-1 (1d64f04). Next:",
             env!("CARGO_PKG_VERSION")
         )),
         "{}",
@@ -308,7 +308,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     );
     assert!(
         nsh.out
-            .contains("Created hello, pinned to nsh fork-0.4.0-1 (1d64f04). Next:"),
+            .contains("Created hello, pinned to nsh nshx-0.4.0-1 (1d64f04). Next:"),
         "{}",
         nsh.out
     );
@@ -351,7 +351,7 @@ fn a_missing_default_pin_is_installed_first() {
     assert!(created.result.is_err());
     let first = created.runner.lines().first().cloned().unwrap_or_default();
     assert!(
-        first.contains("releases/download/fork-0.4.0-1/nsh-macos-arm64.tar.gz.sha256"),
+        first.contains("releases/download/nshx-0.4.0-1/nsh-macos-arm64.tar.gz.sha256"),
         "{first}"
     );
     assert!(
@@ -519,12 +519,12 @@ fn the_files_rayx_writes_name_the_default_pin() {
         "{config}"
     );
     assert!(config.contains("[patch.crates-io]\n"), "{config}");
-    assert!(config.contains("fork-0.4.0-1 at 1d64f04"), "{config}");
+    assert!(config.contains("nshx-0.4.0-1 at 1d64f04"), "{config}");
     let table = rayx_toml(&DEFAULTS.nsh);
     for line in [
         "[nsh]",
         "git = \"https://github.com/dXnSix/nsh\"",
-        "tag = \"fork-0.4.0-1\"",
+        "tag = \"nshx-0.4.0-1\"",
         "commit = \"1d64f049d8096803740f65515b46941d47702344\"",
     ] {
         assert!(table.contains(line), "{table}");

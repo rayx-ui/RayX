@@ -85,7 +85,7 @@ impl Status {
         }
     }
 
-    /// One line, as doctor prints it: `nsh  fork-0.2.0-4 (327bb9e)  project  installed  3.1 GiB`.
+    /// One line, as doctor prints it: `nsh  nshx-0.2.0-4 (327bb9e)  project  installed  3.1 GiB`.
     pub fn line(&self) -> String {
         let mut line = format!(
             "nsh  {}  {}  {}",

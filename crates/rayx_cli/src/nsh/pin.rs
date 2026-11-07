@@ -142,7 +142,7 @@ impl Pin {
         }
     }
 
-    /// The pin as people read it: `fork-0.2.0-4 (327bb9e)`, `main (5f0c2a9)`, `v0.2.0`, or the
+    /// The pin as people read it: `nshx-0.2.0-4 (327bb9e)`, `main (5f0c2a9)`, `v0.2.0`, or the
     /// checkout's path.
     pub fn label(&self) -> String {
         match &self.source {

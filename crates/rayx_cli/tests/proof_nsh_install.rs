@@ -113,7 +113,7 @@ fn upstream_v0_2_0_installs_from_its_release_and_again_changes_nothing() {
 #[ignore = "builds the fork's nsh-cli from source (network, several minutes)"]
 fn the_default_pin_s_commit_installs_from_source_and_again_changes_nothing() {
     let home = Workspace::empty();
-    // fork-0.4.0-1's commit as a rev pin, which has no release whatever the fork publishes, so it
+    // nshx-0.4.0-1's commit as a rev pin, which has no release whatever the fork publishes, so it
     // always builds from source.
     let app = Workspace::fixture("nsh-ts-app");
     app.write(

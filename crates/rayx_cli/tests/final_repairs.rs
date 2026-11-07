@@ -151,7 +151,7 @@ fn doctor_warns_in_an_app_that_pins_no_nsh() {
         .assert();
     let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
     assert!(
-        stderr.contains("pins no nsh, so rayx's default fork-0.4.0-1 (1d64f04) applies")
+        stderr.contains("pins no nsh, so rayx's default nshx-0.4.0-1 (1d64f04) applies")
             && stderr.contains("[nsh]"),
         "{stderr}"
     );
