@@ -16,7 +16,10 @@ decision changed with the move, it says so. Current source and tests remain the 
   (`tests/library_guard.rs`, over `cargo tree -p rayx-cli`).
 - **One NSH pin.** The default nsh is the fork tag and the crates of RayX's own
   `[patch.crates-io]` (`tests/nsh_pin_rayx.rs`), so a new app builds with the NSH its RayX release
-  does. Which lock packages are NSH's follows nsh's own `NSH_CRATES`.
+  does. Which lock packages are NSH's follows nsh's own `NSH_CRATES`. A new app also patches the
+  NSH crates nsh's generated workspace depends on (`DEFAULTS.nsh.generated`: hosts, runners,
+  platforms, the test runner), which nsh otherwise takes from crates.io, where some are missing
+  and the rest are upstream's (`tests/proof_app_rayx.rs`).
 - **Dependencies.** The repository's rule holds: crates.io, or public `https://` git by tag
   (`tests/dependency_sources.rs`), where RayX.CLI pinned git by `rev`.
 - **License.** `MIT OR Apache-2.0`, as the whole repository.

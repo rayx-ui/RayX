@@ -8,9 +8,10 @@
 //!    RayX's TSX classes, or starts the app from the Rust root, and names the app's services
 //!    with `set_app`.
 //! 3. `mixed` and `rust`: write `.cargo/config.toml` with a `[patch.crates-io]` entry (git URL and
-//!    tag) for every NSH crate the default pin patches (RayX's) and every other NSH crate the
-//!    app's `Cargo.toml` names, then `cargo generate-lockfile`, so the app's `Cargo.lock` holds
-//!    the pin.
+//!    tag) for every NSH crate the default pin patches (RayX's), every NSH crate nsh's generated
+//!    workspace depends on (its hosts, runners and platforms, which crates.io lacks or has as
+//!    upstream's) and every other NSH crate the app's `Cargo.toml` names, then
+//!    `cargo generate-lockfile`, so the app's `Cargo.lock` holds the pin.
 //! 4. `ts` (`--nsh-only`): write `rayx.toml` with the default pin's `[nsh]` table.
 //! 5. Print the next steps.
 //!
@@ -48,21 +49,28 @@ pub fn run(args: &NewArgs) -> u8 {
     }
 }
 
-/// The `.cargo/config.toml` that patches to `default`'s git tag its NSH crates (RayX's) and
-/// `also`, the other NSH crates the app names.
+/// The `.cargo/config.toml` that patches to `default`'s git tag its NSH crates (RayX's), those
+/// nsh's generated workspace depends on, and `also`, the other NSH crates the app names: each
+/// once, sorted.
 pub fn cargo_config(default: &DefaultNsh, also: &[String]) -> String {
     let mut text = format!(
         "# The NSH this app is built with: rayx's default pin when the app was created\n\
          # ({} at {}). Cargo.lock records its commit, which is the app's nsh pin;\n\
-         # move every line together to change it.\n\n[patch.crates-io]\n",
+         # move every line together to change it. It patches RayX's NSH crates and those of\n\
+         # the hosts and runners nsh generates for the app, which a build that does not use\n\
+         # them names in a warning.\n\n[patch.crates-io]\n",
         default.tag,
         &default.commit[..7]
     );
-    let names = default.crates.iter().copied().chain(
-        also.iter()
-            .map(String::as_str)
-            .filter(|name| !default.crates.contains(name)),
-    );
+    let mut names: Vec<&str> = default
+        .crates
+        .iter()
+        .chain(default.generated)
+        .copied()
+        .chain(also.iter().map(String::as_str))
+        .collect();
+    names.sort_unstable();
+    names.dedup();
     for name in names {
         text.push_str(&format!(
             "{name} = {{ git = \"{}\", tag = \"{}\" }}\n",

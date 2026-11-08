@@ -375,9 +375,10 @@ a RayX app and pins it.
   register RayX's classes, so it needs `--nsh-only`.
 - **`--nsh-only`:** a plain NSH app, as `nsh init` writes it.
 - **The pin:** `mixed` and `rust` get a `.cargo/config.toml` that patches to the default pin's tag
-  the NSH crates RayX patches and any other NSH crate the app's `Cargo.toml` names (a `rust` app's
-  desktop platforms), and a `Cargo.lock` from `cargo generate-lockfile`; `ts` gets a `rayx.toml`
-  with the `[nsh]` table.
+  the NSH crates RayX patches, those of the hosts, runners and platforms nsh generates for the
+  app's Rust crate (which crates.io lacks, or has as upstream's builds) and any other NSH crate the
+  app's `Cargo.toml` names, and a `Cargo.lock` from `cargo generate-lockfile`; `ts` gets a
+  `rayx.toml` with the `[nsh]` table. Cargo warns of each patch a build does not use.
 
 Then it prints the next steps: `rayx setup --web` (with `--ios` on a Mac) and
 `rayx app run --target web`. A directory nsh refuses (one with files in it) is left unchanged, and

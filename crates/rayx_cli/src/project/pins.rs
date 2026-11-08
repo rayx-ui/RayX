@@ -82,6 +82,12 @@ pub struct DefaultNsh {
     pub version: &'static str,
     /// The NSH crates RayX patches, which a new app patches too.
     pub crates: &'static [&'static str],
+    /// The other NSH crates nsh's generated workspace for an app's Rust crate depends on: its
+    /// hosts and app runners, their platform crates and the test runner (nsh-cli's
+    /// `rust_app.rs`). nsh takes them from crates.io at its version unless the app patches them,
+    /// where some are missing (`nsh-tui-host`, `nsh-platform-tui`) and the rest are upstream's
+    /// builds, so a new app patches them too.
+    pub generated: &'static [&'static str],
 }
 
 /// The one table of default versions.
@@ -106,6 +112,27 @@ pub const DEFAULTS: Defaults = Defaults {
             "nsh-js",
             "nsh-macros",
             "nsh-package",
+        ],
+        generated: &[
+            "nsh-gpui-host",
+            "nsh-ios-app",
+            "nsh-ios-host",
+            "nsh-linux-app",
+            "nsh-linux-host",
+            "nsh-macos-app",
+            "nsh-macos-host",
+            "nsh-platform-android",
+            "nsh-platform-gpui",
+            "nsh-platform-ios",
+            "nsh-platform-linux",
+            "nsh-platform-macos",
+            "nsh-platform-tui",
+            "nsh-platform-web",
+            "nsh-platform-windows",
+            "nsh-testing",
+            "nsh-tui-host",
+            "nsh-windows-app",
+            "nsh-windows-host",
         ],
     },
 };

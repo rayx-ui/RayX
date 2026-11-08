@@ -188,8 +188,11 @@ fn a_mixed_app_is_made_by_the_default_pins_nsh_init_and_pinned_through_its_lock(
             l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.4.0-4\" }")
         })
         .collect();
-    assert_eq!(patched.len(), DEFAULTS.nsh.crates.len());
-    for name in DEFAULTS.nsh.crates {
+    assert_eq!(
+        patched.len(),
+        DEFAULTS.nsh.crates.len() + DEFAULTS.nsh.generated.len()
+    );
+    for name in DEFAULTS.nsh.crates.iter().chain(DEFAULTS.nsh.generated) {
         assert!(config.contains(&format!("\n{name} = {{ git")), "{name}");
     }
     let lock = created
