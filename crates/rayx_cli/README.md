@@ -237,7 +237,7 @@ for every retired guest.
 Reports every requirement of the selected sets as present, missing or the wrong version, with the
 version found and the exact fix, plus the desktop session (`interactiveDesktop`) and, from Windows,
 the size of each WSL virtual disk. It shows every pin with its source, the project's nsh among them
-(`nsh  nshx-0.4.0-2 (2f8b3ac)  project  installed  3.1 GiB`). On macOS it reports Lima (the
+(`nsh  nshx-0.4.0-4 (7be6603)  project  installed  3.1 GiB`). On macOS it reports Lima (the
 `limactl` version, or missing with `rayx setup --lima`), and on macOS and Windows every guest
 `rayx` manages: state (running, stopped, missing), CPUs, memory and disk, whether the home is
 read-only or writable, the Ubuntu version, whether the guest is current, outdated or retired, and
@@ -318,21 +318,21 @@ in the directory it runs nsh in:
 1. **`Cargo.lock`:** in the project's Cargo workspace (`cargo locate-project --workspace`, or the
    crates `nsh.json` lists under `"rust"` when there is none), every NSH package (NSH's own crates,
    not an app's `nsh-app-*`) has one and the same `source`. Without a lock, `cargo metadata` writes it first, and two sources stop with both
-   named. A git source with a tag (`git+https://github.com/dXnSix/nsh?tag=nshx-0.4.0-2#2f8b3ac…`)
+   named. A git source with a tag (`git+https://github.com/dXnSix/nsh?tag=nshx-0.4.0-4#7be6603…`)
    installs from that tag's release, a branch or bare commit from source, crates.io's `0.2.0` from
    upstream's `v0.2.0` release, and a path dependency runs that checkout (see below).
 2. **`rayx.toml`:** an app without Rust crates names its nsh in the `[nsh]` table of `rayx.toml`
    beside its `nsh.json` (`git`, `tag` and `commit`, or `version = "0.2.0"` for an upstream
    release). The commit is checked against what the tag gives. An app with both is refused: its
    pin is `Cargo.lock`'s, so remove the table.
-3. **The default:** with neither, `rayx` uses the nsh this release was tested with (`nshx-0.4.0-2`
-   at `2f8b3ac`) and says so in an app, with the three lines that pin it.
+3. **The default:** with neither, `rayx` uses the nsh this release was tested with (`nshx-0.4.0-4`
+   at `7be6603`) and says so in an app, with the three lines that pin it.
 
 The project contract (the pins, their sources and the `rayx.toml` table) is in
 [Projects](../../docs/cli/projects.md).
 
 **The store.** Each pin is installed once per machine, in `$RAYX_HOME/nsh/<id>` (`~/.rayx/nsh`):
-the id is the commit's first 12 hex digits (`2f8b3ac762cf`), or `v0.2.0` for an upstream release.
+the id is the commit's first 12 hex digits (`7be66038d6ce`), or `v0.2.0` for an upstream release.
 An install downloads the release's `nsh-<platform>.tar.gz` (`.zip` on Windows) and its `.sha256`,
 checks the digest and unpacks it. A pin with no release archive for this host is built from source:
 a shallow checkout of the commit, its own Rust toolchain, and
@@ -351,7 +351,7 @@ Everything runs as you, with no question and no administrator rights.
 **Working on NSH itself.** A path dependency on an NSH checkout makes `rayx` run
 `cargo build --release -p nsh-cli --target-dir target` in that checkout and run its `target/release/nsh`, copying
 nothing into the store. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
-every command: `rayx: RAYX_NSH=<path> replaces the project's nsh 2f8b3ac762cf`. A relative path is
+every command: `rayx: RAYX_NSH=<path> replaces the project's nsh 7be66038d6ce`. A relative path is
 read against the directory `rayx` started in (never searched on `PATH`), and `rayx nsh path` prints
 it too, for scripts that need the binary.
 
@@ -406,7 +406,7 @@ built-in default. `rayx doctor` shows each pin with its source, `project` or `de
 
 | Pin | Default | Project key |
 | --- | --- | --- |
-| nsh | `nshx-0.4.0-2` at `2f8b3ac` | none: the NSH crates' source in `Cargo.lock`, or `rayx.toml` |
+| nsh | `nshx-0.4.0-4` at `7be6603` | none: the NSH crates' source in `Cargo.lock`, or `rayx.toml` |
 | Rust toolchain | stable | none: `rust-toolchain.toml` |
 | wasm-bindgen | none | none: `Cargo.lock` |
 | Node.js | 22 | `node` |
