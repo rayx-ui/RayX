@@ -17,9 +17,9 @@ use rayx_cli::nsh::install::{
 use rayx_cli::nsh::pin::{Origin, Pin, Reference, ReleaseSource, Source};
 use rayx_cli::nsh::store::{Kind, Store};
 
-const COMMIT: &str = "1d64f049d8096803740f65515b46941d47702344";
-const ID: &str = "1d64f049d809";
-const VERSION_LINE: &str = "nsh 0.2.0 (1d64f04)\n";
+const COMMIT: &str = "2f8b3ac762cf08e56ff64ca67a3e6ba6533f4136";
+const ID: &str = "2f8b3ac762cf";
+const VERSION_LINE: &str = "nsh 0.2.0 (2f8b3ac)\n";
 
 fn host(os: Os, arch: Arch) -> HostFacts {
     HostFacts {
@@ -50,7 +50,7 @@ fn fork_pin(reference: Reference) -> Pin {
 }
 
 fn tag_pin() -> Pin {
-    fork_pin(Reference::Tag("nshx-0.4.0-1".into()))
+    fork_pin(Reference::Tag("nshx-0.4.0-2".into()))
 }
 
 /// A `nsh-<platform>.tar.gz` holding `nsh/bin/nsh` and a runtime file.
@@ -72,7 +72,7 @@ fn tar_gz(extra: &[(&str, &str)]) -> Vec<u8> {
         };
         add(
             "nsh/bin/nsh",
-            "#!/bin/sh\necho nsh 0.2.0 (1d64f04)\n",
+            "#!/bin/sh\necho nsh 0.2.0 (2f8b3ac)\n",
             0o755,
         );
         add("nsh/runtime/web/nsh.js", "// runtime", 0o644);
@@ -169,7 +169,7 @@ fn release_url(platform: &str) -> String {
     archive_url(
         &ReleaseSource {
             repository: "dXnSix/nsh".into(),
-            tag: "nshx-0.4.0-1".into(),
+            tag: "nshx-0.4.0-2".into(),
         },
         &archive_name(platform),
     )
@@ -242,7 +242,7 @@ fn archive_names_and_urls_are_the_releases() {
     assert_eq!(archive_name("windows-x86_64"), "nsh-windows-x86_64.zip");
     assert_eq!(
         release_url("linux-x86_64"),
-        "https://github.com/dXnSix/nsh/releases/download/nshx-0.4.0-1/nsh-linux-x86_64.tar.gz"
+        "https://github.com/dXnSix/nsh/releases/download/nshx-0.4.0-2/nsh-linux-x86_64.tar.gz"
     );
     let upstream = Pin {
         source: Source::Release {
@@ -283,7 +283,7 @@ fn a_release_install_checks_the_digest_unpacks_nsh_and_writes_a_distribution_rec
     let receipt = store.receipt(ID).expect("complete");
     assert_eq!(receipt.kind, Kind::Distribution);
     assert_eq!(receipt.url, release_url("macos-arm64"));
-    assert_eq!(receipt.reference.as_deref(), Some("nshx-0.4.0-1"));
+    assert_eq!(receipt.reference.as_deref(), Some("nshx-0.4.0-2"));
     assert_eq!(receipt.commit.as_deref(), Some(COMMIT));
     assert_eq!(receipt.nsh, "0.2.0");
     assert_eq!(receipt.cli, "nsh/bin/nsh");
@@ -310,7 +310,7 @@ fn a_release_install_checks_the_digest_unpacks_nsh_and_writes_a_distribution_rec
             .any(|l| l.starts_with("git") || l.starts_with("cargo"))
     );
     assert!(
-        out.contains("Installed nsh nshx-0.4.0-1 (1d64f04) (distribution)"),
+        out.contains("Installed nsh nshx-0.4.0-2 (2f8b3ac) (distribution)"),
         "{out}"
     );
     #[cfg(unix)]
@@ -354,7 +354,7 @@ fn a_release_without_an_archive_for_the_host_falls_back_to_source_naming_it() {
     let (result, out) = install(&mut runner, &store, &mac(), &tag_pin());
     let installed = result.expect("installs from source");
     assert!(
-        out.contains("the release nshx-0.4.0-1 of dXnSix/nsh has no nsh-macos-arm64.tar.gz; building nsh 1d64f049d809 from source"),
+        out.contains("the release nshx-0.4.0-2 of dXnSix/nsh has no nsh-macos-arm64.tar.gz; building nsh 2f8b3ac762cf from source"),
         "{out}"
     );
     assert_eq!(installed.receipt.kind, Kind::Source);
@@ -524,12 +524,12 @@ fn a_windows_checkout_uses_long_paths() {
 fn a_cli_of_another_version_or_commit_is_refused_and_nothing_is_recorded() {
     for (line, needle) in [
         (
-            "nsh 0.4.0 (1d64f04)\n",
+            "nsh 0.4.0 (2f8b3ac)\n",
             "version 0.4.0, but the project's NSH crates are 0.2.0",
         ),
         (
             "nsh 0.2.0 (5f0c2a9)\n",
-            "built from 5f0c2a9, but the pin is 1d64f049d809",
+            "built from 5f0c2a9, but the pin is 2f8b3ac762cf",
         ),
         ("nsh 0.2.0\n", "names no commit"),
         ("nonsense\n", "not `nsh <version> (<commit>)`"),
@@ -714,7 +714,7 @@ fn a_rayx_toml_tag_that_moved_is_refused_before_anything_is_installed() {
     let served = serve_release(tar_gz(&[]), None);
     let mut runner = runner(&served, VERSION_LINE).respond(
         |spec| spec.program == "git" && spec.args.first().is_some_and(|a| a == "ls-remote"),
-        Outcome::success().with_stdout(format!("{}\trefs/tags/nshx-0.4.0-1\n", "d".repeat(40))),
+        Outcome::success().with_stdout(format!("{}\trefs/tags/nshx-0.4.0-2\n", "d".repeat(40))),
     );
     let error = format!(
         "{:#}",
@@ -729,10 +729,10 @@ fn a_rayx_toml_tag_that_moved_is_refused_before_anything_is_installed() {
 
 #[test]
 fn the_cli_version_line_is_read_with_or_without_a_commit() {
-    let both = parse_version("nsh 0.2.0 (1d64f04)\nmore").expect("version");
+    let both = parse_version("nsh 0.2.0 (2f8b3ac)\nmore").expect("version");
     assert_eq!(
         (both.version.as_str(), both.commit.as_deref()),
-        ("0.2.0", Some("1d64f04"))
+        ("0.2.0", Some("2f8b3ac"))
     );
     let bare = parse_version("nsh 0.2.0\n").expect("version");
     assert_eq!((bare.version.as_str(), bare.commit), ("0.2.0", None));
@@ -763,11 +763,11 @@ fn a_broken_entry_loses_its_receipt_before_it_is_installed_again() {
     let (result, out) = install(&mut broken, &store, &mac(), &tag_pin());
     assert!(result.is_err(), "the repair fails: {out}");
     assert!(
-        out.contains("rayx: nsh 1d64f049d809 does not answer as nsh nshx-0.4.0-1 (1d64f04) should; installing it again"),
+        out.contains("rayx: nsh 2f8b3ac762cf does not answer as nsh nshx-0.4.0-2 (2f8b3ac) should; installing it again"),
         "{out}"
     );
     assert_eq!(
-        store.receipt("1d64f049d809"),
+        store.receipt("2f8b3ac762cf"),
         None,
         "an interrupted repair leaves an unfinished entry, never an installed one"
     );
