@@ -7,6 +7,15 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.8.1] - 2026-11-09
+
+### Features
+- *(i18n)* Let dXn.I18n's t! and args! format with the i18n service
+- *(i18n)* Check tr! calls against the app's messages when it builds
+
+### Maintenance
+- update Cargo.lock dependencies
+
 ## [0.8.0] - 2026-11-09
 
 ### Build and CI
