@@ -41,3 +41,12 @@ let shortcuts = input.bindings_for("file::save");
   next revision; `subscribe` hears the changes.
 - The document model (`InputMapDocument`, entries, keyboard and pointer bindings, modifiers) validates key sequences
   itself (`valid_key_sequence`). The service resolves bindings itself, so any UI layer can feed it events.
+
+## Key sequences
+
+A key sequence is keystrokes separated by spaces, each its modifiers and its key joined by `-` (`ctrl-k ctrl-c`,
+`cmd-shift-p`, `ctrl--` for the minus key). Spellings of the same keys are one binding: `normalize_key_sequence` puts
+the modifiers in the order `ctrl`, `alt`, `shift`, `cmd`, `fn` and the key in lowercase, `control` is `ctrl`, and
+`cmd`, `super`, `win` and `platform` are the platform's key (Command on Apple platforms, the Windows or Super key
+elsewhere), as GPUI reads them. So `shift-cmd-P` resolves what `cmd-shift-p` binds, a user's `unbind` of `super-shift-p`
+removes it, and one document that binds both spellings in one context has a duplicate binding.

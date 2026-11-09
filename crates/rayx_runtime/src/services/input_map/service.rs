@@ -179,6 +179,7 @@ impl InputMapService {
         contexts: &[&str],
         binding: &InputBinding,
     ) -> Option<ResolvedInputAction> {
+        let binding = binding.normalized();
         let user = self.user_document();
         let layers = [
             (InputMapSource::User, &user),
@@ -191,11 +192,9 @@ impl InputMapService {
             .chain(global.iter().filter(|_| !contexts.contains(&"")))
         {
             for (source, document) in layers {
-                if let Some(entry) = document
-                    .entries
-                    .iter()
-                    .find(|entry| entry.context == *context && entry.binding == *binding)
-                {
+                if let Some(entry) = document.entries.iter().find(|entry| {
+                    entry.context == *context && entry.binding.normalized() == binding
+                }) {
                     if entry.unbind {
                         return None;
                     }
@@ -216,11 +215,11 @@ impl InputMapService {
     pub fn bindings_for(&self, action: &str) -> Vec<InputMapEntry> {
         let user = self.user_document();
         let layers = [&user, &*self.application, &*self.framework];
-        let mut seen = Vec::<(&str, &InputBinding)>::new();
+        let mut seen = Vec::<(&str, InputBinding)>::new();
         let mut found = Vec::new();
         for document in layers {
             for entry in &document.entries {
-                let key = (entry.context.as_str(), &entry.binding);
+                let key = (entry.context.as_str(), entry.binding.normalized());
                 if seen.contains(&key) {
                     continue;
                 }

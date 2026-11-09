@@ -12,7 +12,7 @@ pub use app_ext::InputMapAppBuilderExt;
 pub use model::{
     INPUT_MAP_SCHEMA_VERSION, InputBinding, InputMapDocument, InputMapEntry, InputMapError,
     InputMapSource, InputModifiers, InputPointerButton, InputPointerGesture, InputWheelDirection,
-    InputWheelSource, valid_key_sequence,
+    InputWheelSource, normalize_key_sequence, valid_key_sequence,
 };
 pub use options::{INPUT_MAP_OPTIONS_SECTION, InputMapOptions};
 pub use service::{
