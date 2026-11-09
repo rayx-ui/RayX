@@ -15,7 +15,10 @@ builder.add_platform()
 - the OS family and version, form factor, desktop behaviour and input capabilities;
 - the viewport, scale, safe area and keyboard height;
 - the colour scheme, font scale, reduced motion and screen reader;
-- the locale: languages, time zone, hour cycle, first weekday, measurement system and temperature unit.
+- the locale: languages, time zone, hour cycle, first weekday, measurement system, temperature unit and the direction
+  of the first language's script;
+- on a desktop, the displays (`displays`: bounds, visible bounds, scale, primary) and the app's window (`window`:
+  mode, focus, minimized, visible, bounds and display); `primary_display()` and `window_display()` find theirs.
 
 ## Use
 
@@ -34,8 +37,9 @@ copies NSH's environment into it before the startup services initialize, so they
 settings; `use_platform_sync()` in a Rust root component, and `AppServices.load()` in a TSX app, keep it current from
 then on.
 
-NSH does not report the display topology (several monitors) or high contrast, and does not expose a user-writable
-directory: apps write through [storage](storage.md).
+The displays and the window come from NSH's `displays()` and `window_state()`, which only desktops report; the text
+direction is CLDR's for the first preferred language. NSH reports no high-contrast setting and gives Rust code no
+user-writable directory: apps write through [storage](storage.md).
 
 ## TSX
 

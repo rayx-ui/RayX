@@ -6,7 +6,7 @@ use rayx_core::di::AppService;
 
 use super::{SuspensionEvent, SuspensionSnapshot};
 
-/// A change of the app's lifecycle, activation or visibility.
+/// A change of the app's lifecycle, activation, visibility or window.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SuspensionChangedEvent {
     pub previous: SuspensionSnapshot,
@@ -43,7 +43,7 @@ impl SuspensionService {
     }
 
     /// Applies `event`: every event listener hears it, and the change listeners hear it when
-    /// it changed the lifecycle, activation or visibility. Returns whether it did.
+    /// it changed the lifecycle, activation, visibility or window. Returns whether it did.
     pub fn publish(&self, event: SuspensionEvent) -> bool {
         let changed = {
             let mut current = self.current.lock().unwrap_or_else(PoisonError::into_inner);

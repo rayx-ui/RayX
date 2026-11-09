@@ -7,7 +7,10 @@ use std::sync::Arc;
 
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
-use nsh_core::platform::{Idiom, Lifecycle, Os};
+use nsh_core::desktop::{Display, WindowMode as NshWindowMode, WindowState};
+use nsh_core::element::desktop::{displays, window_state};
+use nsh_core::geometry::{Bounds, Points};
+use nsh_core::platform::{Idiom, Lifecycle, Os, Weekday};
 use nsh_core::prelude::{
     Owner, cleanup, dark, effect, fetch, font_scale, global, idiom, is_desktop, keyboard_height,
     lifecycle, locale, locale_settings, os, os_version, pixel_ratio, reduce_motion, register_font,
@@ -17,12 +20,13 @@ use rayx_core::{AppBuilder, ServiceProvider};
 use rayx_runtime::services::assets::AssetReader;
 use rayx_runtime::services::fonts::FontRegistrar;
 use rayx_runtime::services::platform::{
-    ColorScheme, FormFactor, InputCapabilities, Insets, LocaleSnapshot, PlatformFamily,
-    PlatformInfoService, PlatformSnapshot, TextDirection, ViewportSnapshot,
+    ColorScheme, DisplaySnapshot, FormFactor, InputCapabilities, Insets, LocaleSnapshot,
+    PlatformFamily, PlatformInfoService, PlatformRect, PlatformSnapshot, TextDirection,
+    ViewportSnapshot, WindowMode, WindowSnapshot,
 };
 use rayx_runtime::services::storage::KeyValueStore;
 use rayx_runtime::services::suspension::{
-    SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionService,
+    SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionService, WindowActivity,
 };
 
 use rayx_runtime::services::navigation::NavigationLocationSynchronizer;
@@ -121,7 +125,6 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         .iter()
         .map(|tag| tag.as_str().to_owned())
         .collect();
-    let first_language = languages.first().map(String::as_str).unwrap_or("en");
     PlatformSnapshot {
         family: match os() {
             Os::Ios => PlatformFamily::Ios,
@@ -161,25 +164,79 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         screen_reader: screen_reader(),
         locale: LocaleSnapshot {
             locale: locale().as_str().to_owned(),
-            text_direction: text_direction(first_language),
+            text_direction: text_direction(&languages),
             languages,
             time_zone: settings.time_zone.as_str().to_owned(),
             hour_cycle: settings.hour_cycle.name().to_owned(),
-            first_day_of_week: format!("{:?}", settings.first_day_of_week).to_lowercase(),
+            first_day_of_week: weekday_name(settings.first_day_of_week).to_owned(),
             measurement_system: settings.measurement_system.name().to_owned(),
             temperature_unit: settings.temperature_unit.name().to_owned(),
         },
+        displays: displays().iter().map(display_snapshot).collect(),
+        window: window_state().map(|state| window_snapshot(&state)),
     }
 }
 
-/// Right to left for the languages written so (Arabic, Hebrew, Persian, Urdu, …).
-fn text_direction(language: &str) -> TextDirection {
-    const RTL: [&str; 9] = ["ar", "he", "iw", "fa", "ur", "ps", "sd", "yi", "dv"];
-    let primary = language.split(['-', '_']).next().unwrap_or(language);
-    if RTL.contains(&primary.to_ascii_lowercase().as_str()) {
-        TextDirection::Rtl
-    } else {
-        TextDirection::Ltr
+/// The direction the first preferred language's script is written in, as CLDR has it (NSH does
+/// not expose the direction it lays the surface out in).
+fn text_direction(languages: &[String]) -> TextDirection {
+    let first = languages
+        .first()
+        .and_then(|tag| dxn_intl::parse_locale(tag).ok());
+    match first.map(|locale| dxn_intl::direction(&locale)) {
+        Some(dxn_intl::Direction::Rtl) => TextDirection::Rtl,
+        _ => TextDirection::Ltr,
+    }
+}
+
+/// `day`'s English name in lowercase, as [`LocaleSnapshot::first_day_of_week`] has it.
+fn weekday_name(day: Weekday) -> &'static str {
+    match day.number() {
+        1 => "monday",
+        2 => "tuesday",
+        3 => "wednesday",
+        4 => "thursday",
+        5 => "friday",
+        6 => "saturday",
+        _ => "sunday",
+    }
+}
+
+fn rect(bounds: Bounds<Points>) -> PlatformRect {
+    PlatformRect {
+        x: bounds.origin.x.0,
+        y: bounds.origin.y.0,
+        width: bounds.size.width.0,
+        height: bounds.size.height.0,
+    }
+}
+
+fn display_snapshot(display: &Display) -> DisplaySnapshot {
+    DisplaySnapshot {
+        id: format!("{:016x}", display.id.0),
+        name: display.name.clone(),
+        bounds: rect(display.bounds),
+        visible_bounds: rect(display.visible_bounds),
+        primary: display.primary,
+        scale_factor: display.scale_factor,
+        refresh_rate: display.refresh_rate,
+    }
+}
+
+fn window_snapshot(state: &WindowState) -> WindowSnapshot {
+    WindowSnapshot {
+        mode: match state.mode {
+            NshWindowMode::Normal => WindowMode::Normal,
+            NshWindowMode::Maximized => WindowMode::Maximized,
+            NshWindowMode::FullScreen => WindowMode::FullScreen,
+        },
+        minimized: state.minimized,
+        visible: state.visible,
+        focused: state.focused,
+        bounds: rect(state.bounds),
+        content_bounds: rect(state.content_bounds),
+        display: state.display.map(|id| format!("{:016x}", id.0)),
+        scale_factor: state.scale_factor,
     }
 }
 
@@ -218,6 +275,7 @@ pub(crate) fn keep_platform_current() {
 fn sync_platform() {
     let started = Rc::new(Cell::new(false));
     let last_state = Rc::new(Cell::new(None::<Lifecycle>));
+    let last_window = Rc::new(Cell::new(None::<WindowActivity>));
     effect(move || {
         // Reading the app's state subscribes: the effect runs again once it is ready.
         if app_state() != AppState::Ready {
@@ -226,11 +284,16 @@ fn sync_platform() {
         let Ok(root) = app_services() else {
             return;
         };
-        sync(&root, &started, &last_state);
+        sync(&root, &started, &last_state, &last_window);
     });
 }
 
-fn sync(root: &ServiceProvider, started: &Cell<bool>, last_state: &Cell<Option<Lifecycle>>) {
+fn sync(
+    root: &ServiceProvider,
+    started: &Cell<bool>,
+    last_state: &Cell<Option<Lifecycle>>,
+    last_window: &Cell<Option<WindowActivity>>,
+) {
     if let Some(platform) = root.service::<PlatformInfoService>() {
         platform.update(platform_snapshot());
     }
@@ -241,6 +304,20 @@ fn sync(root: &ServiceProvider, started: &Cell<bool>, last_state: &Cell<Option<L
         suspension.publish(SuspensionEvent::new(
             SuspensionEventKind::Started,
             SuspensionEventReason::HostStarted,
+        ));
+    }
+    // A desktop's window: its focus, being minimized and being shown.
+    let window = window_state().map(|state| WindowActivity {
+        focused: state.focused,
+        minimized: state.minimized,
+        visible: state.visible,
+    });
+    if let Some(window) = window
+        && last_window.replace(Some(window)) != Some(window)
+    {
+        suspension.publish(SuspensionEvent::window_changed(
+            window,
+            SuspensionEventReason::WindowStateChanged,
         ));
     }
     let state = lifecycle();

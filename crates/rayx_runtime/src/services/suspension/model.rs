@@ -28,6 +28,16 @@ pub enum SuspensionVisibilityState {
     Background,
 }
 
+/// The app's window on a desktop: whether it has the focus, is minimized and is on the screen.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct WindowActivity {
+    /// It has the keyboard focus.
+    pub focused: bool,
+    pub minimized: bool,
+    /// It is on the screen: shown and not minimized.
+    pub visible: bool,
+}
+
 /// What happened.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum SuspensionEventKind {
@@ -46,6 +56,9 @@ pub enum SuspensionEventKind {
     Destroying,
     /// The app shut down.
     Destroyed,
+    /// The app's window on a desktop got or lost the focus, was minimized or restored, or was
+    /// shown or hidden: the event's `window` is its state now.
+    WindowChanged,
 }
 
 /// Why it happened.
@@ -57,8 +70,10 @@ pub enum SuspensionEventReason {
     HostStopping,
     /// The host stopped the app.
     HostStopped,
-    /// The platform reported a new app state (NSH's `app_state()`).
+    /// The platform reported a new app state (NSH's `lifecycle()`).
     AppStateChanged,
+    /// The platform reported a new state of the app's window (NSH's `window_state()`).
+    WindowStateChanged,
     /// The app published it itself.
     Application,
 }
@@ -73,6 +88,8 @@ pub struct SuspensionSnapshot {
     /// knew.
     pub updated_at_unix_millis: Option<u64>,
     pub last_reason: Option<SuspensionEventReason>,
+    /// The app's window on a desktop (`None` elsewhere, and until the platform reports it).
+    pub window: Option<WindowActivity>,
 }
 
 impl SuspensionSnapshot {
@@ -92,10 +109,19 @@ impl SuspensionSnapshot {
         self.visibility == SuspensionVisibilityState::Background
     }
 
-    /// Whether `other` has the same lifecycle, activation and visibility.
+    /// Whether `other` has the same lifecycle, activation, visibility and window.
     pub fn same_state(&self, other: &Self) -> bool {
-        (self.lifecycle, self.activation, self.visibility)
-            == (other.lifecycle, other.activation, other.visibility)
+        (
+            self.lifecycle,
+            self.activation,
+            self.visibility,
+            self.window,
+        ) == (
+            other.lifecycle,
+            other.activation,
+            other.visibility,
+            other.window,
+        )
     }
 
     pub(super) fn apply(mut self, event: &SuspensionEvent) -> Self {
@@ -126,6 +152,7 @@ impl SuspensionSnapshot {
                 self.activation = Activation::Inactive;
                 self.visibility = Visibility::Background;
             }
+            SuspensionEventKind::WindowChanged => self.window = event.window,
         }
         self.updated_at_unix_millis = event.timestamp_unix_millis.or(self.updated_at_unix_millis);
         self.last_reason = Some(event.reason);
@@ -140,6 +167,8 @@ pub struct SuspensionEvent {
     pub reason: SuspensionEventReason,
     /// When it happened, in milliseconds since the Unix epoch.
     pub timestamp_unix_millis: Option<u64>,
+    /// The app's window, for [`SuspensionEventKind::WindowChanged`].
+    pub window: Option<WindowActivity>,
 }
 
 impl SuspensionEvent {
@@ -150,6 +179,15 @@ impl SuspensionEvent {
             kind,
             reason,
             timestamp_unix_millis: now_unix_millis(),
+            window: None,
+        }
+    }
+
+    /// The app's window is now `window` ([`SuspensionEventKind::WindowChanged`]).
+    pub fn window_changed(window: WindowActivity, reason: SuspensionEventReason) -> Self {
+        Self {
+            window: Some(window),
+            ..Self::new(SuspensionEventKind::WindowChanged, reason)
         }
     }
 

@@ -143,6 +143,64 @@ impl Insets {
     };
 }
 
+/// A rectangle in screen coordinates (points), its origin at the primary display's top left.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct PlatformRect {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+}
+
+/// A display connected to a desktop.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct DisplaySnapshot {
+    /// Which display it is, the same in the app's next launch (an id to compare).
+    pub id: String,
+    /// Its name as the system shows it (empty where the platform does not tell).
+    pub name: String,
+    /// Its whole area.
+    pub bounds: PlatformRect,
+    /// The part windows use: its area without the menu bar, the Dock or the taskbar.
+    pub visible_bounds: PlatformRect,
+    /// The primary display, whose top left corner screen coordinates start from.
+    pub primary: bool,
+    /// Device pixels per point.
+    pub scale_factor: f32,
+    /// Frames per second it shows, where the platform tells.
+    pub refresh_rate: Option<f32>,
+}
+
+/// How a desktop window shows.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum WindowMode {
+    /// A window of its own size.
+    #[default]
+    Normal,
+    /// Maximized (zoomed on macOS).
+    Maximized,
+    FullScreen,
+}
+
+/// The app's window on a desktop.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct WindowSnapshot {
+    pub mode: WindowMode,
+    pub minimized: bool,
+    /// It is on the screen: shown and not minimized.
+    pub visible: bool,
+    /// It has the keyboard focus.
+    pub focused: bool,
+    /// Its outer frame, window decorations included.
+    pub bounds: PlatformRect,
+    /// Its content area.
+    pub content_bounds: PlatformRect,
+    /// The id of the display it is on (the one with most of it).
+    pub display: Option<String>,
+    /// Device pixels per point.
+    pub scale_factor: f32,
+}
+
 /// The user's language and regional settings.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LocaleSnapshot {
@@ -202,6 +260,10 @@ pub struct PlatformSnapshot {
     pub reduced_motion: bool,
     pub screen_reader: bool,
     pub locale: LocaleSnapshot,
+    /// The displays of a desktop (empty elsewhere).
+    pub displays: Vec<DisplaySnapshot>,
+    /// The app's window on a desktop (`None` elsewhere).
+    pub window: Option<WindowSnapshot>,
 }
 
 impl PlatformSnapshot {
@@ -223,6 +285,8 @@ impl PlatformSnapshot {
             reduced_motion: false,
             screen_reader: false,
             locale: LocaleSnapshot::default(),
+            displays: Vec::new(),
+            window: None,
         }
     }
 
@@ -234,6 +298,24 @@ impl PlatformSnapshot {
             input: InputCapabilities::for_form_factor(form_factor),
             ..Self::desktop(viewport)
         }
+    }
+
+    /// The primary display, of a desktop.
+    pub fn primary_display(&self) -> Option<&DisplaySnapshot> {
+        self.displays.iter().find(|display| display.primary)
+    }
+
+    /// The display with `id`, of a desktop.
+    pub fn display(&self, id: &str) -> Option<&DisplaySnapshot> {
+        self.displays.iter().find(|display| display.id == id)
+    }
+
+    /// The display the app's window is on, of a desktop.
+    pub fn window_display(&self) -> Option<&DisplaySnapshot> {
+        self.window
+            .as_ref()
+            .and_then(|window| window.display.as_deref())
+            .and_then(|id| self.display(id))
     }
 
     /// Portrait when the viewport is taller than wide.
