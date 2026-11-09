@@ -4730,7 +4730,7 @@ dependencies = [
 
 [[package]]
 name = "rayx"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "dxn_i18n",
  "dxn_intl",
@@ -4741,7 +4741,7 @@ dependencies = [
 
 [[package]]
 name = "rayx-cli"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -4765,7 +4765,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "base64 0.22.1",
  "crossbeam-channel",
@@ -4786,7 +4786,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app_macros"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -4796,7 +4796,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_core"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "futures",
  "rayx_app_macros",
@@ -4806,7 +4806,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_runtime"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "dxn_i18n",
  "dxn_intl",

@@ -7,6 +7,34 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.8.0] - 2026-11-09
+
+### Build and CI
+- *(nsh)* Pin NSH to nshx-0.4.0-1, which fork-0.4.0-1 was renamed to
+- *(nsh)* Pin NSH to nshx-0.4.0-2
+- *(nsh)* Pin NSH to nshx-0.4.0-4
+
+### Documentation
+- *(storage)* Name NSH's persistent store in the storage module's docs
+
+### Features
+- *(i18n)* [**breaking**] Show the language the app picks in NSH too
+  - Migration: apps that build an `I18nChangedEvent`, or destructure one without `..`, add the `chosen` field.
+- *(app)* [**breaking**] Run ready hooks once the app's services started
+  - Migration: apps that match `AppError` exhaustively add an arm for `AppError::Ready`.
+- *(platform)* [**breaking**] Give the platform and suspension services a desktop's displays and window
+  - Migration: apps that build `PlatformSnapshot`, `SuspensionSnapshot` or `SuspensionEvent` with literals add the new fields (or `..Default::default()` for the snapshots), and apps that match `SuspensionEventKind` or `SuspensionEventReason` exhaustively add arms for the new variants.
+- *(assets)* Catalog the files a crate ships from NSH's assets!() list
+- *(i18n)* Add tr!, the app's messages in a Rust component
+
+### Fixes
+- *(cli)* Patch the NSH crates of nsh's generated workspace in a new app
+- *(i18n)* Let the app's translations override its libraries'
+- *(input-map)* Match key sequences whatever their spelling
+- *(platform)* Give startup services the device, not the snapshot's defaults
+- *(fonts)* Register the fonts the app ships once, by NSH
+- *(deps)* Take dxn_i18n and dxn_intl v0.1.2
+
 ## [0.7.0] - 2026-11-07
 
 ### Features
