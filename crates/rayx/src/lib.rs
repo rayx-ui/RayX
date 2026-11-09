@@ -36,11 +36,12 @@ pub use dxn_i18n as i18n;
 pub use dxn_intl as intl;
 
 /// What an app uses most: the core's prelude, the services' builder extensions, the NSH layer's
-/// classes, hooks and builder extensions, and the i18n arguments.
+/// classes, hooks and builder extensions, the i18n arguments and `tr!`.
 pub mod prelude {
     pub use rayx_core::prelude::*;
     pub use rayx_runtime::prelude::*;
 
+    pub use rayx_app::tr;
     pub use rayx_app::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app::{
         AppConfiguration, AppError, AppServices, AppSettingsAppBuilderExt, AppState, Assets, Fonts,

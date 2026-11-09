@@ -146,6 +146,15 @@ pub fn install(provider: ServiceProvider) {
     });
 }
 
+/// This surface's root provider once the app is ready, read so that the caller follows the
+/// app's start (as [`app_state`] is); `None` before, and outside an engine.
+pub(crate) fn tracked_root() -> Option<ServiceProvider> {
+    try_global::<SurfaceApp>()?.with(|app| match (&app.state, &app.root) {
+        (AppState::Ready, Some(root)) => Some(root.clone()),
+        _ => None,
+    })
+}
+
 /// This surface's root provider, once the app has started on it.
 pub fn app_services() -> Result<ServiceProvider, AppError> {
     global::<SurfaceApp>().with_untracked(|app| match (&app.state, &app.root) {
@@ -235,6 +244,7 @@ async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
         )
         .await?;
     crate::i18n_locale::keep_nsh_locale(&root);
+    crate::translate::follow_i18n_changes(&root);
     // On the engine's thread, before the app counts as ready.
     if let Some(hooks) = root.service::<ReadyHooks>() {
         hooks.run(&root).await?;

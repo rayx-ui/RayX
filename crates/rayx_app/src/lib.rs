@@ -43,8 +43,9 @@
 //!   [`use_platform_sync`], in the root component, keeps the platform and suspension services
 //!   current from NSH's environment and app state.
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
-//!   and clock; the [`I18n`] class gives TSX its messages (`I18n.of(app).t("id", { n: 3 })`) and
-//!   its changes.
+//!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
+//!   following the language), and the [`I18n`] class gives TSX them
+//!   (`I18n.of(app).t("id", { n: 3 })`) and their changes.
 //! - **The services for TSX.** Besides [`I18n`], [`Navigation`], [`Storage`],
 //!   [`AppConfiguration`], [`Assets`] (asset URLs), [`Fonts`] (font aliases) and [`Platform`]
 //!   (the device and the app's lifecycle) are classes made with `X.of(app)`, whose `onChange`
@@ -72,6 +73,7 @@ mod service_classes;
 mod settings;
 mod storage;
 mod surface;
+mod translate;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
 pub use rayx_core::{
@@ -102,3 +104,4 @@ pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
 pub use surface::{
     AppError, AppState, app_services, app_state, install, set_app, start, start_app,
 };
+pub use translate::translate;
