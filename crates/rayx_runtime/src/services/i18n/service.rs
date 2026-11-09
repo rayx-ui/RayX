@@ -224,10 +224,26 @@ impl I18nService {
     /// Loads every translation under [`I18nOptions::resources_path`] of the asset catalog:
     /// `<path>/<language>.json` and `<path>/<language>/<namespace>.json`. The ones that load
     /// are added; the error names the first that did not.
+    ///
+    /// A message several packages have comes from the package listed first in the asset
+    /// options (the app's own), so an app overrides the translations of the libraries it uses.
     pub async fn load_assets(&self, assets: &AssetService) -> Result<(), I18nServiceError> {
-        let resources = assets
+        let mut resources = assets
             .query(&AssetQuery::kind(AssetKind::Locale))
             .unwrap_or_default();
+        let packages = assets
+            .catalog()
+            .map(|catalog| catalog.packages().to_vec())
+            .unwrap_or_default();
+        let rank = |package: &str| {
+            packages
+                .iter()
+                .position(|listed| listed == package)
+                .unwrap_or(packages.len())
+        };
+        // A bundle added later replaces the messages it shares with earlier ones: the package
+        // listed last goes first and the app's own, listed first, last.
+        resources.sort_by_key(|resource| std::cmp::Reverse(rank(&resource.package)));
         let root = format!("{}/", self.options.resources_path.trim_matches('/'));
         let mut first_error = None;
         for resource in resources {
