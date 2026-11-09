@@ -1,0 +1,4 @@
+{
+  "hello": "Bok, {$name}!",
+  "items": ".input {$count :number}\n.match $count\none {{{$count} artikl}}\nfew {{{$count} artikla}}\n* {{{$count} artikala}}"
+}

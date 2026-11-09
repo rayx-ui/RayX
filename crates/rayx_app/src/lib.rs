@@ -44,7 +44,8 @@
 //!   current from NSH's environment and app state.
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
 //!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
-//!   following the language), and the [`I18n`] class gives TSX them
+//!   following the language; [`checked::tr!`](checked::tr) checks the call against the app's
+//!   messages when it builds), and the [`I18n`] class gives TSX them
 //!   (`I18n.of(app).t("id", { n: 3 })`) and their changes.
 //! - **The services for TSX.** Besides [`I18n`], [`Navigation`], [`Storage`],
 //!   [`AppConfiguration`], [`Assets`] (asset URLs), [`Fonts`] (font aliases) and [`Platform`]
@@ -104,4 +105,6 @@ pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
 pub use surface::{
     AppError, AppState, app_services, app_state, install, set_app, start, start_app,
 };
-pub use translate::translate;
+#[doc(hidden)]
+pub use translate::__private;
+pub use translate::{checked, translate};

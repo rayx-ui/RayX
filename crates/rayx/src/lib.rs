@@ -35,6 +35,10 @@ pub use rayx_runtime as runtime;
 pub use dxn_i18n as i18n;
 pub use dxn_intl as intl;
 
+/// `tr!` with the call checked against the app's messages when it builds: `use
+/// rayx::checked::tr;` after the prelude's glob import uses it in place of the prelude's.
+pub use rayx_app::checked;
+
 /// What an app uses most: the core's prelude, the services' builder extensions, the NSH layer's
 /// classes, hooks and builder extensions, the i18n arguments and `tr!`.
 pub mod prelude {

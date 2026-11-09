@@ -50,11 +50,11 @@ pub fn translate(id: &str, args: &Args) -> String {
 /// The message `id` in the app's language: `tr!(id, name = value, …)`, in a Rust component on
 /// the engine's thread.
 ///
-/// The arguments keep their types, so a number stays a number for `.match` and `:number`; a
-/// name is an identifier (a raw one without its `r#`) or, for a variable name Rust cannot spell,
-/// a string literal (`"user-id" = 7`), and a lone identifier passes the variable of that name, as
-/// `format!` does. Reading it subscribes (see [`translate`]), so the text follows the app's
-/// language:
+/// The arguments are `dxn_i18n`'s [`args!`](rayx_runtime::services::i18n::args): they keep
+/// their types, so a number stays a number for `.match` and `:number`; a name is an identifier
+/// (a raw one without its `r#`) or, for a variable name Rust cannot spell, a string literal
+/// (`"user-id" = 7`), and a lone identifier passes the variable of that name, as `format!` does.
+/// Reading it subscribes (see [`translate`]), so the text follows the app's language:
 ///
 /// ```no_run
 /// use nsh_core::prelude::*;
@@ -67,43 +67,73 @@ pub fn translate(id: &str, args: &Args) -> String {
 /// ```
 ///
 /// It is named `tr!`, not `t!`, so a glob import of NSH's prelude (whose `t!` reads NSH's own
-/// rust-i18n translations) and RayX's keeps both.
+/// rust-i18n translations) and RayX's keeps both. [`checked::tr!`](crate::checked::tr) is the
+/// same with the id and the argument names checked against the app's messages when it builds.
 #[macro_export]
 macro_rules! tr {
     ($id:expr $(,)?) => {
         $crate::translate($id, &$crate::rayx_runtime::services::i18n::Args::new())
     };
-    ($id:expr, $($args:tt)+) => {{
-        let mut args = $crate::rayx_runtime::services::i18n::Args::new();
-        $crate::__tr_args!(args; $($args)+);
-        $crate::translate($id, &args)
-    }};
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! __tr_args {
-    ($args:ident;) => {};
-    ($args:ident; $name:ident = $value:expr $(, $($rest:tt)*)?) => {
-        $args.set($crate::__tr_name!($name), $value);
-        $crate::__tr_args!($args; $($($rest)*)?);
-    };
-    ($args:ident; $name:literal = $value:expr $(, $($rest:tt)*)?) => {
-        $args.set($name, $value);
-        $crate::__tr_args!($args; $($($rest)*)?);
-    };
-    ($args:ident; $name:ident $(, $($rest:tt)*)?) => {
-        $args.set($crate::__tr_name!($name), $name);
-        $crate::__tr_args!($args; $($($rest)*)?);
+    ($id:expr, $($args:tt)+) => {
+        $crate::translate($id, &$crate::rayx_runtime::services::i18n::args!($($args)+))
     };
 }
 
-/// An argument's name as `stringify!` spells an identifier, without a raw identifier's `r#`.
+/// [`checked::tr!`](crate::checked::tr), under the name `#[macro_export]` gives it at the crate's
+/// root.
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __tr_name {
-    ($name:ident) => {{
-        let name: &'static str = ::core::stringify!($name);
-        name.strip_prefix("r#").unwrap_or(name)
-    }};
+macro_rules! __checked_tr {
+    ($id:expr $(,)?) => {
+        $crate::__private::check!(
+            $id, (),
+            messages = "assets/locales", default_locale = "en", default_namespace = "translation"
+            => $crate::tr!($id)
+        )
+    };
+    ($id:expr, $($args:tt)+) => {
+        $crate::__private::check!(
+            $id, ($($args)+),
+            messages = "assets/locales", default_locale = "en", default_namespace = "translation"
+            => $crate::tr!($id, $($args)+)
+        )
+    };
+}
+
+/// [`tr!`](crate::tr) with the call checked when the app builds: a message id that is not in
+/// the app's messages, an argument no translation of the message reads, or one a translation
+/// needs and the call does not pass, fails the build instead of showing the id or a fallback.
+///
+/// ```ignore
+/// use rayx::checked::tr;
+///
+/// // assets/locales/en.json: { "cart": { "items": ".input {$count :number} .match $count one {{One item}} * {{{$count} items}}" } }
+/// text(move || tr!("cart.items", count));
+/// text(move || tr!("cart.itmes", count)); // error: no message `cart.itmes`; did you mean `cart.items`?
+/// text(move || tr!("cart.items"));        // error: message `cart.items` needs the argument `$count`
+/// ```
+///
+/// It reads the messages of the crate being built from the asset catalog's `locales/` beside its
+/// `Cargo.toml`, as the i18n service's defaults have them: `assets/locales/<language>.json` or
+/// `assets/locales/<language>/<namespace>.json`, every id in `en`, the `translation` namespace's
+/// ids unprefixed. An app whose `I18nOptions` say otherwise says the same to the check:
+///
+/// ```toml
+/// [package.metadata.dxn_i18n]
+/// messages = "assets/i18n"   # resources_path, under assets/
+/// default-locale = "de"      # default_language
+/// default-namespace = "app"  # default_namespace
+/// ```
+///
+/// The id is a string literal; [`tr!`](crate::tr) takes one made at run time. A message file
+/// that changes rebuilds the crate.
+pub mod checked {
+    #[doc(inline)]
+    pub use crate::__checked_tr as tr;
+}
+
+/// What the macros use; not part of the API.
+#[doc(hidden)]
+pub mod __private {
+    pub use dxn_i18n_macros::check;
 }

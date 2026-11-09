@@ -13,6 +13,7 @@ workspace = true
 
 [dependencies]
 base64.workspace = true
+dxn_i18n_macros.workspace = true
 dxn_intl.workspace = true
 futures = { workspace = true, features = ["std"] }
 serde.workspace = true
@@ -32,3 +33,8 @@ futures.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 tokio = { version = "1", default-features = false, features = ["sync"] }
+
+# The messages `rayx_app::checked::tr!` checks this crate's tests against (an app keeps its own
+# in `assets/locales/`, the default).
+[package.metadata.dxn_i18n]
+messages = "tests/fixtures/locales"
