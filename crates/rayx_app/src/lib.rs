@@ -62,6 +62,7 @@
 
 mod binding;
 mod i18n_class;
+mod i18n_locale;
 mod location;
 mod platform;
 mod region;

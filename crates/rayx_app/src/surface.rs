@@ -223,5 +223,6 @@ async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
             |timeout: Duration| timer(timeout),
         )
         .await?;
+    crate::i18n_locale::keep_nsh_locale(&root);
     Ok(root)
 }

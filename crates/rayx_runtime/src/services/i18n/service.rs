@@ -27,6 +27,9 @@ use crate::services::platform::{LocaleSnapshot, PlatformInfoService};
 pub struct I18nChangedEvent {
     /// The locale messages and values are formatted for now.
     pub locale: Locale,
+    /// Whether the app picked the language ([`I18nService::set_language`]) rather than
+    /// following the platform's.
+    pub chosen: bool,
     /// Counts the changes, from 0.
     pub version: u64,
 }
@@ -144,9 +147,18 @@ impl I18nService {
         Ok(())
     }
 
+    /// The language the app picked with [`I18nService::set_language`] (its tag, without its
+    /// Unicode extensions), or `None` while it follows the platform's languages.
+    pub fn chosen_language(&self) -> Option<String> {
+        let state = self.read();
+        state
+            .chosen
+            .then(|| state.translator.locale().id.to_string())
+    }
+
     /// Follows the platform's languages again after [`I18nService::set_language`].
     pub fn follow_platform_again(&self, snapshot: &LocaleSnapshot) {
-        self.write().chosen = false;
+        self.change(|state| state.chosen = false);
         self.apply_platform(snapshot);
     }
 
@@ -395,6 +407,7 @@ impl I18nService {
             state.version += 1;
             I18nChangedEvent {
                 locale: state.translator.locale().clone(),
+                chosen: state.chosen,
                 version: state.version,
             }
         };
