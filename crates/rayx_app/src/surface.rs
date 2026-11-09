@@ -8,7 +8,8 @@ use crate::NshServicesAppBuilderExt as _;
 use dxn_reactive::ReactiveError;
 use nsh_core::prelude::*;
 use rayx_core::{
-    ConfigurationError, RayXAppBuilder, ServiceProvider, ServiceResolutionError,
+    ConfigurationError, RayXAppBuilder, ReadyError, ReadyHooks, ServiceProvider,
+    ServiceResolutionError,
     di::{StartupInitializationContext, StartupInitializationError},
 };
 
@@ -26,6 +27,9 @@ pub enum AppError {
     /// Options validated on start failed, a startup service failed or timed out, or startup
     /// could not be ordered (a cycle, a missing dependency). The app does not start.
     Startup(StartupInitializationError),
+    /// A ready hook failed ([`rayx_core::ReadyAppBuilderExt::on_ready`]). The app does not
+    /// start.
+    Ready(ReadyError),
     /// A service did not resolve.
     Resolution(ServiceResolutionError),
     /// A view model's activation failed.
@@ -47,6 +51,7 @@ impl fmt::Display for AppError {
                 write!(f, "the app's configuration did not load: {error}")
             }
             Self::Startup(error) => write!(f, "the app did not start: {error}"),
+            Self::Ready(error) => write!(f, "a ready hook failed: {error}"),
             Self::Resolution(error) => write!(f, "{error}"),
             Self::Activation(error) => write!(f, "the view model did not activate: {error}"),
             Self::Failed(message) => f.write_str(message),
@@ -65,6 +70,12 @@ impl From<ConfigurationError> for AppError {
 impl From<StartupInitializationError> for AppError {
     fn from(error: StartupInitializationError) -> Self {
         Self::Startup(error)
+    }
+}
+
+impl From<ReadyError> for AppError {
+    fn from(error: ReadyError) -> Self {
+        Self::Ready(error)
     }
 }
 
@@ -224,5 +235,9 @@ async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
         )
         .await?;
     crate::i18n_locale::keep_nsh_locale(&root);
+    // On the engine's thread, before the app counts as ready.
+    if let Some(hooks) = root.service::<ReadyHooks>() {
+        hooks.run(&root).await?;
+    }
     Ok(root)
 }

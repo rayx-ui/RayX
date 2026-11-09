@@ -59,6 +59,34 @@ layer concurrently. The app is ready, and services resolve, only once all of the
 - **Timeout:** each service may set `initialization_timeout()`; one that sets none gets the builder's default
   (`default_initialization_timeout(..)`, 30 s unless set). A service past its timeout fails startup.
 
+## Ready hooks
+
+A ready hook runs once every startup service initialized, before the app counts as ready: the place for what needs the
+services in place, such as restoring the language the user picked or opening the screen of a pending deep link.
+
+```rust
+builder
+    .on_ready(|context| async move {
+        let store = context.services().required_service::<dyn KeyValueStore>()?;
+        let saved = store.bucket("settings").try_get_json::<String>("language").ok().flatten();
+        if let Some(language) = saved {
+            let i18n = context.services().required_service::<I18nService>()?;
+            i18n.set_language(&language).map_err(|error| ReadyError::new(error.to_string()))?;
+        }
+        Ok(())
+    })
+    .on_ready_when_platform(|platform| platform.form_factor.is_handheld(), |_| async {
+        // only on phones and tablets
+        Ok(())
+    })
+```
+
+- Hooks run one after another, in the order they were added; `on_ready_when(predicate, hook)` runs its hook only when
+  the predicate holds for the root provider, and `on_ready_when_platform` asks the platform service's snapshot.
+- A hook gets a `ReadyContext` (`services()`, `options::<T>()`) and returns a `ReadyResult` (`?` takes service resolution and options errors); the first that fails
+  stops the rest and fails startup (`AppError::Ready`, `AppState::Failed`).
+- On NSH they run on the engine's thread, so they may call NSH's functions; `app_state()` turns `Ready` after them.
+
 ## Starting from TSX
 
 ```tsx

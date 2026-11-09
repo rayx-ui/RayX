@@ -52,7 +52,8 @@ pub use di::{
 };
 pub use options::{Options, OptionsBuilder, OptionsError, OptionsMonitor, OptionsSnapshot};
 pub use services::app::{
-    AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ServiceAppBuilderExt,
+    AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ReadyAppBuilderExt, ReadyContext,
+    ReadyError, ReadyHooks, ReadyResult, ServiceAppBuilderExt,
 };
 
 pub mod prelude {
@@ -73,7 +74,8 @@ pub mod prelude {
         Options, OptionsBuilder, OptionsError, OptionsMonitor, OptionsSnapshot,
     };
     pub use crate::services::app::{
-        AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ServiceAppBuilderExt,
+        AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ReadyAppBuilderExt, ReadyContext,
+        ReadyError, ReadyHooks, ReadyResult, ServiceAppBuilderExt,
     };
 }
 

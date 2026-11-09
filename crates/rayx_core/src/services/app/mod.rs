@@ -7,9 +7,11 @@
 mod builder;
 mod configuration_ext;
 mod rayx_app_builder;
+mod ready;
 mod service_ext;
 
 pub use builder::AppBuilder;
 pub use configuration_ext::ConfigurationAppBuilderExt;
 pub use rayx_app_builder::RayXAppBuilder;
+pub use ready::{ReadyAppBuilderExt, ReadyContext, ReadyError, ReadyHooks, ReadyResult};
 pub use service_ext::ServiceAppBuilderExt;
