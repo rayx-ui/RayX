@@ -19,14 +19,11 @@ Conventional Commits by release-plz.
 
 ### Features
 - *(i18n)* [**breaking**] Show the language the app picks in NSH too
-  - Migration: apps that build an I18nChangedEvent, or destructure one
-without `..`, add the `chosen` field.
+  - Migration: apps that build an `I18nChangedEvent`, or destructure one without `..`, add the `chosen` field.
 - *(app)* [**breaking**] Run ready hooks once the app's services started
-  - Migration: apps that match AppError exhaustively add an arm for
+  - Migration: apps that match `AppError` exhaustively add an arm for `AppError::Ready`.
 - *(platform)* [**breaking**] Give the platform and suspension services a desktop's displays and window
-  - Migration: apps that build these structs with literals add the new
-fields (or `..Default::default()` for the snapshots), and apps that
-match the two enums exhaustively add arms for the new variants.
+  - Migration: apps that build `PlatformSnapshot`, `SuspensionSnapshot` or `SuspensionEvent` with literals add the new fields (or `..Default::default()` for the snapshots), and apps that match `SuspensionEventKind` or `SuspensionEventReason` exhaustively add arms for the new variants.
 - *(assets)* Catalog the files a crate ships from NSH's assets!() list
 - *(i18n)* Add tr!, the app's messages in a Rust component
 
@@ -36,6 +33,7 @@ match the two enums exhaustively add arms for the new variants.
 - *(input-map)* Match key sequences whatever their spelling
 - *(platform)* Give startup services the device, not the snapshot's defaults
 - *(fonts)* Register the fonts the app ships once, by NSH
+- *(deps)* Take dxn_i18n and dxn_intl v0.1.2
 
 ## [0.7.0] - 2026-11-07
 
