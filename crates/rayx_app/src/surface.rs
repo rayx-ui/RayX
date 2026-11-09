@@ -215,6 +215,7 @@ async fn initialize(build: BuildApp) -> Result<ServiceProvider, AppError> {
     let root = build(RayXAppBuilder::new().add_nsh_services())
         .build_async()
         .await?;
+    crate::platform::seed_platform(&root);
     let registry = root.startup_registry().clone();
     registry
         .initialize_with_timer(

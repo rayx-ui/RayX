@@ -11,7 +11,7 @@ use nsh_core::platform::{Idiom, Lifecycle, Os};
 use nsh_core::prelude::{
     Owner, cleanup, dark, effect, fetch, font_scale, global, idiom, is_desktop, keyboard_height,
     lifecycle, locale, locale_settings, os, os_version, pixel_ratio, reduce_motion, register_font,
-    safe_area, screen_reader, window,
+    safe_area, screen_reader, untracked, window,
 };
 use rayx_core::{AppBuilder, ServiceProvider};
 use rayx_runtime::services::assets::AssetReader;
@@ -92,6 +92,16 @@ pub trait NshServicesAppBuilderExt: AppBuilder {
 }
 
 impl<T> NshServicesAppBuilderExt for T where T: AppBuilder {}
+
+/// Gives the root's platform service NSH's environment as it is now, without subscribing:
+/// [`start_app`](crate::start_app) does it before startup, so startup services see the device
+/// and the user's settings rather than the snapshot's defaults. [`use_platform_sync`] keeps it
+/// current from then on.
+pub(crate) fn seed_platform(root: &ServiceProvider) {
+    if let Some(platform) = root.service::<PlatformInfoService>() {
+        platform.update(untracked(platform_snapshot));
+    }
+}
 
 /// The device and the user's settings, as NSH's environment reports them now. Reading it in
 /// an effect subscribes to every part.

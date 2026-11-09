@@ -29,8 +29,10 @@ let subscription = platform.subscribe(|event| relayout(event)); // a PlatformCha
 
 ## On NSH
 
-Every surface (window) has its own root provider, so a surface's service describes that surface. `use_platform_sync()`
-in a Rust root component, and `AppServices.load()` in a TSX app, copy NSH's environment into it.
+Every surface (window) has its own root provider, so a surface's service describes that surface. Starting the app
+copies NSH's environment into it before the startup services initialize, so they see the device and the user's
+settings; `use_platform_sync()` in a Rust root component, and `AppServices.load()` in a TSX app, keep it current from
+then on.
 
 NSH does not report the display topology (several monitors) or high contrast, and does not expose a user-writable
 directory: apps write through [storage](storage.md).
