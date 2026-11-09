@@ -10,4 +10,4 @@ pub use app_ext::I18nAppBuilderExt;
 pub use options::{I18N_CONFIG_PATH, I18nOptions, MissingMessagePolicy};
 pub use service::{I18nChangedEvent, I18nService, I18nServiceError};
 
-pub use dxn_i18n::{Args, Value};
+pub use dxn_i18n::{Args, Translate, Value, args};

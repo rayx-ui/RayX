@@ -423,6 +423,14 @@ impl I18nService {
     }
 }
 
+/// `dxn_i18n::t!` formats with the service, as with a [`Translator`]: `t!(i18n, "cart.items",
+/// count)`, from a reference or an `Arc` as well. It is [`I18nService::format`].
+impl dxn_i18n::Translate for I18nService {
+    fn translate(&self, id: &str, args: &Args) -> String {
+        self.format(id, args)
+    }
+}
+
 fn language(tag: &str) -> Result<Locale, I18nServiceError> {
     parse_locale(tag).map_err(|_| I18nServiceError::InvalidLanguage(tag.to_owned()))
 }
