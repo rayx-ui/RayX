@@ -14,7 +14,7 @@ Conventional Commits by release-plz.
 - *(i18n)* Check tr! calls against the app's messages when it builds
 
 ### Maintenance
-- update Cargo.lock dependencies
+- *(deps)* Move serde_spanned, toml_datetime, toml_edit and toml_writer to their newest compatible versions in Cargo.lock, for dxn_i18n_macros' toml 1.2
 
 ## [0.8.0] - 2026-11-09
 
