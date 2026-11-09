@@ -1270,8 +1270,8 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "dxn_i18n"
-version = "0.1.1"
-source = "git+https://github.com/dXnSix/dXn.I18n?tag=v0.1.1#e8d91a95ad052d646e4f9b8284268e04aa408899"
+version = "0.1.2"
+source = "git+https://github.com/dXnSix/dXn.I18n?tag=v0.1.2#b9f179f88b7abbfe9c2233115cb118a5ff79862f"
 dependencies = [
  "dxn_intl",
  "serde_json",
@@ -1280,11 +1280,13 @@ dependencies = [
 
 [[package]]
 name = "dxn_intl"
-version = "0.1.1"
-source = "git+https://github.com/dXnSix/dXn.Intl?tag=v0.1.1#5ae906c38238ef81ed6c4d5a04f424aac20ce4f3"
+version = "0.1.2"
+source = "git+https://github.com/dXnSix/dXn.Intl?tag=v0.1.2#130a7a42992585cee30ea0b1386829886bb19e08"
 dependencies = [
  "fixed_decimal",
  "icu",
+ "icu_datetime",
+ "icu_decimal",
  "icu_experimental",
  "icu_provider",
  "jiff",
