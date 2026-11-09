@@ -39,14 +39,17 @@ let family = fonts.font_family("body"); // "Inter, Noto Color Emoji"
 let name = fonts.register_font(bytes).await?;
 ```
 
-- At startup the service registers the asset catalog's font files (`ttf`, `otf`, `woff`, `woff2`) with the platform
-  through the `FontRegistrar` trait; `register_font(data)` adds others while the app runs.
+- At startup the service takes the asset catalog's font files (`ttf`, `otf`, `woff`, `woff2`) through the
+  `FontRegistrar` trait (`register_asset`: registered, unless the platform registered the app's fonts already, and
+  their family read); `register_font(data)` registers others while the app runs.
 - An alias resolves to its family, its load fallback (another alias or a family) when that family did not load, and
   its glyph fallbacks, as one family list for NSH's `font_family` / `fontFamily`.
 
 ## On NSH
 
-`rayx_app` registers fonts with NSH's `register_font`, which reads the family name, so WOFF and WOFF2 fonts work too.
+NSH registers every font its UI sets' crates ship in `assets/` before the first frame, so for the catalog's font assets
+`rayx_app` only reads the family name (NSH's `font_family`); a font registered while the app runs (`register_font`)
+goes to NSH's `register_font`. Both read WOFF and WOFF2 fonts too.
 
 ## TSX
 

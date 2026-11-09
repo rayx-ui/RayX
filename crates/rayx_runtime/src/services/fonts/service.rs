@@ -185,12 +185,15 @@ impl FontService {
         for font in fonts {
             let logical_path = font.logical_path();
             let registered = match assets.load_bytes(&logical_path).await {
-                Ok(bytes) => registrar.register(bytes.to_vec()).await.map_err(|reason| {
-                    FontDiagnostic::error(
-                        FontDiagnosticCode::RegistrationFailed,
-                        format!("font asset `{logical_path}` did not register: {reason}"),
-                    )
-                }),
+                Ok(bytes) => registrar
+                    .register_asset(&font.uri(), bytes.to_vec())
+                    .await
+                    .map_err(|reason| {
+                        FontDiagnostic::error(
+                            FontDiagnosticCode::RegistrationFailed,
+                            format!("font asset `{logical_path}` did not register: {reason}"),
+                        )
+                    }),
                 Err(error) => Err(FontDiagnostic::error(
                     FontDiagnosticCode::MissingAsset,
                     format!("font asset `{logical_path}` did not load: {error}"),

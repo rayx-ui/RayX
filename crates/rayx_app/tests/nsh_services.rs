@@ -204,7 +204,7 @@ fn services_run_on_nsh() {
     assert_eq!(configuration.options().name, "Bundled");
     assert_eq!(configuration.options().tooltips.show_delay_ms, 120);
 
-    // The font asset was registered with NSH, which read its family.
+    // The font asset's family, read as NSH reads it (NSH registers the fonts the app ships).
     let fonts = services.required_service::<FontService>().unwrap();
     assert_eq!(fonts.registered_fonts()[0].family, "Pacifico");
     assert_eq!(fonts.font_family("script"), "Pacifico");
