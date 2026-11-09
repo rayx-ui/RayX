@@ -1,7 +1,8 @@
 //! Key-value storage: values as bytes in named buckets, behind the [`KeyValueStore`] trait, with
-//! JSON helpers ([`StorageBucket`]). This iteration has the in-memory store only
-//! ([`InMemoryKeyValueStore`]); a persistent one implements the trait and is registered with
-//! [`StorageAppBuilderExt::with_key_value_store`].
+//! JSON helpers ([`StorageBucket`]). [`InMemoryKeyValueStore`] keeps them for the app's life;
+//! a persistent store implements the trait and is registered with
+//! [`StorageAppBuilderExt::with_key_value_store`] (on NSH, `rayx_app`'s `NshKeyValueStore`
+//! keeps them in NSH's storage).
 
 mod app_ext;
 mod bucket;
