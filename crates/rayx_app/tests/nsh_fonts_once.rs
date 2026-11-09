@@ -1,6 +1,7 @@
 //! The fonts the app ships are registered once, by NSH before the first frame: the font service
 //! only reads their families for its aliases. A font registered while the app runs goes
-//! through NSH's `register_font`.
+//! through NSH's `register_font`. The asset catalog comes from the list the UI set registers
+//! (`add_asset_files`), with no manifest.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -21,7 +22,10 @@ use nsh_core::{
 use nsh_engine::{App, Assets, EngineConfig, LocalEngine, MountSink};
 use rayx_app::rayx_runtime::services::assets::AssetAppBuilderExt as _;
 use rayx_app::rayx_runtime::services::fonts::{FontAppBuilderExt as _, FontService};
-use rayx_app::{AppState, RayXAppBuilder, ServiceProvider, app_services, app_state, set_app};
+use rayx_app::{
+    AppState, NshServicesAppBuilderExt as _, RayXAppBuilder, ServiceProvider, app_services,
+    app_state, set_app,
+};
 
 const PACIFICO: &[u8] = include_bytes!("fixtures/Pacifico-Regular.woff2");
 
@@ -45,9 +49,6 @@ struct AppAssets;
 impl Assets for AppAssets {
     fn read(&self, uri: &str) -> Result<Vec<u8>, String> {
         match uri {
-            "asset:/@app/assets.toml" => {
-                Ok(br#"files = ["fonts/Pacifico-Regular.woff2"]"#.to_vec())
-            }
             "asset:/@app/fonts/Pacifico-Regular.woff2" => Ok(PACIFICO.to_vec()),
             _ => Err(format!("{uri} is not bundled")),
         }
@@ -80,9 +81,8 @@ impl TextEngine for CountingFonts {
 
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     builder
-        .add_assets(|options| {
-            options.package("app");
-        })
+        .add_asset_files(FILES)
+        .add_assets(|_| {})
         .add_fonts(|_| {})
 }
 

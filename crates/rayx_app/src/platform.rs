@@ -17,7 +17,7 @@ use nsh_core::prelude::{
     safe_area, screen_reader, untracked, window,
 };
 use rayx_core::{AppBuilder, ServiceProvider};
-use rayx_runtime::services::assets::AssetReader;
+use rayx_runtime::services::assets::{AssetAppBuilderExt as _, AssetReader};
 use rayx_runtime::services::fonts::FontRegistrar;
 use rayx_runtime::services::platform::{
     ColorScheme, DisplaySnapshot, FormFactor, InputCapabilities, Insets, LocaleSnapshot,
@@ -80,6 +80,13 @@ impl FontRegistrar for NshFontRegistrar {
 /// starts with them ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps NSH's
 /// persistent store and `add_navigation()` shows its location as NSH's.
 pub trait NshServicesAppBuilderExt: AppBuilder {
+    /// Adds the files a crate ships, as NSH's `assets!()` lists them (the list its UI set
+    /// registers), to the asset catalog: `builder.add_asset_files(assets!())`. The crate's
+    /// manifest (`assets.toml`) is then optional, for metadata (tags, locale, theme, ...).
+    fn add_asset_files(self, files: &[nsh_core::element::AssetFile]) -> Self {
+        self.add_bundled_assets(files.iter().map(|file| file.uri))
+    }
+
     fn add_nsh_services(mut self) -> Self {
         let services = self.services_mut();
         services.try_add_service_factory_as::<dyn AssetReader>(|_| Arc::new(NshAssetReader));

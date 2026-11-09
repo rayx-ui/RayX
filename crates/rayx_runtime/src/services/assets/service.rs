@@ -11,19 +11,21 @@ use serde::de::DeserializeOwned;
 
 use super::catalog::AssetDiagnosticSeverity;
 use super::{
-    AssetByteCache, AssetCatalog, AssetDescriptor, AssetDiagnostic, AssetError, AssetOptions,
-    AssetQuery, AssetReader, AssetValidationPolicy, Result,
+    AssetByteCache, AssetCatalog, AssetDescriptor, AssetDiagnostic, AssetError, AssetKind,
+    AssetManifest, AssetOptions, AssetQuery, AssetReader, AssetValidationPolicy, BundledAssets,
+    Result,
 };
 
-/// The app's assets: a catalog read from the manifests of the app's packages when the app
-/// starts, and their bytes read through the platform's [`AssetReader`] and kept within a
-/// byte budget. Assets do not change while the app runs (no hot reload: a session restart
-/// reads them again).
+/// The app's assets: a catalog of the files the app's packages ship ([`BundledAssets`]) and
+/// of their manifests, read when the app starts, and their bytes read through the platform's
+/// [`AssetReader`] and kept within a byte budget. Assets do not change while the app runs (no
+/// hot reload: a session restart reads them again).
 #[derive(Clone, AppService)]
 #[app_service(startup)]
 pub struct AssetService {
     options: AssetOptions,
     reader: Option<Arc<dyn AssetReader>>,
+    bundled: Option<Arc<BundledAssets>>,
     catalog: Arc<RwLock<Option<Arc<AssetCatalog>>>>,
     cache: Arc<Mutex<AssetByteCache>>,
     initialization: StartupInitializationState,
@@ -36,6 +38,7 @@ impl AssetService {
         Self {
             options,
             reader,
+            bundled: None,
             catalog: Arc::default(),
             cache: Arc::new(Mutex::new(cache)),
             initialization: StartupInitializationState::default(),
@@ -52,25 +55,54 @@ impl AssetService {
         service
     }
 
+    /// The same service, cataloging the files `bundled` lists besides its manifests.
+    pub fn with_bundled(mut self, bundled: Option<Arc<BundledAssets>>) -> Self {
+        self.bundled = bundled;
+        self
+    }
+
     pub fn options(&self) -> &AssetOptions {
         &self.options
     }
 
-    /// Reads the manifests of the options' packages into the catalog (the startup does).
+    /// Reads the catalog (the startup does): the files of the options' packages and of the
+    /// packages [`BundledAssets`] lists (after them), with each package's manifest. A package
+    /// whose files are listed has its manifest read only when it ships one; one whose files are
+    /// not needs its manifest, which lists them.
     pub async fn load_catalog(&self) -> Result<Arc<AssetCatalog>> {
         let mut builder = AssetCatalog::builder();
         let strict = self.options.validation == AssetValidationPolicy::Strict;
-        for package in &self.options.packages {
-            let uri = self.options.manifest_uri(package);
-            let text = match self.read(&uri).await {
-                Ok(bytes) => String::from_utf8(bytes).map_err(|error| AssetError::Decode {
-                    path: uri.clone(),
-                    expected: "UTF-8 text",
-                    reason: error.to_string(),
-                }),
-                Err(error) => Err(error),
+        let mut packages = self.options.packages.clone();
+        let bundled = self.bundled.as_deref();
+        for package in bundled.map(BundledAssets::packages).unwrap_or_default() {
+            if !packages.contains(&package) {
+                packages.push(package);
+            }
+        }
+        for package in &packages {
+            let files = bundled
+                .map(|bundled| bundled.files(package))
+                .unwrap_or_default();
+            let ships_manifest = files.contains(&self.options.manifest);
+            let manifest = if files.is_empty() || ships_manifest {
+                self.read_manifest(package).await
+            } else {
+                Ok(AssetManifest::default())
             };
-            let added = text.and_then(|text| builder.add_manifest_text(package, &text).map(drop));
+            let added = manifest.map(|mut manifest| {
+                let listed: Vec<String> = manifest.entries().map(|entry| entry.path).collect();
+                for path in files {
+                    if path != self.options.manifest && !listed.contains(&path) {
+                        // A file only the platform lists: its kind from its name, quietly.
+                        manifest.assets.push(super::AssetManifestEntry {
+                            kind: Some(AssetKind::infer_from_path(&path)),
+                            path,
+                            ..super::AssetManifestEntry::default()
+                        });
+                    }
+                }
+                builder.add_manifest(package, &manifest);
+            });
             if let Err(error) = added {
                 if strict {
                     return Err(error);
@@ -103,6 +135,21 @@ impl AssetService {
         let catalog = Arc::new(catalog);
         *self.catalog.write().unwrap_or_else(PoisonError::into_inner) = Some(Arc::clone(&catalog));
         Ok(catalog)
+    }
+
+    /// `package`'s manifest, read and parsed.
+    async fn read_manifest(&self, package: &str) -> Result<AssetManifest> {
+        let uri = self.options.manifest_uri(package);
+        let bytes = self.read(&uri).await?;
+        let text = String::from_utf8(bytes).map_err(|error| AssetError::Decode {
+            path: uri.clone(),
+            expected: "UTF-8 text",
+            reason: error.to_string(),
+        })?;
+        AssetManifest::parse(&text).map_err(|reason| AssetError::InvalidManifest {
+            package: package.to_owned(),
+            reason,
+        })
     }
 
     /// The catalog, once loaded.

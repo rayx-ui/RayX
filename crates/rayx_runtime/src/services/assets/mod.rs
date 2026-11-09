@@ -1,10 +1,11 @@
-//! Assets: the files the app's packages ship in their `assets/` directories, listed in a
-//! neutral manifest (`assets.toml` by default) with what they are, density variants
-//! (`@2x`, `@3x`) and metadata. The [`AssetService`] catalogs them when the app starts, gives
+//! Assets: the files the app's packages ship in their `assets/` directories, as the platform
+//! lists them ([`BundledAssets`]) or a neutral manifest (`assets.toml` by default) does, with
+//! what they are, density variants (`@2x`, `@3x`) and the manifest's metadata. The [`AssetService`] catalogs them when the app starts, gives
 //! their `asset:/` URLs for NSH's elements, and loads their bytes through the platform's
 //! [`AssetReader`] within a byte budget.
 
 mod app_ext;
+mod bundled;
 mod cache;
 mod catalog;
 mod error;
@@ -16,6 +17,7 @@ mod reader;
 mod service;
 
 pub use app_ext::AssetAppBuilderExt;
+pub use bundled::BundledAssets;
 pub use cache::AssetByteCache;
 pub use catalog::{
     AssetCatalog, AssetCatalogBuilder, AssetDescriptor, AssetDiagnostic, AssetDiagnosticSeverity,

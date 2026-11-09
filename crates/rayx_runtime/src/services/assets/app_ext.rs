@@ -1,4 +1,4 @@
-use super::{ASSET_OPTIONS_SECTION, AssetOptions, AssetReader, AssetService};
+use super::{ASSET_OPTIONS_SECTION, AssetOptions, AssetReader, AssetService, BundledAssets};
 use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`AssetService`] on an app builder.
@@ -25,7 +25,27 @@ pub trait AssetAppBuilderExt: AppBuilder {
                     .unwrap_or_else(|error| panic!("the asset options are invalid: {error}"))
                     .cloned();
                 AssetService::new(options, services.service::<dyn AssetReader>())
+                    .with_bundled(services.service::<BundledAssets>())
             });
+        self
+    }
+
+    /// Adds the files at `uris` (`asset:/@<package>/<path>`: the files a package ships, as the
+    /// platform lists them) to the asset catalog, which then needs no manifest listing them;
+    /// a package's manifest still adds metadata when the package ships one. Packages not in
+    /// the asset options come after theirs, in the order their files are added.
+    fn add_bundled_assets<I>(mut self, uris: I) -> Self
+    where
+        I: IntoIterator,
+        I::Item: AsRef<str>,
+    {
+        let services = self.services_mut();
+        services.try_add_service(BundledAssets::new());
+        if let Some(bundled) = services.service::<BundledAssets>() {
+            for uri in uris {
+                bundled.add(uri.as_ref());
+            }
+        }
         self
     }
 

@@ -294,7 +294,9 @@ impl AssetCatalogBuilder {
         let kind = entry
             .kind
             .unwrap_or_else(|| AssetKind::infer_from_path(&path));
-        if kind == AssetKind::Unknown {
+        // `kind = "unknown"`, set on purpose (as for the files the platform lists), is no
+        // problem.
+        if kind == AssetKind::Unknown && entry.kind.is_none() {
             self.diagnose(
                 AssetDiagnosticSeverity::Warning,
                 package,
