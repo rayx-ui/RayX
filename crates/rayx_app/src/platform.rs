@@ -149,6 +149,7 @@ pub fn platform_snapshot() -> PlatformSnapshot {
             Os::Windows => PlatformFamily::Windows,
             Os::Linux => PlatformFamily::Linux,
             Os::Web => PlatformFamily::Web,
+            Os::Tizen => PlatformFamily::Tizen,
         },
         os_version: os_version(),
         form_factor,

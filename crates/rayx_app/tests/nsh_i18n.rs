@@ -109,8 +109,11 @@ fn nsh_i18n_gives_tsx_messages_and_language_changes() {
     let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
         entry,
         minify: false,
+        development: false,
+        app: nsh_bundler::AppInfo::default(),
         split: false,
         ui_sets: ui_sets.iter().map(Into::into).collect(),
+        asset_root_from: None,
     })
     .unwrap();
     let described: Vec<_> = ui_sets.iter().map(Into::into).collect();

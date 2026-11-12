@@ -226,6 +226,9 @@ fn a_tsx_class_exposes_the_view_model_as_observables() {
     std::fs::write(&entry, TSX).unwrap();
     let ui_sets = vec![set];
     let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
+        development: false,
+        app: nsh_bundler::AppInfo::default(),
+        asset_root_from: None,
         entry,
         minify: false,
         split: false,

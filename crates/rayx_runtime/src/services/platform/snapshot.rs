@@ -9,6 +9,8 @@ pub enum PlatformFamily {
     Ios,
     Android,
     Web,
+    /// Tizen, Samsung's TV OS, run natively (a web app on a TV is `Web`, with the TV form factor).
+    Tizen,
     Unknown(String),
 }
 

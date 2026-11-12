@@ -44,11 +44,13 @@ route in its query: `/app/projects/12?panel=%2Fsettings`.
 - After every navigation in any region, the service shows the location through the app's
   `NavigationLocationSynchronizer` (from DI, `with_navigation_location_synchronizer`): a new navigation as a new
   history entry; back, forward and refresh in place. On NSH, `rayx_app`'s `NshLocationSynchronizer` shows it as NSH's
-  own location (`location()`, `navigate()`) and follows the platform's moves of it
+  app address (`set_app_url_with`), takes the navigation to the address at start once the app is ready, and follows
+  the platform's moves of it
   ([the location on NSH](../navigation.md#the-location-on-nsh)); without NSH the default synchronizer does nothing.
 - `apply_location` takes a location the platform moved to (its back and forward, a typed address): each region goes
   to the nearest journal entry with its route or to a new one, and the query regions it no longer names close.
-- Startup goes to the synchronizer's `location()` (the deep link), else to the default route.
+- Startup goes to the synchronizer's `location()` (the deep link), else to the default route. NSH's synchronizer has
+  none then: it moves the navigation to the address at start once NSH answers it.
 
 ## TSX
 

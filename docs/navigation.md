@@ -28,23 +28,28 @@ Both are called in a component's body, under the app's services.
 
 ## The location on NSH
 
-On NSH the navigation's location is NSH's own (`location()`, `navigate()`): the web shows it in the address bar and
-keeps it in the browser's history, and an embedding app sets it and hears it through its host channel
-(`set_location`, `handle_navigate`). `rayx_app` registers `NshLocationSynchronizer` for it, so nothing is to set up:
+On NSH the navigation's location is NSH's app address (`app_url`, `set_app_url_with`; TS's `UrlScheme.url()` and
+`setUrl`): the web shows it in the address bar and keeps it in the browser's history, and the native platforms keep it
+for the app, starting at the link that opened it. `rayx_app` registers `NshLocationSynchronizer` for it, so nothing
+is to set up:
 
-- **Startup** goes to NSH's location (a deep link, an address typed in), else to the default route.
+- **Startup** goes to the default route, then, once the app is ready, to NSH's address at start (the page's address,
+  a deep link), which NSH answers only once the engine runs. Nothing is shown before that, so the address stays.
 - **Navigations** show their location there: a push as a new history entry, the other modes (replace, reset, back,
   forward, refresh) in place of the current one. Closing a region is a navigation of the default mode, a push, so
   back opens it again.
 - **The navigations of one turn share one history entry**, as everything an NSH app shows in one turn does: a TSX
   handler that navigates the main region and opens a panel leaves one entry, a push when any of them was one.
-- **The platform's moves** (the browser's back and forward, a typed address, the embedding app) take the navigation
-  along: each region goes to the nearest journal entry with its route, or to a new one, and a query region the
-  location no longer names closes. They are not sent back.
+- **The platform's moves** (the browser's back and forward, a typed address: NSH's `next_app_url_change`) take the
+  navigation along: each region goes to the nearest journal entry with its route, or to a new one, and a query region
+  the location no longer names closes. They are not sent back. The synchronizer is the one listener NSH allows, so
+  with it on the app hears them through the navigation rather than TS's `UrlScheme.on("change")`.
 
-Keep the navigation's `base_path` empty on NSH: NSH's location is a path from the app's base already, and on the web
-`nsh.json`'s `web.base` is that base. `synchronize_location: false` in the navigation's options keeps navigations
-out of NSH's location and the platform's moves out of the navigation; startup still goes to NSH's location.
+The address is a URL and the location the part after its origin (`https://example.com/app/projects/1` is
+`/app/projects/1`), or after the scheme for a link (`myapp://projects/1` is `/projects/1`; `location_of_address`). On
+the web set the navigation's `base_path` to `nsh.json`'s `web.base`; a location shown is set as it is, which the web
+resolves against the page's origin. `synchronize_location: false` in the navigation's options keeps navigations out of
+NSH's address and its moves out of the navigation, startup included.
 
 ## From TSX
 

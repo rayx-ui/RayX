@@ -735,6 +735,9 @@ fn run_tsx(tsx: &str) -> String {
     std::fs::write(&entry, tsx).unwrap();
     let ui_sets = vec![set];
     let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
+        development: false,
+        app: nsh_bundler::AppInfo::default(),
+        asset_root_from: None,
         entry,
         minify: false,
         split: false,

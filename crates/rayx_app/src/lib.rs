@@ -26,10 +26,10 @@
 //!   an NSH navigation stack whose pages are its journal up to the current entry (a native pop
 //!   takes the journal back), [`navigation_view`] as its current route alone, and
 //!   [`NavigationRegion`] gives TSX the same.
-//! - **The location.** [`NshLocationSynchronizer`] shows the navigation's location as NSH's
-//!   (`location()`, `navigate()`: the web's address bar and history, an embedding app's host
-//!   channel), starts the navigation at it (a deep link) and follows the platform's moves of it
-//!   (back, forward, a typed address).
+//! - **The location.** [`NshLocationSynchronizer`] shows the navigation's location as NSH's app
+//!   address (`app_url`, `set_app_url_with`: the web's address bar and history, the link that
+//!   opened a native app), takes the navigation to the address at start once the app is ready
+//!   and follows the platform's moves of it (back, forward, a typed address).
 //! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
 //!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
@@ -90,7 +90,7 @@ pub use binding::{
     use_two_way,
 };
 pub use i18n_class::{DateFormat, DateLength, I18n, NumberFormat, NumberKind, TimeDetail};
-pub use location::NshLocationSynchronizer;
+pub use location::{NshLocationSynchronizer, location_of_address};
 pub use platform::{
     NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
     use_platform_sync,
