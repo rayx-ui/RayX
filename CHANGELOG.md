@@ -7,6 +7,12 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.9.0] - 2026-11-12
+
+### Features
+- *(nsh)* [**breaking**] Move to NSH 0.5, pinned to nshx-0.5.0-1
+  - Migration: gamify: set the NSH crates to "0.5.0" in src/frontend/Cargo.toml, patch every NSH crate in src/frontend/.cargo/config.toml to `nshx-0.5.0-1`, set the navigation's `base_path` to the web base, handle `PlatformFamily::Tizen` where it matches the family, apply NSH's own nshx-0.5.0-1 changes (GPUI's `set_theme_overrides` is upstream's, `UrlScheme`'s `change` gives `reason`), and move rayx_core and rayx_app to this release's tag.
+
 ## [0.8.1] - 2026-11-09
 
 ### Features
