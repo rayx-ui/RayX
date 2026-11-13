@@ -47,7 +47,9 @@ fn a_new_rayx_app_checks_and_runs_its_tests_with_every_nsh_crate_patched() {
     rayx_ok(&home.root, &app, &["app", "check"]);
     let mut used = BTreeSet::new();
     nsh_dependencies_under(&app.join(".nsh/rust"), &mut used);
-    assert!(used.contains("nsh-tui-host"), "{used:?}");
+    // The test runner's crate: nsh writes it on every check, while the hosts of the terminal, GPUI
+    // and Tizen get workspaces of their own only when built.
+    assert!(used.contains("nsh-testing"), "{used:?}");
     let patched: BTreeSet<String> = DEFAULTS
         .nsh
         .crates
