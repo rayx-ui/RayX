@@ -7,6 +7,15 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.10.0] - 2026-11-13
+
+### Features
+- *(app)* [**breaking**] Follow deep links on every platform and take NSH 0.5's lifecycle and environment
+  - Migration: apps: move rayx and rayx_core to this release's tag; handle the new `PointerCapability`, `SuspensionEventKind` and `SuspensionEventReason` variants where a match names them; fill the new fields where a `PlatformSnapshot`, `InputCapabilities` or `SuspensionSnapshot` is built literally (or start from `PlatformSnapshot::desktop` / `handheld` and `..Default::default()`); pass the navigation's base path to `location_of_address`; keep `base_path` at `nsh.json`'s `web.base` on every platform; follow links through the navigation rather than `UrlScheme.on("open")`.
+
+### Tests
+- *(cli)* Expect nsh 0.5's test runner in a new app's generated workspace
+
 ## [0.9.0] - 2026-11-12
 
 ### Features
