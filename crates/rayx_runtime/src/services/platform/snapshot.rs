@@ -15,6 +15,20 @@ pub enum PlatformFamily {
 }
 
 impl PlatformFamily {
+    /// The OS's name in lowercase, as NSH names it (`"macos"`, `"ios"`, `"web"`, `"tizen"`).
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Windows => "windows",
+            Self::MacOS => "macos",
+            Self::Linux => "linux",
+            Self::Ios => "ios",
+            Self::Android => "android",
+            Self::Web => "web",
+            Self::Tizen => "tizen",
+            Self::Unknown(name) => name,
+        }
+    }
+
     /// The family this binary was built for (`Web` for wasm32).
     pub fn current() -> Self {
         if cfg!(target_family = "wasm") {
@@ -82,6 +96,8 @@ pub enum PointerCapability {
     Fine,
     /// A finger.
     Coarse,
+    /// No pointer: a TV's remote moves the focus.
+    None,
 }
 
 /// The keyboard the user types on.
@@ -98,26 +114,55 @@ pub struct InputCapabilities {
     pub pointer: PointerCapability,
     pub keyboard: KeyboardCapability,
     pub touch: bool,
+    /// A remote's arrows and its OK button move the focus and press (a TV): every control is
+    /// reached by the focus.
+    pub remote: bool,
 }
 
 impl InputCapabilities {
     /// What a device of `form_factor` has: desktops a fine pointer and a hardware keyboard,
-    /// handhelds touch and an on-screen keyboard.
+    /// handhelds touch and an on-screen keyboard, TVs a remote and an on-screen keyboard.
     pub fn for_form_factor(form_factor: FormFactor) -> Self {
-        if form_factor.is_handheld() {
-            Self {
+        match form_factor {
+            FormFactor::Phone | FormFactor::Tablet => Self {
                 pointer: PointerCapability::Coarse,
                 keyboard: KeyboardCapability::Virtual,
                 touch: true,
-            }
-        } else {
-            Self {
+                remote: false,
+            },
+            FormFactor::Tv => Self {
+                pointer: PointerCapability::None,
+                keyboard: KeyboardCapability::Virtual,
+                touch: false,
+                remote: true,
+            },
+            FormFactor::Desktop | FormFactor::Unknown => Self {
                 pointer: PointerCapability::Fine,
                 keyboard: KeyboardCapability::Hardware,
                 touch: false,
-            }
+                remote: false,
+            },
         }
     }
+}
+
+/// What the platform can do for the app, where it tells. The NSH layer reads the ones it answers
+/// asynchronously (web views, speech) once the app starts; they are `false` until then.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct PlatformFeatures {
+    /// It draws shader views (a GPU and a renderer): it starts true where the platform has a
+    /// renderer and turns false (never back) once the platform finds no GPU.
+    pub shaders: bool,
+    /// The user can pick a color anywhere on the screen (macOS, browsers with an eye dropper).
+    pub screen_color_picker: bool,
+    /// It shows web views, and the app may.
+    pub web_views: bool,
+    /// A web view runs the app's scripts and answers with their results.
+    pub web_evaluate: bool,
+    /// A web view takes trusted input from the app (macOS).
+    pub web_input: bool,
+    /// It recognizes what the user says (dictation).
+    pub speech: bool,
 }
 
 /// A size in points.
@@ -243,12 +288,20 @@ impl Default for LocaleSnapshot {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PlatformSnapshot {
     pub family: PlatformFamily,
+    /// The platform's name: the OS's on NSH's own platforms (`"ios"`, `"web"`, ...), or that of
+    /// a platform built outside NSH on its engine (`"miniprogram"`), whose OS is `family`.
+    pub platform_name: String,
+    /// The app runs under Mac Catalyst (the iOS app on a Mac): `family` is `Ios`, not desktop.
+    pub catalyst: bool,
     /// The OS version: major and minor (the API level and 0 on Android).
     pub os_version: (u16, u16),
     pub form_factor: FormFactor,
     /// Desktop behavior applies: a desktop OS, or a browser in the desktop idiom.
     pub desktop: bool,
     pub input: InputCapabilities,
+    /// Shortcuts follow Apple's conventions (Command rather than Control): the OS's, or for a
+    /// browser the platform it runs on.
+    pub apple_keyboard: bool,
     /// The app's surface (its window, or the screen).
     pub viewport: ViewportSnapshot,
     /// Device pixels per point.
@@ -256,12 +309,21 @@ pub struct PlatformSnapshot {
     pub safe_area: Insets,
     /// The on-screen keyboard's height over the surface, 0 when hidden.
     pub keyboard_height: f32,
+    /// How long the on-screen keyboard's show and hide animation takes, in milliseconds.
+    pub keyboard_animation_millis: f32,
     pub color_scheme: ColorScheme,
     /// The user's text size over the default.
     pub font_scale: f32,
     pub reduced_motion: bool,
     pub screen_reader: bool,
+    /// The platform's screen readers read the active descendant a focused control names as it
+    /// changes (a list's highlighted row) while the focus stays.
+    pub reads_active_descendants: bool,
     pub locale: LocaleSnapshot,
+    /// The size of one cell of a terminal's grid, in points (`None` on every other surface):
+    /// the app runs in a terminal, with desktop behavior.
+    pub terminal_cell: Option<ViewportSnapshot>,
+    pub features: PlatformFeatures,
     /// The displays of a desktop (empty elsewhere).
     pub displays: Vec<DisplaySnapshot>,
     /// The app's window on a desktop (`None` elsewhere).
@@ -272,21 +334,29 @@ impl PlatformSnapshot {
     /// A desktop of `viewport`'s size on the family this binary was built for, with default
     /// settings: what the service holds until the platform reports.
     pub fn desktop(viewport: ViewportSnapshot) -> Self {
+        let family = PlatformFamily::current();
         Self {
-            family: PlatformFamily::current(),
+            platform_name: family.name().to_owned(),
+            family,
+            catalyst: false,
             os_version: (0, 0),
             form_factor: FormFactor::Desktop,
             desktop: true,
             input: InputCapabilities::for_form_factor(FormFactor::Desktop),
+            apple_keyboard: cfg!(target_vendor = "apple"),
             viewport,
             scale_factor: 1.0,
             safe_area: Insets::ZERO,
             keyboard_height: 0.0,
+            keyboard_animation_millis: 0.0,
             color_scheme: ColorScheme::Light,
             font_scale: 1.0,
             reduced_motion: false,
             screen_reader: false,
+            reads_active_descendants: false,
             locale: LocaleSnapshot::default(),
+            terminal_cell: None,
+            features: PlatformFeatures::default(),
             displays: Vec::new(),
             window: None,
         }

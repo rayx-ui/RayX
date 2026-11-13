@@ -1,5 +1,6 @@
 //! What RayX's services need from NSH: reading the app's files, registering fonts, and the
-//! device's state and the app's lifecycle copied into the platform and suspension services.
+//! device's state and the app's lifecycle (its app state, its window, the system's wakes from
+//! sleep, its quitting) copied into the platform and suspension services.
 
 use std::cell::Cell;
 use std::rc::Rc;
@@ -8,30 +9,38 @@ use std::sync::Arc;
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
 use nsh_core::desktop::{Display, WindowMode as NshWindowMode, WindowState};
+use nsh_core::element::cell_size;
 use nsh_core::element::desktop::{displays, window_state};
 use nsh_core::geometry::{Bounds, Points};
 use nsh_core::platform::{Idiom, Lifecycle, Os, Weekday};
 use nsh_core::prelude::{
-    Owner, cleanup, dark, effect, fetch, font_scale, global, idiom, is_desktop, keyboard_height,
-    lifecycle, locale, locale_settings, os, os_version, pixel_ratio, reduce_motion, register_font,
-    safe_area, screen_reader, untracked, window,
+    Owner, apple_keys, can_pick_screen_color, cleanup, dark, effect, fetch, font_scale, global,
+    idiom, is_catalyst, is_desktop, keyboard_duration, keyboard_height, lifecycle, locale,
+    locale_settings, os, os_version, pixel_ratio, platform_name, reads_active_descendants,
+    reduce_motion, register_font, safe_area, screen_reader, shaders_available, spawn,
+    speech_available, untracked, wake_count, web_evaluate_available, web_input_available,
+    web_view_available, window,
 };
 use rayx_core::{AppBuilder, ServiceProvider};
 use rayx_runtime::services::assets::{AssetAppBuilderExt as _, AssetReader};
 use rayx_runtime::services::fonts::FontRegistrar;
 use rayx_runtime::services::platform::{
     ColorScheme, DisplaySnapshot, FormFactor, InputCapabilities, Insets, LocaleSnapshot,
-    PlatformFamily, PlatformInfoService, PlatformRect, PlatformSnapshot, TextDirection,
-    ViewportSnapshot, WindowMode, WindowSnapshot,
+    PlatformFamily, PlatformFeatures, PlatformInfoService, PlatformRect, PlatformSnapshot,
+    TextDirection, ViewportSnapshot, WindowMode, WindowSnapshot,
 };
 use rayx_runtime::services::storage::KeyValueStore;
 use rayx_runtime::services::suspension::{
-    SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionService, WindowActivity,
+    SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionHost, SuspensionService,
+    WindowActivity,
 };
 
 use rayx_runtime::services::navigation::NavigationLocationSynchronizer;
 
-use crate::{AppState, NshKeyValueStore, NshLocationSynchronizer, app_services, app_state};
+use crate::suspension::{QuitWiring, keep_quitting};
+use crate::{
+    AppState, NshKeyValueStore, NshLocationSynchronizer, NshSuspensionHost, app_services, app_state,
+};
 
 /// Reads the app's files with NSH's `fetch` of their `asset:/` URLs (from the app's package on
 /// device, the dev server during `nsh run`, the page's assets on the web).
@@ -75,10 +84,11 @@ impl FontRegistrar for NshFontRegistrar {
 
 /// Registers NSH's [`NshAssetReader`] and [`NshFontRegistrar`] as the app's `dyn AssetReader`
 /// and `dyn FontRegistrar`, its [`NshKeyValueStore`] (a startup service, which loads on the
-/// engine thread) as its `dyn KeyValueStore` and its [`NshLocationSynchronizer`] as its
-/// `dyn NavigationLocationSynchronizer`, unless others are registered. Every surface's builder
-/// starts with them ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps NSH's
-/// persistent store and `add_navigation()` shows its location as NSH's.
+/// engine thread) as its `dyn KeyValueStore`, its [`NshLocationSynchronizer`] as its
+/// `dyn NavigationLocationSynchronizer` and its [`NshSuspensionHost`] as its
+/// `dyn SuspensionHost`, unless others are registered. Every surface's builder starts with them
+/// ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps NSH's persistent store,
+/// `add_navigation()` shows its location as NSH's and `add_suspension()` quits the app.
 pub trait NshServicesAppBuilderExt: AppBuilder {
     /// Adds the files a crate ships, as NSH's `assets!()` lists them (the list its UI set
     /// registers), to the asset catalog: `builder.add_asset_files(assets!())`. The crate's
@@ -107,6 +117,14 @@ pub trait NshServicesAppBuilderExt: AppBuilder {
                     panic!("NSH's location synchronizer is registered: {error}")
                 })
         });
+        services.try_add_service_factory_as::<NshSuspensionHost>(|_| {
+            Arc::new(NshSuspensionHost::new())
+        });
+        services.try_add_service_factory_as::<dyn SuspensionHost>(|services| {
+            services
+                .required_service::<NshSuspensionHost>()
+                .unwrap_or_else(|error| panic!("NSH's suspension host is registered: {error}"))
+        });
         self
     }
 }
@@ -121,6 +139,35 @@ pub(crate) fn seed_platform(root: &ServiceProvider) {
     if let Some(platform) = root.service::<PlatformInfoService>() {
         platform.update(untracked(platform_snapshot));
     }
+}
+
+/// What the platform answers asynchronously of what it can do (web views, speech), once
+/// [`use_platform_sync`] or `AppServices.load()` asked: `None` until then.
+#[derive(Clone, Copy, Default)]
+struct AnsweredFeatures(Option<Answered>);
+
+#[derive(Clone, Copy)]
+struct Answered {
+    web_views: bool,
+    web_evaluate: bool,
+    web_input: bool,
+    speech: bool,
+}
+
+/// Asks the platform what it answers asynchronously of what it can do, once a surface.
+fn ask_features() {
+    if global::<AnsweredFeatures>().with_untracked(|answered| answered.0.is_some()) {
+        return;
+    }
+    drop(spawn(async {
+        let answered = Answered {
+            web_views: web_view_available().await,
+            web_evaluate: web_evaluate_available().await,
+            web_input: web_input_available().await,
+            speech: speech_available().await,
+        };
+        global::<AnsweredFeatures>().set(AnsweredFeatures(Some(answered)));
+    }));
 }
 
 /// The device and the user's settings, as NSH's environment reports them now. Reading it in
@@ -141,6 +188,15 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         .iter()
         .map(|tag| tag.as_str().to_owned())
         .collect();
+    let answered = global::<AnsweredFeatures>().with(|answered| answered.0);
+    let features = PlatformFeatures {
+        shaders: shaders_available(),
+        screen_color_picker: can_pick_screen_color(),
+        web_views: answered.is_some_and(|answered| answered.web_views),
+        web_evaluate: answered.is_some_and(|answered| answered.web_evaluate),
+        web_input: answered.is_some_and(|answered| answered.web_input),
+        speech: answered.is_some_and(|answered| answered.speech),
+    };
     PlatformSnapshot {
         family: match os() {
             Os::Ios => PlatformFamily::Ios,
@@ -151,6 +207,8 @@ pub fn platform_snapshot() -> PlatformSnapshot {
             Os::Web => PlatformFamily::Web,
             Os::Tizen => PlatformFamily::Tizen,
         },
+        platform_name: platform_name().to_owned(),
+        catalyst: is_catalyst(),
         os_version: os_version(),
         form_factor,
         desktop: is_desktop(),
@@ -159,6 +217,7 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         } else {
             form_factor
         }),
+        apple_keyboard: apple_keys(),
         viewport: ViewportSnapshot {
             width: viewport.width.0,
             height: viewport.height.0,
@@ -171,6 +230,7 @@ pub fn platform_snapshot() -> PlatformSnapshot {
             left: insets.left.0,
         },
         keyboard_height: keyboard_height().0,
+        keyboard_animation_millis: keyboard_duration(),
         color_scheme: if dark() {
             ColorScheme::Dark
         } else {
@@ -179,6 +239,7 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         font_scale: font_scale(),
         reduced_motion: reduce_motion(),
         screen_reader: screen_reader(),
+        reads_active_descendants: reads_active_descendants(),
         locale: LocaleSnapshot {
             locale: locale().as_str().to_owned(),
             text_direction: text_direction(&languages),
@@ -189,6 +250,11 @@ pub fn platform_snapshot() -> PlatformSnapshot {
             measurement_system: settings.measurement_system.name().to_owned(),
             temperature_unit: settings.temperature_unit.name().to_owned(),
         },
+        terminal_cell: cell_size().map(|cell| ViewportSnapshot {
+            width: cell.width.0,
+            height: cell.height.0,
+        }),
+        features,
         displays: displays().iter().map(display_snapshot).collect(),
         window: window_state().map(|state| window_snapshot(&state)),
     }
@@ -259,8 +325,11 @@ fn window_snapshot(state: &WindowState) -> WindowSnapshot {
 
 /// Keeps the surface's platform and suspension services current from NSH's environment:
 /// once the app is ready, the [`PlatformInfoService`] gets every change of the device and the
-/// user's settings, and the [`SuspensionService`] the app's start and every change of NSH's
-/// app state (active, inactive, background). Call it in the app's root component; it stops
+/// user's settings (and what the platform answers of web views and speech), and the
+/// [`SuspensionService`] the app's start, every change of NSH's app state (active, inactive,
+/// background) and of a desktop's window, every wake of the system from sleep, the user's
+/// requests to quit while the app asks first, and the app's quit (`Destroying`, then the
+/// storage writes what waits, then `Destroyed`). Call it in the app's root component; it stops
 /// with the component.
 pub fn use_platform_sync() {
     if global::<PlatformSync>().with_untracked(|sync| sync.running) {
@@ -288,11 +357,12 @@ pub(crate) fn keep_platform_current() {
     Owner::detached().run(sync_platform);
 }
 
-/// The effect that copies NSH's environment and app state into the services.
+/// The effect that copies NSH's environment and app state into the services, and the app's
+/// quitting.
 fn sync_platform() {
-    let started = Rc::new(Cell::new(false));
-    let last_state = Rc::new(Cell::new(None::<Lifecycle>));
-    let last_window = Rc::new(Cell::new(None::<WindowActivity>));
+    ask_features();
+    let quitting = Rc::new(keep_quitting());
+    let seen = Rc::new(Seen::default());
     effect(move || {
         // Reading the app's state subscribes: the effect runs again once it is ready.
         if app_state() != AppState::Ready {
@@ -301,22 +371,30 @@ fn sync_platform() {
         let Ok(root) = app_services() else {
             return;
         };
-        sync(&root, &started, &last_state, &last_window);
+        sync(&root, &seen, &quitting);
     });
 }
 
-fn sync(
-    root: &ServiceProvider,
-    started: &Cell<bool>,
-    last_state: &Cell<Option<Lifecycle>>,
-    last_window: &Cell<Option<WindowActivity>>,
-) {
+/// What the effect saw last.
+#[derive(Default)]
+struct Seen {
+    started: Cell<bool>,
+    state: Cell<Option<Lifecycle>>,
+    window: Cell<Option<WindowActivity>>,
+    wakes: Cell<Option<u32>>,
+}
+
+fn sync(root: &ServiceProvider, seen: &Seen, quitting: &QuitWiring) {
+    quitting.connect(root);
     if let Some(platform) = root.service::<PlatformInfoService>() {
         platform.update(platform_snapshot());
     }
+    // Read before anything returns, so the effect runs again after each wake.
+    let wakes = wake_count();
     let Some(suspension) = root.service::<SuspensionService>() else {
         return;
     };
+    let (started, last_state, last_window) = (&seen.started, &seen.state, &seen.window);
     if !started.replace(true) {
         suspension.publish(SuspensionEvent::new(
             SuspensionEventKind::Started,
@@ -336,6 +414,15 @@ fn sync(
             window,
             SuspensionEventReason::WindowStateChanged,
         ));
+    }
+    // The wakes since the app was ready (those before it are where it started).
+    if let Some(before) = seen.wakes.replace(Some(wakes)) {
+        for _ in before..wakes {
+            suspension.publish(SuspensionEvent::new(
+                SuspensionEventKind::Woke,
+                SuspensionEventReason::SystemWoke,
+            ));
+        }
     }
     let state = lifecycle();
     let previous = last_state.replace(Some(state));

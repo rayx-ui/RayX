@@ -341,14 +341,20 @@ fn the_platform_s_moves_take_the_navigation_along() {
 #[test]
 fn an_address_is_a_location_by_its_path_or_what_follows_its_scheme() {
     assert_eq!(
-        location_of_address("https://example.com/app/projects/1?panel=%2Fsettings#top"),
+        location_of_address(
+            "https://example.com/app/projects/1?panel=%2Fsettings#top",
+            "/app"
+        ),
         "/app/projects/1?panel=%2Fsettings#top"
     );
-    assert_eq!(location_of_address("https://example.com"), "/");
+    assert_eq!(location_of_address("https://example.com", ""), "/");
     assert_eq!(
-        location_of_address("myapp://projects/1?x=1"),
+        location_of_address("myapp://projects/1?x=1", ""),
         "/projects/1?x=1"
     );
-    assert_eq!(location_of_address("myapp:///projects/1"), "/projects/1");
-    assert_eq!(location_of_address("/projects/1"), "/projects/1");
+    assert_eq!(
+        location_of_address("myapp:///projects/1", ""),
+        "/projects/1"
+    );
+    assert_eq!(location_of_address("/projects/1", ""), "/projects/1");
 }

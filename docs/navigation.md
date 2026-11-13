@@ -42,13 +42,19 @@ is to set up:
   handler that navigates the main region and opens a panel leaves one entry, a push when any of them was one.
 - **The platform's moves** (the browser's back and forward, a typed address: NSH's `next_app_url_change`) take the
   navigation along: each region goes to the nearest journal entry with its route, or to a new one, and a query region
-  the location no longer names closes. They are not sent back. The synchronizer is the one listener NSH allows, so
-  with it on the app hears them through the navigation rather than TS's `UrlScheme.on("change")`.
+  the location no longer names closes. They are not sent back.
+- **Deep links** take the navigation there on every platform: the link that launched the app (iOS, Android, the
+  desktops, Tizen) once it is ready, and a link that opens it while it runs (NSH's `next_url_scheme_open`), as do the
+  web's links into a running app (the browser's forward to a page the app no longer has, an earlier page load's
+  entry). The app claims its schemes in `nsh.json`'s `schemes`; NSH drops the links of other schemes.
+- The synchronizer is the one listener NSH allows for moves and for links, so with it on the app hears them through
+  the navigation rather than TS's `UrlScheme.on("change")` and `UrlScheme.on("open")`.
 
 The address is a URL and the location the part after its origin (`https://example.com/app/projects/1` is
-`/app/projects/1`), or after the scheme for a link (`myapp://projects/1` is `/projects/1`; `location_of_address`). On
-the web set the navigation's `base_path` to `nsh.json`'s `web.base`; a location shown is set as it is, which the web
-resolves against the page's origin. `synchronize_location: false` in the navigation's options keeps navigations out of
+`/app/projects/1`), or, for a link, what follows its scheme under the navigation's `base_path` (`myapp://projects/1`
+is `/app/projects/1` with `base_path` `/app`; `location_of_address`). One `base_path` serves every platform: set it to
+`nsh.json`'s `web.base`, which the web's addresses start with and links are put under. A location shown is set as it
+is, which the web resolves against the page's origin. `synchronize_location: false` in the navigation's options keeps navigations out of
 NSH's address and its moves out of the navigation, startup included.
 
 ## From TSX

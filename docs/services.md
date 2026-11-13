@@ -16,7 +16,7 @@ follow the same pattern.
 | [Selection](services/selection.md) | The active selection area and its status | `add_selection()` | |
 | [Input map](services/input-map.md) | Key and pointer bindings per context, in three layers | `add_input_map(..)` | `RayX:Services:InputMap` |
 | [Platform](services/platform.md) | The device and the user's settings | `add_platform()` | |
-| [Suspension](services/suspension.md) | The app's lifecycle, focus and visibility | `add_suspension()` | |
+| [Suspension](services/suspension.md) | The app's lifecycle, focus and visibility, the system's wakes, quitting | `add_suspension()` | |
 | [Application configuration](services/application-configuration.md) | The app's own settings: motion, scrolling, tooltips, layout direction | `add_application_configuration(..)` | `RayX:Application` |
 | [Assets](services/assets.md) | The packages' files, from a manifest, as `asset:/` URLs | `add_assets(..)` | `RayX:Services:Assets` |
 | [Fonts](services/fonts.md) | Fonts registered at run time, and aliases | `add_fonts(..)` | `RayX:Services:Fonts` |

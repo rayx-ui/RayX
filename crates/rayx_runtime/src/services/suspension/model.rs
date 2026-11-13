@@ -59,6 +59,15 @@ pub enum SuspensionEventKind {
     /// The app's window on a desktop got or lost the focus, was minimized or restored, or was
     /// shown or hidden: the event's `window` is its state now.
     WindowChanged,
+    /// The system woke from sleep while the app ran (a desktop). The app's state may be as it
+    /// was (a laptop's lid closed and opened with the app in front), but its network connections
+    /// and timers did not live through the sleep: check or open them again. On iOS and Android a
+    /// sleeping device takes the app to the background instead (`Backgrounded`).
+    Woke,
+    /// The user asked to quit (the app's Quit item, its quit key) while the app asks first
+    /// ([`SuspensionService::ask_before_quit`](super::SuspensionService::ask_before_quit)): the
+    /// app quits when it decides to ([`SuspensionService::quit`](super::SuspensionService::quit)).
+    QuitRequested,
 }
 
 /// Why it happened.
@@ -74,6 +83,10 @@ pub enum SuspensionEventReason {
     AppStateChanged,
     /// The platform reported a new state of the app's window (NSH's `window_state()`).
     WindowStateChanged,
+    /// The system woke from sleep (NSH's `wake_count()`).
+    SystemWoke,
+    /// The user asked to quit (NSH's `on_quit_request`).
+    UserAskedToQuit,
     /// The app published it itself.
     Application,
 }
@@ -90,6 +103,8 @@ pub struct SuspensionSnapshot {
     pub last_reason: Option<SuspensionEventReason>,
     /// The app's window on a desktop (`None` elsewhere, and until the platform reports it).
     pub window: Option<WindowActivity>,
+    /// How many times the system woke from sleep since the app started ([`SuspensionEventKind::Woke`]).
+    pub wakes: u32,
 }
 
 impl SuspensionSnapshot {
@@ -109,18 +124,20 @@ impl SuspensionSnapshot {
         self.visibility == SuspensionVisibilityState::Background
     }
 
-    /// Whether `other` has the same lifecycle, activation, visibility and window.
+    /// Whether `other` has the same lifecycle, activation, visibility, window and wakes.
     pub fn same_state(&self, other: &Self) -> bool {
         (
             self.lifecycle,
             self.activation,
             self.visibility,
             self.window,
+            self.wakes,
         ) == (
             other.lifecycle,
             other.activation,
             other.visibility,
             other.window,
+            other.wakes,
         )
     }
 
@@ -153,6 +170,9 @@ impl SuspensionSnapshot {
                 self.visibility = Visibility::Background;
             }
             SuspensionEventKind::WindowChanged => self.window = event.window,
+            SuspensionEventKind::Woke => self.wakes = self.wakes.saturating_add(1),
+            // A request changes nothing until the app quits.
+            SuspensionEventKind::QuitRequested => {}
         }
         self.updated_at_unix_millis = event.timestamp_unix_millis.or(self.updated_at_unix_millis);
         self.last_reason = Some(event.reason);

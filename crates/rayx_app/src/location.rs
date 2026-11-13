@@ -1,15 +1,17 @@
 //! The app's location on NSH: the navigation's location shown as NSH's app address (`app_url`,
 //! `set_app_url_with`; TS's `UrlScheme.url()` / `setUrl`), which the web keeps in the address bar
-//! and the browser's history and the native platforms keep for the app, and the platform's moves
-//! of it the app did not make (the browser's back and forward, a typed address:
-//! `next_app_url_change`) followed by the navigation.
+//! and the browser's history and the native platforms keep for the app; the platform's moves of
+//! it the app did not make (the browser's back and forward, a typed address:
+//! `next_app_url_change`) and the links that open the app while it runs (a deep link, the web's
+//! forward to a page the app no longer has: `next_url_scheme_open`) followed by the navigation.
 //!
 //! The address is a URL: on the web the page's (`https://example.com/app/projects/1`), on the
 //! native platforms the link that opened the app (`myapp://projects/1`) or what the app set since.
-//! The navigation's location is the part after the origin (`/app/projects/1`), or after the
-//! scheme for a link (`/projects/1`); on the web set the navigation's `base_path` to `nsh.json`'s
-//! `web.base`. A location the navigation shows is set as it is, which the web resolves against
-//! the page's origin.
+//! The navigation's location is the part after the origin (`/app/projects/1`), or, for a link,
+//! what follows its scheme under the navigation's `base_path` (`/app/projects/1` again with
+//! `base_path` `/app`), so one `base_path` serves every platform: on the web set it to
+//! `nsh.json`'s `web.base`. A location the navigation shows is set as it is, which the web
+//! resolves against the page's origin.
 //!
 //! NSH's address is reachable only while the engine runs Rust code (a component, an effect, a
 //! task), and a class's synchronous calls from TSX run outside it, as does any other thread. So
@@ -20,9 +22,10 @@
 //! navigation moves there once the app is ready; until then nothing is shown, so the navigation's
 //! own start does not replace it.
 //!
-//! The synchronizer takes NSH's moves of the address (`next_app_url_change`, one listener at a
-//! time): with `synchronize_location` on, the app hears them through the navigation, not through
-//! TS's `UrlScheme.on("change")`.
+//! The synchronizer takes NSH's moves of the address and its links (`next_app_url_change` and
+//! `next_url_scheme_open`, one listener at a time each): with `synchronize_location` on, the app
+//! hears them through the navigation, not through TS's `UrlScheme.on("change")` and
+//! `UrlScheme.on("open")`.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -30,8 +33,8 @@ use std::sync::{Arc, Mutex};
 use futures::StreamExt as _;
 use futures::channel::mpsc::{UnboundedSender, unbounded};
 use nsh_core::prelude::{
-    Owner, app_url, effect, next_app_url_change, set_app_url_with, signal, spawn, try_global,
-    untracked,
+    Owner, app_url, effect, next_app_url_change, next_url_scheme_open, set_app_url_with, signal,
+    spawn, try_global, untracked,
 };
 use nsh_core::url_scheme::HistoryBehavior;
 use rayx_core::di::AppService;
@@ -43,11 +46,12 @@ use rayx_runtime::services::navigation::{
 use crate::{AppState, app_services, app_state};
 
 /// Shows the navigation's location as NSH's app address and follows the platform's moves of
-/// it. The NSH layer registers it as the app's `dyn NavigationLocationSynchronizer`, so the
-/// navigation moves to the address the app started at (a deep link, the address bar) once the
-/// app is ready, and shows every navigation there: a push as a new entry of the platform's
-/// history, the other modes in place of the current one. On the web, the navigation's
-/// `base_path` is `nsh.json`'s `web.base` (see the module).
+/// it and the links that open the app. The NSH layer registers it as the app's
+/// `dyn NavigationLocationSynchronizer`, so the navigation moves to the address the app started
+/// at (a deep link, the address bar) once the app is ready, and to every link that opens it
+/// while it runs, and shows every navigation there: a push as a new entry of the platform's
+/// history, the other modes in place of the current one. The navigation's `base_path` is
+/// `nsh.json`'s `web.base` on every platform (see the module).
 #[derive(Clone, Default, AppService)]
 pub struct NshLocationSynchronizer {
     shared: Arc<Shared>,
@@ -78,10 +82,12 @@ fn reachable() -> bool {
     try_global::<Probe>().is_some()
 }
 
-/// The navigation's location in the app's address `address` (see the module): the path, query
-/// and fragment of a web address, what follows the scheme of a link, or the address itself when
-/// it is no URL (one the app set on a native platform).
-pub fn location_of_address(address: &str) -> String {
+/// The navigation's location in the app's address `address` (see the module), for a navigation
+/// whose locations start with `base_path`: the path, query and fragment of a web address (which
+/// has the base already), what follows the scheme of a link under `base_path`
+/// (`myapp://projects/1` is `/app/projects/1` under `/app`), or the address itself when it is no
+/// URL (a location the app set on a native platform).
+pub fn location_of_address(address: &str, base_path: &str) -> String {
     let Ok(url) = url::Url::parse(address) else {
         return address.to_owned();
     };
@@ -98,7 +104,11 @@ pub fn location_of_address(address: &str) -> String {
         return location;
     }
     let after_scheme = &address[url.scheme().len() + 1..];
-    format!("/{}", after_scheme.trim_start_matches('/'))
+    format!(
+        "{}/{}",
+        base_path.trim_end_matches('/'),
+        after_scheme.trim_start_matches('/')
+    )
 }
 
 impl NshLocationSynchronizer {
@@ -175,6 +185,20 @@ impl NshLocationSynchronizer {
                     }
                 }
             }));
+            // A link that opens the app while it runs (a deep link on a native platform, the
+            // web's forward to a page the app no longer has, an earlier load's entry), and the
+            // one that launched it, which NSH keeps until something listens.
+            let opener = synchronizer.clone();
+            drop(spawn(async move {
+                loop {
+                    let url = next_url_scheme_open().await;
+                    if opener.shared.settled.load(Ordering::SeqCst) {
+                        untracked(|| opener.follow(&url));
+                    } else {
+                        initial.set(Some(Some(url)));
+                    }
+                }
+            }));
             effect(move || {
                 // Reading these subscribes: the effect runs again once the app is ready and once
                 // NSH answers.
@@ -198,7 +222,7 @@ impl NshLocationSynchronizer {
             && let Some(navigation) = navigation()
             && navigation.options().synchronize_location
         {
-            let location = location_of_address(&address);
+            let location = location_of_address(&address, &navigation.options().base_path);
             let there = navigation.location().is_ok_and(|now| now == location)
                 || navigation.apply_location(&location).is_ok();
             if there {
@@ -216,7 +240,8 @@ impl NshLocationSynchronizer {
     }
 
     /// Takes the navigation where NSH moved the address (the browser's back or forward, a
-    /// typed address). The platform is there already: it is not shown again.
+    /// typed address) or where a link opens the app. The platform is there already: it is not
+    /// shown again.
     fn follow(&self, address: &str) {
         let Some(navigation) = navigation() else {
             return;
@@ -224,7 +249,7 @@ impl NshLocationSynchronizer {
         if !navigation.options().synchronize_location {
             return;
         }
-        let location = location_of_address(address);
+        let location = location_of_address(address, &navigation.options().base_path);
         if let Ok(mut shown) = self.shared.shown.lock() {
             *shown = Some(location.clone());
         }

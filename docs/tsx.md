@@ -44,7 +44,7 @@ Each is made with `X.of(app)`, and its `onChange` hears the service's changes.
 | `AppConfiguration` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()` |
 | `Assets` | Asset URLs: `url(path)`, `urlForScale(path, scale)` |
 | `Fonts` | Font aliases: `family(alias)`, `aliases()` |
-| `Platform` | The device and the app's lifecycle: `current()`, `lifecycle()` |
+| `Platform` | The device and the app's lifecycle: `current()`, `onChange`, `lifecycle()`, `onLifecycle`, `askBeforeQuit(listener)`, `quit()` ([Suspension](services/suspension.md#tsx)) |
 
 ```tsx
 const i18n = I18n.of(app);

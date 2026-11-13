@@ -29,7 +29,8 @@
 //! - **The location.** [`NshLocationSynchronizer`] shows the navigation's location as NSH's app
 //!   address (`app_url`, `set_app_url_with`: the web's address bar and history, the link that
 //!   opened a native app), takes the navigation to the address at start once the app is ready
-//!   and follows the platform's moves of it (back, forward, a typed address).
+//!   and follows the platform's moves of it (back, forward, a typed address) and the deep links
+//!   that open the app while it runs.
 //! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
 //!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
@@ -38,10 +39,12 @@
 //! - **RayX's services on NSH.** Every surface's builder starts with NSH's [`NshAssetReader`]
 //!   and [`NshFontRegistrar`] (reading the app's files with `fetch` of their `asset:/` URLs,
 //!   registering fonts with `register_font`), which `rayx_runtime`'s asset and font services
-//!   use, and [`NshKeyValueStore`], the app's persistent key-value store in NSH's storage; [`AppSettingsAppBuilderExt::add_app_settings`] adds the app's bundled
+//!   use, [`NshKeyValueStore`], the app's persistent key-value store in NSH's storage, and
+//!   [`NshSuspensionHost`], which quits the app and asks before quitting for the suspension
+//!   service; [`AppSettingsAppBuilderExt::add_app_settings`] adds the app's bundled
 //!   `appsettings.json` as a configuration source ([`AppSettingsSource`]); and
 //!   [`use_platform_sync`], in the root component, keeps the platform and suspension services
-//!   current from NSH's environment and app state.
+//!   current from NSH's environment and app state, the system's wakes and the app's quitting.
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
 //!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
 //!   following the language; [`checked::tr!`](checked::tr) checks the call against the app's
@@ -74,6 +77,7 @@ mod service_classes;
 mod settings;
 mod storage;
 mod surface;
+mod suspension;
 mod translate;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
@@ -105,6 +109,7 @@ pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
 pub use surface::{
     AppError, AppState, app_services, app_state, install, set_app, start, start_app,
 };
+pub use suspension::NshSuspensionHost;
 #[doc(hidden)]
 pub use translate::__private;
 pub use translate::{checked, translate};

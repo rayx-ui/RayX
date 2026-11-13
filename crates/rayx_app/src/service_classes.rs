@@ -328,8 +328,12 @@ impl Fonts {
 }
 
 /// The device and the app's lifecycle, for TSX: `Platform.of(app).current()` (the platform
-/// service's snapshot: form factor, viewport, insets, color scheme, input, locale, …) and
-/// `lifecycle()` (the suspension service's); `onChange` hears every change of the device.
+/// service's snapshot: platform, form factor, input, viewport, insets, keyboard, color scheme,
+/// accessibility, locale, features, displays, window, …) and `lifecycle()` (the suspension
+/// service's); `onChange` hears every change of the device, `onLifecycle` every lifecycle event
+/// (`{ kind, reason, … }`, `kind` as Rust names it: `"Started"`, `"Activated"`,
+/// `"Backgrounded"`, `"Woke"`, `"QuitRequested"`, `"Destroying"`, …). `askBeforeQuit(listener)` makes the user's requests to quit come to `listener` until this
+/// object is disposed, and `quit()` quits (a desktop's app).
 #[class]
 pub struct Platform {
     platform: Arc<PlatformInfoService>,
@@ -374,5 +378,44 @@ impl Platform {
             id,
             _subscription: Box::new(subscription),
         });
+    }
+
+    /// Calls `listener` with every lifecycle event (`{ kind, reason, timestamp_unix_millis,
+    /// window }`: the app's start, focus, background and foreground, its window's changes, the
+    /// system's wakes from sleep, its quit), until this object is disposed. Nothing without a
+    /// suspension service.
+    pub fn on_lifecycle(&mut self, #[args(event)] listener: Callback<JsonValue>) {
+        let Some(suspension) = &self.suspension else {
+            return;
+        };
+        let (id, post) = keep(listener);
+        let subscription = suspension.subscribe_events(move |event| post(json(event)));
+        self.listeners.push(Listener {
+            id,
+            _subscription: Box::new(subscription),
+        });
+    }
+
+    /// Until this object is disposed, the user's requests to quit (the app's Quit item, its quit
+    /// key) call `listener` instead of quitting: the app asks, saves or waits, then calls
+    /// `quit()`. Desktops only. An error without a suspension service.
+    pub fn ask_before_quit(&mut self, listener: Callback<JsonValue>) -> Result<(), String> {
+        let Some(suspension) = &self.suspension else {
+            return Err("the app has no suspension service (add_suspension)".into());
+        };
+        let (id, post) = keep(listener);
+        let subscription = suspension.ask_before_quit(move || post(JsonValue::Null));
+        self.listeners.push(Listener {
+            id,
+            _subscription: Box::new(subscription),
+        });
+        Ok(())
+    }
+
+    /// Quits the app, whether or not it asks first (a desktop's; elsewhere nothing happens).
+    pub fn quit(&self) {
+        if let Some(suspension) = &self.suspension {
+            suspension.quit();
+        }
     }
 }
