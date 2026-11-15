@@ -2187,7 +2187,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.62.2",
+ "windows-core 0.61.2",
 ]
 
 [[package]]
@@ -3290,7 +3290,7 @@ dependencies = [
 [[package]]
 name = "nsh-base"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "chrono",
  "html5ever",
@@ -3314,7 +3314,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "anyhow",
  "dunce",
@@ -3340,25 +3340,21 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "cap-std",
  "crc32fast",
  "flate2",
- "futures-util",
  "gif",
  "httpdate",
  "imagesize 0.15.0",
  "libc",
  "log",
  "nsh-macros",
- "nsh-updater",
  "ordered-float",
  "resvg",
  "rust-i18n",
  "rustc-hash",
- "rustls",
- "rustls-platform-verifier",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -3366,12 +3362,10 @@ dependencies = [
  "slab",
  "taffy",
  "tokio",
- "tokio-tungstenite",
  "ttf-parser",
  "unicode-linebreak",
  "unicode-properties",
  "url",
- "webpki-roots 1.0.10",
  "windows-sys 0.61.2",
  "wuff",
 ]
@@ -3379,7 +3373,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "crossbeam-channel",
  "env_filter",
@@ -3400,7 +3394,7 @@ dependencies = [
 [[package]]
 name = "nsh-i18n"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "rust-i18n-support",
  "serde_json",
@@ -3409,7 +3403,7 @@ dependencies = [
 [[package]]
 name = "nsh-js"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -3432,9 +3426,10 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "imagesize 0.15.0",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 2.0.119",
@@ -3445,7 +3440,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -3460,7 +3455,7 @@ dependencies = [
 [[package]]
 name = "nsh-updater"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-1#831433244c6b72bdd9184c1d7cd0836232e81a5b"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-2#0ba1374cd3c8f46d280ba907524a3bbd95cb0c1f"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -5700,7 +5695,6 @@ checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "aws-lc-rs",
  "once_cell",
- "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
