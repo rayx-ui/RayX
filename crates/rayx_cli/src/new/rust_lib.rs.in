@@ -36,4 +36,6 @@ pub fn App() -> impl IntoElement {
             })
             .text_size(px(22.0)),
         )
+        // RayX's dev tools: in a dev build the layer a tool picks and marks views with.
+        .child(dev_layer())
 }

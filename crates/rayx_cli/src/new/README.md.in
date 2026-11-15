@@ -8,6 +8,9 @@ A [RayX](https://github.com/rayx-ui/RayX) app on [NSH](https://github.com/dXnSix
   records its commit, which is the nsh every `rayx app` command runs. Move them together: a newer
   `rayx` tag with that release's NSH patch.
 - `src/lib.rs` names the app's services (`fn app`): RayX's are listed in its `docs/services.md`.
+- The root mounts RayX's dev tools' layer: in a dev build (`rayx app run`) the app connects to a
+  dev tool on this machine and shows its layer; a release build (`rayx app package`) has neither.
+  RayX's `docs/devtools.md` describes them.
 
 ```sh
 rayx app run                      # this machine's backend; --target ios, android, web, macos, linux, windows

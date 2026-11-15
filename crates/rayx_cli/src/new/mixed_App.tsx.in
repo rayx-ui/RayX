@@ -1,5 +1,5 @@
 import { mount, signal, Text, View } from "nsh";
-import { AppServices } from "__SPECIFIER__";
+import { AppServices, DevLayer } from "__SPECIFIER__";
 
 // RayX starts the app's services (`src/lib.rs`) once; `AppServices.load()` resolves when every
 // one of them is ready, and everything after it is synchronous.
@@ -22,6 +22,8 @@ function App() {
       }}
     >
       <Text style={{ fontSize: 22 }}>{status()}</Text>
+      {/* RayX's dev tools: in a dev build the layer a tool picks and marks views with. */}
+      <DevLayer style={{ position: "absolute" }} />
     </View>
   );
 }

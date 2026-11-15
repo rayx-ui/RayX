@@ -369,9 +369,12 @@ a RayX app and pins it.
 - **RayX:** the app's `Cargo.toml` depends on `rayx` at this `rayx`'s own tag (git
   `https://github.com/rayx-ui/RayX`, `tag = "vX.Y.Z"`), and RayX's files take the place of nsh's:
   for `mixed` (the default: TSX with a Rust crate at the app's root) a `src/lib.rs` whose
-  `#[native_module]` registers RayX's TSX classes (`AppServices`, `ServiceScope`, `I18n`) and names
-  the app's services with `set_app`, an `App.tsx` that starts them with `AppServices.load()`, its
-  test and a README; for `rust` a root component that starts them. `ts` has no Rust crate to
+  `#[native_module]` registers RayX's TSX classes (`AppServices`, `ServiceScope`, `I18n`) and its dev
+  tools (`DevTools`, the `DevLayer` component) and names the app's services with `set_app`, an
+  `App.tsx` that starts them with `AppServices.load()` and mounts `<DevLayer />` (absolute, out of the layout), its test and a
+  README; for `rust` a root component that starts them and mounts `dev_layer()`. In a dev build
+  the dev tools are the in-app agent a tool connects to and its layer; a release build has
+  neither. `ts` has no Rust crate to
   register RayX's classes, so it needs `--nsh-only`.
 - **`--nsh-only`:** a plain NSH app, as `nsh init` writes it.
 - **The pin:** `mixed` and `rust` get a `.cargo/config.toml` that patches to the default pin's tag

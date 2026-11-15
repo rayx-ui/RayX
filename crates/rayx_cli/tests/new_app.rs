@@ -413,7 +413,7 @@ fn a_rayx_app_depends_on_rayx_at_this_rayx_s_tag_and_registers_its_classes() {
     }
     let entry = read("App.tsx");
     assert!(
-        entry.contains("import { AppServices } from \"hello/native\";"),
+        entry.contains("import { AppServices, DevLayer } from \"hello/native\";"),
         "{entry}"
     );
     assert!(entry.contains("AppServices.load()"), "{entry}");
