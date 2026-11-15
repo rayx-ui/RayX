@@ -210,3 +210,26 @@ pub fn wait_for_ok(running: &mut Running, port: u16, path: &str, timeout: Durati
         std::thread::sleep(Duration::from_millis(500));
     }
 }
+
+/// This checkout's root.
+pub fn checkout() -> &'static Path {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("the checkout")
+}
+
+/// Points the app's `rayx` (and the RayX crates it reaches) at this checkout: a test-only
+/// override, written only into the generated app's `.cargo/config.toml`. nsh builds the app from
+/// a workspace of its own, which reads the app's cargo config but not its manifest's patches.
+pub fn override_rayx(app: &Path) {
+    let config = app.join(".cargo/config.toml");
+    let mut text = std::fs::read_to_string(&config).expect(".cargo/config.toml");
+    let crates = checkout().join("crates");
+    text.push_str(&format!(
+        "\n# The proof's override: the RayX crates of the checkout under test.\n[patch.\"https://github.com/rayx-ui/RayX\"]\nrayx = {{ path = {:?} }}\nrayx_core = {{ path = {:?} }}\n",
+        crates.join("rayx"),
+        crates.join("rayx_core"),
+    ));
+    std::fs::write(&config, text).expect(".cargo/config.toml");
+}

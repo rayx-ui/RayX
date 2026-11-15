@@ -3,6 +3,7 @@
 
 #![allow(dead_code)]
 
+pub mod hub;
 pub mod proof;
 
 use rayx_cli::host::{Outcome, Runner};
