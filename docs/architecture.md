@@ -9,6 +9,7 @@ depends on `rayx_core` alone.
 | `rayx_runtime` | The app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets, fonts, translations | no |
 | `rayx_app` | The NSH layer: a root provider per surface, a scope per screen, view-model activation and binding, navigation regions, the TSX classes, and the NSH side of the services | yes |
 | `rayx_components` | The component library: the design system's tokens as the NSH theme type `RayXTheme` (generated from the Figma export), the macros of custom themes, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
+| `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_core`, `rayx_app` and `rayx` | no |
 | `rayx` | The umbrella: re-exports the other crates and dXn.I18n and dXn.Intl, with a prelude | yes |
 | `rayx-cli` | The `rayx` command-line tool | no (runs the `nsh` CLI) |
@@ -31,6 +32,7 @@ bundled `appsettings.json`.
 - `rayx::runtime`: `rayx_runtime`
 - `rayx::app`: `rayx_app`
 - `rayx::components`: `rayx_components` (not in the prelude: its names, `Button`, `Density`, would clash)
+- `rayx::devtools_protocol`: `rayx_devtools_protocol`
 - `rayx::i18n` and `rayx::intl`: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), for their message, number and date types
 

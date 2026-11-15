@@ -12,6 +12,7 @@
 - [TSX](tsx.md): the classes a TSX app uses.
 - [Components and theme](components.md): RayX's component library, its theme from the Figma tokens, custom themes, and the
   gallery app.
+- [Dev tools](devtools.md): the in-app agent of dev builds, how it connects to a tool, and the agent protocol.
 
 ## Reference
 
