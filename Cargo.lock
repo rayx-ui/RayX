@@ -4900,7 +4900,7 @@ dependencies = [
 
 [[package]]
 name = "rayx-gallery"
-version = "0.9.0"
+version = "0.10.1"
 dependencies = [
  "crossbeam-channel",
  "nsh-base",
@@ -4946,7 +4946,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_components"
-version = "0.9.0"
+version = "0.10.1"
 dependencies = [
  "crossbeam-channel",
  "nsh-base",
