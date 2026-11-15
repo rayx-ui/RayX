@@ -7,6 +7,12 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.10.1] - 2026-11-15
+
+### Features
+- *(nsh)* Pin NSH to nshx-0.5.0-3
+  - Migration: apps: patch every NSH crate in [patch.crates-io] to `nshx-0.5.0-3` and move rayx and rayx_core to this release's tag; on GPUI, Return and Space on a focus a newer dialog covers go to the dialog now (upstream NSH's rule).
+
 ## [0.10.0] - 2026-11-15
 
 ### Features
