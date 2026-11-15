@@ -1,0 +1,18 @@
+[package]
+name = "rayx_devtools_protocol"
+description = "The agent protocol of RayX's dev tools: the JSON-RPC 2.0 messages between an app's dev-build agent and a tool's hub, with their golden examples."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+# serde and serde_json alone: no RayX or NSH crate, no sockets, threads or clocks, so a tool in any repository
+# speaks the protocol by depending on this crate, on every target.
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, features = ["raw_value"] }

@@ -31,7 +31,15 @@ release_commits = "^(feat|fix|perf)"
 [[package]]
 name = "rayx_app"
 changelog_path = "./CHANGELOG.md"
-changelog_include = ["rayx", "rayx_core", "rayx_runtime", "rayx_app_macros", "rayx-cli", "rayx_components"]
+changelog_include = [
+    "rayx",
+    "rayx_core",
+    "rayx_runtime",
+    "rayx_app_macros",
+    "rayx-cli",
+    "rayx_components",
+    "rayx_devtools_protocol",
+]
 version_group = "rayx"
 
 [[package]]
@@ -139,3 +147,14 @@ commit_parsers = [
   { message = "^test", group = "Tests" },
   { message = "^chore", group = "Maintenance" },
 ]
+
+[[package]]
+name = "rayx_devtools_protocol"
+version_group = "rayx"
+# The agent protocol of the dev tools, like `rayx_core`. Its first release: no `v*` tag has the
+# package yet, so this name, which matches no tag, makes it a new package (docs/releasing.md).
+# Remove the line right after that release's tag.
+git_tag_name = "rayx_devtools_protocol-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false

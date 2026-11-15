@@ -1,0 +1,50 @@
+{"jsonrpc":"2.0","id":"hello","method":"hello","params":{"protocolVersion":"1.0","appId":"com.example.notes","appName":"Notes","platform":"macos","buildId":"b-7f3a91","surfaces":[{"id":1,"title":"Notes","size":{"width":1024.0,"height":768.0}}],"root":"/Users/dev/notes"}}
+{"jsonrpc":"2.0","id":"hello","result":{"protocolVersion":"1.0"}}
+{"jsonrpc":"2.0","id":"hello","method":"hello","params":{"protocolVersion":"2.0","appId":"com.example.notes","appName":"Notes","platform":"web","buildId":"b-0c11d2","surfaces":[{"id":1,"size":{"width":390.0,"height":844.0}}],"credential":"opaque-7d"}}
+{"jsonrpc":"2.0","id":"hello","error":{"code":-32002,"message":"agent protocol 2.0 cannot talk to agent protocol 1.0: their major versions differ","data":{"kind":"version","ours":"1.0","theirs":"2.0"}}}
+{"jsonrpc":"2.0","method":"surface.opened","params":{"id":2,"title":"Settings","size":{"width":480.0,"height":360.0}}}
+{"jsonrpc":"2.0","method":"surface.closed","params":{"id":2}}
+{"jsonrpc":"2.0","id":1,"method":"tree","params":{"root":12,"depth":2,"interactiveOnly":true,"maxChars":4000}}
+{"jsonrpc":"2.0","id":1,"result":{"revision":7,"root":12,"nodes":[{"id":12,"depth":0,"kind":"view","testId":"toolbar","source":{"module":"src/app.tsx","anchor":"Toolbar","line":3,"column":5},"components":[{"id":4,"name":"Toolbar","callSite":{"module":"src/app.tsx","anchor":"App","line":2,"column":7}}],"frame":{"x":0.0,"y":0.0,"width":1024.0,"height":48.0}},{"id":15,"parent":12,"depth":1,"kind":"view","role":"button","text":"Save","testId":"save","source":{"module":"src/app.tsx","anchor":"Toolbar","line":5,"column":7},"components":[{"id":4,"name":"Toolbar"}],"frame":{"x":8.0,"y":8.0,"width":72.0,"height":32.0}}],"truncated":true}}
+{"jsonrpc":"2.0","id":2,"method":"tree","params":{}}
+{"jsonrpc":"2.0","id":2,"result":{"revision":7,"root":1,"nodes":[{"id":1,"depth":0,"kind":"view","frame":{"x":0.0,"y":0.0,"width":1024.0,"height":768.0},"flags":["overlay"]}]}}
+{"jsonrpc":"2.0","id":3,"method":"tree.watch","params":{"on":true}}
+{"jsonrpc":"2.0","id":3,"result":{"revision":7}}
+{"jsonrpc":"2.0","method":"tree.changed","params":{"revision":8}}
+{"jsonrpc":"2.0","id":4,"method":"node","params":{"id":15}}
+{"jsonrpc":"2.0","id":4,"result":{"revision":8,"node":{"id":15,"parent":12,"depth":0,"kind":"view","role":"button","text":"Save","testId":"save","frame":{"x":8.0,"y":8.0,"width":72.0,"height":32.0}},"layout":{"frame":{"x":8.0,"y":8.0,"width":72.0,"height":32.0},"padding":{"top":4.0,"right":12.0,"bottom":4.0,"left":12.0},"border":{"top":0.0,"right":0.0,"bottom":0.0,"left":0.0},"margin":{"top":0.0,"right":8.0,"bottom":0.0,"left":0.0}},"class":"px-3 py-1 rounded","style":[{"name":"opacity","value":"0.9"}],"label":"Save the note","events":["press","hover"]}}
+{"jsonrpc":"2.0","id":5,"method":"find","params":{"text":"Save","role":"button","limit":10}}
+{"jsonrpc":"2.0","id":5,"result":{"revision":8,"nodes":[{"id":15,"depth":0,"kind":"view","role":"button","text":"Save","testId":"save","frame":{"x":8.0,"y":8.0,"width":72.0,"height":32.0}}]}}
+{"jsonrpc":"2.0","id":6,"method":"pick","params":{"x":20.0,"y":20.0}}
+{"jsonrpc":"2.0","id":6,"result":{"revision":8,"nodes":[16,15,12,1]}}
+{"jsonrpc":"2.0","id":7,"method":"act","params":{"action":"press","node":15}}
+{"jsonrpc":"2.0","id":7,"result":{"revision":9}}
+{"jsonrpc":"2.0","id":8,"method":"act","params":{"action":"scroll","node":30,"distance":240.0}}
+{"jsonrpc":"2.0","id":8,"error":{"code":-32003,"message":"node 30 is gone: take a new snapshot of the subtree at node 12 (`tree` with `root: 12`) and act on an id from it","data":{"kind":"stale_node","node":30,"snapshotRoot":12}}}
+{"jsonrpc":"2.0","id":9,"method":"act","params":{"action":"drag","node":40,"x":0.0,"y":-120.0}}
+{"jsonrpc":"2.0","id":9,"error":{"code":-32004,"message":"`act` is unsupported on web: the hub supplies it there itself","data":{"kind":"unsupported_on_target","method":"act","target":"web"}}}
+{"jsonrpc":"2.0","id":10,"method":"input","params":{"input":"type","node":20,"text":"Groceries"}}
+{"jsonrpc":"2.0","id":10,"result":{"revision":10}}
+{"jsonrpc":"2.0","id":11,"method":"input","params":{"input":"key","keys":"mod+s"}}
+{"jsonrpc":"2.0","id":11,"result":{"revision":11}}
+{"jsonrpc":"2.0","id":12,"method":"wait","params":{"for":"text","text":"Saved","timeoutMs":2000}}
+{"jsonrpc":"2.0","id":12,"result":{"revision":12}}
+{"jsonrpc":"2.0","id":13,"method":"wait","params":{"for":"idle"}}
+{"jsonrpc":"2.0","id":13,"error":{"code":-32005,"message":"the app was not quiet within 5000 ms","data":{"kind":"timeout","timeoutMs":5000}}}
+{"jsonrpc":"2.0","id":14,"method":"screenshot","params":{"node":15}}
+{"jsonrpc":"2.0","id":14,"result":{"mime":"image/png","width":1,"height":1,"data":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="}}
+{"jsonrpc":"2.0","id":15,"method":"layer.pickMode","params":{"on":true}}
+{"jsonrpc":"2.0","id":15,"result":{"revision":12}}
+{"jsonrpc":"2.0","method":"layer.pickModeRequested","params":{"on":false}}
+{"jsonrpc":"2.0","method":"layer.picked","params":{"node":15,"revision":12}}
+{"jsonrpc":"2.0","id":16,"method":"layer.select","params":{"node":15}}
+{"jsonrpc":"2.0","id":16,"result":{"revision":12}}
+{"jsonrpc":"2.0","method":"layer.note","params":{"node":15,"text":"The label should say Save note"}}
+{"jsonrpc":"2.0","id":17,"method":"logs","params":{"after":40,"limit":2}}
+{"jsonrpc":"2.0","id":17,"result":{"entries":[{"seq":41,"level":"info","target":"notes::store","message":"saved 3 notes"},{"seq":42,"level":"warn","message":"slow frame: 48 ms"}],"dropped":3}}
+{"jsonrpc":"2.0","id":18,"method":"extension.list","params":{}}
+{"jsonrpc":"2.0","id":18,"result":{"tools":[{"name":"notes.reset","description":"Empties the note store.","inputSchema":{"properties":{"keepPinned":{"type":"boolean"}},"type":"object"}}]}}
+{"jsonrpc":"2.0","id":19,"method":"extension.call","params":{"name":"notes.reset","arguments":{"keepPinned":true}}}
+{"jsonrpc":"2.0","id":19,"result":{"content":{"removed":3}}}
+{"jsonrpc":"2.0","id":20,"method":"frobnicate","params":{}}
+{"jsonrpc":"2.0","id":20,"error":{"code":-32601,"message":"no method `frobnicate` here"}}

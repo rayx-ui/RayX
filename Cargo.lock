@@ -4967,6 +4967,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayx_devtools_protocol"
+version = "0.10.1"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rayx_runtime"
 version = "0.10.1"
 dependencies = [
