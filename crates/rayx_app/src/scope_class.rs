@@ -26,10 +26,12 @@ pub struct AppServices {
 impl AppServices {
     /// Starts the app on this surface (once; later calls resolve with the same root), and
     /// keeps its platform and suspension services current from NSH from then on: a TSX app has
-    /// no root component to call `use_platform_sync` in.
-    pub async fn load() -> Result<Instance<AppServices>, AppError> {
+    /// no root component to call `use_platform_sync` in. In a dev build it then starts the dev
+    /// tools' agent, unless the host refuses the app's connections (a test session).
+    pub async fn load(sys: System) -> Result<Instance<AppServices>, AppError> {
         let provider = start_app().await?;
         crate::platform::keep_platform_current();
+        crate::devtools::app_ready(Some(&sys));
         Ok(Instance::new(AppServices { provider }))
     }
 

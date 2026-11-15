@@ -13,6 +13,8 @@
 //!   (its tokens as an NSH theme type, its modes and the macros of custom themes) and its
 //!   components (`Button`), for Rust views and TSX; `rayx::components::register` adds them to an
 //!   app's UI set.
+//! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
+//!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
 //!   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), which the i18n service wraps, for their
 //!   message, number and date types.
@@ -35,6 +37,7 @@
 pub use rayx_app as app;
 pub use rayx_components as components;
 pub use rayx_core as core;
+pub use rayx_devtools_protocol as devtools_protocol;
 pub use rayx_runtime as runtime;
 
 pub use dxn_i18n as i18n;
@@ -60,5 +63,6 @@ pub mod prelude {
         use_command, use_list, use_platform_sync, use_reactive, use_screen_scope, use_stream,
         use_two_way, use_view_model,
     };
+    pub use rayx_app::{DevLayer, DevTools, dev_layer};
     pub use rayx_runtime::services::i18n::{Args, I18nService};
 }

@@ -100,6 +100,7 @@ static APP: OnceLock<BuildApp> = OnceLock::new();
 /// The first call wins (an app has one composition root); later calls are ignored and return
 /// `false`.
 pub fn set_app(build: BuildApp) -> bool {
+    crate::devtools::register();
     APP.set(build).is_ok()
 }
 
@@ -226,7 +227,9 @@ pub fn start() {
     // The task runs on its own (dropping its handle does not cancel it); it ends with the
     // current owner, as every task does.
     drop(spawn(async {
-        let _ = start_app().await;
+        if start_app().await.is_ok() {
+            crate::devtools::app_ready(None);
+        }
     }));
 }
 

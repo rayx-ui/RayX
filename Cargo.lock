@@ -4871,6 +4871,7 @@ dependencies = [
  "rayx_app",
  "rayx_components",
  "rayx_core",
+ "rayx_devtools_protocol",
  "rayx_runtime",
 ]
 
@@ -4926,11 +4927,15 @@ dependencies = [
  "nsh-core",
  "nsh-engine",
  "nsh-js",
+ "png",
  "rayx_core",
+ "rayx_devtools_protocol",
  "rayx_runtime",
  "serde",
  "serde_json",
  "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
  "url",
 ]
 

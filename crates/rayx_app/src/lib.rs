@@ -66,6 +66,7 @@
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
 mod binding;
+mod devtools;
 mod i18n_class;
 mod i18n_locale;
 mod location;
@@ -92,6 +93,10 @@ pub use rayx_core::{
 pub use binding::{
     Observable, ReactiveCommand, UiCommand, use_command, use_list, use_reactive, use_stream,
     use_two_way,
+};
+pub use devtools::{
+    DevLayer, DevTools, DevToolsOptions, dev_layer, devtools_backoff, devtools_enabled,
+    devtools_hook_calls, start_devtools,
 };
 pub use i18n_class::{DateFormat, DateLength, I18n, NumberFormat, NumberKind, TimeDetail};
 pub use location::{NshLocationSynchronizer, location_of_address};

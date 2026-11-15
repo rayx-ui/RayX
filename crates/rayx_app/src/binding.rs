@@ -54,6 +54,13 @@ pub(crate) fn start_dispatcher() {
     });
 }
 
+/// The surface's dispatcher on this (the engine's) thread, once the app started: what is sent
+/// through it runs on this thread.
+#[cfg(rayx_devtools)]
+pub(crate) fn dispatcher() -> Option<UnboundedSender<Job>> {
+    DISPATCHER.with_borrow(Clone::clone)
+}
+
 /// Keeps `subscription` until the current owner (the component) cleans up.
 fn keep(subscription: Subscription) {
     let kept = RefCell::new(Some(subscription));

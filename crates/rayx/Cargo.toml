@@ -16,5 +16,6 @@ rayx_core.workspace = true
 rayx_runtime.workspace = true
 rayx_app.workspace = true
 rayx_components.workspace = true
+rayx_devtools_protocol.workspace = true
 dxn_i18n.workspace = true
 dxn_intl.workspace = true

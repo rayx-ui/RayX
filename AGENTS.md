@@ -2,7 +2,7 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../_archive/RayX.Old`), which is not
-a dependency. The workspace has seven crates sharing one version, and the gallery app's crate:
+a dependency. The workspace has eight crates sharing one version, and the gallery app's crate:
 
 - `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), configuration sources, .NET's options model and the
@@ -27,9 +27,13 @@ a dependency. The workspace has seven crates sharing one version, and the galler
   (`../RayX.Root/.claude/skills/rayx-components/`) is its guide: how each component is used and
   how one is built.
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers.
+- `crates/rayx_devtools_protocol`: the agent protocol of the dev tools (`docs/devtools.md`): the
+  JSON-RPC 2.0 messages between an app's dev-build agent in `rayx_app` and a tool's hub, with its
+  golden messages embedded. It depends on serde and serde_json alone (no RayX or NSH crate, no
+  sockets, threads or clocks), builds for `wasm32-unknown-unknown`, and names nothing of a product built on RayX.
 - `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_core`, `rayx_runtime`,
-  `rayx_app`, `rayx_components` (`rayx::components`), `dxn_i18n` and `dxn_intl`, with a prelude.
-  It holds no code of its own.
+  `rayx_app`, `rayx_components` (`rayx::components`), `rayx_devtools_protocol`, `dxn_i18n` and
+  `dxn_intl`, with a prelude. It holds no code of its own.
 - `examples/gallery`: the RayX gallery, a mixed NSH app (TSX screens with hot reload, its crate
   `rayx-gallery` in `native/`) showing every component's Figma properties, variants, sizes and
   examples in code. Its crate is a workspace member and is never released.
@@ -71,7 +75,7 @@ committing:
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo check -p rayx_core -p rayx_runtime --target wasm32-unknown-unknown
+cargo check -p rayx_core -p rayx_runtime -p rayx_devtools_protocol --target wasm32-unknown-unknown
 ```
 
 CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`, and
