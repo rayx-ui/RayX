@@ -4,7 +4,7 @@ agentx:
   scope: decisions
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-15T18:45:00+01:00
   topics:
     - decisions
   supersedes: []
@@ -22,3 +22,4 @@ The CLI's standing decisions live in the repository docs, not here:
 | Decision | Domain | Status |
 | --- | --- | --- |
 | [Memory taxonomy](governance/memory/2026-11-04-governance-memory-taxonomy.md) | governance/memory | current (2026-11-04) |
+| [One app builder API in Rust and TypeScript](app/tsx/2026-11-15-app-tsx-builder-parity.md) | app/tsx | current (2026-11-15) |

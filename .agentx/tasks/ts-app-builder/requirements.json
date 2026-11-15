@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 7,
+  "epicId": "ts-app-builder",
+  "scopeMarkdown": "One app builder API for Rust and TypeScript (TSX) apps, as decided with the owner on 2026-11-15 ([decision](../../memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md)).\n\nToday a TSX app composes itself in Rust (`set_app(build_app)` in its `#[native_module]`, which also registers each RayX class) and TSX only calls `AppServices.load()` and `X.of(app)`. After this epic:\n\n- TSX builds the app with `RayXAppBuilder` (a camelCase twin of every Rust builder method) and `await builder.start()`, resolves with a `ServiceProvider` named as in Rust (`getService`, `getRequiredService`, `createScope`, `dispose`), and finds Rust services under their Rust names.\n- Services written in TS live in RayX's one container (same lifetimes, scopes and startup graph), with `AsyncInitializable` / `StartupInitializable` interfaces mirroring the Rust traits; Rust reaches a TS service only through a `#[rayx::contract]` trait.\n- Rust drops `set_app`: a Rust root builds the same chain and calls `.start()`.\n- A TSX app's crate is one line, `rayx::native_module!(\"my-app\")`; app-defined Rust services reach TS through `#[rayx::app_extension]` and `builder.apply(..)`.\n\nIn scope: `rayx_core`, `rayx_app`, `rayx_app_macros`, the umbrella `rayx`, `rayx_cli`'s `rayx new` templates, the gallery, RayX's docs and memory, and the `rayx-components` skill in RayX.Root.\n\n**Prerequisite outside this epic (owner-gated):** NSH's fork gains, on `feat/js-objects` under the fork's own process, (1) JS objects Rust keeps (identity, traced like `Callback`, returned to JS as the same object, engine-thread only), (2) `#[interface]` on a Rust trait (a TS `export interface` in the set's declarations and a Rust stand-in calling the JS object: synchronously inside a JS call, async otherwise) and (3) a class constructor as an argument (which registered class it is). The owner merges it into the fork's `main` and tags it `nshx-0.5.0-<n>`. Sprint `s1-core` needs none of it; `s2-nsh-layer` starts by pinning that tag and is blocked until it exists. RayX never depends on the fork by path or branch.\n\n**Excluded:** a TSX app without any Rust crate (needs `nsh.json` to name a dependency's set: a second NSH change); `rayx_runtime`'s services themselves (only how they are registered and reached from TS); the release (a breaking 0.x minor, made by release-plz after the owner's go-ahead; this epic only writes the `feat(app)!:` commits with `Migration: apps: …` footers); pushing.\n\n**Assumptions:** the NSH API names follow what the fork lands (`JsObject`, `#[interface]` and the class argument are working names); NSH keeps running a class's synchronous members inside the JS call and `async` members as core tasks.",
+  "constraintsMarkdown": "- `rayx_core` and `rayx_runtime` stay NSH-free and keep building for `wasm32-unknown-unknown`.\n- Workspace lints deny `unsafe_code`; engine-thread-only values use a vetted crate or a design without `unsafe`, never an `allow(unsafe_code)` outside tests.\n- Dependencies come from git tags only (never path, branch or commit); the `[patch.crates-io]` NSH tag, the CLI's default pin (`project::pins`) and the gallery's `.cargo/config.toml` move together.\n- Conventional Commits; breaking commits carry `!` and `Migration: apps: …` footers naming no consumer app; `CHANGELOG.md` is never edited; no AI attribution.\n- `crates/rayx_components/src/theme/tokens.rs` is generated and never edited.\n- Each new behavior gets its own test group (`crates/<crate>/tests/<feature>.rs`); docs change with the code (`docs/`, the README, `docs/cli/projects.md` for the CLI).\n- `.references/nsh-main/` is read-only.",
+  "requirements": [
+    {
+      "id": "R-CORE",
+      "title": "The core container holds services it cannot name by Rust type",
+      "descriptionMarkdown": "`rayx_core`'s `ServiceProvider` and `StartupRegistry` key services by Rust `TypeId` and require `Send + Sync`. TS services have runtime keys, live on the engine thread and are made asynchronously when Rust's startup task needs them.",
+      "criteria": [
+        {
+          "id": "CORE-1",
+          "verification": "automated",
+          "descriptionMarkdown": "A service registered under a runtime key (a key value with a display name, distinct from every `TypeId` key) resolves as a singleton, scoped or transient service with exactly the caching, scope and disposal rules of a `TypeId`-keyed service: one instance per root for a singleton (shared by every scope), one per scope for a scoped service, a new one per resolve for a transient one; its factory receives the resolving provider; a missing runtime key gives `None` from the optional resolve and a `ServiceResolutionError` naming the key's display name from the required one. `TypeId`-keyed registration and resolution behave exactly as before. Test group `crates/rayx_core/tests/di_runtime_keys.rs`."
+        },
+        {
+          "id": "CORE-2",
+          "verification": "automated",
+          "descriptionMarkdown": "A service registered as thread-bound (its value is neither `Send` nor `Sync`) resolves only on the thread it was made on; resolving it from another thread fails with a `ServiceResolutionError` saying it resolves on its own thread only (no panic, no access to the value), and the value is never dropped on another thread (a provider or scope released elsewhere does not run its drop there). Everything else in the provider stays usable from any thread. `rayx_core` still builds for `wasm32-unknown-unknown`, and no `unsafe` code is added outside tests. Test group `crates/rayx_core/tests/di_thread_bound.rs`."
+        },
+        {
+          "id": "CORE-3",
+          "verification": "automated",
+          "descriptionMarkdown": "A startup service keyed at runtime whose factory is asynchronous is made and initialized by the same startup run as `TypeId`-keyed ones: ordered by dependencies in both directions (a runtime-keyed service may depend on a `TypeId` key and the reverse), its layer initialized concurrently, within its own timeout or the default, a failure or timeout reported with its display name in the same `StartupInitializationError`, and the run succeeds only when every startup service initialized. A factory that fails fails startup naming the service. Test group `crates/rayx_core/tests/di_startup_runtime.rs`."
+        },
+        {
+          "id": "CORE-4",
+          "verification": "automated",
+          "descriptionMarkdown": "`StartupInitializable::startup_service_type` is optional: a startup service that does not implement it is keyed by what it was registered as (`add_startup_singleton::<T>` keys it `T`, `add_startup_singleton_as::<dyn X>` keys it `dyn X`, the scoped and transient forms alike), and services that depend on that key wait for it; one that implements it keeps today's behavior. Test group `crates/rayx_core/tests/di_startup_registration_key.rs`."
+        }
+      ]
+    },
+    {
+      "id": "R-NSH",
+      "title": "RayX takes the NSH tag with the JS-object features",
+      "descriptionMarkdown": "The fork's tag is the only way RayX reaches the new NSH features.",
+      "criteria": [
+        {
+          "id": "NSH-1",
+          "verification": "automated",
+          "descriptionMarkdown": "The workspace `[patch.crates-io]`, the CLI's default pin (`crates/rayx_cli/src/project/pins.rs`) with its tests and fixtures, and `examples/gallery/.cargo/config.toml` all name the fork's new `nshx-0.5.0-<n>` tag that carries `feat/js-objects`, by tag (no path, branch or commit), and the CLI's pin tests pass against it."
+        }
+      ]
+    },
+    {
+      "id": "R-BUILD",
+      "title": "The same builder and start in TypeScript and Rust",
+      "descriptionMarkdown": "TS composes the app with Rust's builder API; Rust drops `set_app`; a TSX app's crate is one line.",
+      "criteria": [
+        {
+          "id": "BLD-1",
+          "verification": "automated",
+          "descriptionMarkdown": "TS `new RayXAppBuilder()` has a chaining camelCase method for every builder method an app calls in Rust: `addAppSettings`, `addOptionalAppSettings`, `configureAppConfiguration` (with `addJson`, `addInMemory` and `addValue` on its configuration builder), `addStorage`, `addOperations`, `addHistory`, `addPersistentHistory`, `addI18n`, `addNavigation`, `addAssets`, `addFonts`, `addInputMap`, `addSelection`, `addPlatform`, `addSuspension`, `addApplicationConfiguration`, `defaultInitializationTimeout(ms)`, with the same implied dependencies as Rust (`addHistory` adds operations, `addI18n` and `addFonts` add assets, `addInputMap` adds storage) and NSH's services added first, as in Rust. An app built from TS with each method resolves the service it registers; the set's declarations declare every method with a doc comment. Test group `crates/rayx_app/tests/nsh_tsx_builder.rs`."
+        },
+        {
+          "id": "BLD-2",
+          "verification": "automated",
+          "descriptionMarkdown": "A builder method that takes a configure closure in Rust takes a callback in TS that receives an options object with Rust's methods in camelCase (`addI18n(options => { options.defaultLanguage(\"en\"); })`, likewise for navigation, assets, fonts and input map); what it sets applies after the options bound from configuration, as in Rust (an `appsettings.json` value is overridden by the callback; a value the callback leaves alone keeps the bound one); the callback runs during the builder call, so one that throws makes that call throw with its message. Test group `crates/rayx_app/tests/nsh_tsx_builder_options.rs`."
+        },
+        {
+          "id": "BLD-3",
+          "verification": "automated",
+          "descriptionMarkdown": "`await builder.start()` builds the root provider on the surface (async configuration sources included), validates the options registered to validate on start, initializes every startup service, runs the ready hooks and resolves with the root `ServiceProvider`; it keeps the platform and suspension services current from NSH from then on (what `AppServices.load()` did); it rejects with the startup error's message when a startup service fails or times out, an option fails or a ready hook fails; a second `start()` on the same surface while starting or started resolves with the same root; each surface (engine) builds its own provider. Test group `crates/rayx_app/tests/nsh_tsx_start.rs`."
+        },
+        {
+          "id": "BLD-4",
+          "verification": "automated",
+          "descriptionMarkdown": "Rust has no `set_app`: a Rust root builds `RayXAppBuilder::new()` with its chain and calls `.start()` (in a task of its own, ending with the current owner) and `app_state()` moves `NotStarted` → `Starting` → `Ready` or `Failed(message)` as today; an `async` form returns the root provider or the `AppError`; calling start again on a started surface keeps the first root; two surfaces build two providers; `AppError`'s messages no longer mention `set_app` or `AppServices.load()`. Test group `crates/rayx_app/tests/nsh_app_start.rs`."
+        },
+        {
+          "id": "BLD-5",
+          "verification": "automated",
+          "descriptionMarkdown": "`rayx::native_module!(\"my-app\")` at an app crate's root registers its UI set with every RayX TS class (builder, provider, tokens, startup classes and interfaces, the service classes), `rayx_components` and its `Themes`, and nothing the app did not ask for; an app adds its own exports with an optional block (`rayx::native_module!(\"my-app\", |registry| { registry.register::<Glyph>(); })`). `#[rayx::app_extension] fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` exports a TS function `addWeather`, and `builder.apply(addWeather)` runs it in chain order, so an app's Rust services join a TS-built app. Test group `crates/rayx/tests/native_module.rs` (the macro, its declarations and an extension applied from TS)."
+        }
+      ]
+    },
+    {
+      "id": "R-RESOLVE",
+      "title": "Resolution with Rust's names",
+      "descriptionMarkdown": "TS resolves through a `ServiceProvider` and finds Rust services by their Rust names.",
+      "criteria": [
+        {
+          "id": "RES-1",
+          "verification": "automated",
+          "descriptionMarkdown": "TS `ServiceProvider` (what `start()` resolves with) has `getService(token)` (the service, or `null` when none is registered), `getRequiredService(token)` (throws an `Error` naming the token when none is), `createScope()` (a child scope sharing the root's singletons with scoped services of its own) and `dispose()` (drops its scoped services and deactivates the view models resolved through it; using it afterwards throws). A Rust service's TS class is its own token (`getRequiredService(I18nService)`); a view model resolved through a scope is activated until the scope is disposed, as `ServiceScope.view_model` did. Rust bridges take `Instance<ServiceProvider>` and resolve in it. Test group `crates/rayx_app/tests/nsh_tsx_provider.rs`."
+        },
+        {
+          "id": "RES-2",
+          "verification": "automated",
+          "descriptionMarkdown": "The TS classes of RayX's services carry the Rust services' names (`I18nService`, `NavigationService`, `KeyValueStore`, `ApplicationConfigurationService`, `AssetService`, `FontService`, `PlatformInfoService`, `SuspensionService`; a named navigation region keeps its own class, made from the navigation service), with the members the old classes had; `AppServices`, `ServiceScope` and every `X.of(app)` are gone from the set and its declarations; the existing `rayx_app` test groups that used the old API use the new one and pass. Test group `crates/rayx_app/tests/nsh_tsx_class_names.rs` (declarations: the new names present, the old ones absent), plus `rayx_app`'s other groups."
+        }
+      ]
+    },
+    {
+      "id": "R-TS",
+      "title": "Services written in TypeScript",
+      "descriptionMarkdown": "TS services join RayX's container and startup; Rust reaches them through contracts.",
+      "criteria": [
+        {
+          "id": "TSS-1",
+          "verification": "automated",
+          "descriptionMarkdown": "`addSingleton(Token, factory)`, `addScoped(Token, factory)` and `addTransient(Token, factory)` register a TS service whose factory gets the resolving `ServiceProvider`; `Token` is a TS class or a `new ServiceToken<T>(\"Name\")` (for interfaces), and the `As` forms register an implementation under an interface's token. Lifetimes are Rust's: a singleton is one JS object per root (`===` across scopes), a scoped one is one object per scope dropped with it, a transient one is new per resolve; a TS factory may resolve Rust services and other TS services; resolving a TS service through a `ServiceProvider` from Rust code off the engine thread fails with a resolution error; TS services of a disposed scope are released. Test group `crates/rayx_app/tests/nsh_tsx_container.rs`."
+        },
+        {
+          "id": "TSS-2",
+          "verification": "automated",
+          "descriptionMarkdown": "The set declares `interface AsyncInitializable { isInitialized(): boolean; initialize(context: StartupInitializationContext): Promise<void>; initializationTimeout?(): number | undefined }` and `interface StartupInitializable extends AsyncInitializable { startupServiceType?(): ServiceToken | class; initializationDependsOn?(): token[] }`, plus classes `StartupInitializationState` (`isInitialized()`, `markInitialized()`) and `StartupInitializationContext` (`services`). `addStartupSingleton` / `addStartupScoped` / `addStartupTransient` (and `As` forms) register a TS startup service: `start()` awaits its `initialize` once, skips it when `isInitialized()` is already true, orders it after the TS and Rust services `initializationDependsOn` names (and Rust startup services that depend on its contract after it), applies `initializationTimeout()` in milliseconds (else the builder's default), and fails startup naming the TS class when `initialize` throws, rejects or times out; `startupServiceType` left out keys it by its registration token. Test group `crates/rayx_app/tests/nsh_tsx_startup.rs`."
+        },
+        {
+          "id": "TSS-3",
+          "verification": "automated",
+          "descriptionMarkdown": "`builder.onReady(async context => { … })` and `onReadyWhen(predicate, hook)` run TS ready hooks once every startup service initialized, in the order added together with Rust's hooks (`apply`'d extensions included), with a `ReadyContext` (`services`); a hook that throws or rejects fails `start()` with its message and the app does not become ready; `onReadyWhen`'s predicate gets the root `ServiceProvider`. Test group `crates/rayx_app/tests/nsh_tsx_ready.rs`."
+        },
+        {
+          "id": "TSS-4",
+          "verification": "automated",
+          "descriptionMarkdown": "`#[rayx::contract]` on a Rust trait whose methods are `async` (or return `()`) makes it implementable from TS: the set declares a TS interface of that name and exports a token of the same name; `addSingletonAs(WeatherSource, () => new OpenMeteo())` (and the scoped, transient and startup forms) registers a TS implementation; Rust code resolves `Arc<dyn WeatherSource>` and its calls reach the JS object on the engine thread (results and errors back, `()` methods posted in order); a Rust startup service depending on the contract initializes after the TS implementation. Test group `crates/rayx_app/tests/nsh_tsx_contracts.rs`."
+        },
+        {
+          "id": "TSS-5",
+          "verification": "automated",
+          "descriptionMarkdown": "TS options mirror `add_options` / `configure_options`: `addOptions(Token, options => options.bind(\"Feed\").configure(value => …).validate(value => …, \"message\").validateOnStart())` and `configureOptions(Token, value => …)` on JSON-shaped options keyed by `new OptionsToken<T>(\"Name\", defaults)`, resolved with `services.getOptions(Token).value`: defaults, then the bound configuration section, then the configure callbacks in order; a failed validation throws when resolved, and with `validateOnStart` fails `start()` with the message. Test group `crates/rayx_app/tests/nsh_tsx_options.rs`."
+        }
+      ]
+    },
+    {
+      "id": "R-DOCS",
+      "title": "Templates, gallery, docs, skill and memory use the new API",
+      "descriptionMarkdown": "Everything that shows how to write a RayX app shows the new API only.",
+      "criteria": [
+        {
+          "id": "DOC-1",
+          "verification": "automated",
+          "descriptionMarkdown": "`rayx new` writes, for a mixed (TSX) app, a `src/lib.rs` whose UI set is `rayx::native_module!(\"<specifier>\")` and an `App.tsx` that builds and starts the app with `RayXAppBuilder` before using a service; for a Rust app, a root that builds `RayXAppBuilder::new()…start()` and follows `app_state()`; neither names `set_app`, `AppServices` or `X.of(app)`; the CLI's README and `docs/cli/projects.md` describe what it writes. Test group `crates/rayx_cli/tests/new_app_builder.rs`, plus the CLI's `new_app` and `readme_*` groups that check the same files."
+        },
+        {
+          "id": "DOC-2",
+          "verification": "automated",
+          "descriptionMarkdown": "The gallery's crate uses `rayx::native_module!(\"rayx-gallery/native\", …)` with its `Glyph`, its set still exports `Button`, `Themes` and `Glyph` with every export documented, and its crate's tests pass on the new NSH tag."
+        },
+        {
+          "id": "DOC-3",
+          "verification": "automated",
+          "descriptionMarkdown": "No tracked or new file under `docs/`, `crates/`, `examples/`, `README.md` or `AGENTS.md` names `AppServices`, `ServiceScope`, `set_app` (as an API) or `.of(app` any more (`CHANGELOG.md` and `.agentx/` keep their history)."
+        },
+        {
+          "id": "DOC-4",
+          "verification": "manual",
+          "descriptionMarkdown": "The docs describe the new API with examples in both languages side by side: `docs/tsx.md` (builder, provider, tokens, services, contracts, extensions, the one-line crate), `docs/getting-started.md`, `docs/startup.md` (TS startup services and ready hooks; `startup_service_type` optional), `docs/dependency-injection.md` (runtime keys, TS services, engine-thread rule, contracts), `docs/configuration.md` (TS options), `docs/services.md` and `docs/services/*.md` TSX sections, `docs/navigation.md`, `docs/view-models.md`, `docs/architecture.md`, the README, `AGENTS.md`'s crate descriptions and `rayx_app`'s crate docs; each Rust example has its TS twin where TS can do the same."
+        },
+        {
+          "id": "DOC-5",
+          "verification": "manual",
+          "descriptionMarkdown": "The `rayx-components` skill in RayX.Root (`SKILL.md` and its references) says that `rayx::native_module!` registers the library and `Themes`, keeps `rayx_components::register(registry)` for a hand-written `#[native_module]`, and shows TSX importing from the app's specifier with the app started by `RayXAppBuilder` where services are used."
+        },
+        {
+          "id": "DOC-6",
+          "verification": "manual",
+          "descriptionMarkdown": "RayX's AgentX memory states the current shape: `knowledge/app/state.md` (builder, provider, TS services, contracts, macros), `knowledge/core/di/state.md` (runtime keys, thread-bound entries, async startup factories, optional `startup_service_type`), `knowledge/cli/state.md` (the templates) and `knowledge/dependencies/state.md` (the new NSH tag), each claim backed by the source; the memory audit passes."
+        }
+      ]
+    }
+  ]
+}

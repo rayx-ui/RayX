@@ -22,3 +22,4 @@ the source and its tests come first.
 - [state](state.md) - what the crate holds and how it is shaped.
 - [knowledge](knowledge.md) - durable facts found while building it.
 - [rules](rules.md) - how to change it.
+- [hypotheses](hypotheses.md) - unconfirmed ideas.

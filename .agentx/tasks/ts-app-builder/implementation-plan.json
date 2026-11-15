@@ -1,0 +1,580 @@
+{
+  "schemaVersion": 7,
+  "epicId": "ts-app-builder",
+  "revision": 1,
+  "title": "One app builder API for Rust and TypeScript apps",
+  "validationMode": "sprint",
+  "repositories": [
+    {"id": "rayx", "path": ".", "role": "execution"},
+    {"id": "root", "path": "../RayX.Root", "role": "execution"},
+    {"id": "nsh", "path": "../../dXn/nsh/nsh", "role": "reference"}
+  ],
+  "boundaries": {
+    "repositoryIds": ["rayx", "root"],
+    "forbiddenPaths": [
+      "CHANGELOG.md",
+      "rust-toolchain.toml",
+      "release-plz.toml",
+      ".github/workflows/release-plz.yml",
+      ".github/workflows/release.yml",
+      "crates/rayx_components/src/theme/tokens.rs"
+    ]
+  },
+  "checks": [
+    {
+      "id": "c-di-runtime-keys",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["CORE-1"],
+      "descriptionMarkdown": "Runtime-keyed services: lifetimes, scopes, factories and missing keys.",
+      "argv": ["cargo", "test", "-p", "rayx_core", "--test", "di_runtime_keys"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/Cargo.toml", "crates/rayx_core/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_core/tests/di_runtime_keys.rs"]
+    },
+    {
+      "id": "c-di-thread-bound",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["CORE-2"],
+      "descriptionMarkdown": "Thread-bound services: resolution on the owning thread only, never dropped elsewhere.",
+      "argv": ["cargo", "test", "-p", "rayx_core", "--test", "di_thread_bound"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/Cargo.toml", "crates/rayx_core/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_core/tests/di_thread_bound.rs"]
+    },
+    {
+      "id": "c-core-wasm",
+      "repositoryId": "rayx",
+      "kind": "build",
+      "criterionIds": ["CORE-2"],
+      "descriptionMarkdown": "The core and the runtime still build for `wasm32-unknown-unknown` with the thread-bound table.",
+      "argv": ["cargo", "check", "-p", "rayx_core", "-p", "rayx_runtime", "--target", "wasm32-unknown-unknown"],
+      "cwd": ".",
+      "expected": {"exitCode": 0},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/**", "crates/rayx_runtime/**", "crates/rayx_app_macros/**"]
+    },
+    {
+      "id": "c-di-startup-runtime",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["CORE-3"],
+      "descriptionMarkdown": "Runtime-keyed startup services with async factories in the one startup run.",
+      "argv": ["cargo", "test", "-p", "rayx_core", "--test", "di_startup_runtime"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/Cargo.toml", "crates/rayx_core/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_core/tests/di_startup_runtime.rs"]
+    },
+    {
+      "id": "c-di-startup-key",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["CORE-4"],
+      "descriptionMarkdown": "`startup_service_type` optional: the registration key keys a startup service.",
+      "argv": ["cargo", "test", "-p", "rayx_core", "--test", "di_startup_registration_key"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/Cargo.toml", "crates/rayx_core/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_core/tests/di_startup_registration_key.rs"]
+    },
+    {
+      "id": "c-nsh-pin",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["NSH-1"],
+      "descriptionMarkdown": "The CLI's pin groups, which assert the default pin and that dependencies come from tags.",
+      "argv": ["cargo", "test", "-p", "rayx-cli", "--test", "nsh_pin", "--test", "nsh_pin_rayx", "--test", "dependency_sources"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_cli/**", "examples/gallery/.cargo/config.toml"]
+    },
+    {
+      "id": "c-tsx-provider",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["RES-1"],
+      "descriptionMarkdown": "TS `ServiceProvider`: resolution by class tokens, scopes, disposal, view-model activation.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_provider"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_provider.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-builder",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["BLD-1"],
+      "descriptionMarkdown": "Every TS builder method registers its service, with Rust's implied dependencies and documented declarations.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_builder"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_builder.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-builder-options",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["BLD-2"],
+      "descriptionMarkdown": "Options callbacks from TS apply after configuration binding; a throwing callback throws at the builder call.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_builder_options"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_builder_options.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-start",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["BLD-3"],
+      "descriptionMarkdown": "`await builder.start()`: success, each failure kind, a second start, platform kept current, one provider per surface.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_start"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_start.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-app-start",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["BLD-4"],
+      "descriptionMarkdown": "A Rust root without `set_app`: `start()`, `start_async()`, `app_state()`, surfaces.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_app_start"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_app_start.rs"]
+    },
+    {
+      "id": "c-tsx-class-names",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["RES-2"],
+      "descriptionMarkdown": "The set's declarations: the Rust services' names present, `AppServices`, `ServiceScope` and `of(app)` absent.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_class_names"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_class_names.rs"]
+    },
+    {
+      "id": "c-app-groups",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["RES-2"],
+      "descriptionMarkdown": "`rayx_app`'s own test groups, moved to the new API. Run whole because the change replaces the startup entry point (`set_app`) and the TS classes that every existing group of the crate uses: this is the owning package's focused suite, not a workspace run.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--tests"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/**", "crates/rayx_app_macros/src/**"]
+    },
+    {
+      "id": "c-native-module",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["BLD-5"],
+      "descriptionMarkdown": "`rayx::native_module!` and `#[rayx::app_extension]`: the set, its declarations, an extension applied from TS.",
+      "argv": ["cargo", "test", "-p", "rayx", "--test", "native_module"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx/**", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_components/src/**"]
+    },
+    {
+      "id": "c-tsx-container",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["TSS-1"],
+      "descriptionMarkdown": "TS services in the container: lifetimes, identity, tokens, `As` forms, scopes, Rust resolving off-thread.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_container"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_container.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-startup",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["TSS-2"],
+      "descriptionMarkdown": "TS startup services: interfaces declared, ordering with Rust services both ways, timeouts, failures, the registration key.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_startup"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_startup.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-ready",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["TSS-3"],
+      "descriptionMarkdown": "TS ready hooks in order with Rust's, `onReadyWhen`, a failing hook.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_ready"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_ready.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-contracts",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["TSS-4"],
+      "descriptionMarkdown": "`#[rayx::contract]`: TS implementation, Rust calls (results, errors, posts, off-thread), startup order.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_contracts"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_contracts.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-tsx-options",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["TSS-5"],
+      "descriptionMarkdown": "TS options: defaults, binding, configure order, validation on resolve and on start.",
+      "argv": ["cargo", "test", "-p", "rayx_app", "--test", "nsh_tsx_options"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_core/src/**", "crates/rayx_runtime/src/**", "crates/rayx_app/Cargo.toml", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_app/tests/nsh_tsx_options.rs", "crates/rayx_app/tests/fixtures/**"]
+    },
+    {
+      "id": "c-new-app-builder",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["DOC-1"],
+      "descriptionMarkdown": "`rayx new`'s RayX templates (new group), with the `new_app` and README groups that check the same files.",
+      "argv": ["cargo", "test", "-p", "rayx-cli", "--test", "new_app_builder", "--test", "new_app", "--test", "readme_nsh", "--test", "readme_versions"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "crates/rayx_cli/**", "docs/cli/**"]
+    },
+    {
+      "id": "c-gallery",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": ["DOC-2"],
+      "descriptionMarkdown": "The gallery's crate tests (its set's exports and documentation) on `rayx::native_module!`.",
+      "argv": ["cargo", "test", "-p", "rayx-gallery"],
+      "cwd": ".",
+      "expected": {"exitCode": 0, "minimumTests": 1},
+      "inputs": ["Cargo.toml", "Cargo.lock", "examples/gallery/native/**", "crates/rayx/**", "crates/rayx_app/src/**", "crates/rayx_app_macros/src/**", "crates/rayx_components/src/**"]
+    },
+    {
+      "id": "c-no-old-api",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": ["DOC-3"],
+      "descriptionMarkdown": "No file names the old API any more: `git grep` finds nothing (exit 1). Today it finds 49 files.",
+      "argv": ["git", "grep", "--untracked", "-n", "-E", "AppServices|ServiceScope|set_app[(,;}` ]|\\.of\\(app", "--", "docs", "crates", "examples", "README.md", "AGENTS.md"],
+      "cwd": ".",
+      "expected": {"exitCode": 1},
+      "inputs": ["docs/**", "crates/**", "examples/**", "README.md", "AGENTS.md"]
+    },
+    {
+      "id": "f-fmt",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": ["CORE-1", "BLD-1", "TSS-1", "DOC-1"],
+      "descriptionMarkdown": "Formatting of the workspace.",
+      "argv": ["cargo", "fmt", "--all", "--check"],
+      "cwd": ".",
+      "expected": {"exitCode": 0}
+    },
+    {
+      "id": "f-clippy",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": ["CORE-1", "BLD-1", "TSS-1", "DOC-1"],
+      "descriptionMarkdown": "Clippy on the touched packages, every target, warnings denied.",
+      "argv": ["cargo", "clippy", "-p", "rayx_core", "-p", "rayx_runtime", "-p", "rayx_app", "-p", "rayx_app_macros", "-p", "rayx", "-p", "rayx-cli", "-p", "rayx-gallery", "--all-targets", "--", "-D", "warnings"],
+      "cwd": ".",
+      "expected": {"exitCode": 0}
+    }
+  ],
+  "finalCheckIds": ["f-fmt", "f-clippy"],
+  "sprints": [
+    {
+      "id": "s1-core",
+      "title": "The core: runtime keys, thread-bound entries, async startup factories",
+      "dependsOn": [],
+      "memoryScopes": ["core/di"],
+      "checkIds": ["c-di-runtime-keys", "c-di-thread-bound", "c-core-wasm", "c-di-startup-runtime", "c-di-startup-key"],
+      "tasks": [
+        {
+          "id": "t01-runtime-keys",
+          "title": "Service keys that are not Rust types",
+          "descriptionMarkdown": "Introduce `ServiceKey` (`Type(TypeId)` / `Runtime(RuntimeKey)`) in `rayx_core::di` and key the registry's descriptors, caches, resolution guards and scope caches by it (d-runtime-keys). Add `RuntimeKey::new(name)`, keyed registration (`add_singleton_keyed`, `add_scoped_keyed`, `add_transient_keyed`, factories returning an erased `Arc<dyn Any + Send + Sync>` or a resolution error) and keyed resolution (`service_by_key`, `required_service_by_key`). The typed API keeps its signatures and behavior. New group `crates/rayx_core/tests/di_runtime_keys.rs`: each lifetime by key, scopes sharing singletons, a factory resolving typed and keyed services, a missing key (optional and required, the error naming it), two keys of the same name staying distinct.",
+          "criterionIds": ["CORE-1"],
+          "designIds": ["d-runtime-keys"],
+          "dependsOn": [],
+          "checkIds": ["c-di-runtime-keys"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/registry.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/provider.rs"}
+          ]
+        },
+        {
+          "id": "t02-thread-bound",
+          "title": "Services kept on the thread that made them",
+          "descriptionMarkdown": "Add thread-bound registration, typed and keyed, for values that are neither `Send` nor `Sync` (d-thread-bound): a `Send + Sync` slot in the provider, the value in a `thread_local!` table of its thread, `ServiceResolutionError::WrongThread` elsewhere, an orphan list drained by the owning thread for slots dropped elsewhere. No `unsafe`. New group `crates/rayx_core/tests/di_thread_bound.rs`: resolve on the owning thread (each lifetime), resolve from another thread (error, value untouched), drop the provider on another thread (the value's drop runs later on its own thread, observed with an `Rc` drop counter), typed services of the same provider usable from both threads. `c-core-wasm` proves the wasm32 build.",
+          "criterionIds": ["CORE-2"],
+          "designIds": ["d-thread-bound"],
+          "dependsOn": ["t01-runtime-keys"],
+          "checkIds": ["c-di-thread-bound", "c-core-wasm"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/registry.rs"}
+          ]
+        },
+        {
+          "id": "t03-startup-runtime",
+          "title": "Runtime-keyed startup services with async factories",
+          "descriptionMarkdown": "Give `StartupServiceType` the two key kinds (name as `Cow<'static, str>`) and `StartupRegistry` asynchronous factories (`add_resolved_async`); the run resolves every startup service (awaiting async factories) before ordering and initializing (d-startup-async). New group `crates/rayx_core/tests/di_startup_runtime.rs`: an async-made runtime-keyed service initialized in the run; ordering runtime → type and type → runtime; a layer initialized concurrently; its timeout and the default; a failing initialize, a failing factory and a timeout each reported with the display name; the run fails unless all initialized.",
+          "criterionIds": ["CORE-3"],
+          "designIds": ["d-startup-async", "d-runtime-keys"],
+          "dependsOn": ["t01-runtime-keys"],
+          "checkIds": ["c-di-startup-runtime"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/lifecycle.rs"}
+          ]
+        },
+        {
+          "id": "t04-startup-key-default",
+          "title": "`startup_service_type` keyed by registration",
+          "descriptionMarkdown": "Make `StartupInitializable::startup_service_type` a provided method (`None` by default) and key a startup service by the explicit type, else by its registration key (d-startup-async); update the `add_startup_*` extension methods to record it and `docs/startup.md`'s Rust example to leave the method out. New group `crates/rayx_core/tests/di_startup_registration_key.rs`: `add_startup_singleton::<T>`, `add_startup_singleton_as::<dyn X>`, scoped and transient forms keyed by registration; a dependency on that key waits; an explicit implementation keeps its key; `StartupRegistry::add` keys by the concrete type.",
+          "criterionIds": ["CORE-4"],
+          "designIds": ["d-startup-async"],
+          "dependsOn": ["t03-startup-runtime"],
+          "checkIds": ["c-di-startup-key"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/lifecycle.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/services/app/service_ext.rs"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2-nsh-layer",
+      "title": "The NSH tag, the TS builder, provider and start, Rust's start, the Rust names",
+      "dependsOn": ["s1-core"],
+      "memoryScopes": ["app", "dependencies", "cli"],
+      "checkIds": ["c-nsh-pin", "c-tsx-provider", "c-tsx-builder", "c-tsx-builder-options", "c-tsx-start", "c-app-start", "c-tsx-class-names", "c-app-groups"],
+      "tasks": [
+        {
+          "id": "t05-nsh-pin",
+          "title": "Pin NSH to the fork's js-objects tag",
+          "descriptionMarkdown": "**Blocked until the owner has merged `feat/js-objects` into the fork's `main` and tagged it `nshx-0.5.0-<n>`** (scope). Then move every NSH pin to that tag as `7775dcc` (`feat(nsh): Pin NSH to nshx-0.5.0-3`) did: `Cargo.toml` `[patch.crates-io]`, `crates/rayx_cli/src/project/pins.rs` and the CLI tests and fixtures naming the pin, `crates/rayx_cli/README.md`, `docs/cli/projects.md`, `examples/gallery/.cargo/config.toml` (with its comment's tag and commit); let Cargo rewrite `Cargo.lock` (d-nsh-pin). Never a path, branch or commit dependency on the fork.",
+          "criterionIds": ["NSH-1"],
+          "designIds": ["d-nsh-pin"],
+          "dependsOn": [],
+          "checkIds": ["c-nsh-pin"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "Cargo.toml"},
+            {"repositoryId": "rayx", "path": "crates/rayx_cli/src/project/pins.rs"}
+          ]
+        },
+        {
+          "id": "t06-ts-provider",
+          "title": "TS `ServiceProvider` with class tokens",
+          "descriptionMarkdown": "Add `#[class] ServiceProvider` in `rayx_app::ts` (d-provider): `getService`, `getRequiredService`, `createScope`, `dispose`, view models activated until disposal; token arguments as NSH's kept JS objects; the static resolver table for RayX's service classes (one wrapper object per resolved `Arc` per provider); the surface's token table for runtime keys (used by s3). Rust bridges take `Instance<ServiceProvider>`. `AppServices` and `ServiceScope` stay until t11 removes them. New group `crates/rayx_app/tests/nsh_tsx_provider.rs` (a headless TSX app as `nsh_tsx_services.rs` runs one): resolve by class, `===` for a singleton, `null` and the thrown error for a missing token, a scope's scoped service, `dispose` releasing it and deactivating a view model, use after dispose throwing.",
+          "criterionIds": ["RES-1"],
+          "designIds": ["d-provider"],
+          "dependsOn": ["t05-nsh-pin"],
+          "checkIds": ["c-tsx-provider"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/scope_class.rs"}
+          ]
+        },
+        {
+          "id": "t07-ts-builder",
+          "title": "TS `RayXAppBuilder` with every builder method",
+          "descriptionMarkdown": "Add `#[class] RayXAppBuilder` (d-ts-builder): `new` starts from `add_nsh_services()`; each chaining member delegates to the Rust extension method of the same name (the list in BLD-1), `defaultInitializationTimeout` in milliseconds, `configureAppConfiguration` with a recording configuration builder. New group `crates/rayx_app/tests/nsh_tsx_builder.rs`: a TSX app built with each method resolves each service through the provider (t06), implied dependencies present, the declarations declaring each method, `Registry::undocumented` empty. Options callbacks come in t08.",
+          "criterionIds": ["BLD-1"],
+          "designIds": ["d-ts-builder"],
+          "dependsOn": ["t06-ts-provider"],
+          "checkIds": ["c-tsx-builder"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/services/app/rayx_app_builder.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/settings.rs"}
+          ]
+        },
+        {
+          "id": "t08-ts-builder-options",
+          "title": "Options callbacks from TS",
+          "descriptionMarkdown": "Add the recording options classes (`I18nOptions`, `NavigationOptions`, `AssetOptions`, `FontOptions`, `InputMapOptions`) with Rust's configure methods in camelCase, called during the builder call; replay the recorded patch in the Rust `configure` closure (d-ts-builder). New group `crates/rayx_app/tests/nsh_tsx_builder_options.rs`: a value from the callback overrides `appsettings.json`'s, one it leaves alone keeps the bound value, each options class reaches its service, a throwing callback throws at the builder call with its message.",
+          "criterionIds": ["BLD-2"],
+          "designIds": ["d-ts-builder"],
+          "dependsOn": ["t07-ts-builder"],
+          "checkIds": ["c-tsx-builder-options"]
+        },
+        {
+          "id": "t09-ts-start",
+          "title": "`await builder.start()`",
+          "descriptionMarkdown": "Generalize the surface startup to take a builder (`start_app_with`, d-start) and add the async member `start` resolving with the root `ServiceProvider`, then keeping the platform and suspension services current. New group `crates/rayx_app/tests/nsh_tsx_start.rs`: success, rejection for a failing service, a timeout, an option validated on start and a failing ready hook (each with the startup error's message), a second `start` resolving with the same root, the platform snapshot following NSH's environment afterwards, two engines building two providers.",
+          "criterionIds": ["BLD-3"],
+          "designIds": ["d-start"],
+          "dependsOn": ["t07-ts-builder"],
+          "checkIds": ["c-tsx-start"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/surface.rs"}
+          ]
+        },
+        {
+          "id": "t10-rust-start",
+          "title": "Rust's start without `set_app`",
+          "descriptionMarkdown": "Add the extension trait giving `RayXAppBuilder::start()` and `start_async()` (d-start); remove `set_app`, the global builder function, `AppError::NoApp` and `rayx_app::start()`/`start_app()`; reword `AppError`'s messages. New group `crates/rayx_app/tests/nsh_app_start.rs`: a Rust root's `app_state()` moving through its states, `start_async` returning the root or the error, a second start keeping the first root, two surfaces with two providers.",
+          "criterionIds": ["BLD-4"],
+          "designIds": ["d-start"],
+          "dependsOn": ["t09-ts-start"],
+          "checkIds": ["c-app-start"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/surface.rs"}
+          ]
+        },
+        {
+          "id": "t11-class-names",
+          "title": "Rust names for the TS service classes; the old API removed",
+          "descriptionMarkdown": "Rename the TS service classes to the Rust services' names in `rayx_app::ts` (RES-2's list), drop their `of(app)` statics, make `NavigationRegion` from `navigationService.region(name)`, remove `AppServices` and `ServiceScope` (d-provider); update `rayx_app`'s and the umbrella's exports and prelude. Move every existing `rayx_app` test group and `crates/rayx/tests/umbrella.rs` from `set_app` / `AppServices` / `X.of(app)` to the builder, provider and new names. New group `crates/rayx_app/tests/nsh_tsx_class_names.rs`: the set's declarations name each new class and none of the old ones. `c-app-groups` runs the crate's groups (reason in its description).",
+          "criterionIds": ["RES-2"],
+          "designIds": ["d-provider", "d-start"],
+          "dependsOn": ["t06-ts-provider", "t10-rust-start"],
+          "checkIds": ["c-tsx-class-names", "c-app-groups"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/service_classes.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/i18n_class.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/region.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_app/src/lib.rs"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3-ts-services",
+      "title": "One-line crates, extensions, and services written in TypeScript",
+      "dependsOn": ["s2-nsh-layer"],
+      "memoryScopes": ["app", "core/di"],
+      "checkIds": ["c-native-module", "c-tsx-container", "c-tsx-startup", "c-tsx-ready", "c-tsx-contracts", "c-tsx-options"],
+      "tasks": [
+        {
+          "id": "t12-native-module",
+          "title": "`rayx::native_module!` and `#[rayx::app_extension]`",
+          "descriptionMarkdown": "Add `rayx_app::register(registry)` (every TS class), the umbrella's `native_module!` (with the optional app block) and `#[rayx::app_extension]` in `rayx_app_macros` with `builder.apply(..)` (d-native-module). New group `crates/rayx/tests/native_module.rs`: a crate using the macro exports RayX's classes, `Button` and `Themes` and nothing else unasked; the block adds the app's exports; an extension exported and applied from a headless TSX app registers its Rust service in chain order.",
+          "criterionIds": ["BLD-5"],
+          "designIds": ["d-native-module"],
+          "dependsOn": [],
+          "checkIds": ["c-native-module"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx/src/lib.rs"},
+            {"repositoryId": "rayx", "path": "crates/rayx_app_macros/src"}
+          ]
+        },
+        {
+          "id": "t13-ts-container",
+          "title": "TS services in the container",
+          "descriptionMarkdown": "Add `addSingleton` / `addScoped` / `addTransient` and their `As` forms with `ServiceToken<T>` (d-ts-services): thread-bound runtime-keyed entries holding NSH's kept JS objects, factories as callbacks (`call` from a TS resolve, `call_async` from the startup run), contract and startup singletons made during `start()`. New group `crates/rayx_app/tests/nsh_tsx_container.rs`: each lifetime's identity (`===`), a factory resolving Rust and TS services, `As` under a `ServiceToken`, a scope releasing its TS services, a Rust thread resolving a TS service getting the wrong-thread error, Rust resolving a not-yet-made TS service outside a JS call getting its error.",
+          "criterionIds": ["TSS-1"],
+          "designIds": ["d-ts-services"],
+          "dependsOn": [],
+          "checkIds": ["c-tsx-container"]
+        },
+        {
+          "id": "t14-ts-startup",
+          "title": "TS `AsyncInitializable` and `StartupInitializable`",
+          "descriptionMarkdown": "Declare the two interfaces through NSH's `#[interface]`, add `StartupInitializationState` and `StartupInitializationContext`, the `addStartup*` registrations and the Rust stand-in in the startup run (d-ts-startup). New group `crates/rayx_app/tests/nsh_tsx_startup.rs`: the declarations; `initialize` awaited once and skipped when `isInitialized()`; TS → Rust and Rust → TS (via a contract from t16, or a `ServiceToken` dependency) ordering; `initializationTimeout` in ms and the default; failure by throw, rejection and timeout naming the TS class; the registration token as key.",
+          "criterionIds": ["TSS-2"],
+          "designIds": ["d-ts-startup", "d-ts-services"],
+          "dependsOn": ["t13-ts-container"],
+          "checkIds": ["c-tsx-startup"]
+        },
+        {
+          "id": "t15-ts-ready",
+          "title": "TS ready hooks",
+          "descriptionMarkdown": "Add `onReady` and `onReadyWhen` to the TS builder, adding `Callback`s to the same `ReadyHooks` list with a TS `ReadyContext` (d-ts-startup). New group `crates/rayx_app/tests/nsh_tsx_ready.rs`: TS and Rust hooks (one from an `apply`'d extension) in added order, a predicate that holds and one that does not, a throwing and a rejecting hook failing `start()`.",
+          "criterionIds": ["TSS-3"],
+          "designIds": ["d-ts-startup"],
+          "dependsOn": ["t13-ts-container"],
+          "checkIds": ["c-tsx-ready"]
+        },
+        {
+          "id": "t16-contracts",
+          "title": "`#[rayx::contract]`",
+          "descriptionMarkdown": "Add the attribute in `rayx_app_macros` (d-contracts): NSH's `#[interface]` on the trait, the exported token, the `Send + Sync` adapter over a thread-bound handle, registration `As` `dyn Trait` from TS. New group `crates/rayx_app/tests/nsh_tsx_contracts.rs`: Rust awaiting a TS method's result and error, a `()` method posted in order, a call off the engine thread getting `ContractError::WrongThread`, a Rust startup service depending on the contract initialized after the TS implementation.",
+          "criterionIds": ["TSS-4"],
+          "designIds": ["d-contracts", "d-ts-services"],
+          "dependsOn": ["t13-ts-container"],
+          "checkIds": ["c-tsx-contracts"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_app_macros/src"}
+          ]
+        },
+        {
+          "id": "t17-ts-options",
+          "title": "TS options",
+          "descriptionMarkdown": "Add `OptionsToken`, `addOptions` (bind, configure, validate, validateOnStart), `configureOptions` and `getOptions` (d-ts-options). New group `crates/rayx_app/tests/nsh_tsx_options.rs`: defaults, a bound section, configure callbacks in order, a failed validation on resolve, `validateOnStart` failing `start()` with its message.",
+          "criterionIds": ["TSS-5"],
+          "designIds": ["d-ts-options"],
+          "dependsOn": ["t13-ts-container"],
+          "checkIds": ["c-tsx-options"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_core/src/options/pipeline.rs"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s4-consumers",
+      "title": "Templates, gallery, docs, skill and memory",
+      "dependsOn": ["s3-ts-services"],
+      "memoryScopes": ["cli", "components", "app", "core/di", "dependencies", "root:skills"],
+      "checkIds": ["c-new-app-builder", "c-gallery", "c-no-old-api"],
+      "tasks": [
+        {
+          "id": "t18-rayx-new",
+          "title": "`rayx new` writes the new API",
+          "descriptionMarkdown": "Rewrite the RayX templates in `crates/rayx_cli/src/new/` (`mixed_lib.rs.in`, `mixed_App.tsx.in`, `mixed_App.test.tsx.in`, `rust_lib.rs.in`) and `new.rs`'s messages (d-consumers); update `crates/rayx_cli/README.md` and `docs/cli/projects.md`. New group `crates/rayx_cli/tests/new_app_builder.rs`: the mixed template's `native_module!` and builder start, the Rust template's root start, none of the old names; adjust `new_app.rs` where it checks the old files.",
+          "criterionIds": ["DOC-1"],
+          "designIds": ["d-consumers"],
+          "dependsOn": [],
+          "checkIds": ["c-new-app-builder"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "crates/rayx_cli/src/new.rs"}
+          ]
+        },
+        {
+          "id": "t19-gallery",
+          "title": "The gallery on `rayx::native_module!`",
+          "descriptionMarkdown": "Replace the gallery crate's `#[native_module]` with `rayx::native_module!(\"rayx-gallery/native\", …)` keeping `Glyph`, and update `examples/gallery/README.md` (d-consumers). Its crate test keeps checking `Button`, `Themes` and `Glyph` with nothing undocumented.",
+          "criterionIds": ["DOC-2"],
+          "designIds": ["d-consumers", "d-native-module"],
+          "dependsOn": [],
+          "checkIds": ["c-gallery"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "examples/gallery/native/src/lib.rs"}
+          ]
+        },
+        {
+          "id": "t20-docs",
+          "title": "RayX's docs on the new API",
+          "descriptionMarkdown": "Rewrite `docs/tsx.md` and update every doc DOC-4 lists, `AGENTS.md`'s crate descriptions, the README and `rayx_app`'s and `rayx`'s crate docs, with each Rust example beside its TS twin and the engine-thread, timeout and contract rules stated (d-consumers). `c-no-old-api` proves nothing names the old API; DOC-4 is reviewed by reading.",
+          "criterionIds": ["DOC-3", "DOC-4"],
+          "designIds": ["d-consumers"],
+          "dependsOn": ["t18-rayx-new", "t19-gallery"],
+          "checkIds": ["c-no-old-api"],
+          "sourceRefs": [
+            {"repositoryId": "rayx", "path": "docs/tsx.md"}
+          ]
+        },
+        {
+          "id": "t21-root-skill",
+          "title": "The `rayx-components` skill in RayX.Root",
+          "descriptionMarkdown": "Update `../RayX.Root/.claude/skills/rayx-components/SKILL.md` (its \"Register the library\" step) and its references so `rayx::native_module!` registers the library and `Themes`, `rayx_components::register(registry)` stays for a hand-written `#[native_module]`, and TSX examples start the app with `RayXAppBuilder` where they use services (d-consumers). One commit in RayX.Root. Reviewed by reading (DOC-5).",
+          "criterionIds": ["DOC-5"],
+          "designIds": ["d-consumers"],
+          "dependsOn": ["t19-gallery"],
+          "checkIds": []
+        },
+        {
+          "id": "t22-memory",
+          "title": "RayX's memory states",
+          "descriptionMarkdown": "Sync `knowledge/app/state.md`, `knowledge/core/di/state.md`, `knowledge/cli/state.md` and `knowledge/dependencies/state.md` with the shipped shape, each claim backed by source (d-consumers); run the memory audit. Decision promotion happens after the epic, per AgentX.",
+          "criterionIds": ["DOC-6"],
+          "designIds": ["d-consumers"],
+          "dependsOn": ["t20-docs"],
+          "checkIds": []
+        }
+      ]
+    }
+  ]
+}

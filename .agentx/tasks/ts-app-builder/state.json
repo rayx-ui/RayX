@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 7,
+  "epicId": "ts-app-builder",
+  "revision": 0,
+  "planRevision": 1,
+  "specHashes": {
+    "requirements": "f657b0c5a2de96e0f5fef489155a36569f4c24a68480a7c305c928dc700d00ed",
+    "design": "7e77f71e0f3215b2fba0443b146f47685f3c9426832340762f1404dc1b745de9",
+    "plan": "886a9813fecde6d63da52fa62b9be2d3b58f1f13ee32ee83c60650b111512bce"
+  },
+  "tasks": {
+    "t01-runtime-keys": {
+      "status": "pending"
+    },
+    "t02-thread-bound": {
+      "status": "pending"
+    },
+    "t03-startup-runtime": {
+      "status": "pending"
+    },
+    "t04-startup-key-default": {
+      "status": "pending"
+    },
+    "t05-nsh-pin": {
+      "status": "pending"
+    },
+    "t06-ts-provider": {
+      "status": "pending"
+    },
+    "t07-ts-builder": {
+      "status": "pending"
+    },
+    "t08-ts-builder-options": {
+      "status": "pending"
+    },
+    "t09-ts-start": {
+      "status": "pending"
+    },
+    "t10-rust-start": {
+      "status": "pending"
+    },
+    "t11-class-names": {
+      "status": "pending"
+    },
+    "t12-native-module": {
+      "status": "pending"
+    },
+    "t13-ts-container": {
+      "status": "pending"
+    },
+    "t14-ts-startup": {
+      "status": "pending"
+    },
+    "t15-ts-ready": {
+      "status": "pending"
+    },
+    "t16-contracts": {
+      "status": "pending"
+    },
+    "t17-ts-options": {
+      "status": "pending"
+    },
+    "t18-rayx-new": {
+      "status": "pending"
+    },
+    "t19-gallery": {
+      "status": "pending"
+    },
+    "t20-docs": {
+      "status": "pending"
+    },
+    "t21-root-skill": {
+      "status": "pending"
+    },
+    "t22-memory": {
+      "status": "pending"
+    }
+  },
+  "validationBatches": {},
+  "checkResults": {},
+  "reviews": {},
+  "checkpoints": {},
+  "findings": [],
+  "handoffMarkdown": "",
+  "protectedPaths": {
+    "rayx": {
+      "CHANGELOG.md": "7d66bfa0d9c93f2194c4456b411704b3fff28e0468a69e36a96ecf8c61583325",
+      "rust-toolchain.toml": "c6d224ba07d323514695abf50856d62efb4115b2db068c5970f542848495b64b",
+      "release-plz.toml": "e2d5aae5f1f860065e97d98e859d621a5990e3b9875fc6b1c45a3444fd177a7d",
+      ".github/workflows/release-plz.yml": "31c80f3230202c16dd47f6cb29d683dfa92dd6a502e2ccecba9fdca96997feab",
+      ".github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156",
+      "crates/rayx_components/src/theme/tokens.rs": "8ee3d5b68e0ad8648857cf4480cdc16bbfc664733f2f0831a42f84e9c7d2777e"
+    },
+    "root": {
+      "CHANGELOG.md": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rust-toolchain.toml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "release-plz.toml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      ".github/workflows/release-plz.yml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      ".github/workflows/release.yml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "crates/rayx_components/src/theme/tokens.rs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  }
+}
