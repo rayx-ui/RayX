@@ -1,5 +1,5 @@
-//! The umbrella crate: one dependency and one prelude reach the core, the services and the NSH
-//! layer.
+//! The umbrella crate: one dependency and one prelude reach the core, the services, the NSH
+//! layer and the component library.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -39,4 +39,8 @@ fn the_crates_are_reachable_by_name() {
     let _: Option<&rayx::app::AppServices> = None;
     // The screen's (or the surface root's) provider, for Rust components.
     let _: fn() -> Result<ServiceProvider, AppError> = services;
+    // The component library and its theme.
+    let theme = rayx::components::theme::RayXTheme::default();
+    assert_eq!(theme.platform.density.size.default.lvl5.height, 32.0);
+    let _register = rayx::components::register;
 }

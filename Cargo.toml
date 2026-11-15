@@ -7,6 +7,8 @@ members = [
     "crates/rayx_runtime",
     "crates/rayx_app_macros",
     "crates/rayx_cli",
+    "crates/rayx_components",
+    "examples/gallery/native",
 ]
 
 [workspace.package]
@@ -22,6 +24,7 @@ rayx_core = { path = "crates/rayx_core" }
 rayx_runtime = { path = "crates/rayx_runtime" }
 rayx_app = { path = "crates/rayx_app" }
 rayx_app_macros = { path = "crates/rayx_app_macros" }
+rayx_components = { path = "crates/rayx_components" }
 nsh-core = "0.5.0"
 nsh-base = "0.5.0"
 nsh-engine = { version = "0.5.0", default-features = false }

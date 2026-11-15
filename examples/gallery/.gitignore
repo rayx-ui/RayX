@@ -1,0 +1,3 @@
+# Written by nsh: the types it generates and the workspace it builds the app's hosts in.
+.nsh/
+target/

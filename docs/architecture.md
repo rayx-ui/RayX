@@ -8,6 +8,7 @@ depends on `rayx_core` alone.
 | `rayx_core` | Dependency injection (singleton, scoped and transient services, scopes, async startup), configuration sources, .NET's options model and the `RayXAppBuilder` | no |
 | `rayx_runtime` | The app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets, fonts, translations | no |
 | `rayx_app` | The NSH layer: a root provider per surface, a scope per screen, view-model activation and binding, navigation regions, the TSX classes, and the NSH side of the services | yes |
+| `rayx_components` | The component library: the design system's tokens as the NSH theme type `RayXTheme` (generated from the Figma export), the macros of custom themes, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_core`, `rayx_app` and `rayx` | no |
 | `rayx` | The umbrella: re-exports the other crates and dXn.I18n and dXn.Intl, with a prelude | yes |
 | `rayx-cli` | The `rayx` command-line tool | no (runs the `nsh` CLI) |
@@ -19,7 +20,7 @@ service crates stay testable with plain `cargo test`. What a service needs from 
 `rayx_runtime` that `rayx_app` implements on NSH: reading the app's assets, registering fonts, the device's state, the
 bundled `appsettings.json`.
 
-`rayx_app` is the only crate that depends on `nsh-core`. It ties the core's lifetimes to what NSH runs (see
+`rayx_app` and `rayx_components` are the crates that depend on NSH. `rayx_app` ties the core's lifetimes to what NSH runs (see
 [Dependency injection](dependency-injection.md#lifetimes-on-nsh)) and gives TSX its classes (see [TSX](tsx.md)).
 
 ## The umbrella
@@ -29,6 +30,7 @@ bundled `appsettings.json`.
 - `rayx::core`: `rayx_core`
 - `rayx::runtime`: `rayx_runtime`
 - `rayx::app`: `rayx_app`
+- `rayx::components`: `rayx_components` (not in the prelude: its names, `Button`, `Density`, would clash)
 - `rayx::i18n` and `rayx::intl`: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), for their message, number and date types
 

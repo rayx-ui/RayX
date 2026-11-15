@@ -2,7 +2,7 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../_archive/RayX.Old`), which is not
-a dependency. The workspace has six crates sharing one version:
+a dependency. The workspace has seven crates sharing one version, and the gallery app's crate:
 
 - `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), configuration sources, .NET's options model and the
@@ -16,10 +16,23 @@ a dependency. The workspace has six crates sharing one version:
 - `crates/rayx_app`: the NSH layer: a root provider per engine surface, a scope per screen, view
   models activated with their screen, the `AppServices`/`ServiceScope` classes for TSX, and the
   NSH side of the services (bundled settings, asset reading, font registration, the device's
-  state). It is the only crate that depends on `nsh-core`.
+  state). With `rayx_components`, it is one of the two crates that depend on NSH.
+- `crates/rayx_components`: RayX's component library, the RayX design system in code: its tokens
+  as one NSH theme type, `RayXTheme` (`src/theme/`; `tokens.rs` is generated from the Figma
+  export by the `rayx-components` skill's `theme_codegen.py` and never edited by hand), the
+  macros of custom themes (`rayx_theme!`, `rayx_patch!`, `color!`), and the components, each the
+  Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
+  to TSX (`rayx_components::register` in an app's UI set). It depends on `nsh-core` and
+  `nsh-base`, not on the other RayX crates. The `rayx-components` skill
+  (`../RayX.Root/.claude/skills/rayx-components/`) is its guide: how each component is used and
+  how one is built.
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers.
 - `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_core`, `rayx_runtime`,
-  `rayx_app`, `dxn_i18n` and `dxn_intl`, with a prelude. It holds no code of its own.
+  `rayx_app`, `rayx_components` (`rayx::components`), `dxn_i18n` and `dxn_intl`, with a prelude.
+  It holds no code of its own.
+- `examples/gallery`: the RayX gallery, a mixed NSH app (TSX screens with hot reload, its crate
+  `rayx-gallery` in `native/`) showing every component's Figma properties, variants, sizes and
+  examples in code. Its crate is a workspace member and is never released.
 - `crates/rayx_cli`: `rayx`, the command-line tool (package `rayx-cli`, library `rayx_cli`, binary
   `rayx`): machine setup, doctor, WSL and Lima guests, self update, `rayx new` for RayX apps, and
   every NSH app run through the nsh it pins. It moved here from `rayx-ui/RayX.CLI`; see
@@ -65,9 +78,12 @@ CI (`.github/workflows/ci.yml`) runs the same on every pull request and every pu
 formats, lints and tests `rayx-cli` on Linux, macOS and Windows too.
 
 Test only what you changed: run the touched crate's focused tests while iterating, and the full
-list above once before committing. Each feature has its own integration-test group in
-`crates/<crate>/tests/<feature>.rs` (`di_provider`, `di_startup`, `nsh_layer`, …); select one with
-`cargo test -p <crate> --test <feature>`. A new feature or behavior change gets a new group.
+list above once before committing. `rayx_components`' theme is generated: after a token export
+(or a change to the generator), `python .claude/skills/rayx-components/scripts/theme_codegen.py
+write` from RayX.Root, then `check` must pass before committing. Each feature has its own
+integration-test group in `crates/<crate>/tests/<feature>.rs` (`di_provider`, `di_startup`,
+`nsh_layer`, …); select one with `cargo test -p <crate> --test <feature>`. A new feature or
+behavior change gets a new group.
 
 Raw diagnostic output goes to the ignored `artifacts-temp/`, never into commits.
 

@@ -9,6 +9,10 @@
 //! - [`app`] ([`rayx_app`]): the NSH layer: a root provider per surface, a scope per screen, the
 //!   TSX classes (`AppServices`, `ServiceScope`, `I18n`, `Navigation`, `Storage`,
 //!   `AppConfiguration`, `Assets`, `Fonts`, `Platform`) and the services' NSH side.
+//! - [`components`] ([`rayx_components`]): RayX's component library: the design system's theme
+//!   (its tokens as an NSH theme type, its modes and the macros of custom themes) and its
+//!   components (`Button`), for Rust views and TSX; `rayx::components::register` adds them to an
+//!   app's UI set.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
 //!   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), which the i18n service wraps, for their
 //!   message, number and date types.
@@ -29,6 +33,7 @@
 //! ```
 
 pub use rayx_app as app;
+pub use rayx_components as components;
 pub use rayx_core as core;
 pub use rayx_runtime as runtime;
 

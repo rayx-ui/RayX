@@ -58,3 +58,15 @@ storage.setJson("settings", "theme", { mode: "dark" });
 ## View models
 
 A view-model class exposes `Observable`s and `ReactiveCommand`s; see [View models](view-models.md#binding-in-tsx).
+
+## Components
+
+RayX's components (`Button`) and the `Themes` module come from `rayx_components`: add them to the same UI set with
+`rayx_components::register(registry)` (or `rayx::components::register`), then import them by its specifier. See
+[Components and theme](components.md).
+
+```tsx
+import { Button, Themes } from "my-app";
+
+<Button text="Save changes" variant="primary" onPress={save} />
+```

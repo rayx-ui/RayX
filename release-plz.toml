@@ -31,7 +31,7 @@ release_commits = "^(feat|fix|perf)"
 [[package]]
 name = "rayx_app"
 changelog_path = "./CHANGELOG.md"
-changelog_include = ["rayx", "rayx_core", "rayx_runtime", "rayx_app_macros", "rayx-cli"]
+changelog_include = ["rayx", "rayx_core", "rayx_runtime", "rayx_app_macros", "rayx-cli", "rayx_components"]
 version_group = "rayx"
 
 [[package]]
@@ -66,6 +66,21 @@ version_group = "rayx"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
+
+[[package]]
+name = "rayx_components"
+version_group = "rayx"
+# RayX's component library and theme, like `rayx_core`.
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx-gallery"
+version_group = "rayx"
+# The gallery app's crate (`examples/gallery/native`): it takes the workspace's version, and is
+# never released.
+release = false
 
 [[package]]
 name = "rayx-cli"

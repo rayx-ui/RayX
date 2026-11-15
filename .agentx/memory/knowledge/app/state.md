@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/app
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-15T03:00:00+01:00
   topics:
     - rayx_app
     - nsh
@@ -24,9 +24,10 @@ Route work on the NSH-facing layer and the umbrella.
 `rayx_app` holds a root provider per engine surface (`surface.rs`), a scope per screen
 (`screen.rs`, `scope_class.rs`), view-model binding (`binding.rs`), navigation regions and the
 location (`region.rs`, `location.rs`), the TSX classes (`service_classes.rs`, `i18n_class.rs`) and
-the NSH side of the services (`settings.rs`, `storage.rs`, `platform.rs`). It is the only crate
-that depends on `nsh-core`. `rayx` re-exports `rayx_core`, `rayx_runtime`, `rayx_app`,
-`dxn_i18n` and `dxn_intl` with a prelude, and holds no code of its own.
+the NSH side of the services (`settings.rs`, `storage.rs`, `platform.rs`). With `rayx_components`
+([components](../components/state.md)) it is one of the two crates that depend on NSH. `rayx`
+re-exports `rayx_core`, `rayx_runtime`, `rayx_app`, `rayx_components` (`rayx::components`, not in
+the prelude), `dxn_i18n` and `dxn_intl` with a prelude, and holds no code of its own.
 
 ## Backlinks
 

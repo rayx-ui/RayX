@@ -10,6 +10,8 @@
 - [View models](view-models.md): activation, and binding dXn.Reactive state to Rust components and TSX.
 - [Navigation](navigation.md): navigation regions as NSH navigation stacks.
 - [TSX](tsx.md): the classes a TSX app uses.
+- [Components and theme](components.md): RayX's component library, its theme from the Figma tokens, custom themes, and the
+  gallery app.
 
 ## Reference
 
