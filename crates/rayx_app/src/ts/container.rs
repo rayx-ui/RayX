@@ -8,8 +8,8 @@
 //!
 //! Its factory is a JS function. Inside a synchronous call from JS (a TS `getService`, or
 //! another TS factory) it runs on the spot ([`Callback::call`]); outside one (Rust code in a
-//! task, `start()`'s startup run) it cannot, so a service that is not made yet fails to resolve
-//! there, saying so. The startup run makes what Rust needs made with [`make`], which calls the
+//! task, `start()`'s startup run) it cannot ([`Callback::can_call_now`] says which), so a
+//! service that is not made yet fails to resolve there, saying so. The startup run makes what Rust needs made with [`make`], which calls the
 //! factory with [`Callback::call_async`] and hands the object to the provider's own factory.
 
 use std::cell::{Cell, RefCell};
@@ -34,8 +34,6 @@ pub(crate) struct TsService {
     id: u64,
     /// What it is registered under.
     pub(crate) key: RuntimeKey,
-    /// The token TS registered it with (a TS class, a `ServiceToken`).
-    pub(crate) token: JsHandle,
     factory: Factory,
     /// The VM it was registered from (its tokens and root object).
     pub(crate) sys: System,
@@ -64,7 +62,6 @@ impl TsService {
         let service = Self {
             id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
             key,
-            token: token.handle().clone(),
             factory,
             sys: sys.clone(),
             singleton: RefCell::new(None),
@@ -124,7 +121,7 @@ fn resolver(
         if let Some(made) = MADE.with_borrow_mut(|made| made.remove(&service.id)) {
             return Ok(keep(made));
         }
-        if !service.token.handle().in_call() {
+        if !service.factory.can_call_now() {
             NOT_MADE.set(true);
             return Err(ServiceResolutionError::failed(
                 name(),
