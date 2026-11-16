@@ -7,6 +7,17 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.11.1] - 2026-11-16
+
+### Features
+- *(devtools)* Add the dev tools' agent protocol crate
+- *(components)* Add rayx_components with RayX's theme and Button, and the gallery app
+- *(components)* [**breaking**] Move RayX's theme onto NSH theme documents and typed keys, on nshx-0.5.0-4
+  - Migration: apps: read tokens through `rayx_components::theme::keys` (`keys::theme::colors::roles::primary::BG.get()`, or `value(key)`) instead of `rayx().theme.…`; `bind_text_style` takes `text_style_keys!(path)` instead of a closure.
+  - Migration: apps: switch modes with `setModifier("accent", "sky")` / `Accent::Sky.set()` instead of `Themes.set(..)` / `set_theme(RayXTheme::of(..))`.
+  - Migration: apps: make custom themes with NSH's `update_tokens( Tokens::default().with(KEY, color!(..)))`, `reset_tokens`, theme files and `ThemeScope` instead of `rayx_theme!`, `rayx_patch!`, `update_theme` and `reset_theme`.
+  - Migration: apps: pin NSH to `nshx-0.5.0-4` with RayX.
+
 ## [0.11.0] - 2026-11-16
 
 ### Features
