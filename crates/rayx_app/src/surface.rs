@@ -14,7 +14,42 @@ use rayx_core::{
 };
 
 /// Why the app has no root provider on a surface, or a service could not be resolved from it.
+///
+/// It is `#[non_exhaustive]`: a later RayX may add a variant without a breaking change, so a
+/// `match` over it outside `rayx_app` has a wildcard arm:
+///
+/// ```
+/// use rayx_app::AppError;
+///
+/// fn waiting(error: &AppError) -> bool {
+///     match error {
+///         AppError::NotStarted | AppError::Starting => true,
+///         _ => false,
+///     }
+/// }
+/// # assert!(waiting(&AppError::Starting));
+/// ```
+///
+/// A `match` that names every variant and no wildcard does not compile:
+///
+/// ```compile_fail
+/// use rayx_app::AppError;
+///
+/// fn waiting(error: &AppError) -> bool {
+///     match error {
+///         AppError::NotStarted | AppError::Starting => true,
+///         AppError::BuilderStarted
+///         | AppError::Configuration(_)
+///         | AppError::Startup(_)
+///         | AppError::Ready(_)
+///         | AppError::Resolution(_)
+///         | AppError::Activation(_)
+///         | AppError::Failed(_) => false,
+///     }
+/// }
+/// ```
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum AppError {
     /// The app has not started on this surface (a Rust root's
     /// [`StartAppBuilderExt::start`], TSX's `await builder.start()`).

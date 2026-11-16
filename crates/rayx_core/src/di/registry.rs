@@ -484,7 +484,42 @@ impl fmt::Debug for ServiceRegistry {
     }
 }
 
+/// Why a service did not resolve.
+///
+/// It is `#[non_exhaustive]`: a later RayX may add a variant without a breaking change, so a
+/// `match` over it outside `rayx_core` has a wildcard arm:
+///
+/// ```
+/// use rayx_core::ServiceResolutionError;
+///
+/// fn kind(error: &ServiceResolutionError) -> &'static str {
+///     match error {
+///         ServiceResolutionError::Missing { .. } | ServiceResolutionError::MissingKey { .. } => {
+///             "missing"
+///         }
+///         ServiceResolutionError::WrongThread { .. } => "wrong thread",
+///         _ => "failed",
+///     }
+/// }
+/// # assert_eq!(kind(&ServiceResolutionError::failed("X", "no")), "failed");
+/// ```
+///
+/// A `match` that names every variant and no wildcard does not compile:
+///
+/// ```compile_fail
+/// use rayx_core::ServiceResolutionError;
+///
+/// fn kind(error: &ServiceResolutionError) -> &'static str {
+///     match error {
+///         ServiceResolutionError::Missing { .. } => "missing",
+///         ServiceResolutionError::MissingKey { .. } => "missing key",
+///         ServiceResolutionError::WrongThread { .. } => "wrong thread",
+///         ServiceResolutionError::Failed { .. } => "failed",
+///     }
+/// }
+/// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum ServiceResolutionError {
     /// No service is registered under the Rust type `service`.
     Missing { service: &'static str },
