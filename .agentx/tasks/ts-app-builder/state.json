@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 19,
-  "planRevision": 5,
+  "revision": 22,
+  "planRevision": 8,
   "specHashes": {
-    "requirements": "b7fe0d3e3b4d3f9485102da3b993982a04f8bd459404d909b8e9169fcf448234",
-    "design": "c141ed9604990733d7dfc9766e5af178442bbea930087ded5da79868d00c7f7d",
-    "plan": "0f4a91b0174d5a0c8005ba8a4647015421ef85625fe358a5e0dd1e2c85005db9"
+    "requirements": "aa6c61c1c957b8e0f17575780536f5d4fde147acd96a76b62127f13aab151a2b",
+    "design": "96921cc196f6c3ef45bb7d7d8580ac5d13b8c4c509f2c43694d4efd3f0b55702",
+    "plan": "e2cc1b0c9718d582f6449b3af888dee79e964f431333a9dfc8bc985badd09b20"
   },
   "tasks": {
     "t01-runtime-keys": {
@@ -85,6 +85,18 @@
       "status": "pending"
     },
     "t22-memory": {
+      "status": "pending"
+    },
+    "t23-theme-document": {
+      "status": "pending"
+    },
+    "t24-theme-keys": {
+      "status": "pending"
+    },
+    "t25-theme-modifiers": {
+      "status": "pending"
+    },
+    "t26-theme-consumers": {
       "status": "pending"
     }
   },
@@ -406,8 +418,7 @@
       "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",
       "rayx:release-plz.toml": "a89bc37b668e636c8aaea8dfcf57d77281ef8bd87fdaebc9dad225fc555085a5",
       "rayx:.github/workflows/release-plz.yml": "31c80f3230202c16dd47f6cb29d683dfa92dd6a502e2ccecba9fdca96997feab",
-      "rayx:.github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156",
-      "rayx:crates/rayx_components/src/theme/tokens.rs": "8ee3d5b68e0ad8648857cf4480cdc16bbfc664733f2f0831a42f84e9c7d2777e"
+      "rayx:.github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156"
     },
     "root": {}
   }

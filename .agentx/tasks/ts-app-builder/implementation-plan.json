@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 5,
+  "revision": 8,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -31,8 +31,7 @@
       "rayx:rust-toolchain.toml",
       "rayx:release-plz.toml",
       "rayx:.github/workflows/release-plz.yml",
-      "rayx:.github/workflows/release.yml",
-      "rayx:crates/rayx_components/src/theme/tokens.rs"
+      "rayx:.github/workflows/release.yml"
     ]
   },
   "checks": [
@@ -764,10 +763,11 @@
       "repositoryId": "rayx",
       "kind": "static",
       "criterionIds": [
-        "CORE-1",
         "BLD-1",
-        "TSS-1",
-        "DOC-1"
+        "CORE-1",
+        "DOC-1",
+        "THEME-2",
+        "TSS-1"
       ],
       "descriptionMarkdown": "Clippy on the touched packages, every target, warnings denied.",
       "argv": [
@@ -787,6 +787,8 @@
         "rayx-cli",
         "-p",
         "rayx-gallery",
+        "-p",
+        "rayx_components",
         "--all-targets",
         "--",
         "-D",
@@ -796,6 +798,237 @@
       "expected": {
         "exitCode": 0
       }
+    },
+    {
+      "id": "c-theme-codegen",
+      "repositoryId": "root",
+      "kind": "test",
+      "criterionIds": [
+        "THEME-1"
+      ],
+      "descriptionMarkdown": "The theme document generator's group: declarations, kinds, paths, light/dark, modifiers, roles and `check`.",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        ".claude/skills/rayx-components/scripts",
+        "-p",
+        "test_theme_document.py",
+        "-v"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        ".claude/skills/rayx-components/scripts/**",
+        ".claude/skills/rayx-figma/scripts/locations.py"
+      ]
+    },
+    {
+      "id": "c-theme-document",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "THEME-1"
+      ],
+      "descriptionMarkdown": "RayX's document registers in NSH, its tokens resolve in every context, roles and TSX names read RayX's values.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_components",
+        "--test",
+        "theme_document"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_components/**"
+      ]
+    },
+    {
+      "id": "c-theme-keys",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "THEME-2"
+      ],
+      "descriptionMarkdown": "Typed keys: values, appearance, `update_tokens` / `reset_tokens`.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_components",
+        "--test",
+        "theme_keys_view"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_components/**"
+      ]
+    },
+    {
+      "id": "c-button",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "THEME-2"
+      ],
+      "descriptionMarkdown": "`Button`'s own groups on the keys, its token values unchanged.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_components",
+        "--test",
+        "button_view",
+        "--test",
+        "button_tsx"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_components/**"
+      ]
+    },
+    {
+      "id": "c-theme-modifiers",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "THEME-3"
+      ],
+      "descriptionMarkdown": "Modifiers set by the app, in Rust views and TSX, globally and scoped.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_components",
+        "--test",
+        "theme_modifiers_view",
+        "--test",
+        "theme_modifiers_tsx"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_components/**"
+      ]
+    },
+    {
+      "id": "c-gallery-theme",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "THEME-4"
+      ],
+      "descriptionMarkdown": "The gallery's crate test on the new theme (its set's exports and documentation, without `Themes`).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-gallery"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "examples/gallery/**",
+        "crates/rayx_components/**"
+      ]
+    },
+    {
+      "id": "c-no-old-theme-rayx",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "THEME-2",
+        "THEME-4"
+      ],
+      "descriptionMarkdown": "No RayX file names the old theme system: `git grep` finds nothing (exit 1).",
+      "argv": [
+        "git",
+        "grep",
+        "--untracked",
+        "-n",
+        "-E",
+        "RayXTheme|RayXThemePatch|rayx_theme!|rayx_patch!|rayx\\(\\)\\.(theme|platform)|theme_of|set_theme|update_theme|reset_theme|Themes\\.set|theme/tokens\\.rs",
+        "--",
+        "docs",
+        "crates",
+        "examples",
+        "README.md",
+        "AGENTS.md"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 1
+      },
+      "inputs": [
+        "docs/**",
+        "crates/**",
+        "examples/**",
+        "README.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "c-no-old-theme-root",
+      "repositoryId": "root",
+      "kind": "static",
+      "criterionIds": [
+        "THEME-2",
+        "THEME-4"
+      ],
+      "descriptionMarkdown": "No RayX.Root guide or skill names the old theme system: `git grep` finds nothing (exit 1).",
+      "argv": [
+        "git",
+        "grep",
+        "--untracked",
+        "-n",
+        "-E",
+        "RayXTheme|RayXThemePatch|rayx_theme!|rayx_patch!|rayx\\(\\)\\.(theme|platform)|theme_of|set_theme|update_theme|Themes\\.set|tokens\\.rs",
+        "--",
+        "AGENTS.md",
+        ".claude/skills"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 1
+      },
+      "inputs": [
+        "AGENTS.md",
+        ".claude/skills/**"
+      ]
     }
   ],
   "finalCheckIds": [
@@ -921,31 +1154,32 @@
       ]
     },
     {
-      "id": "s2-nsh-layer",
-      "title": "The NSH tag, the TS builder, provider and start, Rust's start, the Rust names",
+      "id": "s2-theme",
+      "title": "The NSH tag, and RayX's theme on NSH's theme documents and typed keys",
       "dependsOn": [
         "s1-core"
       ],
       "memoryScopes": [
-        "app",
+        "components",
         "dependencies",
-        "cli"
+        "root:skills"
       ],
       "checkIds": [
         "c-nsh-pin",
-        "c-tsx-provider",
-        "c-tsx-builder",
-        "c-tsx-builder-options",
-        "c-tsx-start",
-        "c-app-start",
-        "c-tsx-class-names",
-        "c-app-groups"
+        "c-theme-codegen",
+        "c-theme-document",
+        "c-theme-keys",
+        "c-button",
+        "c-theme-modifiers",
+        "c-gallery-theme",
+        "c-no-old-theme-rayx",
+        "c-no-old-theme-root"
       ],
       "tasks": [
         {
           "id": "t05-nsh-pin",
-          "title": "Pin NSH to the fork's js-objects tag",
-          "descriptionMarkdown": "Move every NSH pin to `nshx-0.5.0-4` (commit `55074d3f9`, released by the owner on 2026-11-16), which carries #262 (merged as `1666a956`) and #265 (merged as `ea1a7ef3a`), as `7775dcc` (`feat(nsh): Pin NSH to nshx-0.5.0-3`) did: `Cargo.toml` `[patch.crates-io]`, `crates/rayx_cli/src/project/pins.rs` and the CLI tests and fixtures naming the pin, `crates/rayx_cli/README.md`, `docs/cli/projects.md`, `examples/gallery/.cargo/config.toml` (with its comment's tag and commit); let Cargo rewrite `Cargo.lock` (d-nsh-pin). Never a path, branch or commit dependency on the fork. **Starts only once RayX's theme is on NSH's theme documents** (d-nsh-pin): #264, in the same tag, removes the theme types `rayx_components` is built on, so the pin breaks it (267 errors on 2026-11-16, all in `crates/rayx_components/src/theme/`). That migration is its own change, decided with the owner and on `main` before this task; if it is not there when the task starts, stop and bring it to the owner, never edit `tokens.rs` or patch the theme here. The pin then touches only what `7775dcc` touched, plus what #263 changes in the crates this epic owns.",
+          "title": "Pin NSH to nshx-0.5.0-4",
+          "descriptionMarkdown": "Move every NSH pin to `nshx-0.5.0-4` (commit `55074d3f9`, released by the owner on 2026-11-16), which carries #262 (merged as `1666a956`), #265 (merged as `ea1a7ef3a`) and #264, as `7775dcc` (`feat(nsh): Pin NSH to nshx-0.5.0-3`) did: `Cargo.toml` `[patch.crates-io]`, `crates/rayx_cli/src/project/pins.rs` and the CLI tests and fixtures naming the pin, `crates/rayx_cli/README.md`, `docs/cli/projects.md`, `examples/gallery/.cargo/config.toml` (with its comment's tag and commit); let Cargo rewrite `Cargo.lock` (d-nsh-pin). Never a path, branch or commit dependency on the fork. `rayx_components` and what depends on it do not compile on the tag until the sprint's theme tasks land (d-theme-documents): fix nothing in the theme here; the other crates must compile on the tag, adapting only what #263 changes in the crates this epic owns.",
           "criterionIds": [
             "NSH-1"
           ],
@@ -967,6 +1201,167 @@
             }
           ]
         },
+        {
+          "id": "t23-theme-document",
+          "title": "RayX's theme document, generated from the export",
+          "descriptionMarkdown": "Rewrite RayX.Root's `.claude/skills/rayx-components/scripts/theme_codegen.py` to write `RayX/crates/rayx_components/theme.json`, an NSH theme document (d-theme-documents), from the DTCG export it reads today (`locations.TOKENS`): every token declared once (kind by today's kind rules, path = WEB code syntax, doc = Figma description), Light/Dark as `cssVars` light/dark, the resolver's modifiers `accent`, `density`, `os` as document modifiers (contexts override only their tokens; defaults Cyan, Desktop, Windows), and `roles` from today's `ROLE_TOKENS` mapping (moved into the generator). Keep `write` and `check` (exit 1 when stale). Names keep today's names where NSH's rules allow (`roles-primary-bg`, `spacing-size-default-lvl5-height`); list forced renames (for example weights under `font-weight-*`) for t26's docs. Replace `test_theme_codegen.py` with the new group `test_theme_document.py`: declarations, kinds and paths, light/dark, each modifier's contexts and defaults, roles, `check` on a stale document, on a small fixture export. Generate the document and register it in `rayx_components::register` with `theme_document(include_str!(..))`; new group `crates/rayx_components/tests/theme_document.rs`: the set registers without panic, every declared token has a value in each context, nsh-base's roles (`primary`, `background`, `radius`, …) read RayX's values, TSX classes and `token()` name RayX's tokens. One commit in RayX.Root for the skill script and tests.",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "designIds": [
+            "d-theme-documents"
+          ],
+          "dependsOn": [
+            "t05-nsh-pin"
+          ],
+          "checkIds": [
+            "c-theme-codegen",
+            "c-theme-document"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "root",
+              "path": ".claude/skills/rayx-components/scripts/theme_codegen.py"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/theme/roles.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/lib.rs"
+            }
+          ]
+        },
+        {
+          "id": "t24-theme-keys",
+          "title": "Typed keys in place of the theme structs",
+          "descriptionMarkdown": "Add `rayx_components::theme::keys` (and the modifier enums) with `nsh_core::element::theme_keys!(\"theme.json\")` and move every read to keys (d-theme-documents): `Button` (role colors per variant, the size's level 5, focus ring, outline) through small hand-written lookups built from the keys (`role_keys(variant)`, `level_keys(size, n)`), text styles through the `typography` keys. Delete the old system: `RayXTheme`, `rayx()`, `tokens.rs`, `RayXThemePatch`, `Modes`, `RoleSet`/`RoleColors`, `Sizes::of`, `SizeTokens::level`, struct `bind_text_style`, `rayx_theme!`, `rayx_patch!` (keep `color!`), the `Themes` module, and the old groups `theme_tokens`, `theme_view`, `theme_macros`, `theme_tsx` (their still-valid assertions move into the new groups). Update the prelude, the umbrella `rayx`'s re-exports and its `umbrella` test, and the crate description. New group `crates/rayx_components/tests/theme_keys_view.rs`: a key's value, a binding following Light/Dark, `update_tokens` and `reset_tokens` with `Tokens::default().with(KEY, color!(..))`; move `button_view` / `button_tsx` to the keys with their expected token values unchanged.",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "designIds": [
+            "d-theme-documents"
+          ],
+          "dependsOn": [
+            "t23-theme-document"
+          ],
+          "checkIds": [
+            "c-theme-keys",
+            "c-button",
+            "c-no-old-theme-rayx"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/theme/mod.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/button.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/macros.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/themes.rs"
+            }
+          ]
+        },
+        {
+          "id": "t25-theme-modifiers",
+          "title": "Modes as modifiers the app sets",
+          "descriptionMarkdown": "The accent, density and OS switch through NSH's modifiers only (d-theme-documents): document the generated enums and `set_modifier` in the theme module, and make sure nothing in RayX sets a modifier at startup or from the platform. New groups `crates/rayx_components/tests/theme_modifiers_view.rs` (each modifier's default, `Accent::Sky.set()` changing the accent tokens only, `Density::Touch` the sizes only, `Os` the chrome only, Light/Dark following the appearance in a context, `ScopeModifiers` changing a subtree only) and `crates/rayx_components/tests/theme_modifiers_tsx.rs` (`setModifier` from TSX, `<ThemeScope modifiers>`), headless as the old TSX group was.",
+          "criterionIds": [
+            "THEME-3"
+          ],
+          "designIds": [
+            "d-theme-documents"
+          ],
+          "dependsOn": [
+            "t24-theme-keys"
+          ],
+          "checkIds": [
+            "c-theme-modifiers"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/src/theme/mod.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_components/tests/theme_tsx.rs"
+            }
+          ]
+        },
+        {
+          "id": "t26-theme-consumers",
+          "title": "The gallery, docs, skill and memory on the new theme",
+          "descriptionMarkdown": "Move the consumers (d-theme-documents): the gallery (`examples/gallery/src/gallery.tsx` switches accent and density with `setModifier`, lists their contexts from `modifiers()` or the generated types; `examples/gallery/native/src/lib.rs` and its crate test without `Themes`); `docs/components.md`, `docs/architecture.md`, RayX's `AGENTS.md` and the crates' docs; RayX.Root's `AGENTS.md` (\"Tokens\", \"Common tasks\"), the `rayx-components` skill (`SKILL.md`, `references/theming.md` with the forced renames, `button.md`, `building-components.md`) and the `rayx-figma` skill's `references/export-tokens.md` / `decisions.md` mentions of `tokens.rs`; memory: RayX's `knowledge/components/state.md` and `rules.md` (the generated file is now `theme.json`), RayX.Root's `knowledge/skills/rules.md`, and a new RayX.Root decision `decisions/workspace/2026-11-16-theme-documents.md` superseding `2026-11-15-design-in-code.md`'s token bullet (mark it superseded). One commit per repository.",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "designIds": [
+            "d-theme-documents"
+          ],
+          "dependsOn": [
+            "t24-theme-keys",
+            "t25-theme-modifiers"
+          ],
+          "checkIds": [
+            "c-gallery-theme",
+            "c-no-old-theme-rayx",
+            "c-no-old-theme-root"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "examples/gallery/src/gallery.tsx"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "examples/gallery/native/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "docs/components.md"
+            },
+            {
+              "repositoryId": "root",
+              "path": "AGENTS.md"
+            },
+            {
+              "repositoryId": "root",
+              "path": ".claude/skills/rayx-components/references/theming.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2-nsh-layer",
+      "title": "The TS builder, provider and start, Rust's start, the Rust names",
+      "dependsOn": [
+        "s2-theme"
+      ],
+      "memoryScopes": [
+        "app",
+        "dependencies",
+        "cli"
+      ],
+      "checkIds": [
+        "c-tsx-provider",
+        "c-tsx-builder",
+        "c-tsx-builder-options",
+        "c-tsx-start",
+        "c-app-start",
+        "c-tsx-class-names",
+        "c-app-groups"
+      ],
+      "tasks": [
         {
           "id": "t06-ts-provider",
           "title": "TS `ServiceProvider` with class tokens",
@@ -1147,7 +1542,7 @@
         {
           "id": "t12-native-module",
           "title": "`rayx::native_module!` and `#[rayx::app_extension]`",
-          "descriptionMarkdown": "Add `rayx_app::register(registry)` (every TS class), the umbrella's `native_module!` (with the optional app block) and `#[rayx::app_extension]` in `rayx_app_macros` with `builder.apply(..)` (d-native-module). New group `crates/rayx/tests/native_module.rs`: a crate using the macro exports RayX's classes, `Button` and `Themes` and nothing else unasked; the block adds the app's exports; an extension exported and applied from a headless TSX app registers its Rust service in chain order.",
+          "descriptionMarkdown": "Add `rayx_app::register(registry)` (every TS class), the umbrella's `native_module!` (with the optional app block) and `#[rayx::app_extension]` in `rayx_app_macros` with `builder.apply(..)` (d-native-module). New group `crates/rayx/tests/native_module.rs`: a crate using the macro exports RayX's classes, `Button` and RayX's theme document and nothing else unasked; the block adds the app's exports; an extension exported and applied from a headless TSX app registers its Rust service in chain order.",
           "criterionIds": [
             "BLD-5"
           ],
@@ -1325,7 +1720,7 @@
         {
           "id": "t19-gallery",
           "title": "The gallery on `rayx::native_module!`",
-          "descriptionMarkdown": "Replace the gallery crate's `#[native_module]` with `rayx::native_module!(\"rayx-gallery/native\", …)` keeping `Glyph`, and update `examples/gallery/README.md` (d-consumers). Its crate test keeps checking `Button`, `Themes` and `Glyph` with nothing undocumented.",
+          "descriptionMarkdown": "Replace the gallery crate's `#[native_module]` with `rayx::native_module!(\"rayx-gallery/native\", …)` keeping `Glyph`, and update `examples/gallery/README.md` (d-consumers). Its crate test keeps checking `Button` and `Glyph` with nothing undocumented.",
           "criterionIds": [
             "DOC-2"
           ],
@@ -1372,7 +1767,7 @@
         {
           "id": "t21-root-skill",
           "title": "The `rayx-components` skill in RayX.Root",
-          "descriptionMarkdown": "Update `../RayX.Root/.claude/skills/rayx-components/SKILL.md` (its \"Register the library\" step) and its references so `rayx::native_module!` registers the library and `Themes`, `rayx_components::register(registry)` stays for a hand-written `#[native_module]`, and TSX examples start the app with `RayXAppBuilder` where they use services (d-consumers). One commit in RayX.Root. Reviewed by reading (DOC-5).",
+          "descriptionMarkdown": "Update `../RayX.Root/.claude/skills/rayx-components/SKILL.md` (its \"Register the library\" step) and its references so `rayx::native_module!` registers the library (its components and theme document), `rayx_components::register(registry)` stays for a hand-written `#[native_module]`, and TSX examples start the app with `RayXAppBuilder` where they use services (d-consumers). One commit in RayX.Root. Reviewed by reading (DOC-5).",
           "criterionIds": [
             "DOC-5"
           ],
