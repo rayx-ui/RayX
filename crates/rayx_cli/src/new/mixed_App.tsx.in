@@ -1,13 +1,24 @@
 import { mount, signal, Text, View } from "nsh";
-import { AppServices, DevLayer } from "__SPECIFIER__";
+import { DevLayer, KeyValueStore, RayXAppBuilder } from "__SPECIFIER__";
 
-// RayX starts the app's services (`src/lib.rs`) once; `AppServices.load()` resolves when every
-// one of them is ready, and everything after it is synchronous.
+// The app's composition root: its configuration and the services every surface starts with
+// (RayX's are listed in its `docs/services.md`). `start()` resolves with the root
+// `ServiceProvider` once every startup service is ready; resolving a service after it is
+// synchronous.
 const status = signal("Starting");
-AppServices.load().then(
-  () => status.set("Ready"),
-  (error) => status.set(`Failed: ${error}`),
-);
+const launches = signal(0);
+new RayXAppBuilder()
+  .addStorage()
+  .addHistory()
+  .start()
+  .then((services) => {
+    const store = services.getRequiredService(KeyValueStore);
+    const count = Number(store.get("app", "launches") ?? "0") + 1;
+    store.set("app", "launches", String(count));
+    launches.set(count);
+    status.set("Ready");
+  })
+  .catch((error) => status.set(`Failed: ${error}`));
 
 function App() {
   return (
@@ -22,6 +33,7 @@ function App() {
       }}
     >
       <Text style={{ fontSize: 22 }}>{status()}</Text>
+      <Text>{launches() > 0 ? `Launch ${launches()}` : ""}</Text>
       {/* RayX's dev tools: in a dev build the layer a tool picks and marks views with. */}
       <DevLayer style={{ position: "absolute" }} />
     </View>

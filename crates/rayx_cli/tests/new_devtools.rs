@@ -1,5 +1,5 @@
-//! `rayx new` writes RayX's dev tools into a new app: a `mixed` app's `src/lib.rs` registers the
-//! `DevTools` class and the `DevLayer` component beside `AppServices`, its `App.tsx` mounts
+//! `rayx new` writes RayX's dev tools into a new app: a `mixed` app's `src/lib.rs` adds the
+//! `DevTools` class and the `DevLayer` component to RayX's UI set, its `App.tsx` mounts
 //! `<DevLayer />` at the root, out of its layout; a `rust` app's root mounts `dev_layer()`; the app's README says what
 //! they are. The real proof, that such an app builds and passes its test, is
 //! `proof_new_devtools`.
@@ -160,17 +160,17 @@ fn a_mixed_app_registers_the_dev_tools_and_mounts_their_layer() {
     let app = work.path("hello");
 
     let lib = std::fs::read_to_string(app.join("src/lib.rs")).expect("lib.rs");
-    let registered = lib.find(".class::<AppServices>()").expect("AppServices");
+    let set = lib.find("#[rayx::native_module(").expect("RayX's UI set");
     let dev_tools = lib
         .find(".class::<DevTools>()")
         .expect("the DevTools class");
-    assert!(registered < dev_tools, "beside AppServices:\n{lib}");
+    assert!(set < dev_tools, "in the set's block:\n{lib}");
     assert!(lib.contains(".register::<DevLayer>()"), "{lib}");
     assert!(lib.contains("use rayx::prelude::*;"));
 
     let tsx = std::fs::read_to_string(app.join("App.tsx")).expect("App.tsx");
     assert!(
-        tsx.contains("import { AppServices, DevLayer } from"),
+        tsx.contains("import { DevLayer, KeyValueStore, RayXAppBuilder } from"),
         "{tsx}"
     );
     // At the root, the last child of the root view, out of its layout (absolute).

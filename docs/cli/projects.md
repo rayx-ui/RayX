@@ -2,10 +2,23 @@
 
 What `rayx` reads from a project, and where. A project is a Cargo workspace, an NSH app (a
 directory with `nsh.json`), or both. `rayx` writes into it only what a command is for: `rayx new`
-creates the app (whose root registers and mounts RayX's dev tools, which only a dev build
-carries), `rayx fmt` formats it, `rayx setup --test` installs the Playwright package's
+creates the app ([below](#what-rayx-new-writes)), `rayx fmt` formats it, `rayx setup --test` installs the Playwright package's
 dependencies, and a command that installs or runs nsh writes the `Cargo.lock` a Cargo workspace
 lacks (as `cargo metadata` does; `--check`, `doctor` and `rayx nsh status` write nothing).
+
+## What `rayx new` writes
+
+A RayX app (`mixed`, the default, and `rust`) is nsh's template with RayX's files in place of
+nsh's, on the API RayX documents in its `docs/tsx.md` and `docs/startup.md`:
+
+| Template | `src/lib.rs` | The app's start |
+| --- | --- | --- |
+| `mixed` | `#[rayx::native_module("<specifier>")]` on `fn native`: every RayX TS class, RayX's components and, in its body, RayX's dev tools (`DevTools`, `DevLayer`) | `App.tsx`: `new RayXAppBuilder().addStorage().addHistory().start()`, then a service from the `ServiceProvider` it resolves with |
+| `rust` | `#[rayx::native_module("<specifier>")]`: RayX's TS classes and components, and the root component `App` | `App`: `RayXAppBuilder::new().add_storage().add_history().start()`, then `app_state()` |
+
+Both mount RayX's dev tools' layer at the root (`<DevLayer />`, `dev_layer()`), which only a dev
+build carries, and test that the app reaches `Ready` (`App.test.tsx`). Beside them: `rayx` in
+`Cargo.toml` at this `rayx`'s tag, a README, and the pin ([below](#the-nsh-pin)).
 
 ## Finding the project
 

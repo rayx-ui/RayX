@@ -4,9 +4,11 @@
 //!
 //! 1. Install rayx's default pin if needed and run its `nsh init <dir> --name … --template …`.
 //! 2. A RayX app (`mixed` and `rust`): `Cargo.toml` depends on `rayx` at this `rayx`'s own tag,
-//!    and `src/lib.rs` (with `App.tsx`, `App.test.tsx` and the README) is RayX's: it registers
-//!    RayX's TSX classes, or starts the app from the Rust root, and names the app's services
-//!    with `set_app`.
+//!    and `src/lib.rs` (with `App.tsx`, `App.test.tsx` and the README) is RayX's: for `mixed`,
+//!    a UI set on RayX's attribute (`#[rayx::native_module]`) and an `App.tsx` that builds and
+//!    starts the
+//!    app with `RayXAppBuilder`; for `rust`, a root component that builds the same chain and
+//!    calls `.start()`.
 //! 3. `mixed` and `rust`: write `.cargo/config.toml` with a `[patch.crates-io]` entry (git URL and
 //!    tag) for every NSH crate the default pin patches (RayX's), every NSH crate nsh's generated
 //!    workspace depends on (its hosts, runners and platforms, which crates.io lacks or has as
@@ -165,8 +167,12 @@ impl Templates {
             .replace("__RAYX_TAG__", &format!("v{}", env!("CARGO_PKG_VERSION")))
     }
 
-    fn readme(&self, about: &str) -> String {
-        self.fill(&include_str!("new/README.md.in").replace("__TEMPLATE__", about))
+    fn readme(&self, about: &str, services: &str) -> String {
+        self.fill(
+            &include_str!("new/README.md.in")
+                .replace("__TEMPLATE__", about)
+                .replace("__SERVICES__", services),
+        )
     }
 }
 
@@ -194,10 +200,9 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
         &with_rayx_dependency(&read("Cargo.toml")?),
         runner,
     )?;
-    let files: Vec<(&str, String)> =
-        match template {
-            Template::Mixed => {
-                vec![
+    let files: Vec<(&str, String)> = match template {
+        Template::Mixed => {
+            vec![
             ("src/lib.rs", templates.fill(include_str!("new/mixed_lib.rs.in"))),
             ("App.tsx", templates.fill(include_str!("new/mixed_App.tsx.in"))),
             (
@@ -206,36 +211,44 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
             ),
             (
                 "README.md",
-                templates.readme(&format!(
-                    "`App.tsx` is the app; the directory is also its Rust crate (`Cargo.toml`, \
-                     `src/lib.rs`), whose `#[native_module(\"{}\")]` registers RayX's TSX classes \
-                     (`AppServices`, `ServiceScope`, `I18n`) and names the app's services.",
-                    templates.specifier
-                )),
+                templates.readme(
+                    &format!(
+                        "`App.tsx` is the app; the directory is also its Rust crate (`Cargo.toml`, \
+                         `src/lib.rs`), whose `#[rayx::native_module(\"{}\")]` is its UI set: every \
+                         RayX TS class (`RayXAppBuilder`, `ServiceProvider` and the services' \
+                         classes), RayX's components and dev tools, and what the app adds.",
+                        templates.specifier
+                    ),
+                    "`App.tsx` builds the app with `RayXAppBuilder` (its services) and \
+                     `await`s `start()`, whose `ServiceProvider` resolves them",
+                ),
             ),
         ]
-            }
-            Template::Rust => vec![
-                (
-                    "src/lib.rs",
-                    templates.fill(include_str!("new/rust_lib.rs.in")),
+        }
+        Template::Rust => vec![
+            (
+                "src/lib.rs",
+                templates.fill(include_str!("new/rust_lib.rs.in")),
+            ),
+            (
+                "App.test.tsx",
+                templates.fill(include_str!("new/rust_App.test.tsx.in")),
+            ),
+            (
+                "README.md",
+                templates.readme(
+                    "The app is Rust: `src/lib.rs`'s root component `App` starts the app's \
+                         services and shows them, and `cargo run` runs it on this machine's \
+                         desktop.",
+                    "`src/lib.rs`'s root component builds the app with `RayXAppBuilder::new()` \
+                         (its services) and calls `.start()`, which `app_state()` follows",
                 ),
-                (
-                    "App.test.tsx",
-                    templates.fill(include_str!("new/rust_App.test.tsx.in")),
-                ),
-                (
-                    "README.md",
-                    templates.readme(
-                        "The app is Rust: `src/lib.rs`'s root component `App` starts the app's \
-                     services and shows them, and `cargo run` runs it on this machine's desktop.",
-                    ),
-                ),
-            ],
-            Template::Ts => {
-                bail!("a RayX app has a Rust crate; `--template ts` needs `--nsh-only`")
-            }
-        };
+            ),
+        ],
+        Template::Ts => {
+            bail!("a RayX app has a Rust crate; `--template ts` needs `--nsh-only`")
+        }
+    };
     for (file, text) in files {
         write(&dir.join(file), &text, runner)?;
     }
@@ -262,7 +275,7 @@ pub fn create(
     let dir = cwd.join(&args.dir);
     if args.template == Template::Ts && !args.nsh_only {
         bail!(
-            "a RayX app has a Rust crate that registers RayX's TSX classes, which `--template ts` \
+            "a RayX app has a Rust crate whose UI set holds RayX's TS classes, which `--template ts` \
              has not: use `--template mixed` (the default) or `rust`, or `--nsh-only` for an NSH \
              app without RayX"
         );

@@ -248,10 +248,9 @@ fn a_rust_app_gets_the_same_patches_and_lock() {
     // The root starts the app's services.
     let lib = std::fs::read_to_string(work.path("svc/src/lib.rs")).expect("lib.rs");
     for needle in [
-        "#[native_module(\"hello/native\")]",
+        "#[rayx::native_module(\"hello/native\")]",
         "pub fn App() -> impl IntoElement",
-        "set_app(build_app);",
-        "rayx::app::start();",
+        "RayXAppBuilder::new().add_storage().add_history().start();",
     ] {
         assert!(lib.contains(needle), "{needle}: {lib}");
     }
@@ -381,7 +380,7 @@ fn an_unknown_template_is_rejected_listing_the_three() {
 }
 
 #[test]
-fn a_rayx_app_depends_on_rayx_at_this_rayx_s_tag_and_registers_its_classes() {
+fn a_rayx_app_depends_on_rayx_at_this_rayx_s_tag_and_holds_its_classes() {
     let home = Workspace::empty();
     with_default(&home);
     let work = Workspace::empty();
@@ -402,21 +401,17 @@ fn a_rayx_app_depends_on_rayx_at_this_rayx_s_tag_and_registers_its_classes() {
     );
     let lib = read("src/lib.rs");
     for needle in [
-        "#[native_module(\"hello/native\")]",
-        "set_app(build_app);",
-        ".class::<AppServices>()",
-        ".class::<ServiceScope>()",
-        ".class::<I18n>()",
-        "fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder",
+        "use rayx::prelude::*;",
+        "#[rayx::native_module(\"hello/native\")]",
     ] {
         assert!(lib.contains(needle), "{needle}: {lib}");
     }
     let entry = read("App.tsx");
     assert!(
-        entry.contains("import { AppServices, DevLayer } from \"hello/native\";"),
+        entry.contains("import { DevLayer, KeyValueStore, RayXAppBuilder } from \"hello/native\";"),
         "{entry}"
     );
-    assert!(entry.contains("AppServices.load()"), "{entry}");
+    assert!(entry.contains("new RayXAppBuilder()"), "{entry}");
     assert!(read("App.test.tsx").contains("await app.waitFor(\"text:Ready\")"));
     let readme = read("README.md");
     assert!(readme.starts_with("# hello\n"), "{readme}");
