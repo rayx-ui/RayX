@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 128,
+  "revision": 130,
   "planRevision": 16,
   "specHashes": {
     "requirements": "de6b1e51971fd1e8c83e980d009aff4294ad109313a148a8b251aef0ef7349f9",
@@ -257,7 +257,7 @@
           "root": "5d43e44ab385c670118ce7b6a666b58e143ea189e992a0c105a4985d2eb785b2"
         }
       },
-      "recordedAt": "2026-11-16T15:12:30Z"
+      "recordedAt": "2026-11-16T15:19:33Z"
     }
   },
   "checkResults": {
@@ -843,86 +843,86 @@
       "checkId": "c-di-runtime-keys",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "49bb6d60e003ec1b70cd53fe3d8f9ae9cd96c05d83248f56300ab8cd9356c98e",
-      "basisHash": "abd426428e429f606b13341b0328133bf1cce66d0c5bc63bba084d11b035eb6c",
+      "basisHash": "8d38a57051c6f28440889e903263f8bbbba643c2565b4c21f652dfe1e9a32490",
       "status": "passed",
       "exitCode": 0,
       "testCount": 12,
-      "durationSeconds": 2.4652,
-      "recordedAt": "2026-11-16T14:58:42Z",
+      "durationSeconds": 1.4084,
+      "recordedAt": "2026-11-16T15:15:28Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-5256f014ca74.log",
-      "logSha256": "9bb2567191db9434ecb8903c98952d1317170b2dd9d27bfd6a5ba77cca2831bb",
-      "inputsHash": "ff97c7b0249cd6053e5f89475a930a10777fce8653c9d2c44584dda278c3cd51"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-8985f4e227e3.log",
+      "logSha256": "990d864516c427eb1b1f658b79f69266bc00e99ae4ab52751bb5aef961f36380",
+      "inputsHash": "d6d5cde7f94f2e98010188213adde752cb2a0f48174c800efb6b382c9b50d221"
     },
     "final/c-di-thread-bound/final": {
       "checkId": "c-di-thread-bound",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "34b7915ab6669c8f339ad74f52ea7c88e6c96c3dcedfd2d19282c9e0d2c56a15",
-      "basisHash": "d3b9c5ea52b8e7a6c1e45184fec4b91f44352d9daa11e72beb707337f5761e0c",
+      "basisHash": "11c8c1afb4a752cc6138ed2a33b66ab0e4d8b7f7cd070597bd31de4b33e68778",
       "status": "passed",
       "exitCode": 0,
       "testCount": 13,
-      "durationSeconds": 1.0075,
-      "recordedAt": "2026-11-16T14:58:43Z",
+      "durationSeconds": 1.0545,
+      "recordedAt": "2026-11-16T15:15:29Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-a02d80911415.log",
-      "logSha256": "e664b9060492aa19ee93a251e13987d29d6f07563934f6410c02b8f42fa8a380",
-      "inputsHash": "eff33b655c8bb448170c1ed733f1907b0c924f6f8db6a4c291c8ee355a9796f8"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-8fea6981762b.log",
+      "logSha256": "253553ecab93f7f07437a1b102fec2ba08286adcb32f171147df0ddfe3498ce1",
+      "inputsHash": "3ebec83b943c56c58fbc27cf725fc5346c61ec06bd7e4afe2341f9bb2040daf8"
     },
     "final/c-core-wasm/final": {
       "checkId": "c-core-wasm",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "3d78ef66e59a09f9c91941ebb34981bac473eea20b28e9cc5fb669581fb433bd",
-      "basisHash": "77300a9daa8f04f28ce4d7e04d3439a2a29310554007f0d1a4116b8d01681223",
+      "basisHash": "8720facd5b96ab4b8badbd9fe6001b33ff9b21f5f8b5b7c6cfe1a555151286a1",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 4.1464,
-      "recordedAt": "2026-11-16T14:58:47Z",
+      "durationSeconds": 1.3673,
+      "recordedAt": "2026-11-16T15:15:31Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-22e1f100ec21.log",
-      "logSha256": "1599fbb6f2aff5652094ea11cb3ce198f64920cbaf5a0726d80bc59b4d78cc08",
-      "inputsHash": "83311af784f9fff073046b87ef8ad16255596063906b8dfd67127dd6cb3b685c"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-e82c0468056f.log",
+      "logSha256": "93c1e7acb365d7ae372ee269a8a41ee8b8000c7d46cb4b5292c4d7bc43df0a5c",
+      "inputsHash": "cc9bdcc130820edc8fc8d99467ad9635f15d224df6c8278bbef3a80efd315620"
     },
     "final/c-di-startup-runtime/final": {
       "checkId": "c-di-startup-runtime",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "90727d80238e145cfa74e09e15d0d451a2ee71f830031f4a993e484b30f8b725",
-      "basisHash": "d282efa6bcf2682dc08d02c180d53aad42d35379e31e593443715111d2b32ced",
+      "basisHash": "c50916a032d83794e1384f8b26cb61729f08fa1848c6fa504f2409f5874f44e4",
       "status": "passed",
       "exitCode": 0,
       "testCount": 13,
-      "durationSeconds": 1.0134,
-      "recordedAt": "2026-11-16T14:58:48Z",
+      "durationSeconds": 1.0708,
+      "recordedAt": "2026-11-16T15:15:32Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-1be697a061ad.log",
-      "logSha256": "6939ce82dba90c7dd99b6bbbead556120e2f27f4ce0f298cb8387496049f6c7b",
-      "inputsHash": "ec36ff5ce4c08ab0bd93e9470133db1e7649a5d93bae7f8163f8bd3f94b34bc4"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-4f5865026015.log",
+      "logSha256": "45b596d4b6280ecf2a3e2328071b43a63c7c650b26819d2f17585e5bbdcc0565",
+      "inputsHash": "94c8f3777fc7dfdb5043fde79e9dd279d60bd8577be7c030edcd5e1cb18b1f4d"
     },
     "final/c-di-startup-key/final": {
       "checkId": "c-di-startup-key",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "b06a5fb2cdeb3becc91b377ff5be68d3a7088972fbb95bda0f84c37e089d51cc",
-      "basisHash": "b9ee7b65a8f55a1c7bd9868249de410a35e96e30cec840c7264f4e1939e26d4c",
+      "basisHash": "bd5ec0a85d52156d859be8a67cb350049737953a0ff9368267c1af3d4026a508",
       "status": "passed",
       "exitCode": 0,
       "testCount": 9,
-      "durationSeconds": 1.0269,
-      "recordedAt": "2026-11-16T14:58:49Z",
+      "durationSeconds": 1.0952,
+      "recordedAt": "2026-11-16T15:15:33Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-563d9bd4abe0.log",
-      "logSha256": "59e58a0bb67837878034115a062d3aa47095b9d6a2042475e2a56726a11031d7",
-      "inputsHash": "5496fbbb57dbebefa570df41991788d57596419141a4aa9ecdb495d8482f7a04"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-90f99739cf42.log",
+      "logSha256": "df8298a0ac8d2b41132984e0e8e616f142c0387a09f5c46d8006d33bbf7eac2e",
+      "inputsHash": "926f0c94488c0336b42a85905ef095f4e50bbc0e6e936333c79cd60b9025b99b"
     },
     "final/c-nsh-pin/final": {
       "checkId": "c-nsh-pin",
@@ -945,222 +945,222 @@
       "checkId": "c-tsx-provider",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "0b3514b68e2d39b850fb3ea9e2bc5f6c8937eb6af230c5a1ef8ac38ec768823e",
-      "basisHash": "f8813de4a4c22936af17e93e88453ab517d707956da06fdc701230b896332723",
+      "basisHash": "58e0e6769ca8a30507ca1ac3766e1f754371dff12fe49f6d700dd33bc6e6070a",
       "status": "passed",
       "exitCode": 0,
       "testCount": 2,
-      "durationSeconds": 7.5461,
-      "recordedAt": "2026-11-16T14:59:00Z",
+      "durationSeconds": 7.0834,
+      "recordedAt": "2026-11-16T15:15:40Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f815c9ed3761.log",
-      "logSha256": "787a7ca3f5900dff84149236f8439ae192212690938e6c97cded159a259493ab",
-      "inputsHash": "731deb3821500507aeb19aee4e3380c63ff69d5177c664ff75624be338e907f5"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-e1b219f2b777.log",
+      "logSha256": "8cb8b4c3f9fcccf60f9fbba01dac41832e13d6fe5ef29ec56ee6ff5eb17a501c",
+      "inputsHash": "18e5c9c03192bfa70a6a021b5977072faff6f2f6e9f61d097f3774882dcaf7e4"
     },
     "final/c-tsx-builder/final": {
       "checkId": "c-tsx-builder",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "fc89941021de7ace16b7daeae746773009e9a1a2f62dfd4d72f52a4ab3da8d37",
-      "basisHash": "0f3523dfc4bca2bde21e5cdbf9a29c3f46514256179fd51a326bc21faa5f9a72",
+      "basisHash": "9f27d5fc256f8f46ce7156616d13006314b448e189959a9288d5e30522960bbc",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 5.6416,
-      "recordedAt": "2026-11-16T14:59:06Z",
+      "durationSeconds": 6.1685,
+      "recordedAt": "2026-11-16T15:15:46Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-260dafff00bc.log",
-      "logSha256": "9cb153b466bac51aeb9234e07b6bef7a5c123fc1ee8d8cb67b37f6ca9f537c43",
-      "inputsHash": "5398edc0d8fd89ecee0839fd200e91a79dc2456d51727203848cd856d9664fc9"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-7ae31086a332.log",
+      "logSha256": "cc812d4df6ea72cb14b4709606308843c21fd8b6b2dbb086cb111ea928cf4595",
+      "inputsHash": "d79702639fa240802a16740bf689d13ad373d117e8c5745910a0e938556986e3"
     },
     "final/c-tsx-builder-options/final": {
       "checkId": "c-tsx-builder-options",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "dcec260892d42d08dc1c51b0aa6246676efb78c78185bc45d192b1c41fe2c0b3",
-      "basisHash": "b5349d0f4b588d21d5beb4644c6dd3d608117d59a3821012e2671382131c58c7",
+      "basisHash": "4727ab2dfde76093d534b756ff8c014a2bbe0cca9cadc4831a5c476b42655c93",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 5.4635,
-      "recordedAt": "2026-11-16T14:59:12Z",
+      "durationSeconds": 6.0295,
+      "recordedAt": "2026-11-16T15:15:52Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-1a53bfc1fc51.log",
-      "logSha256": "73ada91c43c9c7ff1ae421e6a753f9c195edfd09dd14d3b9593ec93f67f0eec5",
-      "inputsHash": "5331e9440cc4b4d7f2cef1bbc123594f08104d0d5e4ffb0872ed258960b9e466"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-ed0a87f07fd4.log",
+      "logSha256": "e739fe0bb05eb8e085ca9329cf43228413dcb52f5ff5390dd479684267ee7193",
+      "inputsHash": "2aa35db13c8868e58a7e5eb26cad47a6f01dbc2c8c852838631786aec5714aa7"
     },
     "final/c-tsx-start/final": {
       "checkId": "c-tsx-start",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "828585e4a40fe67803702431a1904411cab7b5ba1597913214288c0bb74c169e",
-      "basisHash": "9b95f62ce278efb269289f2e244c91ee9f65fea63647f5fc92e9919e9430e9bc",
+      "basisHash": "a574cad9f6b58ad517a8b154c93a212b65196eaa0a4286680ebe3d406f91bd5e",
       "status": "passed",
       "exitCode": 0,
       "testCount": 6,
-      "durationSeconds": 5.5323,
-      "recordedAt": "2026-11-16T14:59:17Z",
+      "durationSeconds": 6.2251,
+      "recordedAt": "2026-11-16T15:15:59Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-0ebbe18a4e96.log",
-      "logSha256": "9dd823c6d16156fe8450751bc6c490e98065be5bb8ff109025470ab2261a229d",
-      "inputsHash": "b1a98079261590397dda666d695ec8a170473be8feea782775711339ac53de31"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-48076b458b46.log",
+      "logSha256": "20f03097c9cbae0d2ec3e591fa4ce2d9cd258b192636a339f99d2f59add2b966",
+      "inputsHash": "7e185504bc6ec3777deeab16abd86a550d1a4e2dfc85ee5898b3a8fa5c1bc4f5"
     },
     "final/c-app-start/final": {
       "checkId": "c-app-start",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "8a956e38d7a364671d357fd5ec3d2ab40b941a3dd5f9be098bd0d3ad3ca82273",
-      "basisHash": "735256613a829c2eaf3ae923c90c11bdfa8c0fc242d5cb9d2be4c8ed870e938e",
+      "basisHash": "9992ec141580b1a795cf6f0b1c5beb6110706f6b975f89480b9cbbfcd5de68eb",
       "status": "passed",
       "exitCode": 0,
       "testCount": 8,
-      "durationSeconds": 4.2879,
-      "recordedAt": "2026-11-16T14:59:21Z",
+      "durationSeconds": 4.9105,
+      "recordedAt": "2026-11-16T15:16:03Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-be4cf3a35798.log",
-      "logSha256": "d83ae92326b816f16ed5632d1e3bb745bcff3e2debb3b3a5c15fee8abfe8d4e3",
-      "inputsHash": "45acf8fafeaad71de38f9c97e1cf8a31f7ac71b401c8272b1c3f526823569053"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-648612812c30.log",
+      "logSha256": "d28e3f5bdaabb74e15c973f22eb362f7c2548ff711a44c437493fa3163f0d05f",
+      "inputsHash": "68cdf5cee9516a8d6729776673237c74d1cb8bf439dbe15ee4f4739e6f5822c2"
     },
     "final/c-tsx-class-names/final": {
       "checkId": "c-tsx-class-names",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "7652cf456c58874d93d61007ee7bda6a8bee5f59e5551783cbd3a52a8d5412d8",
-      "basisHash": "e4a9ab3ffeebcd7ebab0effa80b048a803f1702d0e2fc0b8c369b7d9419b5a0d",
+      "basisHash": "64bda436b3c1f6cfc154916284c0ce2fbccb5dc241afde85cfd33f3ddde86758",
       "status": "passed",
       "exitCode": 0,
       "testCount": 2,
-      "durationSeconds": 1.7158,
-      "recordedAt": "2026-11-16T14:59:23Z",
+      "durationSeconds": 1.7614,
+      "recordedAt": "2026-11-16T15:16:05Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f5c2987e3510.log",
-      "logSha256": "932c7ef25513e3dd3d48a5330a1fecedc7f00fcdaee46905011fb4ea314e6362",
-      "inputsHash": "b480d1bc0422960ae24d5fd9e679e57e468a20429cbe50ef8426697bc7396e01"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-56f2b196dbbf.log",
+      "logSha256": "3ca41715ad7c2426be98896610a31aaf36331ac71c4efb1f3670b7f56749386a",
+      "inputsHash": "987fe01ee5e6e1a43ed671eb20ac5832fe8178d70ca36cd3e6a7111a23f23cd6"
     },
     "final/c-app-groups/final": {
       "checkId": "c-app-groups",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "35b81c65629263acd2130514203b39779c08ece686d01b62cb8f57f313c59c42",
-      "basisHash": "fb6a69db1caa5f06e6369cb53db119bf34777589ff70341ee2c35b5f967a176a",
+      "basisHash": "d4997c3cd47f339de680440ae95f257e212ebaff8ef947e13a95293b3f016187",
       "status": "passed",
       "exitCode": 0,
       "testCount": 104,
-      "durationSeconds": 157.8683,
-      "recordedAt": "2026-11-16T15:02:01Z",
+      "durationSeconds": 140.4725,
+      "recordedAt": "2026-11-16T15:18:26Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f42a9f802b1b.log",
-      "logSha256": "ad1651d961aca92eeb3d86079ac3a8b4b161a34638c28cb62369ff72bf75560f",
-      "inputsHash": "775c10b5213ffd6e5983b5cde85b350f03e6d7b813fddfffc9d2ede9a6b8a692"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-6f78a68f0836.log",
+      "logSha256": "cd919290bbe169d9aa516e92235afa63797127e35fecd7927c21f7e48393a823",
+      "inputsHash": "e7c9d8c7cb67ebfc712132234fab390a841a78953163c91eb693bb229e7d1243"
     },
     "final/c-native-module/final": {
       "checkId": "c-native-module",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "f3c3659de5cb1d5d3558aab18cb81239aa7f9967f433ec58336fbe40ce0967a4",
-      "basisHash": "9f1d7c071415df5acf66618fbed6734e7255652570810db0120dccf812d112c7",
+      "basisHash": "c6cf67d6fcb5f4d2ef7ee449e04bce766cc07c7e7c757dbcee9530427a6b4dca",
       "status": "passed",
       "exitCode": 0,
       "testCount": 4,
-      "durationSeconds": 1.0392,
-      "recordedAt": "2026-11-16T15:02:02Z",
+      "durationSeconds": 11.8699,
+      "recordedAt": "2026-11-16T15:18:38Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-544f21ff211f.log",
-      "logSha256": "9a7042f5f91050c66beb3a0a0aab1f74c564c4a01971a7a6f1e29fa6b1fb047f",
-      "inputsHash": "500a6e6d7d85ee471a09bec760983e633ccdd20894aea748251d0f2b1ea0b699"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-e13fd90fa53b.log",
+      "logSha256": "fec5c4567d59456ec2d5da33b90c835576f1f9ce363faa7ec45d880da34c8dcd",
+      "inputsHash": "98adfd69c5b8a9f2bb6b140347048b88c61dc98695e1025eb97684154d75a639"
     },
     "final/c-tsx-container/final": {
       "checkId": "c-tsx-container",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "69d7e9adc487ff8cf28a58732191b6de4cedb76a9002285ab948351ed94cace4",
-      "basisHash": "cf9b46bc2a1e63558b6f13bb7957d2d62a08fa40cb14fb1f757e70b3848f6062",
+      "basisHash": "9ad39bc757caf1be699132ed929929df541cb9181423561236f9cd123fd2095c",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 0.2676,
-      "recordedAt": "2026-11-16T15:02:02Z",
+      "durationSeconds": 0.8227,
+      "recordedAt": "2026-11-16T15:18:38Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-fc4790a1ff0c.log",
-      "logSha256": "7a29e82c4c5e31bd95c96ee6fd4fb1733cff6ac9c2d2b14002211335cbdfbabe",
-      "inputsHash": "ac0dfc686ca22547cccf4a3de5a13f834de19873a5519465700d7861154f49ef"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f498a7189c22.log",
+      "logSha256": "f65bb01ebaf9830bca652f9a7649c7de0f77754012cb4c4fba498370f2a72bac",
+      "inputsHash": "f4d3454ffb8c6afc96d996b1e7514402e8e6a9093a9aa3ecab0f23bf56d26676"
     },
     "final/c-tsx-startup/final": {
       "checkId": "c-tsx-startup",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "24017c4ae32e396bbc4d011be90c9f62102ce99e18ec3e80b806ab7ef307e8c3",
-      "basisHash": "c3d46496958ee0bdeac551bdf6d11d05ed5aa78b4cbf4e331fcf1424f8617fd5",
+      "basisHash": "a197d821a80741e3f0bed63def605452bfc1d129efdbf568817bbf325165ee85",
       "status": "passed",
       "exitCode": 0,
       "testCount": 5,
-      "durationSeconds": 0.3468,
-      "recordedAt": "2026-11-16T15:02:03Z",
+      "durationSeconds": 0.4126,
+      "recordedAt": "2026-11-16T15:18:39Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-511af7936653.log",
-      "logSha256": "382f6636573dea7d56c5b50fd4765e56ac5f8ef7b739bbd986738ea4c4d146b0",
-      "inputsHash": "70fee342fcdd3b681c659d76ecaa6976bf3086dce74992095074c4cbb102f673"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-ba522f8ddb1a.log",
+      "logSha256": "daddf5c175ddd674e24e067bce1e01d78814afa372c4d71f8a817aa410c5ef52",
+      "inputsHash": "d6dcd6cbc0560e82c83085b558328329763be21fd5b3956d3cd4478e814276bc"
     },
     "final/c-tsx-ready/final": {
       "checkId": "c-tsx-ready",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "67dd01b0136ecf22200aaac9aa810415c3350dfc0ccacd69a0b559db92efd04f",
-      "basisHash": "74b6163d87e3472898af8bf5561ef44442f0f853908499c7c12780886a85fdd2",
+      "basisHash": "7e81edaaab4df6e804d6c7f26c42897f47713060cb281241c254686e48de5f2b",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 0.2813,
-      "recordedAt": "2026-11-16T15:02:03Z",
+      "durationSeconds": 0.3869,
+      "recordedAt": "2026-11-16T15:18:39Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-cfa941e5b868.log",
-      "logSha256": "b646e7a6b12e5f7e8210adf9cedf28806d1109ba1a57518c9ae58231634fb02b",
-      "inputsHash": "8cc02dd420fa87dcc45b292a36985e089b3af40439935de3fb6783830bdf8552"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-be29c237ae44.log",
+      "logSha256": "7a435ad23401e77b5477a38e82505d1a5d68a736d395e0083ac64776088d074d",
+      "inputsHash": "ab311cb7b7230a0d549e9fd64384cfc2f0d485f3c256e635abde7bbc75dc982a"
     },
     "final/c-tsx-contracts/final": {
       "checkId": "c-tsx-contracts",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "80df2b3eb38054e8b5671ab76d3662d3e2925de52f1560f8f5267cbc7ae43243",
-      "basisHash": "9634a1cce95397ca741a38e1fd790c4d0d834cf805b8e68bea0043e01007bff0",
+      "basisHash": "624420727804c9eb8e69a62e068f8a322420a06e0fe9161939847e1e77a1e677",
       "status": "passed",
       "exitCode": 0,
       "testCount": 6,
-      "durationSeconds": 0.287,
-      "recordedAt": "2026-11-16T15:02:03Z",
+      "durationSeconds": 0.5735,
+      "recordedAt": "2026-11-16T15:18:40Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-2b8e4348297a.log",
-      "logSha256": "d45def64732af5008e44e2868ba2913d4f4ea9ddad3c5ecf85870e50129c47ca",
-      "inputsHash": "72f62bc816d1148af3f08a5b4cf52d8b57bcc0c7a60f0905c3790ed8f363b44a"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-ebd59c3db65f.log",
+      "logSha256": "687c63a0a2fd81a7f9fdbcadd1aed8333a9462788501b1e335396ac8ea539668",
+      "inputsHash": "2106e2a26f81273a09a1530c1f9593c000820b938ab613681f8034b771abe251"
     },
     "final/c-tsx-options/final": {
       "checkId": "c-tsx-options",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "8414d773218f86eaa76c092a9251502a4826b0add2fa2f43dc56e78910c093b5",
-      "basisHash": "feff78f6d71edcb195c1761ad426d959e1578c35f96d588a7dd5a6238a91f665",
+      "basisHash": "80c37a80e2e1ceebeebc257380b5cf67ed0e7fdc015667eb8a93dd8241895eca",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 0.2741,
-      "recordedAt": "2026-11-16T15:02:04Z",
+      "durationSeconds": 0.627,
+      "recordedAt": "2026-11-16T15:18:40Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-a642cd83da2e.log",
-      "logSha256": "e6e25cbbf5ea781055530221f086f19e09da9d970da2548ab815f5e83d3602c8",
-      "inputsHash": "c1e908d3ab8c35dd1a1020c247287fea59572ed9c4b6a76f10f3179c1fddb8f9"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-8dd330f32bb3.log",
+      "logSha256": "296f2adcab0a3b31cbdad31e42287050263ffa5e076430772b7efb86ea8391be",
+      "inputsHash": "3510ce3a38a77bee391982824ad7aaa2c9aedd1cb8436d6665cb84dd7e8e2551"
     },
     "final/c-new-app-builder/final": {
       "checkId": "c-new-app-builder",
@@ -1183,35 +1183,35 @@
       "checkId": "c-gallery",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "21580c25aa6e38ac39e8ab0f0e2d92790279fc54780f5bb8b7bbd554532d19d5",
-      "basisHash": "ed8af3f82a55d07c04438cabd81e930edcfb67d250ca0ef0c4ad73a1f6a99696",
+      "basisHash": "2859b677818fba6f5087539bf92356281de0828ce6b499f44289bc2e8ab324dc",
       "status": "passed",
       "exitCode": 0,
       "testCount": 4,
-      "durationSeconds": 9.2999,
-      "recordedAt": "2026-11-16T14:57:02Z",
+      "durationSeconds": 24.061,
+      "recordedAt": "2026-11-16T15:19:05Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-513f2741e6a3.log",
-      "logSha256": "f221d04b74eaf25afe8af4e6d3973f1d7df8f7ec90bd517683752e5ee03e9a51",
-      "inputsHash": "22556812df2d990b75b266f0274543f5669626f37484f35af6b18c8e1cca93b7"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-cf192585a795.log",
+      "logSha256": "35ca56261fbecad513cc4276fe5f37a2b0c7d3a1aece03b67fc796b5fe5001f4",
+      "inputsHash": "1284c866a7763190bd08233a56d48199f957b0516cde7b79b0124af990138d40"
     },
     "final/c-no-old-api/final": {
       "checkId": "c-no-old-api",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "73b773846ad6b8b02d2f6ad52f982565df179b4e0969aa34f04558fb3d7c99c5",
-      "basisHash": "4b0dbf4d7b13da3840a9d2ade173ca71c45ca8b6d8eabae531dd0ba8c1b5c199",
+      "basisHash": "546f1725fd8830f45fe32a7aa6648cc8d3db500a30cea723cf733d4c521a2b29",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.0393,
-      "recordedAt": "2026-11-16T14:57:02Z",
+      "durationSeconds": 0.0605,
+      "recordedAt": "2026-11-16T15:19:05Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-9ecc7dd9f790.log",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-a28abf62a160.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+      "inputsHash": "49ce9338bf4e14eb32cb13e83c4ed950056a349eff7ff21a4e39c5eb0dc1213b"
     },
     "final/c-theme-codegen/final": {
       "checkId": "c-theme-codegen",
@@ -1319,18 +1319,18 @@
       "checkId": "c-no-old-theme-rayx",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "6b62e5f67014d88103662d643cbb4806907c79bb79fa9cf59744101296b571d4",
-      "basisHash": "e5a468462024fbf30fe007fcf25e236333bb03967cae3715f99d049a7a83ee3f",
+      "basisHash": "19aea7ee4ca8735985dd054990f1c23248bbff1d15ca3f094c21b9a344443b2b",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.0719,
-      "recordedAt": "2026-11-16T15:02:09Z",
+      "durationSeconds": 0.1056,
+      "recordedAt": "2026-11-16T15:19:05Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-823bbef26a0c.log",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-dce7441e0eca.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+      "inputsHash": "49ce9338bf4e14eb32cb13e83c4ed950056a349eff7ff21a4e39c5eb0dc1213b"
     },
     "final/c-no-old-theme-root/final": {
       "checkId": "c-no-old-theme-root",
@@ -1353,52 +1353,52 @@
       "checkId": "c-tsx-listeners",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "a9a2b1b9cba694bacdc5fd61003336a86aed825df229d312b3a00b28697034de",
-      "basisHash": "b2c9aca4d5dbe1f72f5ae892a45b9090a9a7a47cae1b38e5e3edf17b08f6531f",
+      "basisHash": "a795910b0de98882284aff0fdfbc26c9bb8617457344adec66e81a63fb19bd79",
       "status": "passed",
       "exitCode": 0,
       "testCount": 2,
-      "durationSeconds": 0.4124,
-      "recordedAt": "2026-11-16T15:02:10Z",
+      "durationSeconds": 1.2897,
+      "recordedAt": "2026-11-16T15:19:06Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-30f9c5968c36.log",
-      "logSha256": "e422715161fe2aaf3f136f4db8ed5bd0fb0101c769a03272631cffdf65e24e0d",
-      "inputsHash": "775c10b5213ffd6e5983b5cde85b350f03e6d7b813fddfffc9d2ede9a6b8a692"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-8bdbfb909d43.log",
+      "logSha256": "6a5b00817791012ebf12d876f783f04873339ef91311dd250b5e558b8fb75e26",
+      "inputsHash": "e7c9d8c7cb67ebfc712132234fab390a841a78953163c91eb693bb229e7d1243"
     },
     "final/c-native-attribute/final": {
       "checkId": "c-native-attribute",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "eff4de448c6e96d56ded61a70f6633fee71c9fd496e08efe79eea119cfa3eb1b",
-      "basisHash": "9c021d8f32983bbe403503a5143e73daf15d945f1688a9547a8a03cb61833ebc",
+      "basisHash": "7caff4d56dacb6dd93b5542e0f75d05c6fc03d798492b4219d739c82ed582a7e",
       "status": "passed",
       "exitCode": 0,
       "testCount": 8,
-      "durationSeconds": 7.3404,
-      "recordedAt": "2026-11-16T14:57:10Z",
+      "durationSeconds": 15.5177,
+      "recordedAt": "2026-11-16T15:19:22Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-5e041b26e563.log",
-      "logSha256": "de6557d00196ef7e8516ca530d091e997d70e9ccb9850b7387a602783999f412",
-      "inputsHash": "500a6e6d7d85ee471a09bec760983e633ccdd20894aea748251d0f2b1ea0b699"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-b5f550d48342.log",
+      "logSha256": "0c85a31d350851557683048c7f30df307dfc604af7ca505e1fe930b14d5bbfd7",
+      "inputsHash": "98adfd69c5b8a9f2bb6b140347048b88c61dc98695e1025eb97684154d75a639"
     },
     "final/c-no-native-macro/final": {
       "checkId": "c-no-native-macro",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "3f3eed16f3e404d034f23d00e8c4f2f65cd8642beae93810696ae4fab5459995",
-      "basisHash": "64ab3d749409a1dd897160c49da6306e50e69b1ba87588fecc2b41208373d081",
+      "basisHash": "635da50e1491f4968e51d4c9a893a6fb9a700a547fb5208900d6cc499d0712d3",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.0293,
-      "recordedAt": "2026-11-16T14:57:10Z",
+      "durationSeconds": 0.0711,
+      "recordedAt": "2026-11-16T15:19:22Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-a458e7829d1f.log",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-ee82913d0d51.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+      "inputsHash": "49ce9338bf4e14eb32cb13e83c4ed950056a349eff7ff21a4e39c5eb0dc1213b"
     },
     "final/c-no-native-macro-root/final": {
       "checkId": "c-no-native-macro-root",
@@ -1421,33 +1421,33 @@
       "checkId": "f-fmt",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "5b163fb7578010dcc41efa89004502c7be9ccec632359990cc1fc911b2527478",
-      "basisHash": "f2ad0f1bebfebd31fb0056d17cb967094f4d85a921ab28aea9f68c45300373af",
+      "basisHash": "b09643238c9e2f8baa4f7c0eb83be4cbad96ccc5715831024639d12a1b7ff20e",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.5235,
-      "recordedAt": "2026-11-16T15:02:10Z",
+      "durationSeconds": 1.0159,
+      "recordedAt": "2026-11-16T15:19:23Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-4d51bbedc0e8.log",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-3fd82fee0dfc.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "final/f-clippy/final": {
       "checkId": "f-clippy",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "5977a3f3d8fa6b396830ba6b0d0312acca29655cebf60878afdd70d71fbfa22f",
-      "basisHash": "a2500f388c33fc80b2e1b7c8b3a4427de65b0e3edc1a33d5f4dcadcdfb371b97",
+      "basisHash": "9d42c833f951d0c3fa5970704c83347360920859dda5a4ad27ff5ec06a38bdfc",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 8.9425,
-      "recordedAt": "2026-11-16T15:02:19Z",
+      "durationSeconds": 10.524,
+      "recordedAt": "2026-11-16T15:19:33Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-71b7b9a6ff4e.log",
-      "logSha256": "3283b1ce8be732648406b383c5f611dba4f90dca45c0f512f33e9ccfe843b270"
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-4ab55cd74c81.log",
+      "logSha256": "e3a900c6e5433633fd5e47fec8858f41b1adb71b7d5a58479167b7765c9262c0"
     },
     "s5-release/c-error-enums-core/final": {
       "checkId": "c-error-enums-core",
@@ -1469,6 +1469,40 @@
     "s5-release/c-error-enums-app/final": {
       "checkId": "c-error-enums-app",
       "boundaryId": "s5-release",
+      "phase": "final",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "definitionHash": "0f8366e0852e1ce1eff1dcdfe1564096738b6969f738c01a7bbc464af9df1b57",
+      "basisHash": "d176980e19eb6a98508d901fc19bb6156937519ac892ec4513cbe323c099d3d6",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 1.2969,
+      "recordedAt": "2026-11-16T15:12:30Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s5-release-final-7cc2c11ddaaf.log",
+      "logSha256": "11dacf72aea371e548896fbebfd02c57a6036140970561280a7c7efe0857a5d5",
+      "inputsHash": "e7c9d8c7cb67ebfc712132234fab390a841a78953163c91eb693bb229e7d1243"
+    },
+    "final/c-error-enums-core/final": {
+      "checkId": "c-error-enums-core",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "definitionHash": "62e044479344992dd3ed586d68d59c4407bbe0ff908a9653e4886842c75ca0b5",
+      "basisHash": "43b9993cddcfa96e6218006133e3f542abcab1b78c06fe38179369d97be98d0d",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 0.9317,
+      "recordedAt": "2026-11-16T15:12:29Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s5-release-final-bc988c5da8d3.log",
+      "logSha256": "b5bcbc3e40c6e47c51a3f6f76dcfdc1a82298922508ece263e3f30a708c533a5",
+      "inputsHash": "9b301f1e8c436916a8cae82c8f253342260b858b4e18622992e800c2acb8d958"
+    },
+    "final/c-error-enums-app/final": {
+      "checkId": "c-error-enums-app",
+      "boundaryId": "final",
       "phase": "final",
       "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
       "definitionHash": "0f8366e0852e1ce1eff1dcdfe1564096738b6969f738c01a7bbc464af9df1b57",
@@ -2750,6 +2784,925 @@
       ],
       "findingIds": [],
       "recordedAt": "2026-11-16T15:14:34Z"
+    },
+    "final": {
+      "reviewerId": "final-reviewer-k4t9",
+      "snapshotId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "criterionIds": [
+        "CORE-1",
+        "CORE-2",
+        "CORE-3",
+        "CORE-4",
+        "NSH-1",
+        "THEME-1",
+        "THEME-2",
+        "THEME-3",
+        "THEME-4",
+        "RES-1",
+        "RES-2",
+        "BLD-1",
+        "BLD-2",
+        "BLD-3",
+        "BLD-4",
+        "BLD-6",
+        "TSS-1",
+        "TSS-2",
+        "TSS-3",
+        "TSS-4",
+        "TSS-5",
+        "DOC-1",
+        "DOC-2",
+        "DOC-3",
+        "DOC-4",
+        "DOC-5",
+        "DOC-6",
+        "REL-1"
+      ],
+      "verdict": "passed",
+      "acknowledgedDispositions": [
+        "criterion:BLD-5",
+        "decision:d-native-module"
+      ],
+      "summaryMarkdown": "All 28 active criteria hold on the integrated epic at revision 129.\n\n- **Code (CORE, NSH, THEME, RES, BLD, TSS):** anchored as in this reviewer's first final review. The only product change since then is `aa2217c`, which marks both error enums `#[non_exhaustive]` and adds doc tests; it alters no behavior (inside their own crates the attribute has no effect, and nothing outside them matches either enum).\n- **REL-1:** each enum has a wildcard doc test that compiles and a `compile_fail` one naming exactly its current variants. `aa2217c`'s `Migration: apps:` footers match the code for every gap FR-1 named.\n- **Docs, templates, gallery, skill and memory:** they match the final API, attribute form included, and no removed API name remains outside history. The app/tsx decision record is corrected in `cc537c6`; both memory audits pass and `theme_codegen.py check` is current.\n- **Dispositions:** BLD-5 and d-native-module match the owner's recorded choice, and BLD-6 and d-native-attribute cover them.\n- **Evidence:** `check --epic` passed 38/38 at revision 129, fmt and clippy included.\n\nNot a defect: there is no CI run yet, because nothing is pushed and pushing needs the owner.",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/key.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1"
+          ],
+          "sha256": "b7eede35167f2eff0b3c6c439782e7f85fbca6296a3c1cb197fbe22e866b5503"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1",
+            "CORE-2",
+            "REL-1"
+          ],
+          "sha256": "165685c0fc6169d81b85d48d9c16e76085b7b27bdfd6bc219c8647db273f3a91"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/provider.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1",
+            "CORE-2"
+          ],
+          "sha256": "f040d783ea0544a0c8126078f50e90ad102752e729a37d92b52678f33afe413c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/thread_bound.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-2"
+          ],
+          "sha256": "ef8d6b77d0eb263b44136e16c7f314055d10b2d3f6099aafd566f5953c7437ca"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/lifecycle.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-3",
+            "CORE-4"
+          ],
+          "sha256": "7ffb693248825448bc26b4ee8d612a5eb98b64aacf9c22dd92c5e088497d4a44"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_runtime_keys.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-1"
+          ],
+          "sha256": "495b9297b9e7a4475122583109caa6e4834bf0590ce8e6a7afbe9cb6599fa871"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_thread_bound.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-2"
+          ],
+          "sha256": "fd042daca3d8214ddfcfccb8883560b04f5a21a42d3ae9fe1c70382cdde19fb6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_startup_runtime.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-3"
+          ],
+          "sha256": "87444b868bcfbf2e4ce6b0f03765006c93a95ee6c87b1f03fad9b225c3ac003e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_startup_registration_key.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-4"
+          ],
+          "sha256": "70c8dec1084aec909c44c91af5cbb9c2c05fcb7b2a02f71ce42eba5b337ca3dd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "9cd9d96fe7bd94b8cc63f55c8e789c617ef9ff6bcec56bc95909b7fe409247b5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/project/pins.rs",
+          "kind": "source",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "0c47ba486d5f8dbaa77fd1eb8b7e5abba0635fa68f40480816812143543a0c29"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/.cargo/config.toml",
+          "kind": "source",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "b2bbb012c5dcf5a8a7ce5bf10458a6047e41e41a181678f8a506e1ecdda06c6e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/nsh_pin_rayx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "b841ec79cc5b006a15a0251dadd5056d561ac9ce155f3428793534cb90336156"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/dependency_sources.rs",
+          "kind": "test",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "16825ebb13d8b1e60cf406a1dacf181e1b561ad6065f5e8e82dbe3b22d93395c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/theme.json",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "7a227fe72460f269f8b92c1c8316176c66ef8e68d5e2bf36356f0ca3e9e0e2a5"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/theme_codegen.py",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "e5a31a141e6cd47304ebad2f566fa0b4150d904175f0989c434c06be114e6712"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/test_theme_document.py",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "1157b541b6349be0de1a3ca49da1e430f9c45085724d80780ed96cb181b92f93"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_document.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "2118da31af22c744892fb073369184a2e77ea7f215d6b6648273791781be69a5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-1",
+            "THEME-2"
+          ],
+          "sha256": "6e15cf38edc19ffb9e113a1c9ed92b617d2b00e4dd7f066e44606e3af53b5446"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/theme/mod.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-2",
+            "THEME-3"
+          ],
+          "sha256": "07b505df49bbd202bb721b8c5f48d850d8442d2725c0968ad8fd97999f4a677d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/button.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "f1253a943bed25b134ec1506b8aec8f3db9b86a6339d8d92856b1783d5a818e7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/macros.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "029a02a13cc945f5372348b24f4d7455e09b8469a1af3923efbfe3f48b79da9c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_keys_view.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "6787df8a546b299173e8ce1162baee510c95baf7ceb728ca9ee4a3345057a1eb"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/button_view.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "4c3c37294012693ee37a7b52ebe9951327437ad713e0ccd4078db588aae42349"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/button_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "5fcf00b435730b1834f44a97cad37277b2a96e24463ab7685cfb9beb1a37bf89"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_modifiers_view.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-3"
+          ],
+          "sha256": "8dd2d608cb60943e4ab0a6fe855f01f8eb20dec3322bfe3caee91b2b2eddb9ad"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_modifiers_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-3"
+          ],
+          "sha256": "35c8a291e9a70bdc3332194616ecb29d5edacd80d48c2f942142c287d813f6c3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/src/gallery.tsx",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "7bf853917c83233953c4fe59a5d76eff7d2718e45b28ce4f5454ae5e26e879fc"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/components.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "6d301798469696bd64350c48757427379811eccac6118acd35fa802e6327cc5a"
+        },
+        {
+          "repositoryId": "root",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "df500cc4c39f61386197e4723e583d423f3e7318b6fdd979bffaf7a15c84d16e"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/references/theming.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "5d6048c5d4132dcece694ad9216cf35ddcaf566ed85fc25215e56cdc8de657b5"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".agentx/memory/decisions/workspace/2026-11-16-theme-documents.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "2b27c0319fc1c80dcf955cd328e50ef737c97f1bcb18ae916b543221849f006d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/tests/gallery_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-4",
+            "DOC-2"
+          ],
+          "sha256": "02cf7994566baecc17d0584d4c53fc0f3da515772a9e9237d7314d6ff6bfb063"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/provider.rs",
+          "kind": "source",
+          "criterionIds": [
+            "RES-1",
+            "TSS-1"
+          ],
+          "sha256": "b5ba87e342c82490d75743d984dda217105c0d3f6570485261356f6899c560e6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_provider.rs",
+          "kind": "test",
+          "criterionIds": [
+            "RES-1"
+          ],
+          "sha256": "a48211bbc0e38f8f7b85dcd7c0d1d86119a6afb96097133d4d8f4cfaa1b38c60"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/services.rs",
+          "kind": "source",
+          "criterionIds": [
+            "RES-2"
+          ],
+          "sha256": "963228a6caafe971d658571af6170b128548e610103aff9ea87f445e8ef7beaf"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/region.rs",
+          "kind": "source",
+          "criterionIds": [
+            "RES-2"
+          ],
+          "sha256": "4f2f1733aac51cb20feaedd830a46917bb93b51b25942bcf691543de6384fffa"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/i18n.rs",
+          "kind": "source",
+          "criterionIds": [
+            "RES-2"
+          ],
+          "sha256": "0827f2d70b0692321f8f100a48bf4c9b3c5f35d8e516507950bab217d1fe0165"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_class_names.rs",
+          "kind": "test",
+          "criterionIds": [
+            "RES-2",
+            "DOC-3"
+          ],
+          "sha256": "cfa461596b38ad361c4c5d58aa47c089a062d43aafcd90780527c3c0a867efe9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-1",
+            "BLD-2",
+            "BLD-3",
+            "TSS-1",
+            "TSS-3",
+            "TSS-5"
+          ],
+          "sha256": "44f7c9d4d137fdd93f1aecf24e4e77fe49deb474d7a88dbf513c5fe84caa7d10"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/options.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-2"
+          ],
+          "sha256": "0974e37a5e5bfd3bbb9f80939d4d5c3c8fa3857a0cd0ac5a758c059dff7fab91"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_builder.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-1"
+          ],
+          "sha256": "aba49f8eb488450d0d8f7448f320008fba4f50b770fcb469600da2734e73207e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_builder_options.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-2"
+          ],
+          "sha256": "e172b0d5af85abafcc1b806e0ccdd9314431e89fb806d27fe181b715d0720c63"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-3",
+            "BLD-4",
+            "REL-1"
+          ],
+          "sha256": "3577ce382f80cbedc5528b54bc51a17e9092f40f6dede721ee882ce0e6e5fe24"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_start.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-3"
+          ],
+          "sha256": "69345cf6336589f82ab2d55b47fd2cca2ce78b5708832fe46f1acdb184a8047f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_app_start.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-4",
+            "DOC-3"
+          ],
+          "sha256": "bae8e9f43492d1120ad45850831942496b9422ce474690c7a77279115856f8d6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/native_module.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "3e49ed40e1da5e6b6d0e3bc656f6219f4fd61f816e7b414466053cd76a33dbe6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6",
+            "TSS-4"
+          ],
+          "sha256": "6aabe6264ea65c593c572d82bf6ed550c3bfaac9e3bf1544fa05ca77407b7d84"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6",
+            "DOC-4"
+          ],
+          "sha256": "437a5c8b91cd5a920b5c28c66f7ee76fb336f493584e45dfd64f05cd2e4562b3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module_attribute.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "c3197125d18fc4bf62eeb954bd22eac003fb2fb7d9353a9c0d0300076f2e5fb1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "9f21a1f6348fcc62f6f5d34da2ca630abcc8fc8455297b998bc501512690ff9f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/container.rs",
+          "kind": "source",
+          "criterionIds": [
+            "TSS-1"
+          ],
+          "sha256": "8351237144f09540a4b22e02a5eeca239de6e0bc1e07e81915c9a970dfe99ef3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_container.rs",
+          "kind": "test",
+          "criterionIds": [
+            "TSS-1"
+          ],
+          "sha256": "051eeb8e8e6f493c561930d3be489284a8c39a61625e9888621681ba8cc11c91"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/startup.rs",
+          "kind": "source",
+          "criterionIds": [
+            "TSS-2"
+          ],
+          "sha256": "acae7220b086984148863dfdd499939d88ee7cd9d3cd3aac499e5a63553d29ef"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_startup.rs",
+          "kind": "test",
+          "criterionIds": [
+            "TSS-2"
+          ],
+          "sha256": "e188ff180184077839b49fd65383d13ab82a2f3dc85cd682915b21e4fa33d72b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/ready.rs",
+          "kind": "source",
+          "criterionIds": [
+            "TSS-3"
+          ],
+          "sha256": "7dfce39774b5752654db2ee7961568fead4b92f46a17e9117b2450ef7fb513bd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_ready.rs",
+          "kind": "test",
+          "criterionIds": [
+            "TSS-3"
+          ],
+          "sha256": "9db2ca24d5977e8a5e98494eef44abbaacbb5bc062fd308f467bf48eb4896d4a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/contract.rs",
+          "kind": "source",
+          "criterionIds": [
+            "TSS-4",
+            "DOC-4"
+          ],
+          "sha256": "f3010539b7283ccc50b30e3bd8c9574df4d96323090c837b572abd30b95c41f7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs",
+          "kind": "source",
+          "criterionIds": [
+            "TSS-4"
+          ],
+          "sha256": "62c47afc16a80580e2bea8cc20915b7ba585a05518ca9428b92554138bc6cf16"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_contracts.rs",
+          "kind": "test",
+          "criterionIds": [
+            "TSS-4"
+          ],
+          "sha256": "efed3518a7ed760e14fb4e3955209c8c7087a022a915b610234c3736c65449f6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/app_options.rs",
+          "kind": "source",
+          "criterionIds": [
+            "TSS-5"
+          ],
+          "sha256": "6f9c3d3e778b72df1885b2a8a14cadac40d40b0056b46d4c7c17eae84e89f3e5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_options.rs",
+          "kind": "test",
+          "criterionIds": [
+            "TSS-5"
+          ],
+          "sha256": "45b7b2d2b75b10f64f02553a8ab9cc0d3c945c12cd6a2716ed485d41e2999314"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new.rs",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "fe73144187f8c29b0e54bca4d3b3847c249788aa5ce617fa841250d0d2704405"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1",
+            "BLD-6"
+          ],
+          "sha256": "0a97c91f063bffdda1a388b5e1ccb8283e5fe326139a958c5b7bbf7f04d33035"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_App.tsx.in",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "934398f8468564c69fa2a338a4e6f0c163de741b4fae166ebe5145c6f80304d3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/rust_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "708de8969f6a7e68f320cd1ccf17e2b7e406a23ae4bda359f66469df945a2f1b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/README.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "2e1e4639d7ee8f87e41cf3ebaf74a7b6fa2177c61346f2415acfebfea07c995c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/cli/projects.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "dd9c6d97b75dc0af5cbfd4e64ea2f38615a1265ba179ab800a368403f0fbc399"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app_builder.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "36afa30c1ff3aa464e1b93fe00b239f8acbe7114996c2de879359c42f248862c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "93692484ff7362085fa4ecd12f6095df45089406ce7fc01ec484629c0c946485"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "1bdf03c68cd8e76d875d49be66e2e82224243d3a0c733ea89d368af229372c4e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "04d72713ce8484326943e766cceaa56bb77ef0720f8b066f546e10794f4bb198"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "91df44c9b8a7c35d4a88cba97054087748211a7cd7eb55ab876eab3e8c5340a2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/getting-started.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "dd4ab0de05e87d733e06b0c7ed5cd20be4b94f72bdeac3e38838c43b6e08dfd9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/startup.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "bbade2f0532ca55ca90b871320fe9a1999b7f1911a91f7c65ab7ee73b9372e06"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/dependency-injection.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "acc485288b8f887fa97c986df9ce5629d5b996a40da52f7a14708c65330e629b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/configuration.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "b9562ca51cee7106923b23b6047b075e3547158e5d826baa82665ee41b599910"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "f8807db186c5fc59b9319586a5bd2e4247ec59cb648a4241740b553e9fe69e01"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/navigation.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "3019e104f45df7c6e2204622ccb806f66cf929e300047b2aa53fbc145b631675"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/view-models.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "0141c55ad5fbe058cdc9168fa4f078dd5505162b8320f7e3aaed50be2465d10c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/architecture.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "6a0f69e4c4ea7c35f8fb1435b7b0f7286ef74c92f659d0bd191b352b30b2f5cd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "README.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "b355bca987ef23dcf3e3d0b7362088e229c3dc1b736e301ecb3e4ff763c28d74"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "12887e8de8fb114b4daee3c7ee63fc83ab0b2955b2b61068fd400b3e6f89ac47"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "58624ee35e515fa531c174bf525695052fbebcd940c5c0992dc533e551e26ebb"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-5"
+          ],
+          "sha256": "939fbd1d675702619879dbe253203d159df05582a8c8b0efc01f92a825ae8000"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/references/button.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-5"
+          ],
+          "sha256": "9a7466dc09f5cbde25c9c4c02fe0c4562ee31817943ce5d657df0c83b3e4aa35"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/references/building-components.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-5"
+          ],
+          "sha256": "5d27545f862ae7096ed07ae6e0550c8b2ddae927cd1e2ae8ed74d9f1b6b931e3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/app/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "d91f1f3988e387de88c6b3a12b79d8969472c36f607c6c93c386b66b3f0952ee"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/core/di/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "72e5508b032cf490c9d216025d864ea1910ed54200fdef07cd707a83ca47ef68"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/cli/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "1453f914b0bed2f46a10705eb4c53e88608cac2c5c09362b9e813da9e1cce068"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/dependencies/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "8a78a2fbd5371216ff98342212a59a308cab74f93197df86a68cfeedac9544d2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6",
+            "BLD-6"
+          ],
+          "sha256": "6fcb6cade782a97a29db302ed201901749f894d3f1d3a6bc66689f9a3dbdb2f3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs",
+          "kind": "test",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "165685c0fc6169d81b85d48d9c16e76085b7b27bdfd6bc219c8647db273f3a91"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs",
+          "kind": "test",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "3577ce382f80cbedc5528b54bc51a17e9092f40f6dede721ee882ce0e6e5fe24"
+        }
+      ],
+      "findingIds": [
+        "FR-1",
+        "FR-2"
+      ],
+      "recordedAt": "2026-11-16T15:20:11Z"
     }
   },
   "checkpoints": {
@@ -3199,11 +4152,22 @@
         "CORE-2",
         "BLD-4",
         "RES-2",
-        "BLD-6"
+        "BLD-6",
+        "REL-1"
       ],
       "severity": "minor",
-      "status": "open",
-      "descriptionMarkdown": "**Expected:** under the epic's constraint, every breaking change has a `Migration: apps: …` footer, and the footers together tell an app how to upgrade from the last release. **Observed:** release-plz would publish these unpushed commits' footers as the upgrade notes, and three gaps remain:\n\n1. **`6a6964c` adds variants to a public enum.** `ServiceResolutionError` (`crates/rayx_core/src/di/registry.rs:488`, exhaustive, not `#[non_exhaustive]`) had only `Missing` and now also has `MissingKey`, `WrongThread` and `Failed`. An app's exhaustive `match` on it stops compiling, and no footer says so.\n2. **`ac2ca48` removes Rust API the footers don't name.** The footers cover only TSX renames, `set_app` and `start()`. Also gone:\n   - `AppError::NoApp`, and `AppError::BuilderStarted` is new (`crates/rayx_app/src/surface.rs:18`, exhaustive).\n   - `rayx_app::start_app`. Its replacement, `start_async`, is named only as an alternative to `set_app`.\n   - The Rust structs `rayx_app::{I18n, Navigation, NavigationRegion, Storage, Platform, AppConfiguration, Assets, Fonts, DateFormat, DateLength, NumberFormat, NumberKind, TimeDetail}` and their `rayx::prelude` re-exports. They now live in `rayx_app::ts` under new names (`crates/rayx_app/src/lib.rs:97,128,132`). One trap: `rayx_app::ts::I18nService` has the same name as the prelude's `rayx_runtime` `I18nService` (`crates/rayx/src/lib.rs:106`).\n3. **`c6752a5` tells apps to adopt an API that never ships.** Its footer says a TSX app's crate \"becomes `rayx::native_module!(\\\"my-app\\\")`\", but `ab8e2d4` removed that macro in the same unreleased range. The release notes would contradict each other.\n\n**Failure scenario:** an app with a Rust bridge taking `Instance<rayx_app::I18n>`, or a `match` over `ServiceResolutionError` or `AppError`, upgrades from the release notes, fails to compile, and finds no migration line.\n\n**Repair:** before the push (the owner's go-ahead covers rewriting unpushed history), reword:\n- `6a6964c`: add a footer for the new `ServiceResolutionError` variants.\n- `ac2ca48`: add footers for `AppError::NoApp` → `BuilderStarted`, `start_app` → `start_async`, and the Rust classes moving to `rayx_app::ts` under the Rust service names.\n- `c6752a5`: drop or redirect its `native_module!` footer so the net instruction is `ab8e2d4`'s attribute form.",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** under the epic's constraint, every breaking change has a `Migration: apps: …` footer, and the footers together tell an app how to upgrade from the last release. **Observed:** release-plz would publish these unpushed commits' footers as the upgrade notes, and three gaps remain:\n\n1. **`6a6964c` adds variants to a public enum.** `ServiceResolutionError` (`crates/rayx_core/src/di/registry.rs:488`, exhaustive, not `#[non_exhaustive]`) had only `Missing` and now also has `MissingKey`, `WrongThread` and `Failed`. An app's exhaustive `match` on it stops compiling, and no footer says so.\n2. **`ac2ca48` removes Rust API the footers don't name.** The footers cover only TSX renames, `set_app` and `start()`. Also gone:\n   - `AppError::NoApp`, and `AppError::BuilderStarted` is new (`crates/rayx_app/src/surface.rs:18`, exhaustive).\n   - `rayx_app::start_app`. Its replacement, `start_async`, is named only as an alternative to `set_app`.\n   - The Rust structs `rayx_app::{I18n, Navigation, NavigationRegion, Storage, Platform, AppConfiguration, Assets, Fonts, DateFormat, DateLength, NumberFormat, NumberKind, TimeDetail}` and their `rayx::prelude` re-exports. They now live in `rayx_app::ts` under new names (`crates/rayx_app/src/lib.rs:97,128,132`). One trap: `rayx_app::ts::I18nService` has the same name as the prelude's `rayx_runtime` `I18nService` (`crates/rayx/src/lib.rs:106`).\n3. **`c6752a5` tells apps to adopt an API that never ships.** Its footer says a TSX app's crate \"becomes `rayx::native_module!(\\\"my-app\\\")`\", but `ab8e2d4` removed that macro in the same unreleased range. The release notes would contradict each other.\n\n**Failure scenario:** an app with a Rust bridge taking `Instance<rayx_app::I18n>`, or a `match` over `ServiceResolutionError` or `AppError`, upgrades from the release notes, fails to compile, and finds no migration line.\n\n**Repair:** before the push (the owner's go-ahead covers rewriting unpushed history), reword:\n- `6a6964c`: add a footer for the new `ServiceResolutionError` variants.\n- `ac2ca48`: add footers for `AppError::NoApp` → `BuilderStarted`, `start_app` → `start_async`, and the Rust classes moving to `rayx_app::ts` under the Rust service names.\n- `c6752a5`: drop or redirect its `native_module!` footer so the net instruction is `ab8e2d4`'s attribute form.\n\n**Resolved** by the corrective sprint `s5-release` (owner: \"Follow-up commit\"). `aa2217c` makes both enums `#[non_exhaustive]`, with compile and `compile_fail` doc tests (`c-error-enums-core`, `c-error-enums-app`). Its `Migration: apps:` footers cover each gap: the new `ServiceResolutionError` variants, `NoApp` → `BuilderStarted`, `start_app` → `start`/`start_async`, the full old→new mapping into `rayx_app::ts`, and the attribute form overriding the earlier `native_module!` note. The sealed commits were not rewritten.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs"
+        }
+      ],
       "boundaryId": "final"
     },
     {
@@ -3213,8 +4177,14 @@
         "BLD-6"
       ],
       "severity": "minor",
-      "status": "open",
-      "descriptionMarkdown": "**Expected:** RayX's memory states the landed shape, and a `current` decision record does not contradict the owner's later decisions or the source (DOC-6; AgentX: sync the narrowest affected memory after proven behavior changes). **Observed:** `.agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md` is `status: current`, and the epic maps d-native-attribute onto it (`buildsOn`). Two passages are now wrong:\n- Line 65 still decides \"A TSX app keeps a one-line Rust crate: `rayx::native_module!(\\\"my-app\\\")`\". The owner replaced that on 2026-11-16 with `#[rayx::native_module(\\\"my-app\\\")]` (d-native-attribute, disposition of d-native-module), and the macro is gone from the source.\n- Lines 19-21 say \"Until it lands, source still has the API it replaces (`set_app`, `AppServices.load()`, `X.of(app)`)\", which is false now.\n\nThe s4 review noted line 65 for promotion. But the runtime lists no promotion for this record (`promoteRequired` holds only d-theme-documents, `promoteCandidates` is empty), so nothing makes sure it gets done.\n\n**Failure scenario:** a later session reads the current app/tsx decision before a structural change and writes or recommends `rayx::native_module!(\\\"my-app\\\")`. That fails to compile, and NSH's `specifier_of` would prune the set on web.\n\n**Repair:** update the record:\n- Replace the bullet with the attribute form and the owner's 2026-11-16 reason (NSH's CLI reads the specifier from the `#[…native_module(\\\"…\\\")]` line).\n- Change the status line to say the epic landed.\n- Bump `updated` and keep the INDEX entry in step.\n- Re-run the memory audit.",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** RayX's memory states the landed shape, and a `current` decision record does not contradict the owner's later decisions or the source (DOC-6; AgentX: sync the narrowest affected memory after proven behavior changes). **Observed:** `.agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md` is `status: current`, and the epic maps d-native-attribute onto it (`buildsOn`). Two passages are now wrong:\n- Line 65 still decides \"A TSX app keeps a one-line Rust crate: `rayx::native_module!(\\\"my-app\\\")`\". The owner replaced that on 2026-11-16 with `#[rayx::native_module(\\\"my-app\\\")]` (d-native-attribute, disposition of d-native-module), and the macro is gone from the source.\n- Lines 19-21 say \"Until it lands, source still has the API it replaces (`set_app`, `AppServices.load()`, `X.of(app)`)\", which is false now.\n\nThe s4 review noted line 65 for promotion. But the runtime lists no promotion for this record (`promoteRequired` holds only d-theme-documents, `promoteCandidates` is empty), so nothing makes sure it gets done.\n\n**Failure scenario:** a later session reads the current app/tsx decision before a structural change and writes or recommends `rayx::native_module!(\\\"my-app\\\")`. That fails to compile, and NSH's `specifier_of` would prune the set on web.\n\n**Repair:** update the record:\n- Replace the bullet with the attribute form and the owner's 2026-11-16 reason (NSH's CLI reads the specifier from the `#[…native_module(\\\"…\\\")]` line).\n- Change the status line to say the epic landed.\n- Bump `updated` and keep the INDEX entry in step.\n- Re-run the memory audit.\n\n**Resolved** in `cc537c6`. The record's status line says the epic implemented it (2026-11-16) and the replaced API is gone from the source. The crate bullet names `#[rayx::native_module(\"my-app\")]`, gives the owner's reason and names the `weatherSourceToken()` token. `updated` is bumped, and the memory audit is OK.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
+      ],
       "boundaryId": "final"
     }
   ],

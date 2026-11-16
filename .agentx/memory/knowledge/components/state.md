@@ -41,6 +41,11 @@ Route work on RayX's components, its theme document and keys, and the gallery.
   `#[rayx::native_module("rayx-gallery/native")]` with `Glyph`; its toolbar picks the accent and
   density with `setModifier`.
 
+## Open follow-ups
+
+- A RayX `ThemeService` that picks the theme modifiers (OS, density, accent) from the platform or
+  the user's settings: the owner's later decision (2026-11-16); until then RayX sets none itself.
+
 ## Backlinks
 
 Code and docs: [docs/components.md](../../../../docs/components.md),
