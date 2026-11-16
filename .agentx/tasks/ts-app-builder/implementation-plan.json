@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 8,
+  "revision": 9,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -709,24 +709,15 @@
       "criterionIds": [
         "DOC-3"
       ],
-      "descriptionMarkdown": "No file names the old API any more: `git grep` finds nothing (exit 1). Today it finds 49 files.",
+      "descriptionMarkdown": "No file names the old API any more: `git grep` finds nothing (`! git grep …` exits 0; a match prints it and fails). Today it finds 49 files.",
       "argv": [
-        "git",
-        "grep",
-        "--untracked",
-        "-n",
-        "-E",
-        "AppServices|ServiceScope|set_app[(,;}` ]|\\.of\\(app",
-        "--",
-        "docs",
-        "crates",
-        "examples",
-        "README.md",
-        "AGENTS.md"
+        "sh",
+        "-c",
+        "! git grep --untracked -n -E 'AppServices|ServiceScope|set_app[(,;}` ]|\\.of\\(app' -- docs crates examples README.md AGENTS.md"
       ],
       "cwd": ".",
       "expected": {
-        "exitCode": 1
+        "exitCode": 0
       },
       "inputs": [
         "docs/**",
@@ -974,24 +965,15 @@
         "THEME-2",
         "THEME-4"
       ],
-      "descriptionMarkdown": "No RayX file names the old theme system: `git grep` finds nothing (exit 1).",
+      "descriptionMarkdown": "No RayX file names the old theme system: `git grep` finds nothing (`! git grep …` exits 0; a match prints it and fails).",
       "argv": [
-        "git",
-        "grep",
-        "--untracked",
-        "-n",
-        "-E",
-        "RayXTheme|RayXThemePatch|rayx_theme!|rayx_patch!|rayx\\(\\)\\.(theme|platform)|theme_of|set_theme|update_theme|reset_theme|Themes\\.set|theme/tokens\\.rs",
-        "--",
-        "docs",
-        "crates",
-        "examples",
-        "README.md",
-        "AGENTS.md"
+        "sh",
+        "-c",
+        "! git grep --untracked -n -E 'RayXTheme|RayXThemePatch|rayx_theme!|rayx_patch!|rayx\\(\\)\\.(theme|platform)|theme_of|set_theme|update_theme|reset_theme|Themes\\.set|theme/tokens\\.rs' -- docs crates examples README.md AGENTS.md"
       ],
       "cwd": ".",
       "expected": {
-        "exitCode": 1
+        "exitCode": 0
       },
       "inputs": [
         "docs/**",
@@ -1009,21 +991,15 @@
         "THEME-2",
         "THEME-4"
       ],
-      "descriptionMarkdown": "No RayX.Root guide or skill names the old theme system: `git grep` finds nothing (exit 1).",
+      "descriptionMarkdown": "No RayX.Root guide or skill names the old theme system: `git grep` finds nothing (`! git grep …` exits 0; a match prints it and fails).",
       "argv": [
-        "git",
-        "grep",
-        "--untracked",
-        "-n",
-        "-E",
-        "RayXTheme|RayXThemePatch|rayx_theme!|rayx_patch!|rayx\\(\\)\\.(theme|platform)|theme_of|set_theme|update_theme|Themes\\.set|tokens\\.rs",
-        "--",
-        "AGENTS.md",
-        ".claude/skills"
+        "sh",
+        "-c",
+        "! git grep --untracked -n -E 'RayXTheme|RayXThemePatch|rayx_theme!|rayx_patch!|rayx\\(\\)\\.(theme|platform)|theme_of|set_theme|update_theme|Themes\\.set|tokens\\.rs' -- AGENTS.md .claude/skills"
       ],
       "cwd": ".",
       "expected": {
-        "exitCode": 1
+        "exitCode": 0
       },
       "inputs": [
         "AGENTS.md",

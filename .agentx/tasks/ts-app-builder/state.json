@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 22,
-  "planRevision": 8,
+  "revision": 41,
+  "planRevision": 9,
   "specHashes": {
     "requirements": "aa6c61c1c957b8e0f17575780536f5d4fde147acd96a76b62127f13aab151a2b",
     "design": "96921cc196f6c3ef45bb7d7d8580ac5d13b8c4c509f2c43694d4efd3f0b55702",
-    "plan": "e2cc1b0c9718d582f6449b3af888dee79e964f431333a9dfc8bc985badd09b20"
+    "plan": "6457a828b92d88f51d4b75ba512e24ea14885bfad0a72d7c1907ed4943c68d1e"
   },
   "tasks": {
     "t01-runtime-keys": {
@@ -34,7 +34,10 @@
       ]
     },
     "t05-nsh-pin": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t06-ts-provider": {
       "status": "pending"
@@ -88,16 +91,28 @@
       "status": "pending"
     },
     "t23-theme-document": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t24-theme-keys": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t25-theme-modifiers": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t26-theme-consumers": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     }
   },
   "validationBatches": {
@@ -110,6 +125,26 @@
         }
       },
       "recordedAt": "2026-11-16T11:17:30Z"
+    },
+    "577ebd0331c02c362b04bc1a4505048e3dcb2043e69590fa005c9889493d3579": {
+      "snapshot": {
+        "specHash": "90bdc3a90d089b980b2815a6d88581574052c776efd92c8c4d3bac286be8dbdc",
+        "repositories": {
+          "rayx": "c751595f775b568b107c0e1cc5aa57dfca429982542c13250b1d97e4e5d7f31e",
+          "root": "d6f7d386701979fd19d40449af1195b55f390ddd0a392ca8ee27f4a5e1d69a98"
+        }
+      },
+      "recordedAt": "2026-11-16T12:14:12Z"
+    },
+    "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8": {
+      "snapshot": {
+        "specHash": "90bdc3a90d089b980b2815a6d88581574052c776efd92c8c4d3bac286be8dbdc",
+        "repositories": {
+          "rayx": "9074697f8ef8444d5d331abee68f17f1b47d50065b9759c42cb005947f914315",
+          "root": "9093bfba3f57cc1a8641dc72e7bf964c63185093204cd5be52545af5dbdb6883"
+        }
+      },
+      "recordedAt": "2026-11-16T12:23:58Z"
     }
   },
   "checkResults": {
@@ -197,6 +232,159 @@
       "logPath": "artifacts-temp/agentx/ts-app-builder/s1-core-final-79a5cf5db107.log",
       "logSha256": "5f117314c8b8c4cc6a419f716d9dd1017927007c4a25d3be1d9595b153ad6636",
       "inputsHash": "3d465664f587667c8bbd3df121514064165fbac14b132613dbc02a0a3ec1aae0"
+    },
+    "s2-theme/c-nsh-pin/final": {
+      "checkId": "c-nsh-pin",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "577ebd0331c02c362b04bc1a4505048e3dcb2043e69590fa005c9889493d3579",
+      "definitionHash": "123b54648a0d4162d0205b267231bd128079c5c2f5c9623639f52980ab88c8a9",
+      "basisHash": "2d7ef429fd1022c0e373f80986a7b321c81727aba221a85dcca51292adaee984",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 36,
+      "durationSeconds": 2.3838,
+      "recordedAt": "2026-11-16T12:14:12Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-2a6bf50c3a57.log",
+      "logSha256": "86656cfb859ee3f9d3c7ec90ecb2c3d0924d80a3e490a62032053245aba32939",
+      "inputsHash": "1c88568c82c148f1338bbb353811271772ecc113cde48ef19ddce3451c158e20"
+    },
+    "s2-theme/c-theme-codegen/final": {
+      "checkId": "c-theme-codegen",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "01109d3c06d973a798ef8bebf96f0cce45aae0272327fdaa3c56f6a7950ba539",
+      "basisHash": "88fcf3ccb76028277e47a87ea2335c94404a35eec92dc38fa8089cefee06edfd",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 15,
+      "durationSeconds": 0.4375,
+      "recordedAt": "2026-11-16T12:23:55Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-442ec0b40999.log",
+      "logSha256": "c79f48848918b2fcd7f1b4f52827b9460c4cd99720446b435253ed7001bcc185",
+      "inputsHash": "0dc9e75f4f6e89fd4c8f8aac2fe3d78e05346c7dd2910d86320305fc54698f0f"
+    },
+    "s2-theme/c-theme-document/final": {
+      "checkId": "c-theme-document",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "c4898f784aa48f55572733b7440742a1106ad64d26ed447b0869459d5a2a00e8",
+      "basisHash": "fe1ee59a695d33bedc911dd0df8382fa9e0a43dd0973d6c360fbab0534e2bc5e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.3732,
+      "recordedAt": "2026-11-16T12:23:55Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-92a8a3b8bd06.log",
+      "logSha256": "000e745db149de3fc609bd74d6e20f1a03a7c54245f435027bafc3f6f2979cc1",
+      "inputsHash": "6ef35e25453afe9c9bef300be1d371fcc00f4d3e41a955ca6a2f4b64469f1a99"
+    },
+    "s2-theme/c-theme-keys/final": {
+      "checkId": "c-theme-keys",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "ca95cee581995b7af44f5c12d4cb3445967d8df62124141ace88be2a03228247",
+      "basisHash": "48976f432eb88803c5f34772d124fc203a68fdcd8874a32cb099dcf1a2926690",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.3012,
+      "recordedAt": "2026-11-16T12:23:55Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-00ef7f9b3e91.log",
+      "logSha256": "2a630e4bef732935154c91593713833080de4fe92e6ef3d95f1aad959f07b082",
+      "inputsHash": "6ef35e25453afe9c9bef300be1d371fcc00f4d3e41a955ca6a2f4b64469f1a99"
+    },
+    "s2-theme/c-button/final": {
+      "checkId": "c-button",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "c8163119ff783cbe5773f6ea5d1d6dabd06048ed02901a30e2503341b4208927",
+      "basisHash": "1a47c04babf7a1d71039ac158dcdaf8aabc8c6ce606e70384747f4f7d6633aa2",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 0.9738,
+      "recordedAt": "2026-11-16T12:23:56Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-b343dfbcd9bf.log",
+      "logSha256": "8adc6d0c43768ab95af3c1b0127cfbfe038e0dfc2d5db8e0b8ffedc930296252",
+      "inputsHash": "6ef35e25453afe9c9bef300be1d371fcc00f4d3e41a955ca6a2f4b64469f1a99"
+    },
+    "s2-theme/c-theme-modifiers/final": {
+      "checkId": "c-theme-modifiers",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "29c170911df8eaab1fc6db37f6e90c11d0298eed851f1381e6cb663f1b8ecc3e",
+      "basisHash": "ccdc11bcb6d457bd468cb3fa390740be57b441475801cc6e2347abb31e7016ad",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 0.8786,
+      "recordedAt": "2026-11-16T12:23:57Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-958634650c97.log",
+      "logSha256": "dd40de2ef61d3e8ca0ed62f11fc584df9864c79acf8cfb5a96b1da03c66fe0e5",
+      "inputsHash": "6ef35e25453afe9c9bef300be1d371fcc00f4d3e41a955ca6a2f4b64469f1a99"
+    },
+    "s2-theme/c-gallery-theme/final": {
+      "checkId": "c-gallery-theme",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "091c769836402691a26c58ff9a42ab2dd23f1e785cf329dcb229680911ef29cd",
+      "basisHash": "bb7fc04bcadb3f7d1ca42a73d07a4177ff0b308660d5c3719aed70326b8d2bc8",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 0.9885,
+      "recordedAt": "2026-11-16T12:23:58Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-175ea50ac85d.log",
+      "logSha256": "2ca081d3b831ee65b8577ccb2fd4c0fd533d90d3e6c09efcd5001a3e4b3aba27",
+      "inputsHash": "f9e5ec66afb8182f7e0878294eb88a276b1d8b49a2acc5dd963cd05978cc7733"
+    },
+    "s2-theme/c-no-old-theme-rayx/final": {
+      "checkId": "c-no-old-theme-rayx",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "6b62e5f67014d88103662d643cbb4806907c79bb79fa9cf59744101296b571d4",
+      "basisHash": "bafeab57aeaf00a16c80dbae91cdaad5cac4c4fb5f9bfbf156a153fedce60272",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0599,
+      "recordedAt": "2026-11-16T12:23:58Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-323593bdc5e9.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "24dd6223054e0e7c0282858614189087c08c5753a0e6888aacfc9beb7ac94824"
+    },
+    "s2-theme/c-no-old-theme-root/final": {
+      "checkId": "c-no-old-theme-root",
+      "boundaryId": "s2-theme",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "d52c505249948c9deaae33af67d6b802e717c484b423c680b5cb3c6e3980bfd6",
+      "basisHash": "bff44d8271d3628c03bfdac73981baf0621d10a97ca7ebc277716d56a42cfd53",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0267,
+      "recordedAt": "2026-11-16T12:23:58Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-58e8cee66399.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "2ab429c305e6b1b1b91cec380798ea68bbac67d841e33836878ad7a643c0bb3e"
     }
   },
   "reviews": {
@@ -326,6 +514,277 @@
         "s1-core-f3-orphan-drain-docs"
       ],
       "recordedAt": "2026-11-16T11:19:13Z"
+    },
+    "s2-theme": {
+      "reviewerId": "s2-theme-reviewer-f02c9bd0",
+      "snapshotId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "criterionIds": [
+        "NSH-1",
+        "THEME-1",
+        "THEME-2",
+        "THEME-3",
+        "THEME-4"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/theme_codegen.py",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "e5a31a141e6cd47304ebad2f566fa0b4150d904175f0989c434c06be114e6712"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/test_theme_document.py",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "1157b541b6349be0de1a3ca49da1e430f9c45085724d80780ed96cb181b92f93"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/theme.json",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-1",
+            "THEME-3"
+          ],
+          "sha256": "7a227fe72460f269f8b92c1c8316176c66ef8e68d5e2bf36356f0ca3e9e0e2a5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-1",
+            "THEME-2"
+          ],
+          "sha256": "6e15cf38edc19ffb9e113a1c9ed92b617d2b00e4dd7f066e44606e3af53b5446"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_document.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-1"
+          ],
+          "sha256": "2118da31af22c744892fb073369184a2e77ea7f215d6b6648273791781be69a5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/support/mod.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-1",
+            "THEME-2",
+            "THEME-3"
+          ],
+          "sha256": "c1cb6a5f9f1e2abb0b3adae4bb5fbbe4068bcca582605892dbe357c3e7282a3a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/theme/mod.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-2",
+            "THEME-3"
+          ],
+          "sha256": "07b505df49bbd202bb721b8c5f48d850d8442d2725c0968ad8fd97999f4a677d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/macros.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "029a02a13cc945f5372348b24f4d7455e09b8469a1af3923efbfe3f48b79da9c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/src/button.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "f1253a943bed25b134ec1506b8aec8f3db9b86a6339d8d92856b1783d5a818e7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_keys_view.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "6787df8a546b299173e8ce1162baee510c95baf7ceb728ca9ee4a3345057a1eb"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/button_view.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "4c3c37294012693ee37a7b52ebe9951327437ad713e0ccd4078db588aae42349"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/button_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-2"
+          ],
+          "sha256": "5fcf00b435730b1834f44a97cad37277b2a96e24463ab7685cfb9beb1a37bf89"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_modifiers_view.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-3"
+          ],
+          "sha256": "8dd2d608cb60943e4ab0a6fe855f01f8eb20dec3322bfe3caee91b2b2eddb9ad"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_modifiers_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-3"
+          ],
+          "sha256": "35c8a291e9a70bdc3332194616ecb29d5edacd80d48c2f942142c287d813f6c3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/src/gallery.tsx",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "7bf853917c83233953c4fe59a5d76eff7d2718e45b28ce4f5454ae5e26e879fc"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "10697b60a59b241a5a42e2a5dc7fa0cd08c8ee801e1985010279847b760aa07b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/tests/gallery_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "02cf7994566baecc17d0584d4c53fc0f3da515772a9e9237d7314d6ff6bfb063"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "bbd122d9ac1e4910f33e8aa069063c954cd7b01fdef41efedaac5aa9dd3a86c4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/umbrella.rs",
+          "kind": "test",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "08c68b38cfd1bc4876289e61b196e6cb8f128e5f5bf51f7d35c0c5ab6678a00e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/components.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "1f8cbb8a498899c56ada522a729e7660341568ce3e27f0b4952ef85ed523f451"
+        },
+        {
+          "repositoryId": "root",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "df500cc4c39f61386197e4723e583d423f3e7318b6fdd979bffaf7a15c84d16e"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/references/theming.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "5d6048c5d4132dcece694ad9216cf35ddcaf566ed85fc25215e56cdc8de657b5"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".agentx/memory/decisions/workspace/2026-11-16-theme-documents.md",
+          "kind": "source",
+          "criterionIds": [
+            "THEME-4"
+          ],
+          "sha256": "2b27c0319fc1c80dcf955cd328e50ef737c97f1bcb18ae916b543221849f006d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "7044855d40f92b957f76ade8c803a364fafc284b1fe7e2e4954b03a5736f3368"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/project/pins.rs",
+          "kind": "source",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "0c47ba486d5f8dbaa77fd1eb8b7e5abba0635fa68f40480816812143543a0c29"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/.cargo/config.toml",
+          "kind": "source",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "b2bbb012c5dcf5a8a7ce5bf10458a6047e41e41a181678f8a506e1ecdda06c6e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/nsh_pin.rs",
+          "kind": "test",
+          "criterionIds": [
+            "NSH-1"
+          ],
+          "sha256": "435ea6d29a0588f86e9cd3ab83227def80ee552a3f1f59520dce0465ad2b9d0c"
+        }
+      ],
+      "summaryMarkdown": "Passed. All five findings of the first review are resolved. I inspected the repair delta:\n\n- `theme_keys_view::a_bound_text_style_follows_its_tokens`: a `bind_text_style(text, text_style_keys!(typography::h3))` node shows desktop's h3 and then, on the same node, touch's after `Density::Touch.set()`, with desktop != touch asserted first.\n- The appearance test now binds `surfaces::APP` and asserts that Light != Dark before switching. Brand and Reset act on `APP`.\n- `FixtureCommands` runs on the fixture only. `check` exits 1 for a missing file, `write` 0, `check` 0, and `check` 1 after one value is edited. A density token aliasing the accent color raises a `CodegenError` naming `borders-tint`, and `write` exits 2.\n- `document()` now derives each token's owning modifier from `ROOTS` and stops on strays.\n- `theming.md:211`, components `knowledge.md` and `SKILL.md:131-135` are corrected.\n\nI reran the Python group (15 OK). `theme_codegen.py check` still reports `theme.json` current. The Rust groups' fresh passing results come from `check` at revision 39.\n\nThe first review's assessment of NSH-1 and THEME-1..4 stands: the pin, no old-theme API, no modifier set by RayX, Light/Dark outside the modifiers, Button token-for-token unchanged, and the document equal to the old dump in all 24 combinations.",
+      "findingIds": [
+        "s2-theme-bind-text-style-untested",
+        "s2-theme-check-test-conditional",
+        "s2-theme-roots-modifier-unused",
+        "s2-theme-dark-step-vacuous",
+        "s2-theme-stale-docs-memory"
+      ],
+      "recordedAt": "2026-11-16T12:25:07Z"
     }
   },
   "checkpoints": {
@@ -337,6 +796,15 @@
       },
       "reviewHash": "84eac876d05446889a4746cf700a09d969d47d0052059f70b096a41d644065b9",
       "recordedAt": "2026-11-16T11:22:06Z"
+    },
+    "s2-theme": {
+      "snapshotId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "commits": {
+        "rayx": "415df1fa3b4a2b83197fd64a5c5018a89dd142c3",
+        "root": "a468d4ef1f75da8702ff0ec2fe54b5eed035a776"
+      },
+      "reviewHash": "6f9e3655c322735ce8f12cb873fab34b9be57fc638a3750fded4d64d50ce5292",
+      "recordedAt": "2026-11-16T12:25:48Z"
     }
   },
   "findings": [
@@ -409,6 +877,94 @@
         }
       ],
       "boundaryId": "s1-core"
+    },
+    {
+      "id": "s2-theme-bind-text-style-untested",
+      "boundaryId": "s2-theme",
+      "criterionIds": [
+        "THEME-2"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** t24 moves the old groups' still-valid assertions into the new groups, and THEME-2 requires that a key read in a binding follows a modifier change. The old `theme_view` group asserted that `bind_text_style` follows a density switch: font size, line height and letter spacing on the same view.\n\n**Observed:** `bind_text_style` was rewritten onto `TextStyleKeys` (`crates/rayx_components/src/theme/mod.rs:305`, with the weight now an `untracked` snapshot), and `text_style_keys!` (`mod.rs:173`) is new. `theme_view` was deleted, and no test group calls either one: `grep -rn bind_text_style crates/rayx_components/tests examples/gallery/native` finds nothing. Only a `no_run` doctest compiles them. `Button` does not use them.\n\n**Failure scenario:** a regression in `bind_text_style` passes every sprint check. For example, a binding that reads the keys outside its closure would freeze the text style after `Density::Touch.set()`. Yet `docs/components.md`, `theming.md` and `SKILL.md` all present it as the way to apply a text style.\n\n**Repair:** add a case to `theme_keys_view` or `theme_modifiers_view`: a `bind_text_style(text(..), text_style_keys!(keys::platform::density::typography::h3))` view whose `text_styles` change from Desktop's to Touch's h3 values on the same node after `Density::Touch.set()`, with the expected values written as literals (as `button_view` does).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_keys_view.rs"
+        }
+      ]
+    },
+    {
+      "id": "s2-theme-check-test-conditional",
+      "boundaryId": "s2-theme",
+      "criterionIds": [
+        "THEME-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** t23 asks the new group to test `check` on a stale document *on a small fixture export*, so that THEME-1's \"`check` exits 1 when the committed document is not what the export generates\" is proven wherever the group runs.\n\n**Observed:** the only `check` test (`.claude/skills/rayx-components/scripts/test_theme_document.py:214-223`, `Commands`) uses the real export, and is skipped when `RayX.Design` is not beside RayX.Root. The fixture classes never call `main`, though `main` already takes `--tokens` and `--out`. I confirmed by hand that `check` exits 1 for an edited copy and for a missing file.\n\n**Failure scenario:** in a checkout or CI run without RayX.Design, `c-theme-codegen` passes (the fixture tests satisfy `minimumTests`), even if `check` were broken to always exit 0.\n\n**Repair:** in `FixtureExport`, write the fixture's `generate(self.dir)` to a temp file. Assert that `main(['check','--tokens',dir,'--out',stale])` returns 1 for a changed file and for a missing one, and that `write` followed by `check` returns 0.",
+      "regressionRefs": [
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/test_theme_document.py"
+        }
+      ]
+    },
+    {
+      "id": "s2-theme-roots-modifier-unused",
+      "boundaryId": "s2-theme",
+      "criterionIds": [
+        "THEME-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** `theming.md:211` says \"`ROOTS` says which modifier picks each collection's values\", and THEME-1 requires each context to override exactly the tokens its mode changes.\n\n**Observed:** the modifier column of `ROOTS` (`.claude/skills/rayx-components/scripts/theme_codegen.py:56-61`) is never read: `declared` iterates `for root, _ in ROOTS` (`:315`). Instead, `document` (`:390-399`) diffs every token against the base for every modifier, with the other modifiers at their defaults. Today's export has no token that two modifiers change (I checked: the overlap is 0), so the output is correct. The implementer's 24-combination comparison confirms this, and I reran it: 0 differences.\n\n**Failure scenario:** a future export with a `platform.density` token aliasing an accent color would get that token into both the `accent` and `density` contexts. NSH's later-modifier-wins rule (`theme_modifiers.rs` `tokens()`) would then draw `(sky, touch)` with the density context's value, which was computed at cyan. The generator would write it silently, and only `theme_modifiers_view::each_context_changes_only_tokens_of_its_collections` would catch it after the fact.\n\n**Repair:** either use `ROOTS`' modifier column, so that `document` raises `CodegenError` when a context changes a token outside its collections (with a fixture test for that), or drop the column and correct `theming.md:211`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/theme_codegen.py"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/scripts/test_theme_document.py"
+        }
+      ]
+    },
+    {
+      "id": "s2-theme-dark-step-vacuous",
+      "boundaryId": "s2-theme",
+      "criterionIds": [
+        "THEME-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** `theme_keys_view::a_binding_follows_the_appearance_and_the_apps_tokens` proves that a document token read through a key follows Light/Dark.\n\n**Observed:** it uses `roles-primary-bg`, which in the default (cyan) context is the same in Light and Dark (`cssVars.theme`: `#007796ff`). So `app.press(\"Dark\"); app.wait(|s| bg(s) == Some(dark))` (`crates/rayx_components/tests/theme_keys_view.rs:110-114`) passes at once, before the appearance changes. The later `Brand` step does show that the appearance reached Dark, but only for an app-set color. The document case is covered elsewhere, for sky only, in `theme_modifiers_view::light_and_dark_follow_the_appearance_in_a_context`.\n\n**Failure scenario:** if `TokenKey::get` stopped reading the appearance for document tokens, this step would still pass.\n\n**Repair:** bind a token that differs between Light and Dark at the defaults (for example `surfaces::APP`, `#f5f5f5ff` / `#0a0a0aff`), and assert `light != dark` before pressing Dark.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_components/tests/theme_keys_view.rs"
+        }
+      ]
+    },
+    {
+      "id": "s2-theme-stale-docs-memory",
+      "boundaryId": "s2-theme",
+      "criterionIds": [
+        "THEME-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Expected:** THEME-4 requires the docs, the skill and memory to describe the document, the keys and the modifiers. No current knowledge may describe the removed system as live.\n\n**Observed:**\n\n- RayX `.agentx/memory/knowledge/components/knowledge.md:18-21` (status current) still explains that `RayXTheme`'s `AppTheme` is written by hand with roles in `roles.rs`.\n- The same file's line 28 cites the deleted group `theme_tsx`.\n- RayX.Root `.claude/skills/rayx-components/SKILL.md:131-134` says crates.io's NSH \"lacks the theme API (`AppTheme`, `TokenSpec`, `nsh_base::role`)\", but on `nshx-0.5.0-4` those names no longer exist, and what upstream lacks is theme documents and typed keys.\n\nNeither static grep's pattern covers these names, and the RayX grep excludes `.agentx/`.\n\n**Failure scenario:** a later session reads the `components` knowledge or SKILL.md, believes RayX still has a hand-written `AppTheme` and `roles.rs` (or that a missing `AppTheme` is the symptom to look for), and looks for or restores the removed system.\n\n**Repair:** mark the `AppTheme`/`roles.rs` bullet historical or remove it (the role mapping now lives in `ROLE_TOKENS` in the generator), point the `leading`/`tracking` bullet at `theme_modifiers_tsx`, and reword SKILL.md:134 to name what crates.io's NSH lacks (theme documents, `theme_keys!`, modifiers).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/components/knowledge.md"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md"
+        }
+      ]
     }
   ],
   "handoffMarkdown": "",
