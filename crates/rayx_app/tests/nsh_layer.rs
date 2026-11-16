@@ -1,5 +1,6 @@
 //! The NSH layer through NSH's engine, headless: a root provider per surface, a scope per
-//! screen from its mount to its cleanup (Rust components, and TSX through `ServiceScope`), and
+//! screen from its mount to its cleanup (Rust components, and TSX through `ServiceProvider`'s
+//! scopes), and
 //! view models active while their screen is mounted.
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
@@ -25,14 +26,15 @@ use nsh_core::{
     prelude::*,
 };
 use nsh_engine::{App, Bundle, Engine, EngineConfig, LocalEngine, MountSink};
+use rayx_app::ts::ServiceProvider as TsServices;
 use rayx_app::{
-    ActivatableViewModel, AppService, AppServices, AppState, ConfigurationAppBuilderExt,
-    RayXAppBuilder, ServiceAppBuilderExt, ServiceScope, ViewModelActivator, app_state,
+    ActivatableViewModel, AppBuilder as _, AppService, AppState, ConfigurationAppBuilderExt,
+    RayXAppBuilder, ServiceAppBuilderExt, StartAppBuilderExt as _, ViewModelActivator, app_state,
     di::{
         AsyncInitializable, StartupInitializable, StartupInitializationContext,
         StartupInitializationResult, StartupInitializationState, StartupServiceType,
     },
-    services, set_app, use_screen_scope, use_view_model,
+    services, use_screen_scope, use_view_model,
 };
 use tokio::sync::oneshot;
 
@@ -207,9 +209,16 @@ fn next_id() -> usize {
     NEXT_ID.fetch_add(1, Ordering::SeqCst)
 }
 
-/// The app's composition root, as a GameX `with_*` extension would register it.
+/// The app's composition root, as a GameX `with_*` extension would register it. `BUILDS`
+/// counts the roots built from it (the store, a startup service, is made once per root).
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    BUILDS.fetch_add(1, Ordering::SeqCst);
+    let mut builder = builder;
+    builder
+        .services_mut()
+        .try_add_app_service_factory::<Store>(|_| {
+            BUILDS.fetch_add(1, Ordering::SeqCst);
+            Store::default()
+        });
     builder
         .configure_app_configuration(|configuration| {
             configuration.add_value(serde_json::json!({ "Pages": { "Title": "Pages" } }));
@@ -228,7 +237,6 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
                 )
                 .validate_on_start();
         })
-        .add_startup_singleton(Store::default())
         .add_startup_singleton(Catalog::default())
         .add_singleton(Session { id: next_id() })
         .add_scoped(|_| PageState { id: next_id() })
@@ -306,7 +314,7 @@ struct PageProps {
 /// stack; the second closes when the test says so.
 #[component]
 fn Pages() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     let routes = signal(vec![0_u32, 1]);
     let close = CLOSE.with(|c| c.borrow_mut().take());
     spawn(async move {
@@ -373,7 +381,6 @@ fn start_pages() -> (
 #[test]
 fn nsh_layer_builds_one_root_provider_per_surface() {
     let _serial = serial();
-    set_app(build_app);
     SEEN.with_borrow_mut(Vec::clear);
     let builds = BUILDS.load(Ordering::SeqCst);
 
@@ -401,7 +408,6 @@ fn nsh_layer_builds_one_root_provider_per_surface() {
 #[test]
 fn nsh_layer_gives_a_screen_a_scope_from_mount_to_cleanup_and_activates_its_view_model() {
     let _serial = serial();
-    set_app(build_app);
     SEEN.with_borrow_mut(Vec::clear);
     let (mut engine, rx, close) = start_pages();
     pump_until(&mut engine, &rx, "page 1");
@@ -443,7 +449,6 @@ fn nsh_layer_gives_a_screen_a_scope_from_mount_to_cleanup_and_activates_its_view
 #[test]
 fn nsh_layer_starts_the_app_once_every_startup_service_initialized() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(OK);
     SEEN.with_borrow_mut(Vec::clear);
     let (mut engine, rx, _close) = start_pages();
@@ -466,7 +471,6 @@ fn nsh_layer_starts_the_app_once_every_startup_service_initialized() {
 #[test]
 fn nsh_layer_fails_startup_when_a_service_fails_to_initialize() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(FAIL);
     SEEN.with_borrow_mut(Vec::clear);
     let (mut engine, rx, _close) = start_pages();
@@ -488,7 +492,6 @@ fn nsh_layer_fails_startup_when_a_service_fails_to_initialize() {
 #[test]
 fn nsh_layer_fails_startup_when_a_service_times_out() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(HANG);
     let (mut engine, rx, _close) = start_pages();
 
@@ -508,7 +511,6 @@ fn nsh_layer_fails_startup_when_a_service_times_out() {
 #[test]
 fn nsh_layer_fails_startup_when_options_validated_on_start_fail() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(INVALID_OPTIONS);
     SEEN.with_borrow_mut(Vec::clear);
     let (mut engine, rx, _close) = start_pages();
@@ -535,9 +537,9 @@ thread_local! {
 /// A component that starts the app (as a Rust root's child would).
 #[component]
 fn Starter(props: StarterProps) -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     if props.twice {
-        rayx_app::start();
+        build_app(RayXAppBuilder::new()).start();
     }
     let name = props.name;
     text(move || format!("{name} {:?}", app_state()))
@@ -582,7 +584,6 @@ fn Restarter() -> impl IntoElement {
 #[test]
 fn nsh_layer_shares_one_startup_and_carries_it_on_when_its_caller_is_cancelled() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(SLOW);
     let builds = BUILDS.load(Ordering::SeqCst);
     let (switch, switched) = oneshot::channel();
@@ -620,14 +621,24 @@ fn nsh_layer_shares_one_startup_and_carries_it_on_when_its_caller_is_cancelled()
 /// The view model `Probe.page` resolved last.
 static TSX_VIEW_MODEL: Mutex<Option<Arc<PageViewModel>>> = Mutex::new(None);
 
-/// What TSX resolves through a `ServiceScope`, for the JS test.
+/// What TSX resolves through a `ServiceProvider`'s scopes, for the JS test.
 #[module]
 struct Probe;
 
 #[module]
 impl Probe {
+    /// Adds the app's services to `builder`.
+    pub(crate) fn add_app(
+        builder: Instance<rayx_app::ts::RayXAppBuilder>,
+    ) -> Result<Instance<rayx_app::ts::RayXAppBuilder>, String> {
+        builder
+            .with_mut(|builder| builder.extend(build_app))
+            .map_err(|e| e.to_string())?;
+        Ok(builder)
+    }
+
     /// The page id of the scope's view model, activating it until the scope is disposed.
-    pub(crate) fn page(scope: Instance<ServiceScope>) -> Result<u32, String> {
+    pub(crate) fn page(scope: Instance<TsServices>) -> Result<u32, String> {
         scope.with_mut(|scope| {
             let view_model = scope
                 .view_model::<PageViewModel>()
@@ -654,8 +665,8 @@ impl Probe {
 
     /// Whether the root's singleton is the one the scope sees.
     pub(crate) fn same_session(
-        app: Instance<AppServices>,
-        scope: Instance<ServiceScope>,
+        app: Instance<TsServices>,
+        scope: Instance<TsServices>,
     ) -> Result<bool, String> {
         let root = app
             .with(|app| app.services().required_service::<Session>())
@@ -678,16 +689,16 @@ impl Probe {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { AppServices, Probe } from "test/app";
+import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const before = Probe.dropped();
-  const app = await AppServices.load();
+  const app = await Probe.addApp(new RayXAppBuilder()).start();
   lines.push(Probe.started());
-  const screen = app.scope();
-  const inner = screen.child();
+  const screen = app.createScope();
+  const inner = screen.createScope();
   const page = Probe.page(screen);
   lines.push(String(page === Probe.page(screen) && Probe.active()));
   lines.push(String(page !== Probe.page(inner)));
@@ -726,9 +737,8 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 /// Runs `tsx` with the `test/app` set: the last text once one starts with `done`.
 fn run_tsx(tsx: &str) -> String {
     let mut set = Registry::ui_set("test/app");
-    set.class::<AppServices>()
-        .class::<ServiceScope>()
-        .module::<Probe>();
+    rayx_app::ts::register(&mut set);
+    set.module::<Probe>();
     let dir = std::env::temp_dir().join(format!("rayx-app-tsx-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");
@@ -759,7 +769,6 @@ fn run_tsx(tsx: &str) -> String {
 #[test]
 fn nsh_layer_gives_tsx_a_scope_handle_disposed_in_its_cleanup() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(OK);
     // Startup ran before `load` resolved; the view model is the scope's own (one per scope, a
     // new one in a child scope) and active until its scope is disposed, the singleton the
@@ -772,10 +781,10 @@ fn nsh_layer_gives_tsx_a_scope_handle_disposed_in_its_cleanup() {
 }
 
 const TSX_FAILING: &str = r#"import { mount, signal, Text } from "nsh";
-import { AppServices } from "test/app";
+import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
-AppServices.load().then(
+Probe.addApp(new RayXAppBuilder()).start().then(
   () => shown.set("done loaded"),
   (e) => shown.set(`done rejected ${e.message}`),
 );
@@ -783,9 +792,8 @@ mount(() => <Text>{shown()}</Text>);
 "#;
 
 #[test]
-fn nsh_layer_rejects_tsx_load_when_startup_fails() {
+fn nsh_layer_rejects_tsx_start_when_startup_fails() {
     let _serial = serial();
-    set_app(build_app);
     let _mode = Mode::set(FAIL);
     let shown = run_tsx(TSX_FAILING);
     assert!(shown.starts_with("done rejected "), "{shown}");

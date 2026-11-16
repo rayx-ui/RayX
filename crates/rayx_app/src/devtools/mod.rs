@@ -6,8 +6,8 @@
 //!   `RAYX_DEVTOOLS` is not `0`. The [`DevTools`] class is registered in every build, so the
 //!   `describe` program and a runner see the same names; in a release build its body does
 //!   nothing.
-//! - **When it starts.** Once the app is ready ([`start_app`](crate::start_app), which
-//!   `AppServices.load()` and [`start`](crate::start) run), never from the app's
+//! - **When it starts.** Once the app is ready (a Rust root's
+//!   [`start`](crate::StartAppBuilderExt::start), TSX's `builder.start()`), never from the app's
 //!   `#[native_module]` function, which also runs inside `describe`. It stays off in a test
 //!   session (the host refuses the app's connections there) unless the test starts it with
 //!   [`DevTools::start`] or [`start_devtools`], and when the configuration says
@@ -120,7 +120,7 @@ impl DevTools {
 
 /// The app is ready on this surface: start the agent unless this is a test session or the
 /// configuration turns it off. `sys` is the VM's system when the caller has it (TSX's
-/// `AppServices.load()`): its host refuses the app's connections in a test session, and its
+/// `builder.start()`): its host refuses the app's connections in a test session, and its
 /// WebSocket transport is the web's link; a Rust root has none.
 pub(crate) fn app_ready(sys: Option<&System>) {
     #[cfg(rayx_devtools)]
@@ -143,9 +143,13 @@ fn refused(sys: &System) -> bool {
         .is_err()
 }
 
-/// Registers the agent's observer of the dev session, from the app's set function
-/// ([`set_app`](crate::set_app)), before the host starts.
+/// Registers the agent's observer of the dev session, once a process: from the app's UI set
+/// ([`ts::register`](crate::ts::register)), before the host starts, else when a builder is made
+/// or the app starts.
 pub(crate) fn register() {
     #[cfg(rayx_devtools)]
-    agent::register();
+    {
+        static ONCE: std::sync::Once = std::sync::Once::new();
+        ONCE.call_once(agent::register);
+    }
 }

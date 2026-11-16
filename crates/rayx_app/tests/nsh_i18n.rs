@@ -1,4 +1,4 @@
-//! The i18n service for TSX through NSH's engine, headless: the `I18n` class formats messages,
+//! The i18n service for TSX through NSH's engine, headless: the `I18nService` class formats messages,
 //! instants in the user's time zone and numbers, changes the language and tells TSX about it.
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
@@ -7,10 +7,10 @@
 use std::time::Duration;
 
 use crossbeam_channel::{Receiver, Sender};
-use nsh_core::{ApproxTextEngine, MountBatch, MountItem, element::Registry};
+use nsh_core::{ApproxTextEngine, MountBatch, MountItem, element::Registry, prelude::*};
 use nsh_engine::{App, Bundle, Engine, EngineConfig, MountSink};
+use rayx_app::RayXAppBuilder;
 use rayx_app::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
-use rayx_app::{AppServices, I18n, RayXAppBuilder, set_app};
 
 struct ChannelSink(Sender<MountBatch>);
 
@@ -42,14 +42,31 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     builder.with_i18n_service(service)
 }
 
+/// The app's Rust side: its composition root, for the TSX builder.
+#[module]
+struct Probe;
+
+#[module]
+impl Probe {
+    /// Adds the app's services to `builder`.
+    pub(crate) fn add_app(
+        builder: Instance<rayx_app::ts::RayXAppBuilder>,
+    ) -> Result<Instance<rayx_app::ts::RayXAppBuilder>, String> {
+        builder
+            .with_mut(|builder| builder.extend(build_app))
+            .map_err(|error| error.to_string())?;
+        Ok(builder)
+    }
+}
+
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { AppServices, I18n } from "test/app";
+import { I18nService, Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
-  const app = await AppServices.load();
-  const i18n = I18n.of(app);
+  const services = await Probe.addApp(new RayXAppBuilder()).start();
+  const i18n = services.getRequiredService(I18nService);
   lines.push(i18n.t("hello", { name: "Ana" }));
   lines.push(i18n.t("cart", { n: 1 }));
   lines.push(i18n.has("cart") && !i18n.has("nope") ? "has" : "lacks");
@@ -98,9 +115,9 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 
 #[test]
 fn nsh_i18n_gives_tsx_messages_and_language_changes() {
-    set_app(build_app);
     let mut set = Registry::ui_set("test/app");
-    set.class::<AppServices>().class::<I18n>();
+    rayx_app::ts::register(&mut set);
+    set.module::<Probe>();
     let dir = std::env::temp_dir().join(format!("rayx-app-i18n-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");

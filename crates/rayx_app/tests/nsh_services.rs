@@ -25,8 +25,8 @@ use rayx_app::rayx_runtime::services::{
     suspension::SuspensionService,
 };
 use rayx_app::{
-    AppSettingsAppBuilderExt, AppState, RayXAppBuilder, ServiceProvider, app_services, app_state,
-    set_app,
+    AppSettingsAppBuilderExt, AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _,
+    app_services, app_state,
 };
 
 thread_local! {
@@ -104,7 +104,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// services hold once it is ready.
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     rayx_app::use_platform_sync();
     let temperature = signal(String::new());
     dynamic(move || match app_state() {
@@ -147,7 +147,6 @@ fn pump_until(
 }
 
 fn start(settings: usize) -> (LocalEngine<ApproxTextEngine>, Receiver<MountBatch>) {
-    set_app(build_app);
     SETTINGS.store(settings, Ordering::SeqCst);
     let (tx, rx) = crossbeam_channel::unbounded();
     let engine = LocalEngine::start(

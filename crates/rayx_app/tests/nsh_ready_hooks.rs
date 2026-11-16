@@ -12,7 +12,10 @@ use std::time::Duration;
 use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
-use rayx_app::{AppState, RayXAppBuilder, ReadyAppBuilderExt as _, ReadyError, app_state, set_app};
+use rayx_app::{
+    AppState, RayXAppBuilder, ReadyAppBuilderExt as _, ReadyError, StartAppBuilderExt as _,
+    app_state,
+};
 
 /// What the hook saw: NSH's locale, and whether the app was ready already.
 static SEEN: Mutex<Option<(String, bool)>> = Mutex::new(None);
@@ -32,7 +35,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     dynamic(move || match app_state() {
         AppState::Ready => text("ready").into_element(),
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
@@ -55,7 +58,6 @@ fn serial() -> MutexGuard<'static, ()> {
 
 /// Starts the app and pumps until a text starting with `prefix` shows; returns it.
 fn shown(prefix: &str) -> String {
-    set_app(build_app);
     let (tx, rx): (Sender<MountBatch>, Receiver<MountBatch>) = crossbeam_channel::unbounded();
     let mut engine = LocalEngine::start(
         EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>())),

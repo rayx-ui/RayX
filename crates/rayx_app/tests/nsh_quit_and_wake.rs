@@ -24,7 +24,9 @@ use rayx_app::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app::rayx_runtime::services::suspension::{
     SuspensionAppBuilderExt, SuspensionEventKind, SuspensionService,
 };
-use rayx_app::{AppState, RayXAppBuilder, ServiceProvider, app_services, app_state, set_app};
+use rayx_app::{
+    AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
+};
 
 /// The ready root, for the test's thread (the threaded engine runs the app on its own).
 static ROOT: Mutex<Option<ServiceProvider>> = Mutex::new(None);
@@ -46,7 +48,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     rayx_app::use_platform_sync();
     dynamic(move || match app_state() {
         AppState::Ready => {
@@ -110,7 +112,6 @@ struct Running {
 
 impl Running {
     fn start() -> Running {
-        set_app(build_app);
         let (tx, rx) = crossbeam_channel::unbounded();
         let engine = LocalEngine::start(
             EngineConfig {
@@ -232,7 +233,6 @@ impl StorageBackend for Device {
 #[test]
 fn the_app_hears_it_quit_and_what_it_saves_then_reaches_the_device() {
     let _serial = serial();
-    set_app(build_app);
     let device = Arc::new(Device::default());
     let (tx, _rx) = crossbeam_channel::unbounded();
     let engine = Engine::start(

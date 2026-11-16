@@ -18,7 +18,9 @@ use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
 use rayx_app::rayx_runtime::prelude::*;
 use rayx_app::rayx_runtime::services::history::{HISTORY_BUCKET, HistoryStore};
 use rayx_app::rayx_runtime::services::storage::KeyValueStore;
-use rayx_app::{AppState, RayXAppBuilder, ServiceProvider, app_services, app_state, set_app};
+use rayx_app::{
+    AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
+};
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
@@ -63,7 +65,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// thread.
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             let services = app_services().unwrap();
@@ -103,7 +105,6 @@ fn pump_until(
 
 #[test]
 fn the_store_keeps_the_app_s_values_in_nsh_s_storage() {
-    set_app(build_app);
     let device = Arc::new(Device::default());
     device.0.lock().unwrap().extend([
         ("rayx/prefs/theme".to_string(), "tdark".to_string()),

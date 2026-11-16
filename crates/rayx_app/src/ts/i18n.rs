@@ -1,8 +1,5 @@
 //! The i18n service, for TSX.
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-
 use std::str::FromStr;
 
 use dxn_intl::{
@@ -12,20 +9,15 @@ use dxn_intl::{
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use rayx_core::ChangeSubscription;
-use rayx_runtime::services::i18n::{Args, I18nService, Value};
+use rayx_runtime::services::i18n::{Args, I18nService as I18n, Value};
+use std::sync::Arc;
 
-use crate::{AppError, AppServices};
+use super::listeners::Listeners;
+use super::provider::ServiceClass;
 
-thread_local! {
-    /// The TSX listeners of `I18n.onChange`, by id: the service's listeners must be `Send`, a
-    /// TSX function is not, and both live on the engine's thread.
-    static LISTENERS: RefCell<HashMap<u64, Callback<String>>> = RefCell::new(HashMap::new());
-    static NEXT_ID: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
-}
-
-/// The app's translations, for TSX: `const i18n = I18n.of(app)` once `AppServices.load()`
-/// resolved, then `i18n.t("cart", { n: 3 })`, `i18n.formatDate(date.toISOString())` and
-/// `i18n.formatNumber(0.25, { style: "percent" })`.
+/// The app's translations, for TSX: `const i18n = services.getRequiredService(I18nService)` once
+/// `await builder.start()` resolved, then `i18n.t("cart", { n: 3 })`,
+/// `i18n.formatDate(date.toISOString())` and `i18n.formatNumber(0.25, { style: "percent" })`.
 ///
 /// Arguments are a plain object: numbers format as numbers (and select plurals), strings as
 /// text, booleans as `true`/`false`, and an instant (`date.toISOString()`: a timestamp with its
@@ -33,22 +25,24 @@ thread_local! {
 /// hands it over as an empty object. `onChange` hears every change of the locale, the time zone
 /// or the messages, with the locale's tag; format again then.
 #[class]
-pub struct I18n {
-    service: I18nService,
-    subscriptions: Vec<(u64, ChangeSubscription)>,
+pub struct I18nService {
+    service: Arc<I18n>,
+    listeners: Listeners,
+}
+
+impl ServiceClass for I18nService {
+    type Service = I18n;
+
+    fn wrap(service: Arc<I18n>) -> Self {
+        Self {
+            service,
+            listeners: Listeners::default(),
+        }
+    }
 }
 
 #[class]
-impl I18n {
-    /// The app's i18n service (`add_i18n` registers it).
-    pub fn of(app: Instance<AppServices>) -> Result<Instance<I18n>, AppError> {
-        let service = app.with(|app| app.services().required_service::<I18nService>())?;
-        Ok(Instance::new(I18n {
-            service: (*service).clone(),
-            subscriptions: Vec::new(),
-        }))
-    }
-
+impl I18nService {
     /// The message `id` formatted with `args`; throws for an argument that is an object.
     pub fn t(&self, id: String, args: Option<JsonValue>) -> Result<String, String> {
         Ok(self.service.format(&id, &arguments(&self.service, args)?))
@@ -114,42 +108,25 @@ impl I18n {
             .map_err(|error| error.to_string())
     }
 
-    /// Calls `listener` with the locale's tag after every change, until this object is
-    /// disposed.
-    pub fn on_change(&mut self, #[args(locale)] listener: Callback<String>) {
-        let id = NEXT_ID.with(|next| {
-            let id = next.get();
-            next.set(id + 1);
-            id
-        });
-        LISTENERS.with(|listeners| listeners.borrow_mut().insert(id, listener));
-        let subscription = self.service.subscribe(move |event| {
-            let locale = event.locale.to_string();
-            LISTENERS.with(|listeners| {
-                if let Some(listener) = listeners.borrow().get(&id) {
-                    listener.post(locale);
-                }
-            });
-        });
-        self.subscriptions.push((id, subscription));
+    /// Calls `listener` with the locale's tag after every change, until the function it
+    /// returns is called (or the reactive owner of the call goes), or this object is disposed.
+    pub fn on_change(
+        &mut self,
+        #[args(locale)] listener: Callback<String>,
+    ) -> Result<Stop, String> {
+        let service = Arc::clone(&self.service);
+        self.listeners.listen(listener, move |post| {
+            Ok::<ChangeSubscription, String>(
+                service.subscribe(move |event| post(event.locale.to_string())),
+            )
+        })
     }
 }
 
-impl I18n {
-    /// The service, for Rust bridges that take an `Instance<I18n>`.
-    pub fn service(&self) -> &I18nService {
+impl I18nService {
+    /// The service, for Rust bridges that take an `Instance<I18nService>`.
+    pub fn service(&self) -> &I18n {
         &self.service
-    }
-}
-
-impl Drop for I18n {
-    fn drop(&mut self) {
-        LISTENERS.with(|listeners| {
-            let mut listeners = listeners.borrow_mut();
-            for (id, _) in &self.subscriptions {
-                listeners.remove(id);
-            }
-        });
     }
 }
 
@@ -176,7 +153,7 @@ pub enum TimeDetail {
     Second,
 }
 
-/// How `I18n.formatDate` shows an instant.
+/// How `I18nService.formatDate` shows an instant.
 #[derive(Debug, Clone, Default, PartialEq, JsObject)]
 pub struct DateFormat {
     /// The text's length (default `"medium"`).
@@ -235,7 +212,7 @@ pub enum NumberKind {
     Currency,
 }
 
-/// How `I18n.formatNumber` shows a number.
+/// How `I18nService.formatNumber` shows a number.
 #[derive(Debug, Clone, Default, PartialEq, JsObject)]
 pub struct NumberFormat {
     /// Decimal, percent or currency (default `"decimal"`).
@@ -287,7 +264,7 @@ impl NumberFormat {
 
 /// A TSX object's fields as message arguments: an instant (a timestamp with its offset) is a
 /// date in the user's time zone, and an object is refused.
-fn arguments(service: &I18nService, args: Option<JsonValue>) -> Result<Args, String> {
+fn arguments(service: &I18n, args: Option<JsonValue>) -> Result<Args, String> {
     let fields = match args {
         None | Some(JsonValue::Null) => return Ok(Args::new()),
         Some(JsonValue::Object(fields)) => fields,

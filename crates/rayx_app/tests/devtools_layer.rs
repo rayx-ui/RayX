@@ -19,7 +19,9 @@ use nsh_core::{
     prelude::*,
 };
 use nsh_engine::{App, Engine, EngineConfig, MountSink};
-use rayx_app::{AppState, DevToolsOptions, RayXAppBuilder, app_state, set_app, start_devtools};
+use rayx_app::{
+    AppState, DevToolsOptions, RayXAppBuilder, StartAppBuilderExt as _, app_state, start_devtools,
+};
 use serde_json::json;
 use support::hub::Hub;
 
@@ -33,7 +35,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     effect(move || {
         if app_state() == AppState::Ready {
             start_devtools(DevToolsOptions {
@@ -201,7 +203,6 @@ fn picked(hub: &mut Hub, from: usize) -> Option<u64> {
 
 /// Starts the app on a 390 × 844 surface; its batches go to the receiver.
 fn start_engine() -> (Engine, Receiver<MountBatch>) {
-    set_app(build_app);
     let mut config = EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>()));
     config.viewport = Size::new(px(390.0), px(844.0));
     let (tx, rx) = crossbeam_channel::unbounded();

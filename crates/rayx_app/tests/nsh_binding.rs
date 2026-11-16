@@ -14,10 +14,7 @@ use dxn_reactive::{Command, Signal as VmSignal};
 use nsh_core::element::Registry;
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, Bundle, Engine, EngineConfig, LocalEngine, MountSink};
-use rayx_app::{
-    AppServices, Observable, RayXAppBuilder, ReactiveCommand, set_app, use_command, use_list,
-    use_reactive, use_two_way,
-};
+use rayx_app::{Observable, ReactiveCommand, use_command, use_list, use_reactive, use_two_way};
 
 struct ChannelSink(Sender<MountBatch>);
 
@@ -174,12 +171,12 @@ impl CounterVm {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { AppServices, CounterVm } from "test/app";
+import { CounterVm, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 setTimeout(async () => {
-  await AppServices.load();
+  await new RayXAppBuilder().start();
   const vm = new CounterVm();
   const count = vm.count;
   const seen = [];
@@ -214,10 +211,9 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 
 #[test]
 fn a_tsx_class_exposes_the_view_model_as_observables() {
-    set_app(|builder: RayXAppBuilder| builder);
     let mut set = Registry::ui_set("test/app");
-    set.class::<AppServices>()
-        .class::<CounterVm>()
+    rayx_app::ts::register(&mut set);
+    set.class::<CounterVm>()
         .class::<Observable>()
         .class::<ReactiveCommand>();
     let dir = std::env::temp_dir().join(format!("rayx-app-binding-{}", std::process::id()));

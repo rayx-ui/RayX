@@ -1,0 +1,260 @@
+//! TS `RayXAppBuilder` through NSH's engine, headless: every Rust builder method an app calls
+//! has a chaining camelCase twin that registers what the Rust method does, with the same implied
+//! services, and the set declares each with a doc comment.
+
+#![allow(clippy::expect_used, clippy::unwrap_used)]
+
+mod headless;
+
+use std::sync::Arc;
+
+use nsh_core::JsonValue;
+use nsh_core::prelude::*;
+use nsh_engine::Assets;
+use rayx_app::rayx_runtime::services::{
+    application_configuration::ApplicationConfigurationService, assets::AssetService,
+    fonts::FontService, history::HistoryService, history::HistoryStore, i18n::I18nService,
+    input_map::InputMapService, navigation::NavigationService, operations::OperationService,
+    platform::PlatformInfoService, selection::SelectionService, storage::KeyValueStore,
+    suspension::SuspensionService,
+};
+use rayx_app::ts::ServiceProvider;
+use rayx_app::{Configuration, ServiceProvider as Services};
+
+/// The app's files: its settings.
+struct AppFiles;
+
+impl Assets for AppFiles {
+    fn read(&self, uri: &str) -> Result<Vec<u8>, String> {
+        match uri {
+            "asset:/@app/appsettings.json" => {
+                Ok(br#"{ "Feed": { "Label": "settings", "Source": "appsettings" } }"#.to_vec())
+            }
+            _ => Err(format!("{uri} is not bundled")),
+        }
+    }
+}
+
+/// Whether a service resolves.
+type Resolves = fn(&Services) -> bool;
+
+/// Whether `T` resolves.
+fn resolves<T: ?Sized + Send + Sync + 'static>(services: &Services) -> bool {
+    services.required_service::<T>().is_ok()
+}
+
+/// What the test reads of the app's services from Rust.
+#[module]
+struct Probe;
+
+#[module]
+impl Probe {
+    /// The services of RayX's that resolve, by name.
+    pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
+        services.with(|services| {
+            let services = services.services();
+            let checks: [(&str, Resolves); 13] = [
+                ("KeyValueStore", resolves::<dyn KeyValueStore>),
+                ("OperationService", resolves::<OperationService>),
+                ("HistoryService", resolves::<HistoryService>),
+                ("HistoryStore", resolves::<dyn HistoryStore>),
+                ("I18nService", resolves::<I18nService>),
+                ("NavigationService", resolves::<NavigationService>),
+                ("AssetService", resolves::<AssetService>),
+                ("FontService", resolves::<FontService>),
+                ("InputMapService", resolves::<InputMapService>),
+                ("SelectionService", resolves::<SelectionService>),
+                ("PlatformInfoService", resolves::<PlatformInfoService>),
+                ("SuspensionService", resolves::<SuspensionService>),
+                (
+                    "ApplicationConfigurationService",
+                    resolves::<ApplicationConfigurationService>,
+                ),
+            ];
+            checks
+                .into_iter()
+                .filter(|(_, resolves)| resolves(services))
+                .map(|(name, _)| name.to_owned())
+                .collect()
+        })
+    }
+
+    /// The configuration's value at `path`, `null` when it has none.
+    pub(crate) fn setting(services: Instance<ServiceProvider>, path: String) -> JsonValue {
+        services.with(|services| {
+            services
+                .services()
+                .required_service::<Configuration>()
+                .ok()
+                .and_then(|configuration| configuration.value(&path))
+                .unwrap_or(JsonValue::Null)
+        })
+    }
+
+    /// The startup services' default timeout, in milliseconds.
+    pub(crate) fn timeout(services: Instance<ServiceProvider>) -> f64 {
+        services.with(|services| {
+            services
+                .services()
+                .startup_registry()
+                .default_initialization_timeout()
+                .as_secs_f64()
+                * 1000.0
+        })
+    }
+}
+
+fn set() -> nsh_core::element::Registry {
+    headless::set(|set| {
+        set.module::<Probe>();
+    })
+}
+
+const EVERY_METHOD: &str = r#"import { mount, signal, Text } from "nsh";
+import { Probe, RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(async () => {
+  const lines = [];
+  try {
+    const builder = new RayXAppBuilder();
+    const chained = builder
+      .addAppSettings("app")
+      .addOptionalAppSettings("asset:/@app/appsettings.Development.json")
+      .configureAppConfiguration((configuration) => {
+        configuration
+          .addJson('{ "Feed": { "Label": "json" } }')
+          .addInMemory({ "Feed:Limit": 3 })
+          .addValue({ Feed: { Mode: "live" } });
+      })
+      .addStorage()
+      .addOperations()
+      .addHistory()
+      .addI18n()
+      .addNavigation()
+      .addAssets()
+      .addFonts()
+      .addInputMap()
+      .addSelection()
+      .addPlatform()
+      .addSuspension()
+      .addApplicationConfiguration()
+      .defaultInitializationTimeout(1234);
+    lines.push(String(chained === builder));
+    const services = await builder.start();
+    lines.push(Probe.registered(services).join(","));
+    lines.push(["Label", "Source", "Limit", "Mode"].map((key) => Probe.setting(services, `Feed:${key}`)).join(","));
+    lines.push(String(Probe.timeout(services)));
+  } catch (error) {
+    lines.push(`threw ${error}`);
+  }
+  shown.set(`done ${lines.join("|")}`);
+}, 0);
+
+mount(() => <Text>{shown()}</Text>);
+"#;
+
+#[test]
+fn each_builder_method_registers_its_service() {
+    let shown = headless::run_with_assets(set(), EVERY_METHOD, Arc::new(AppFiles));
+    assert_eq!(
+        shown,
+        "done true\
+         |KeyValueStore,OperationService,HistoryService,I18nService,NavigationService,\
+         AssetService,FontService,InputMapService,SelectionService,PlatformInfoService,\
+         SuspensionService,ApplicationConfigurationService\
+         |json,appsettings,3,live|1234"
+    );
+}
+
+/// Each app on an engine of its own: what one method adds beyond its own service.
+const IMPLIED: &str = r#"import { mount, signal, Text } from "nsh";
+import { Probe, RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(async () => {
+  const lines = [];
+  try {
+    const services = await new RayXAppBuilder()
+      @CHAIN@
+      .start();
+    lines.push(Probe.registered(services).join(","));
+  } catch (error) {
+    lines.push(`threw ${error}`);
+  }
+  shown.set(`done ${lines.join("|")}`);
+}, 0);
+
+mount(() => <Text>{shown()}</Text>);
+"#;
+
+#[test]
+fn builder_methods_add_the_services_they_imply_as_in_rust() {
+    // NSH's store is every app's (NSH's services come first, as a Rust root's start adds
+    // them), so `addInputMap`'s storage is that store.
+    for (chain, registered) in [
+        (
+            ".addHistory()",
+            "KeyValueStore,OperationService,HistoryService",
+        ),
+        (
+            ".addPersistentHistory()",
+            "KeyValueStore,OperationService,HistoryService,HistoryStore",
+        ),
+        (".addI18n()", "KeyValueStore,I18nService,AssetService"),
+        (".addFonts()", "KeyValueStore,AssetService,FontService"),
+        (".addInputMap()", "KeyValueStore,InputMapService"),
+        (
+            ".addApplicationConfiguration()",
+            "KeyValueStore,PlatformInfoService,ApplicationConfigurationService",
+        ),
+        ("", "KeyValueStore"),
+    ] {
+        let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
+        assert_eq!(shown, format!("done {registered}"), "{chain}");
+    }
+}
+
+#[test]
+fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
+    let set = set();
+    let ts = headless::declarations(&set);
+    let class = ts
+        .split("export declare class RayXAppBuilder {")
+        .nth(1)
+        .and_then(|rest| rest.split("\n}\n").next())
+        .expect("RayXAppBuilder is declared");
+    let lines: Vec<&str> = class.lines().collect();
+    assert!(class.contains("  constructor();"), "{class}");
+    for method in [
+        "addAppSettings(package: string): RayXAppBuilder;",
+        "addOptionalAppSettings(uri: string): RayXAppBuilder;",
+        "configureAppConfiguration(configure: (configuration: ConfigurationBuilder) => void): RayXAppBuilder;",
+        "addStorage(): RayXAppBuilder;",
+        "addOperations(): RayXAppBuilder;",
+        "addHistory(): RayXAppBuilder;",
+        "addPersistentHistory(): RayXAppBuilder;",
+        "addI18n(configure?: ((options: I18nOptions) => void) | null): RayXAppBuilder;",
+        "addNavigation(configure?: ((options: NavigationOptions) => void) | null): RayXAppBuilder;",
+        "addAssets(configure?: ((options: AssetOptions) => void) | null): RayXAppBuilder;",
+        "addFonts(configure?: ((options: FontOptions) => void) | null): RayXAppBuilder;",
+        "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
+        "addSelection(): RayXAppBuilder;",
+        "addPlatform(): RayXAppBuilder;",
+        "addSuspension(): RayXAppBuilder;",
+        "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",
+        "defaultInitializationTimeout(ms: number): RayXAppBuilder;",
+        "start(): Promise<ServiceProvider>;",
+    ] {
+        let at = lines
+            .iter()
+            .position(|line| line.trim() == method)
+            .unwrap_or_else(|| panic!("no `{method}` in\n{class}"));
+        assert!(
+            lines[at - 1].trim_start().starts_with("/**")
+                || lines[at - 1].trim_end().ends_with("*/"),
+            "`{method}` has no doc comment"
+        );
+    }
+    assert_eq!(set.undocumented(), Vec::<String>::new());
+}

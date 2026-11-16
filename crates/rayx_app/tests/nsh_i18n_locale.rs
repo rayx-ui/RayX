@@ -11,7 +11,9 @@ use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
 use rayx_app::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
 use rayx_app::rayx_runtime::services::platform::{PlatformAppBuilderExt, PlatformInfoService};
-use rayx_app::{AppState, RayXAppBuilder, ServiceProvider, app_services, app_state, set_app};
+use rayx_app::{
+    AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
+};
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
@@ -33,7 +35,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// Starts the app and shows NSH's locale once it is ready.
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     rayx_app::use_platform_sync();
     dynamic(move || match app_state() {
         AppState::Ready => {
@@ -75,7 +77,6 @@ fn pump_until(engine: &mut LocalEngine<ApproxTextEngine>, rx: &Receiver<MountBat
 
 #[test]
 fn the_apps_language_choice_reaches_nsh_and_lets_go_of_it() {
-    set_app(build_app);
     let (tx, rx) = crossbeam_channel::unbounded();
     let mut engine = LocalEngine::start(
         EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>())),

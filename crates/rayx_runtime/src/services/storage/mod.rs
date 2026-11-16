@@ -10,7 +10,7 @@ mod error;
 mod memory;
 mod store;
 
-pub use app_ext::StorageAppBuilderExt;
+pub use app_ext::{PlatformKeyValueStore, StorageAppBuilderExt};
 pub use bucket::StorageBucket;
 pub use error::{Result, StorageError};
 pub use memory::InMemoryKeyValueStore;

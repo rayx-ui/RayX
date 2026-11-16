@@ -36,7 +36,9 @@ fn the_crates_are_reachable_by_name() {
     assert_eq!(locale.to_string(), "de-AT");
     let message = rayx::i18n::Message::parse("Hello").unwrap();
     assert_eq!(message.format(&locale, &rayx::i18n::Args::new()), "Hello");
-    let _: Option<&rayx::app::AppServices> = None;
+    // The TSX classes, and a Rust root's start.
+    let _: Option<&rayx::app::ts::ServiceProvider> = None;
+    let _: fn(RayXAppBuilder) = StartAppBuilderExt::start;
     // The screen's (or the surface root's) provider, for Rust components.
     let _: fn() -> Result<ServiceProvider, AppError> = services;
     // The component library and its theme: the document, its typed keys and modifiers.

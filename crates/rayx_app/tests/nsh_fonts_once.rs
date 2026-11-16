@@ -23,8 +23,8 @@ use nsh_engine::{App, Assets, EngineConfig, LocalEngine, MountSink};
 use rayx_app::rayx_runtime::services::assets::AssetAppBuilderExt as _;
 use rayx_app::rayx_runtime::services::fonts::{FontAppBuilderExt as _, FontService};
 use rayx_app::{
-    AppState, NshServicesAppBuilderExt as _, RayXAppBuilder, ServiceProvider, app_services,
-    app_state, set_app,
+    AppState, NshServicesAppBuilderExt as _, RayXAppBuilder, ServiceProvider,
+    StartAppBuilderExt as _, app_services, app_state,
 };
 
 const PACIFICO: &[u8] = include_bytes!("fixtures/Pacifico-Regular.woff2");
@@ -88,7 +88,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             let root = app_services().unwrap();
@@ -132,7 +132,6 @@ fn pump(
 
 #[test]
 fn shipped_fonts_are_registered_once_and_run_time_fonts_by_the_service() {
-    set_app(build_app);
     let mut set = Registry::ui_set("app/native");
     set.assets(FILES);
     let (tx, rx) = crossbeam_channel::unbounded();

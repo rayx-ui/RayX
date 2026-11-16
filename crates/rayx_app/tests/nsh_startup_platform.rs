@@ -19,7 +19,8 @@ use rayx_app::di::{
 use rayx_app::rayx_runtime::prelude::*;
 use rayx_app::rayx_runtime::services::platform::{PlatformInfoService, PlatformSnapshot};
 use rayx_app::{
-    AppService, AppState, RayXAppBuilder, ServiceAppBuilderExt as _, app_state, set_app,
+    AppService, AppState, RayXAppBuilder, ServiceAppBuilderExt as _, StartAppBuilderExt as _,
+    app_state,
 };
 
 /// What the platform service held when startup ran.
@@ -69,7 +70,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// A Rust root that only starts the app: nothing keeps the platform current but the start.
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     dynamic(move || match app_state() {
         AppState::Ready => text("ready").into_element(),
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
@@ -106,7 +107,6 @@ fn pump_until(engine: &mut LocalEngine<ApproxTextEngine>, rx: &Receiver<MountBat
 
 #[test]
 fn startup_services_see_the_device_not_the_defaults() {
-    set_app(build_app);
     let locale = Locale::parse("de-DE").unwrap();
     let mut locale_settings = LocaleSettings::of(locale);
     locale_settings.time_zone = TimeZone::parse("Europe/Zagreb").unwrap();

@@ -11,7 +11,7 @@ pub const APP_SETTINGS_FILE: &str = "appsettings.json";
 /// A JSON file the app ships, read with NSH's bundled-file reading (`fetch` of an `asset:/`
 /// URL) whenever the configuration builds or reloads. It loads asynchronously: build the app
 /// with [`RayXAppBuilder::build_async`](rayx_core::RayXAppBuilder::build_async), as
-/// [`start_app`](crate::start_app) does, in an NSH task.
+/// the app's start does, in an NSH task.
 #[derive(Clone, Debug)]
 pub struct AppSettingsSource {
     uri: String,

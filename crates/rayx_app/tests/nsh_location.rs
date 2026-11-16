@@ -24,7 +24,8 @@ use rayx_app::rayx_runtime::services::navigation::{
     NavigationArgs, NavigationHistoryMode, NavigationService, RouteDefinition,
 };
 use rayx_app::{
-    AppState, RayXAppBuilder, ServiceProvider, app_services, app_state, navigation_view, set_app,
+    AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
+    navigation_view,
 };
 
 /// The page's origin and base.
@@ -67,7 +68,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// The root region's route and the `panel` region's.
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             ROOT.with_borrow_mut(|root| *root = Some(app_services().unwrap()));
@@ -111,7 +112,6 @@ struct Running {
 impl Running {
     /// Starts the app on the page at `path` (a deep link) and waits for it to be ready.
     fn start(path: &str) -> Running {
-        set_app(build_app);
         let (tx, rx) = crossbeam_channel::unbounded();
         let engine = LocalEngine::start(
             EngineConfig {

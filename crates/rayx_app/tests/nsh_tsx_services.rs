@@ -1,7 +1,7 @@
 //! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root:
-//! `AppServices.load()` keeps the platform and suspension services current itself, and the
-//! `Navigation`, `Storage`, `AppConfiguration`, `Assets`, `Fonts` and `Platform` classes reach
-//! their services.
+//! `builder.start()` keeps the platform and suspension services current itself, and the
+//! `NavigationService`, `KeyValueStore`, `ApplicationConfigurationService`, `AssetService`,
+//! `FontService`, `PlatformInfoService` and `SuspensionService` classes reach their services.
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -12,12 +12,6 @@ use std::time::Duration;
 use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, element::Registry};
 use nsh_engine::{App, Assets as EngineAssets, Bundle, Engine, EngineConfig, MountSink};
-use rayx_app::rayx_runtime::prelude::*;
-use rayx_app::rayx_runtime::services::navigation::RouteDefinition;
-use rayx_app::{
-    AppConfiguration, AppServices, Assets, Fonts, Navigation, Platform, RayXAppBuilder, Storage,
-    set_app,
-};
 
 struct ChannelSink(Sender<MountBatch>);
 
@@ -40,32 +34,27 @@ impl EngineAssets for AppAssets {
     }
 }
 
-fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    builder
-        .add_navigation(|options| {
-            options.add_route(RouteDefinition::new("/"));
-            options.add_route(RouteDefinition::new("/projects/{id}"));
-        })
-        .add_storage()
-        .add_application_configuration(|_| {})
-        .add_assets(|options| {
-            options.package("app");
-        })
-        .add_fonts(|_| {})
-        .add_platform()
-        .add_suspension()
-}
-
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { AppServices, AppConfiguration, Assets, Fonts, Navigation, Platform, Storage } from "test/app";
+import {
+  ApplicationConfigurationService, AssetService, FontService, KeyValueStore, NavigationService,
+  PlatformInfoService, RayXAppBuilder, SuspensionService,
+} from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const app = await AppServices.load();
+    const services = await new RayXAppBuilder()
+      .addNavigation((options) => { options.addRoute("/").addRoute("/projects/{id}"); })
+      .addStorage()
+      .addApplicationConfiguration()
+      .addAssets((options) => { options.package("app"); })
+      .addFonts()
+      .addPlatform()
+      .addSuspension()
+      .start();
 
-    const navigation = Navigation.of(app);
+    const navigation = services.getRequiredService(NavigationService);
     const changes = [];
     navigation.onChange((event) => changes.push(event.to.path));
     lines.push(navigation.navigate("/projects/12").status);
@@ -75,23 +64,24 @@ setTimeout(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     lines.push(`changes ${changes.join(",")}`);
 
-    const storage = Storage.of(app);
+    const storage = services.getRequiredService(KeyValueStore);
     storage.set("prefs", "lang", "hr");
     storage.setJson("prefs", "theme", { scale: 1.25 });
     lines.push(`${storage.get("prefs", "lang")} ${storage.getJson("prefs", "theme").scale}`);
     lines.push(storage.keys("prefs").join(","));
     lines.push(`${storage.remove("prefs", "lang")} ${storage.get("prefs", "lang")}`);
 
-    const configuration = AppConfiguration.of(app);
+    const configuration = services.getRequiredService(ApplicationConfigurationService);
     lines.push(`${configuration.layoutDirection()} ${typeof configuration.current()}`);
 
-    lines.push(Assets.of(app).url("images/logo.png"));
-    lines.push(Fonts.of(app).family("serif"));
+    lines.push(services.getRequiredService(AssetService).url("images/logo.png"));
+    lines.push(services.getRequiredService(FontService).family("serif"));
 
-    const platform = Platform.of(app);
+    const platform = services.getRequiredService(PlatformInfoService);
     lines.push(typeof platform.current().form_factor);
-    // Kept current by `load()`: the suspension service heard the app start.
-    lines.push(platform.lifecycle().last_reason === null ? "not synced" : "synced");
+    // Kept current by `start()`: the suspension service heard the app start.
+    const suspension = services.getRequiredService(SuspensionService);
+    lines.push(suspension.lifecycle().last_reason === null ? "not synced" : "synced");
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -119,16 +109,9 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 }
 
 #[test]
-fn nsh_tsx_reaches_the_services_and_load_keeps_the_platform_current() {
-    set_app(build_app);
+fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let mut set = Registry::ui_set("test/app");
-    set.class::<AppServices>()
-        .class::<Navigation>()
-        .class::<Storage>()
-        .class::<AppConfiguration>()
-        .class::<Assets>()
-        .class::<Fonts>()
-        .class::<Platform>();
+    rayx_app::ts::register(&mut set);
     let dir = std::env::temp_dir().join(format!("rayx-app-tsx-services-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");

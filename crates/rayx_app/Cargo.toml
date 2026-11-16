@@ -34,6 +34,8 @@ tokio-tungstenite = { version = "0.28", default-features = false, features = ["c
 png = "0.17"
 
 [dev-dependencies]
+# The declarations' text (docs and TypeScript), which the TS test groups read.
+nsh-core = { workspace = true, features = ["declarations"] }
 nsh-base.workspace = true
 nsh-engine = { workspace = true, features = ["js", "inspect"] }
 nsh-bundler.workspace = true

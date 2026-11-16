@@ -1,5 +1,5 @@
 //! Navigation regions on NSH, headless: a region as an NSH navigation stack whose pages follow
-//! its journal, a region as its current route alone, and `NavigationRegion` for TSX.
+//! its journal, a region as its current route alone, and `NavigationRegion` for TSX (`navigationService.region(name)`).
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -17,8 +17,8 @@ use rayx_app::rayx_runtime::services::navigation::{
     NavigationArgs, NavigationService, RouteDefinition,
 };
 use rayx_app::{
-    AppServices, AppState, NavigationRegion, RayXAppBuilder, ServiceProvider, app_services,
-    app_state, navigation_region, navigation_view, set_app,
+    AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
+    navigation_region, navigation_view,
 };
 
 thread_local! {
@@ -50,7 +50,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// The root region as a stack of pages, and the `panel` region as its current route.
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             ROOT.with_borrow_mut(|root| *root = Some(app_services().unwrap()));
@@ -98,7 +98,6 @@ fn pump(
 #[test]
 fn a_region_s_pages_follow_its_journal() {
     let _serial = serial();
-    set_app(build_app);
     let (tx, rx) = crossbeam_channel::unbounded();
     let mut engine = LocalEngine::start(
         EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>())),
@@ -156,15 +155,19 @@ fn a_region_s_pages_follow_its_journal() {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { AppServices, NavigationRegion } from "test/app";
+import { NavigationService, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 setTimeout(async () => {
   const lines = [];
   try {
-    const app = await AppServices.load();
-    const panel = NavigationRegion.of(app, "panel");
+    const services = await new RayXAppBuilder()
+      .addNavigation((options) => {
+        options.addRoute("/").addRoute("/projects/{id}").addRoute("/settings");
+      })
+      .start();
+    const panel = services.getRequiredService(NavigationService).region("panel");
     const heard = [];
     panel.onChange((pages) => heard.push(pages.map((page) => page.path).join(">")));
     lines.push(panel.navigate("/settings").status);
@@ -203,9 +206,8 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 #[test]
 fn tsx_navigates_a_region_and_hears_its_pages() {
     let _serial = serial();
-    set_app(build_app);
     let mut set = Registry::ui_set("test/app");
-    set.class::<AppServices>().class::<NavigationRegion>();
+    rayx_app::ts::register(&mut set);
     let dir = std::env::temp_dir().join(format!("rayx-app-regions-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");

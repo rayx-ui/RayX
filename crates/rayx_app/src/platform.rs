@@ -29,7 +29,7 @@ use rayx_runtime::services::platform::{
     PlatformFamily, PlatformFeatures, PlatformInfoService, PlatformRect, PlatformSnapshot,
     TextDirection, ViewportSnapshot, WindowMode, WindowSnapshot,
 };
-use rayx_runtime::services::storage::KeyValueStore;
+use rayx_runtime::services::storage::{KeyValueStore, PlatformKeyValueStore};
 use rayx_runtime::services::suspension::{
     SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionHost, SuspensionService,
     WindowActivity,
@@ -86,8 +86,11 @@ impl FontRegistrar for NshFontRegistrar {
 /// and `dyn FontRegistrar`, its [`NshKeyValueStore`] (a startup service, which loads on the
 /// engine thread) as its `dyn KeyValueStore`, its [`NshLocationSynchronizer`] as its
 /// `dyn NavigationLocationSynchronizer` and its [`NshSuspensionHost`] as its
-/// `dyn SuspensionHost`, unless others are registered. Every surface's builder starts with them
-/// ([`start_app`](crate::start_app)), so on NSH `add_storage()` keeps NSH's persistent store,
+/// `dyn SuspensionHost`, unless others are registered. A TS builder starts with them and the
+/// app's start adds them where the app registered none
+/// ([`StartAppBuilderExt`](crate::StartAppBuilderExt)), so on NSH `add_storage()` keeps NSH's
+/// persistent store (in either order: NSH's store is the platform's
+/// [`PlatformKeyValueStore`], which `add_storage()` makes the app's store),
 /// `add_navigation()` shows its location as NSH's and `add_suspension()` quits the app.
 pub trait NshServicesAppBuilderExt: AppBuilder {
     /// Adds the files a crate ships, as NSH's `assets!()` lists them (the list its UI set
@@ -97,16 +100,21 @@ pub trait NshServicesAppBuilderExt: AppBuilder {
         self.add_bundled_assets(files.iter().map(|file| file.uri))
     }
 
+    /// Registers NSH's services (the trait's list) where the app registered none.
     fn add_nsh_services(mut self) -> Self {
         let services = self.services_mut();
         services.try_add_service_factory_as::<dyn AssetReader>(|_| Arc::new(NshAssetReader));
         services.try_add_service_factory_as::<dyn FontRegistrar>(|_| Arc::new(NshFontRegistrar));
         services.try_add_app_service_factory::<NshKeyValueStore>(|_| NshKeyValueStore::new());
-        services.try_add_service_factory_as::<dyn KeyValueStore>(|services| {
+        let nsh_store = |services: &ServiceProvider| -> Arc<dyn KeyValueStore> {
             services
                 .required_service::<NshKeyValueStore>()
                 .unwrap_or_else(|error| panic!("NSH's key-value store is registered: {error}"))
+        };
+        services.try_add_service_factory::<PlatformKeyValueStore>(move |services| {
+            PlatformKeyValueStore(nsh_store(services))
         });
+        services.try_add_service_factory_as::<dyn KeyValueStore>(nsh_store);
         services.try_add_service_factory_as::<NshLocationSynchronizer>(|_| {
             Arc::new(NshLocationSynchronizer::new())
         });
@@ -132,7 +140,7 @@ pub trait NshServicesAppBuilderExt: AppBuilder {
 impl<T> NshServicesAppBuilderExt for T where T: AppBuilder {}
 
 /// Gives the root's platform service NSH's environment as it is now, without subscribing:
-/// [`start_app`](crate::start_app) does it before startup, so startup services see the device
+/// the app's start does it before startup, so startup services see the device
 /// and the user's settings rather than the snapshot's defaults. [`use_platform_sync`] keeps it
 /// current from then on.
 pub(crate) fn seed_platform(root: &ServiceProvider) {
@@ -142,7 +150,7 @@ pub(crate) fn seed_platform(root: &ServiceProvider) {
 }
 
 /// What the platform answers asynchronously of what it can do (web views, speech), once
-/// [`use_platform_sync`] or `AppServices.load()` asked: `None` until then.
+/// [`use_platform_sync`] or TSX's `builder.start()` asked: `None` until then.
 #[derive(Clone, Copy, Default)]
 struct AnsweredFeatures(Option<Answered>);
 
@@ -341,13 +349,13 @@ pub fn use_platform_sync() {
 }
 
 /// Whether this surface's platform and suspension services are kept current already (by a Rust
-/// root's [`use_platform_sync`] or `AppServices.load()`), so they are not kept twice.
+/// root's [`use_platform_sync`] or TSX's `builder.start()`), so they are not kept twice.
 #[derive(Default)]
 struct PlatformSync {
     running: bool,
 }
 
-/// [`use_platform_sync`] for the surface's life: what `AppServices.load()` starts, since a TSX
+/// [`use_platform_sync`] for the surface's life: what TSX's `builder.start()` starts, since a TSX
 /// app has no root component. Call it where the engine runs Rust code (a task).
 pub(crate) fn keep_platform_current() {
     if global::<PlatformSync>().with_untracked(|sync| sync.running) {

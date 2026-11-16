@@ -6,12 +6,12 @@
 use crossbeam_channel::Sender;
 use nsh_core::{ApproxTextEngine, MountBatch, Size, element::Registry, prelude::px};
 use nsh_engine::{App, Bundle, Engine, EngineConfig, MountSink};
-use rayx_app::{AppServices, DevTools, RayXAppBuilder, set_app};
+use rayx_app::DevTools;
 
 use super::hub::Hub;
 
 const APP: &str = r#"import { mount, signal, Text, View } from "nsh";
-import { AppServices, DevTools } from "test/app";
+import { DevTools, RayXAppBuilder } from "test/app";
 
 export function Card(props: { title: string }) {
   return <View testID="card">
@@ -32,7 +32,7 @@ function App() {
 
 mount(App);
 setInterval(() => ticks.update((t) => t + 1), 30);
-AppServices.load().then(() => DevTools.start({ url: "@URL@" }));
+new RayXAppBuilder().start().then(() => DevTools.start({ url: "@URL@" }));
 "#;
 
 struct Sink(Sender<MountBatch>);
@@ -43,10 +43,6 @@ impl MountSink for Sink {
     }
 }
 
-pub fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    builder
-}
-
 /// One app at a time: the hook counter is the process's.
 pub fn serial() -> std::sync::MutexGuard<'static, ()> {
     static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
@@ -55,9 +51,9 @@ pub fn serial() -> std::sync::MutexGuard<'static, ()> {
 
 /// Starts the hot app, dialling `hub`; the engine runs on a thread of its own.
 pub fn start(hub: &Hub) -> (Engine, std::path::PathBuf) {
-    set_app(build_app);
     let mut set = Registry::ui_set("test/app");
-    set.class::<AppServices>().class::<DevTools>();
+    rayx_app::ts::register(&mut set);
+    set.class::<DevTools>();
     let dir = std::env::temp_dir().join(format!("rayx-devtools-tree-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("App.tsx"), APP.replace("@URL@", &hub.url())).unwrap();

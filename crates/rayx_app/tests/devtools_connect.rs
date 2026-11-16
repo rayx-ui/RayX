@@ -15,8 +15,8 @@ use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
 use rayx_app::{
-    AppState, ConfigurationAppBuilderExt as _, DevToolsOptions, RayXAppBuilder, app_state, set_app,
-    start_devtools,
+    AppState, ConfigurationAppBuilderExt as _, DevToolsOptions, RayXAppBuilder,
+    StartAppBuilderExt as _, app_state, start_devtools,
 };
 use rayx_devtools_protocol::{self as proto, Route};
 use tungstenite::Message;
@@ -39,7 +39,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     effect(move || {
         if app_state() == AppState::Ready
             && let Some(options) = ASK.lock().unwrap().take()
@@ -74,7 +74,6 @@ fn free_port() -> u16 {
 
 /// Runs an engine with the app until `done` says so or `limit` passes.
 fn run_app(limit: Duration, done: impl Fn() -> bool) {
-    set_app(build_app);
     let (tx, rx): (Sender<MountBatch>, Receiver<MountBatch>) = crossbeam_channel::unbounded();
     let mut engine = LocalEngine::start(
         EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>())),

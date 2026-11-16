@@ -7,8 +7,9 @@
 //!   navigation, input maps, platform and lifecycle state, configuration, assets, fonts and
 //!   translations), without NSH.
 //! - [`app`] ([`rayx_app`]): the NSH layer: a root provider per surface, a scope per screen, the
-//!   TSX classes (`AppServices`, `ServiceScope`, `I18n`, `Navigation`, `Storage`,
-//!   `AppConfiguration`, `Assets`, `Fonts`, `Platform`) and the services' NSH side.
+//!   app's start (`RayXAppBuilder::start`), the TSX classes (`rayx::app::ts`: `RayXAppBuilder`,
+//!   `ServiceProvider` and the services' classes under their Rust names) and the services' NSH
+//!   side.
 //! - [`components`] ([`rayx_components`]): RayX's component library: the design system's theme
 //!   (its tokens as an NSH theme document read through typed keys, its modes as the document's
 //!   modifiers) and its components (`Button`), for Rust views and TSX;
@@ -22,16 +23,16 @@
 //! ```no_run
 //! use rayx::prelude::*;
 //!
-//! fn build(builder: RayXAppBuilder) -> RayXAppBuilder {
-//!     builder
+//! /// Starts the app from the root component.
+//! fn start() {
+//!     RayXAppBuilder::new()
 //!         .add_app_settings("my-app")
 //!         .add_storage()
 //!         .add_i18n(|options| {
 //!             options.default_language("en");
 //!         })
+//!         .start();
 //! }
-//!
-//! set_app(build);
 //! ```
 
 pub use rayx_app as app;
@@ -56,12 +57,10 @@ pub mod prelude {
     pub use rayx_app::tr;
     pub use rayx_app::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app::{
-        AppConfiguration, AppError, AppServices, AppSettingsAppBuilderExt, AppState, Assets, Fonts,
-        I18n, Navigation, NavigationRegion, NshServicesAppBuilderExt, Observable, Platform,
-        ReactiveCommand, ScreenScope, ServiceScope, Storage, UiCommand, app_services, app_state,
-        install, navigation_region, navigation_view, services, set_app, start, start_app,
-        use_command, use_list, use_platform_sync, use_reactive, use_screen_scope, use_stream,
-        use_two_way, use_view_model,
+        AppError, AppSettingsAppBuilderExt, AppState, NshServicesAppBuilderExt, Observable,
+        ReactiveCommand, ScreenScope, StartAppBuilderExt, UiCommand, app_services, app_state,
+        install, navigation_region, navigation_view, services, use_command, use_list,
+        use_platform_sync, use_reactive, use_screen_scope, use_stream, use_two_way, use_view_model,
     };
     pub use rayx_app::{DevLayer, DevTools, dev_layer};
     pub use rayx_runtime::services::i18n::{Args, I18nService};

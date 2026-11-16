@@ -18,7 +18,9 @@ use rayx_app::rayx_runtime::services::platform::{
     FormFactor, KeyboardCapability, PlatformAppBuilderExt, PlatformFamily, PlatformInfoService,
     PlatformSnapshot, PointerCapability, ViewportSnapshot,
 };
-use rayx_app::{AppState, RayXAppBuilder, ServiceProvider, app_services, app_state, set_app};
+use rayx_app::{
+    AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
+};
 
 static ROOT: Mutex<Option<ServiceProvider>> = Mutex::new(None);
 
@@ -35,7 +37,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     rayx_app::use_platform_sync();
     dynamic(move || match app_state() {
         AppState::Ready => {
@@ -78,7 +80,6 @@ fn snapshot_in(
     until: impl Fn(&PlatformSnapshot) -> bool,
 ) -> PlatformSnapshot {
     *ROOT.lock().unwrap() = None;
-    set_app(build_app);
     let (tx, rx) = crossbeam_channel::unbounded();
     let mut engine = LocalEngine::start(
         EngineConfig {

@@ -10,7 +10,7 @@ use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
 use rayx_app::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
-use rayx_app::{RayXAppBuilder, ServiceProvider, app_services, set_app, tr};
+use rayx_app::{RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, tr};
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
@@ -46,7 +46,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    build_app(RayXAppBuilder::new()).start();
     let name = "Ana";
     let count = 1200;
     text(move || {
@@ -93,7 +93,6 @@ fn pump_until(engine: &mut LocalEngine<ApproxTextEngine>, rx: &Receiver<MountBat
 
 #[test]
 fn tr_shows_the_apps_messages_and_follows_its_language() {
-    set_app(build_app);
     let (tx, rx) = crossbeam_channel::unbounded();
     let mut engine = LocalEngine::start(
         EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>())),

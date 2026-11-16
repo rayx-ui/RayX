@@ -3,29 +3,31 @@
 //! The core's lifetimes, tied to what NSH runs:
 //!
 //! - **Root provider: one per engine surface.** NSH forbids process-wide singletons (each
-//!   window, test and hot restart is a surface of its own), so [`install`] keeps the provider a
-//!   [`RayXAppBuilder`] built in the surface's `global` slot, and [`set_app`] names the builder
-//!   function a surface builds its provider with when the app starts on it. Singletons live as
-//!   long as their surface's provider.
-//! - **Startup.** [`start_app`] (TSX: `await AppServices.load()`; a Rust root: [`start`] and
-//!   [`app_state`]) builds the root with [`RayXAppBuilder::build_async`] (its configuration's
-//!   sources may load asynchronously), makes the options registered with `validate_on_start`, and
-//!   awaits every startup service's async initialization in dependency order, each within its
-//!   timeout (its own, else the builder's default). The app is ready, and services resolve, only
-//!   once all of them initialized; an invalid option, one failure or a timeout fails startup.
+//!   window, test and hot restart is a surface of its own), so the app starts on each surface
+//!   from a builder made there, and [`install`] keeps the provider it builds in the surface's
+//!   `global` slot. Singletons live as long as their surface's provider.
+//! - **Startup.** A Rust root builds `RayXAppBuilder::new()` with its chain and calls
+//!   [`.start()`](StartAppBuilderExt::start) (watching [`app_state`]) or
+//!   [`.start_async()`](StartAppBuilderExt::start_async); TSX builds [`ts::RayXAppBuilder`] and
+//!   awaits its `start()`. Both build the root with [`RayXAppBuilder::build_async`] (its
+//!   configuration's sources may load asynchronously), NSH's services added where the app
+//!   registered none, make the options registered with `validate_on_start`, and await every
+//!   startup service's async initialization in dependency order, each within its timeout (its
+//!   own, else the builder's default). The app is ready, and services resolve, only once all of
+//!   them initialized; an invalid option, one failure or a timeout fails startup.
 //! - **Screen scope: from mount to cleanup.** [`use_screen_scope`], in a Rust component, makes a
 //!   child scope of the nearest enclosing screen's (or of the surface root), provides it to what
 //!   the component renders and drops it when the component's owner cleans up, so scoped services
-//!   go with their screen. TSX gets the same through the [`AppServices`] and [`ServiceScope`]
-//!   classes: `app.scope()` when a screen mounts, `dispose()` in its cleanup.
+//!   go with their screen. TSX gets the same through [`ts::ServiceProvider`]:
+//!   `services.createScope()` when a screen mounts, `dispose()` in its cleanup.
 //! - **Transient: per resolve**, as in the core.
 //! - **Activation.** [`use_view_model`] resolves an [`ActivatableViewModel`] in the screen's scope
-//!   and activates it until the component's cleanup; [`ServiceScope`] activates what it resolves
-//!   for TSX until it is disposed.
+//!   and activates it until the component's cleanup; [`ts::ServiceProvider::view_model`]
+//!   activates what a Rust bridge resolves for TSX until the provider is disposed.
 //! - **Navigation regions.** [`navigation_region`] shows a region of the navigation service as
 //!   an NSH navigation stack whose pages are its journal up to the current entry (a native pop
 //!   takes the journal back), [`navigation_view`] as its current route alone, and
-//!   [`NavigationRegion`] gives TSX the same.
+//!   [`ts::NavigationRegion`] gives TSX the same.
 //! - **The location.** [`NshLocationSynchronizer`] shows the navigation's location as NSH's app
 //!   address (`app_url`, `set_app_url_with`: the web's address bar and history, the link that
 //!   opened a native app), takes the navigation to the address at start once the app is ready
@@ -48,14 +50,14 @@
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
 //!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
 //!   following the language; [`checked::tr!`](checked::tr) checks the call against the app's
-//!   messages when it builds), and the [`I18n`] class gives TSX them
-//!   (`I18n.of(app).t("id", { n: 3 })`) and their changes.
-//! - **The services for TSX.** Besides [`I18n`], [`Navigation`], [`Storage`],
-//!   [`AppConfiguration`], [`Assets`] (asset URLs), [`Fonts`] (font aliases) and [`Platform`]
-//!   (the device and the app's lifecycle) are classes made with `X.of(app)`, whose `onChange`
-//!   hears the service's changes. A TSX app has no root component, so `AppServices.load()` keeps
-//!   the platform and suspension services current itself, as [`use_platform_sync`] does in a
-//!   Rust root.
+//!   messages when it builds), and the [`ts::I18nService`] class gives TSX them
+//!   (`services.getRequiredService(I18nService).t("id", { n: 3 })`) and their changes.
+//! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
+//!   and is its own token (`I18nService`, `NavigationService`, `KeyValueStore`,
+//!   `ApplicationConfigurationService`, `AssetService`, `FontService`, `PlatformInfoService`,
+//!   `SuspensionService`), and its `onChange` hears the service's changes. A TSX app has no root
+//!   component, so its `builder.start()` keeps the platform and suspension services current
+//!   itself, as [`use_platform_sync`] does in a Rust root.
 //!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
 //! on [`rayx_core`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
@@ -67,19 +69,17 @@
 
 mod binding;
 mod devtools;
-mod i18n_class;
 mod i18n_locale;
 mod location;
 mod platform;
 mod region;
-mod scope_class;
 mod screen;
-mod service_classes;
 mod settings;
 mod storage;
 mod surface;
 mod suspension;
 mod translate;
+pub mod ts;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
 pub use rayx_core::{
@@ -98,22 +98,17 @@ pub use devtools::{
     DevLayer, DevTools, DevToolsOptions, dev_layer, devtools_backoff, devtools_enabled,
     devtools_hook_calls, start_devtools,
 };
-pub use i18n_class::{DateFormat, DateLength, I18n, NumberFormat, NumberKind, TimeDetail};
 pub use location::{NshLocationSynchronizer, location_of_address};
 pub use platform::{
     NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
     use_platform_sync,
 };
 pub use rayx_runtime;
-pub use region::{NavigationRegion, navigation_region, navigation_view};
-pub use scope_class::{AppServices, ServiceScope};
+pub use region::{navigation_region, navigation_view};
 pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
-pub use service_classes::{AppConfiguration, Assets, Fonts, Navigation, Platform, Storage};
 pub use settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
 pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
-pub use surface::{
-    AppError, AppState, app_services, app_state, install, set_app, start, start_app,
-};
+pub use surface::{AppError, AppState, StartAppBuilderExt, app_services, app_state, install};
 pub use suspension::NshSuspensionHost;
 #[doc(hidden)]
 pub use translate::__private;
