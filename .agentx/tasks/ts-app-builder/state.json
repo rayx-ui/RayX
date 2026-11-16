@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 95,
-  "planRevision": 13,
+  "revision": 120,
+  "planRevision": 15,
   "specHashes": {
-    "requirements": "d075adf60337212edfe46862a1e13d2714780e516e7d6f7759a6df7c02c5fb37",
-    "design": "348d2da19e2c856d30c7d2317a05ae036b5603348fbd4a68614c695417328b01",
-    "plan": "9d727ec8316cb46db6750449cc98908422b82f98561c9658de68a75c3b997374"
+    "requirements": "246eb619732448f6636b607bbf7b2379f404b03df998bebbad9703336901956e",
+    "design": "039e3c8a4acb9df359d6b02068a539e32efd1840d841c9dfa6da48371888ca36",
+    "plan": "e5b96f2b5533091c1e185adb1caec7adc11088c6e56d60051475e83304138918"
   },
   "tasks": {
     "t01-runtime-keys": {
@@ -112,19 +112,34 @@
       ]
     },
     "t18-rayx-new": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t19-gallery": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t20-docs": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t21-root-skill": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t22-memory": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t23-theme-document": {
       "status": "done",
@@ -145,6 +160,12 @@
       ]
     },
     "t26-theme-consumers": {
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
+    },
+    "t27-native-attribute": {
       "status": "done",
       "workerIds": [
         "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
@@ -201,6 +222,26 @@
         }
       },
       "recordedAt": "2026-11-16T14:21:47Z"
+    },
+    "a17f0ee999e601c5c10d6cbb47a444ea3412a3a1c5d0794f7a50a4fece12c53c": {
+      "snapshot": {
+        "specHash": "3d918a63ba38a1666c94d46695fc7768225882cdb854b7b31177a96ef07444ec",
+        "repositories": {
+          "rayx": "d3e8d0de5f6148ab6c7a1fcab81c5ae782c1545dba4468602acdd9f2f42ecf2f",
+          "root": "bb4d9a1cf015d08a5c1355eb48a2728ad015294e1e33926616944fe65de0635e"
+        }
+      },
+      "recordedAt": "2026-11-16T14:48:11Z"
+    },
+    "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca": {
+      "snapshot": {
+        "specHash": "af62e75ee403306ac4d3d6b61c2de6aa415260e87373e0eea2f4b1c26cfc0667",
+        "repositories": {
+          "rayx": "875549fece2914e65e521e0136798eed9bd4bddd0ed117bc856d26daa37cadab",
+          "root": "5d43e44ab385c670118ce7b6a666b58e143ea189e992a0c105a4985d2eb785b2"
+        }
+      },
+      "recordedAt": "2026-11-16T14:57:10Z"
     }
   },
   "checkResults": {
@@ -679,6 +720,108 @@
       "logPath": "artifacts-temp/agentx/ts-app-builder/s3-ts-services-final-2a81c0ba6902.log",
       "logSha256": "dd93ccdfada1d3ce6ce374e9552f4a82a6ae28a138ab07a5d65cf169d884a383",
       "inputsHash": "8b7193ed3836ea7ae19889c38e9eb9cc0fdfbee02351accd3fbbf06da6227f1b"
+    },
+    "s4-consumers/c-new-app-builder/final": {
+      "checkId": "c-new-app-builder",
+      "boundaryId": "s4-consumers",
+      "phase": "final",
+      "batchId": "a17f0ee999e601c5c10d6cbb47a444ea3412a3a1c5d0794f7a50a4fece12c53c",
+      "definitionHash": "76c27599a0e04dd78bbc041dc87873b0dcdf46c4ba2c5d5fe134dc0e1c2e9128",
+      "basisHash": "4b41eb603033b9a88462aefc3af78c366bcb16672f0324bf91abf30605de518e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 33,
+      "durationSeconds": 3.1866,
+      "recordedAt": "2026-11-16T14:48:11Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-6108414d03b1.log",
+      "logSha256": "5b3d429ff0091e3181415f6a4653c045062cade49f05f7a54baab3df72580c50",
+      "inputsHash": "bfbd7b84992a945674b4bee100091b6f776a922832cdfe77bcf5c5d405b835a0"
+    },
+    "s4-consumers/c-gallery/final": {
+      "checkId": "c-gallery",
+      "boundaryId": "s4-consumers",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "21580c25aa6e38ac39e8ab0f0e2d92790279fc54780f5bb8b7bbd554532d19d5",
+      "basisHash": "ed8af3f82a55d07c04438cabd81e930edcfb67d250ca0ef0c4ad73a1f6a99696",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 9.2999,
+      "recordedAt": "2026-11-16T14:57:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-513f2741e6a3.log",
+      "logSha256": "f221d04b74eaf25afe8af4e6d3973f1d7df8f7ec90bd517683752e5ee03e9a51",
+      "inputsHash": "22556812df2d990b75b266f0274543f5669626f37484f35af6b18c8e1cca93b7"
+    },
+    "s4-consumers/c-no-old-api/final": {
+      "checkId": "c-no-old-api",
+      "boundaryId": "s4-consumers",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "73b773846ad6b8b02d2f6ad52f982565df179b4e0969aa34f04558fb3d7c99c5",
+      "basisHash": "4b0dbf4d7b13da3840a9d2ade173ca71c45ca8b6d8eabae531dd0ba8c1b5c199",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0393,
+      "recordedAt": "2026-11-16T14:57:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-9ecc7dd9f790.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+    },
+    "s4-consumers/c-native-attribute/final": {
+      "checkId": "c-native-attribute",
+      "boundaryId": "s4-consumers",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "eff4de448c6e96d56ded61a70f6633fee71c9fd496e08efe79eea119cfa3eb1b",
+      "basisHash": "9c021d8f32983bbe403503a5143e73daf15d945f1688a9547a8a03cb61833ebc",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 8,
+      "durationSeconds": 7.3404,
+      "recordedAt": "2026-11-16T14:57:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-5e041b26e563.log",
+      "logSha256": "de6557d00196ef7e8516ca530d091e997d70e9ccb9850b7387a602783999f412",
+      "inputsHash": "500a6e6d7d85ee471a09bec760983e633ccdd20894aea748251d0f2b1ea0b699"
+    },
+    "s4-consumers/c-no-native-macro/final": {
+      "checkId": "c-no-native-macro",
+      "boundaryId": "s4-consumers",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "3f3eed16f3e404d034f23d00e8c4f2f65cd8642beae93810696ae4fab5459995",
+      "basisHash": "64ab3d749409a1dd897160c49da6306e50e69b1ba87588fecc2b41208373d081",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0293,
+      "recordedAt": "2026-11-16T14:57:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-a458e7829d1f.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+    },
+    "s4-consumers/c-no-native-macro-root/final": {
+      "checkId": "c-no-native-macro-root",
+      "boundaryId": "s4-consumers",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "e4ec55394a51626f9973441d7a35cd8fcd675044c488b5d0addf2489028af3ac",
+      "basisHash": "d9173845a1dbce69ad847b614c070161f2452a578b3ac63ad7294386408e2a29",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0167,
+      "recordedAt": "2026-11-16T14:57:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-5a88603cf3c2.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "5630f33064ef2f10fc2cee3aa46c57639fe6d5ec4a381a7e53768725abbbf496"
     }
   },
   "reviews": {
@@ -1529,6 +1672,357 @@
         "s3-F3-scoped-contract-adapter-cached-broken"
       ],
       "recordedAt": "2026-11-16T14:22:51Z"
+    },
+    "s4-consumers": {
+      "reviewerId": "s4-reviewer-q7m",
+      "snapshotId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "criterionIds": [
+        "BLD-6",
+        "DOC-1",
+        "DOC-2",
+        "DOC-3",
+        "DOC-4",
+        "DOC-5",
+        "DOC-6"
+      ],
+      "verdict": "passed",
+      "acknowledgedDispositions": [
+        "decision:d-native-module"
+      ],
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/native_module.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "3e49ed40e1da5e6b6d0e3bc656f6219f4fd61f816e7b414466053cd76a33dbe6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "6aabe6264ea65c593c572d82bf6ed550c3bfaac9e3bf1544fa05ca77407b7d84"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6",
+            "DOC-4"
+          ],
+          "sha256": "437a5c8b91cd5a920b5c28c66f7ee76fb336f493584e45dfd64f05cd2e4562b3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "BLD-6",
+            "DOC-4"
+          ],
+          "sha256": "58624ee35e515fa531c174bf525695052fbebcd940c5c0992dc533e551e26ebb"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module_attribute.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "c3197125d18fc4bf62eeb954bd22eac003fb2fb7d9353a9c0d0300076f2e5fb1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module.rs",
+          "kind": "test",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "sha256": "9f21a1f6348fcc62f6f5d34da2ca630abcc8fc8455297b998bc501512690ff9f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new.rs",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "fe73144187f8c29b0e54bca4d3b3847c249788aa5ce617fa841250d0d2704405"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1",
+            "BLD-6"
+          ],
+          "sha256": "0a97c91f063bffdda1a388b5e1ccb8283e5fe326139a958c5b7bbf7f04d33035"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_App.tsx.in",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "934398f8468564c69fa2a338a4e6f0c163de741b4fae166ebe5145c6f80304d3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/rust_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "708de8969f6a7e68f320cd1ccf17e2b7e406a23ae4bda359f66469df945a2f1b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/README.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "2e1e4639d7ee8f87e41cf3ebaf74a7b6fa2177c61346f2415acfebfea07c995c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/cli/projects.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "dd9c6d97b75dc0af5cbfd4e64ea2f38615a1265ba179ab800a368403f0fbc399"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app_builder.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-1",
+            "BLD-6"
+          ],
+          "sha256": "36afa30c1ff3aa464e1b93fe00b239f8acbe7114996c2de879359c42f248862c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "93692484ff7362085fa4ecd12f6095df45089406ce7fc01ec484629c0c946485"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2",
+            "BLD-6"
+          ],
+          "sha256": "1bdf03c68cd8e76d875d49be66e2e82224243d3a0c733ea89d368af229372c4e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "04d72713ce8484326943e766cceaa56bb77ef0720f8b066f546e10794f4bb198"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/src/lib.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "1bdf03c68cd8e76d875d49be66e2e82224243d3a0c733ea89d368af229372c4e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "91df44c9b8a7c35d4a88cba97054087748211a7cd7eb55ab876eab3e8c5340a2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/getting-started.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "dd4ab0de05e87d733e06b0c7ed5cd20be4b94f72bdeac3e38838c43b6e08dfd9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/startup.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "bbade2f0532ca55ca90b871320fe9a1999b7f1911a91f7c65ab7ee73b9372e06"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/dependency-injection.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "acc485288b8f887fa97c986df9ce5629d5b996a40da52f7a14708c65330e629b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/configuration.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "b9562ca51cee7106923b23b6047b075e3547158e5d826baa82665ee41b599910"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "f8807db186c5fc59b9319586a5bd2e4247ec59cb648a4241740b553e9fe69e01"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/architecture.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "6a0f69e4c4ea7c35f8fb1435b7b0f7286ef74c92f659d0bd191b352b30b2f5cd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "README.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "b355bca987ef23dcf3e3d0b7362088e229c3dc1b736e301ecb3e4ff763c28d74"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3",
+            "DOC-4"
+          ],
+          "sha256": "12887e8de8fb114b4daee3c7ee63fc83ab0b2955b2b61068fd400b3e6f89ac47"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_tsx_class_names.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "cfa461596b38ad361c4c5d58aa47c089a062d43aafcd90780527c3c0a867efe9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/nsh_app_start.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "bae8e9f43492d1120ad45850831942496b9422ce474690c7a77279115856f8d6"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-5"
+          ],
+          "sha256": "939fbd1d675702619879dbe253203d159df05582a8c8b0efc01f92a825ae8000"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/references/button.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-5"
+          ],
+          "sha256": "9a7466dc09f5cbde25c9c4c02fe0c4562ee31817943ce5d657df0c83b3e4aa35"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/app/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "d91f1f3988e387de88c6b3a12b79d8969472c36f607c6c93c386b66b3f0952ee"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/core/di/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "72e5508b032cf490c9d216025d864ea1910ed54200fdef07cd707a83ca47ef68"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/cli/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "1453f914b0bed2f46a10705eb4c53e88608cac2c5c09362b9e813da9e1cce068"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/dependencies/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-6"
+          ],
+          "sha256": "8a78a2fbd5371216ff98342212a59a308cab74f93197df86a68cfeedac9544d2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/contract.rs",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-4"
+          ],
+          "sha256": "f3010539b7283ccc50b30e3bd8c9574df4d96323090c837b572abd30b95c41f7"
+        }
+      ],
+      "summaryMarkdown": "BLD-6 holds: the attribute (`rayx_app_macros/src/native_module.rs`) prepends exactly `rayx::app::register` and `rayx::components::register` to the body under NSH's `#[native_module]`; `native_module_attribute.rs` proves the set is RayX's plus the body's exports and nothing else, the declarations, an extension applied from TS, and NSH's `specifier_of` rule (verbatim with `nsh-cli/src/rust_app.rs` at `nshx-0.5.0-4`) on the attribute line. Both `rayx new` `src/lib.rs` templates build in scratch crates shaped as nsh init writes them, as does a crate on `rayx` alone; the CLI group checks App.tsx order, the README and the specifier scan. Gallery, absence check (the `concat!` splits keep the same assertions), skill and memory are accurate against source. The four findings of the first review are repaired and verified at revision 118 (S4R-1's corrected example builds in a probe). For the epic-end promotion: `.agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md:65` still names the one-line macro.",
+      "findingIds": [
+        "S4R-1",
+        "S4R-2",
+        "S4R-3",
+        "S4R-4"
+      ],
+      "recordedAt": "2026-11-16T14:57:54Z"
     }
   },
   "checkpoints": {
@@ -1567,6 +2061,15 @@
       },
       "reviewHash": "67e40d691ded7d295d479bb6ef32fda43c92a032b849150444fd5028b4f83f20",
       "recordedAt": "2026-11-16T14:23:20Z"
+    },
+    "s4-consumers": {
+      "snapshotId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "commits": {
+        "rayx": "d2b5caba667e3dbfeb5c87378c3c6d3fa37a13fd",
+        "root": "2f7ae9d82624cabfa119095027d59e5e5f9a9132"
+      },
+      "reviewHash": "39a884e8b2582bf8c2b97fa74b9e46f23c9240e7d31b39421fc353b86739ff27",
+      "recordedAt": "2026-11-16T14:58:28Z"
     }
   },
   "findings": [
@@ -1880,6 +2383,79 @@
           "path": "crates/rayx_core/src/di/registry.rs"
         }
       ]
+    },
+    {
+      "id": "S4R-1",
+      "boundaryId": "s4-consumers",
+      "criterionIds": [
+        "DOC-4"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "Rust twin now `Arc::new(EnglishGreeter) as Arc<dyn Greeter>` (docs/tsx.md:145); the docsnip probe with this line builds.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md"
+        }
+      ]
+    },
+    {
+      "id": "S4R-2",
+      "boundaryId": "s4-consumers",
+      "criterionIds": [
+        "DOC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "SKILL.md:40 names `rayx_app::register(registry)` (`rayx::app::register`); `rayx_app` re-exports `ts::register` (crates/rayx_app/src/lib.rs:103).",
+      "regressionRefs": [
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/lib.rs"
+        }
+      ]
+    },
+    {
+      "id": "S4R-3",
+      "boundaryId": "s4-consumers",
+      "criterionIds": [
+        "DOC-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "The doubled \"in\" is gone from ContractRegistryExt's doc (contract.rs:85-86).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/contract.rs"
+        }
+      ]
+    },
+    {
+      "id": "S4R-4",
+      "boundaryId": "s4-consumers",
+      "criterionIds": [
+        "BLD-6",
+        "DOC-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "The dev-dependency-only `nsh-core` constraint is documented beside the attribute in docs/tsx.md:39-41 and in the attribute's doc (crates/rayx_app_macros/src/lib.rs:91-93); behavior unchanged, as accepted (pre-existing and shared with NSH's macros).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/lib.rs"
+        }
+      ]
     }
   ],
   "handoffMarkdown": "Open for the owner (d-contracts): the contract token's form and name. Provisional: flat function <trait>Token() giving the contract's ServiceToken; the macro emits it in one item (crates/rayx_app_macros/src/contract.rs, token_module/token_fn).",
@@ -1892,5 +2468,25 @@
       "rayx:.github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156"
     },
     "root": {}
-  }
+  },
+  "dispositions": [
+    {
+      "type": "criterion",
+      "id": "BLD-5",
+      "disposition": "superseded",
+      "reasonMarkdown": "The owner chose on 2026-11-16 to replace the one-line `rayx::native_module!(\"my-app\")` with RayX's attribute `#[rayx::native_module(\"my-app\")]` (answer: \"RayX attribute form\"), because NSH's CLI finds a crate's UI set only from a `#[…native_module(\"…\")]` line and the macro would leave the set out on web. BLD-6 and d-native-attribute replace BLD-5 and d-native-module.",
+      "decidedBy": "owner",
+      "recordedAt": "2026-11-16T14:40:52Z",
+      "successorId": "BLD-6"
+    },
+    {
+      "type": "decision",
+      "id": "d-native-module",
+      "disposition": "superseded",
+      "reasonMarkdown": "The owner chose on 2026-11-16 to replace the one-line `rayx::native_module!(\"my-app\")` with RayX's attribute `#[rayx::native_module(\"my-app\")]` (answer: \"RayX attribute form\"), because NSH's CLI finds a crate's UI set only from a `#[…native_module(\"…\")]` line and the macro would leave the set out on web. BLD-6 and d-native-attribute replace BLD-5 and d-native-module.",
+      "decidedBy": "owner",
+      "recordedAt": "2026-11-16T14:40:52Z",
+      "successorId": "d-native-attribute"
+    }
+  ]
 }

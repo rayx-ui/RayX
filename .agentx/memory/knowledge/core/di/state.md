@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/core/di
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-16T18:00:00+01:00
+  updated: 2026-11-16T23:00:00+01:00
   topics:
     - dependency-injection
     - startup
@@ -31,7 +31,10 @@ the value in a thread-local table of its thread, `WrongThread` elsewhere, never 
 thread; a registration records its kind, so a resolve through the other API makes nothing. Startup
 services are keyed by type or runtime key; `add_startup_resolved_async` makes one asynchronously
 when startup runs (bounded by the default timeout under a timer), and `startup_service_type` is
-optional, defaulting to the registration key (epic `ts-app-builder`, sprint `s1-core`).
+optional, defaulting to the registration key (epic `ts-app-builder`, sprint `s1-core`). The TS
+side builds on these: `rayx_app::ts` registers each TS service and TS options as a thread-bound
+entry under a runtime key, and each TS startup service through `add_startup_resolved_async`
+([app](../../app/state.md)).
 
 ## Backlinks
 

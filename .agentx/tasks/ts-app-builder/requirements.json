@@ -99,6 +99,11 @@
           "id": "BLD-5",
           "verification": "automated",
           "descriptionMarkdown": "`rayx::native_module!(\"my-app\")` at an app crate's root registers its UI set with every RayX TS class (builder, provider, tokens, startup classes and interfaces, the service classes), `rayx_components` (its components and theme document), and nothing the app did not ask for; an app adds its own exports with an optional block (`rayx::native_module!(\"my-app\", |registry| { registry.register::<Glyph>(); })`). `#[rayx::app_extension] fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` exports a TS function `addWeather`, and `builder.apply(addWeather)` runs it in chain order, so an app's Rust services join a TS-built app. Test group `crates/rayx/tests/native_module.rs` (the macro, its declarations and an extension applied from TS)."
+        },
+        {
+          "id": "BLD-6",
+          "verification": "automated",
+          "descriptionMarkdown": "An app crate declares its UI set with RayX's attribute, `#[rayx::native_module(\"my-app\")] fn native(registry: &mut Registry) {}` (the owner's choice of 2026-11-16, replacing the one-line `rayx::native_module!(\"my-app\")`, which NSH's CLI cannot see): it registers every RayX TS class and `rayx_components` (its components and theme document), then runs the function's body for the app's own exports (`registry.register::<Glyph>()`, `registry.module::<add_weather>()`, `registry.contract::<dyn WeatherSource>()`), and nothing else. The crate's root has a line NSH's CLI specifier scan (`nsh-cli` `rust_app.rs` `specifier_of` at `nshx-0.5.0-4`: a line starting `#[` with `native_module(\"…\"`) reads as the set's specifier, so the set is kept on every target, web included. `rayx::native_module!` is gone; the `rayx new` templates, the gallery, the docs and RayX.Root's `rayx-components` skill use the attribute. Test group `crates/rayx/tests/native_module_attribute.rs` (the set, its declarations, the body's exports, an extension applied from TS, and the specifier read from the crate's source by NSH's rule)."
         }
       ]
     },
@@ -159,12 +164,12 @@
         {
           "id": "DOC-1",
           "verification": "automated",
-          "descriptionMarkdown": "`rayx new` writes, for a mixed (TSX) app, a `src/lib.rs` whose UI set is `rayx::native_module!(\"<specifier>\")` and an `App.tsx` that builds and starts the app with `RayXAppBuilder` before using a service; for a Rust app, a root that builds `RayXAppBuilder::new()…start()` and follows `app_state()`; neither names `set_app`, `AppServices` or `X.of(app)`; the CLI's README and `docs/cli/projects.md` describe what it writes. Test group `crates/rayx_cli/tests/new_app_builder.rs`, plus the CLI's `new_app` and `readme_*` groups that check the same files."
+          "descriptionMarkdown": "`rayx new` writes, for a mixed (TSX) app, a `src/lib.rs` whose UI set is `#[rayx::native_module(\"<specifier>\")]` and an `App.tsx` that builds and starts the app with `RayXAppBuilder` before using a service; for a Rust app, a root that builds `RayXAppBuilder::new()…start()` and follows `app_state()`; neither names `set_app`, `AppServices` or `X.of(app)`; the CLI's README and `docs/cli/projects.md` describe what it writes. Test group `crates/rayx_cli/tests/new_app_builder.rs`, plus the CLI's `new_app` and `readme_*` groups that check the same files."
         },
         {
           "id": "DOC-2",
           "verification": "automated",
-          "descriptionMarkdown": "The gallery's crate uses `rayx::native_module!(\"rayx-gallery/native\", …)` with its `Glyph`, its set still exports `Button` and `Glyph` with every export documented, and its crate's tests pass on the new NSH tag."
+          "descriptionMarkdown": "The gallery's crate uses `#[rayx::native_module(\"rayx-gallery/native\")]` with its `Glyph`, its set still exports `Button` and `Glyph` with every export documented, and its crate's tests pass on the new NSH tag."
         },
         {
           "id": "DOC-3",
@@ -179,7 +184,7 @@
         {
           "id": "DOC-5",
           "verification": "manual",
-          "descriptionMarkdown": "The `rayx-components` skill in RayX.Root (`SKILL.md` and its references) says that `rayx::native_module!` registers the library (its components and theme document), keeps `rayx_components::register(registry)` for a hand-written `#[native_module]`, and shows TSX importing from the app's specifier with the app started by `RayXAppBuilder` where services are used."
+          "descriptionMarkdown": "The `rayx-components` skill in RayX.Root (`SKILL.md` and its references) says that `#[rayx::native_module]` registers the library (its components and theme document), keeps `rayx_components::register(registry)` for a hand-written `#[native_module]`, and shows TSX importing from the app's specifier with the app started by `RayXAppBuilder` where services are used."
         },
         {
           "id": "DOC-6",

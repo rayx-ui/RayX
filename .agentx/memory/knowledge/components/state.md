@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/components
   status: current
   created: 2026-11-15T03:00:00+01:00
-  updated: 2026-11-16T20:00:00+01:00
+  updated: 2026-11-16T23:00:00+01:00
   topics:
     - rayx_components
     - theme
@@ -33,11 +33,13 @@ Route work on RayX's components, its theme document and keys, and the gallery.
 - `src/macros.rs`: `color!` (hex checked at compile time) only; custom themes are NSH's
   (`update_tokens`, theme files, `ThemeScope`).
 - `src/button.rs`: `Button` on nsh-base's `Button`, its look one `Look` memo of keys.
-- `register(registry)` adds the theme document and the components to an app's UI set. RayX sets
-  no modifier itself: the app does (a `ThemeService` may later).
+- `register(registry)` adds the theme document and the components to an app's UI set;
+  `#[rayx::native_module]` calls it, and a hand-written `#[native_module]` calls it itself. RayX
+  sets no modifier itself: the app does (a `ThemeService` may later).
 - `examples/gallery`: a mixed NSH app (`nsh.json` `"rust": "native"`), its crate `rayx-gallery`
-  (a workspace member, `release = false`) registering the library and `Glyph`; its toolbar picks
-  the accent and density with `setModifier`.
+  (a workspace member, `release = false`) whose UI set is
+  `#[rayx::native_module("rayx-gallery/native")]` with `Glyph`; its toolbar picks the accent and
+  density with `setModifier`.
 
 ## Backlinks
 

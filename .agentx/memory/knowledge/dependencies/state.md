@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/dependencies
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-16T23:00:00+01:00
   topics:
     - git-tags
     - nsh-fork
@@ -21,9 +21,12 @@ Context for any change to `Cargo.toml` dependencies or the NSH pin.
 ## Current Technical Shape
 
 `[workspace.dependencies]` in `Cargo.toml` takes dXn.Reactive, dXn.I18n and dXn.Intl by
-release tag; NSH crates come from crates.io names patched to the fork `github.com/dXnSix/nsh`
-at an integration tag `nshx-*` in `[patch.crates-io]`. The CLI's built-in default nsh is the same
-tag (`crates/rayx_cli/src/project/pins.rs`, checked by `tests/nsh_pin_rayx.rs`).
+release tag, and the workspace's own crates by path (`rayx` among them, for the gallery's
+crate); NSH crates come from crates.io names patched to the fork `github.com/dXnSix/nsh` at an
+integration tag `nshx-*` in `[patch.crates-io]`, today `nshx-0.5.0-4` (commit `55074d3f9`:
+`JsHandle`, `Constructor`, `#[interface]`, typed `#[ts("…")]` signatures and theme documents).
+The CLI's built-in default nsh is the same tag (`crates/rayx_cli/src/project/pins.rs`, checked by
+`tests/nsh_pin_rayx.rs`), and so is the gallery's `.cargo/config.toml`; the three move together.
 
 ## Backlinks
 

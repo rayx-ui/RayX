@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 13,
+  "revision": 15,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -681,7 +681,7 @@
       "criterionIds": [
         "DOC-2"
       ],
-      "descriptionMarkdown": "The gallery's crate tests (its set's exports and documentation) on `rayx::native_module!`.",
+      "descriptionMarkdown": "The gallery's crate tests (its set's exports and documentation) on `#[rayx::native_module]`.",
       "argv": [
         "cargo",
         "test",
@@ -1035,6 +1035,88 @@
         "crates/rayx_runtime/src/**",
         "crates/rayx_app/**",
         "crates/rayx_app_macros/src/**"
+      ]
+    },
+    {
+      "id": "c-native-attribute",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "BLD-6"
+      ],
+      "descriptionMarkdown": "`#[rayx::native_module]`: the set, declarations, the body's exports, an extension from TS, and NSH's specifier scan finding it.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--test",
+        "native_module_attribute",
+        "--test",
+        "native_module"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx/**",
+        "crates/rayx_core/src/**",
+        "crates/rayx_runtime/src/**",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app/tests/headless/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_components/src/**"
+      ]
+    },
+    {
+      "id": "c-no-native-macro",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "BLD-6"
+      ],
+      "descriptionMarkdown": "No RayX file names the removed `native_module!` macro: `! git grep` exits 0.",
+      "argv": [
+        "sh",
+        "-c",
+        "! git grep --untracked -n -E 'native_module!' -- docs crates examples README.md AGENTS.md"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "docs/**",
+        "crates/**",
+        "examples/**",
+        "README.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "c-no-native-macro-root",
+      "repositoryId": "root",
+      "kind": "static",
+      "criterionIds": [
+        "BLD-6"
+      ],
+      "descriptionMarkdown": "No RayX.Root guide or skill names the removed `native_module!` macro: `! git grep` exits 0.",
+      "argv": [
+        "sh",
+        "-c",
+        "! git grep --untracked -n -E 'native_module!' -- AGENTS.md .claude/skills"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "AGENTS.md",
+        ".claude/skills/**"
       ]
     }
   ],
@@ -1701,7 +1783,10 @@
       "checkIds": [
         "c-new-app-builder",
         "c-gallery",
-        "c-no-old-api"
+        "c-no-old-api",
+        "c-native-attribute",
+        "c-no-native-macro",
+        "c-no-native-macro-root"
       ],
       "tasks": [
         {
@@ -1728,7 +1813,7 @@
         {
           "id": "t19-gallery",
           "title": "The gallery on `rayx::native_module!`",
-          "descriptionMarkdown": "Replace the gallery crate's `#[native_module]` with `rayx::native_module!(\"rayx-gallery/native\", …)` keeping `Glyph`, and update `examples/gallery/README.md` (d-consumers). Its crate test keeps checking `Button` and `Glyph` with nothing undocumented.",
+          "descriptionMarkdown": "Replace the gallery crate's `#[native_module]` with `#[rayx::native_module(\"rayx-gallery/native\")]` keeping `Glyph`, and update `examples/gallery/README.md` (d-consumers). Its crate test keeps checking `Button` and `Glyph` with nothing undocumented.",
           "criterionIds": [
             "DOC-2"
           ],
@@ -1775,7 +1860,7 @@
         {
           "id": "t21-root-skill",
           "title": "The `rayx-components` skill in RayX.Root",
-          "descriptionMarkdown": "Update `../RayX.Root/.claude/skills/rayx-components/SKILL.md` (its \"Register the library\" step) and its references so `rayx::native_module!` registers the library (its components and theme document), `rayx_components::register(registry)` stays for a hand-written `#[native_module]`, and TSX examples start the app with `RayXAppBuilder` where they use services (d-consumers). One commit in RayX.Root. Reviewed by reading (DOC-5).",
+          "descriptionMarkdown": "Update `../RayX.Root/.claude/skills/rayx-components/SKILL.md` (its \"Register the library\" step) and its references so `#[rayx::native_module]` registers the library (its components and theme document), `rayx_components::register(registry)` stays for a hand-written `#[native_module]`, and TSX examples start the app with `RayXAppBuilder` where they use services (d-consumers). One commit in RayX.Root. Reviewed by reading (DOC-5).",
           "criterionIds": [
             "DOC-5"
           ],
@@ -1801,6 +1886,47 @@
             "t20-docs"
           ],
           "checkIds": []
+        },
+        {
+          "id": "t27-native-attribute",
+          "title": "The app crate's set as RayX's attribute",
+          "descriptionMarkdown": "Replace `rayx::native_module!` with the attribute `#[rayx::native_module(\"spec\")]` (d-native-attribute): a proc-macro in `rayx_app_macros` re-exported by `rayx`, emitting NSH's `#[native_module]` on the app's function with RayX's registration before its body. Remove the `macro_rules!`. Move `crates/rayx/tests/native_module.rs` to the attribute (keeping its assertions) and add the new group `crates/rayx/tests/native_module_attribute.rs`: the set and its declarations, the body's exports, an extension applied from TS, and the specifier read from a crate source file by NSH's `specifier_of` rule (reimplemented in the test with a pointer to `nsh-cli/src/rust_app.rs` at `nshx-0.5.0-4`), for the attribute form. Move the `rayx new` templates (mixed and Rust) and their tests, the gallery crate (`examples/gallery/native/src/lib.rs`) and README, the docs, RayX.Root's `rayx-components` skill and RayX's memory to the attribute; correct `knowledge/app/state.md`'s contract-token line (the owner chose `weatherSourceToken()`).",
+          "criterionIds": [
+            "BLD-6"
+          ],
+          "supportingCriterionIds": [
+            "DOC-1",
+            "DOC-2",
+            "DOC-3",
+            "DOC-5"
+          ],
+          "designIds": [
+            "d-native-attribute"
+          ],
+          "dependsOn": [
+            "t18-rayx-new",
+            "t19-gallery",
+            "t20-docs",
+            "t21-root-skill",
+            "t22-memory"
+          ],
+          "checkIds": [
+            "c-native-attribute",
+            "c-new-app-builder",
+            "c-gallery",
+            "c-no-native-macro",
+            "c-no-native-macro-root"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app_macros/src/lib.rs"
+            }
+          ]
         }
       ]
     }
