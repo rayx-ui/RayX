@@ -19,6 +19,7 @@ futures = { workspace = true, features = ["std"] }
 serde.workspace = true
 serde_json.workspace = true
 rayx_core.workspace = true
+rayx_app_macros.workspace = true
 rayx_devtools_protocol.workspace = true
 rayx_runtime.workspace = true
 url.workspace = true

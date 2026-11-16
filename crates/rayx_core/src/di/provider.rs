@@ -4,7 +4,9 @@ use super::lifecycle::{
     StartupServiceType,
 };
 use super::ready::DiReady;
-use super::registry::{ServiceLifetime, ServiceRegistry, ServiceResolutionError};
+use super::registry::{
+    ServiceLifetime, ServiceRegistry, ServiceResolutionError, WeakServiceRegistry,
+};
 use super::thread_bound::LocalService;
 use crate::options::OptionsRegistrations;
 use std::any::type_name;
@@ -89,6 +91,23 @@ impl ServiceProvider {
 
     pub fn empty() -> Self {
         Self::new()
+    }
+
+    /// This provider without keeping its scope alive: what something its scope caches keeps
+    /// to reach it again (a reference to the provider would keep the scope, and so itself,
+    /// alive).
+    pub fn downgrade(&self) -> WeakServiceProvider {
+        WeakServiceProvider {
+            options: self.options.clone(),
+            services: self.services.downgrade(),
+            startup: self.startup.clone(),
+        }
+    }
+
+    /// Whether `other` is this provider's scope (a clone of it, sharing its scoped services),
+    /// not another scope of the same root.
+    pub fn same_scope(&self, other: &ServiceProvider) -> bool {
+        self.services.same_scope(&other.services)
     }
 
     pub(crate) fn options_registrations(&self) -> &OptionsRegistrations {
@@ -833,6 +852,33 @@ impl ServiceProvider {
             services: self.services.create_scope(),
             startup: self.startup.clone(),
         }
+    }
+}
+
+/// A [`ServiceProvider`] that does not keep its scope alive ([`ServiceProvider::downgrade`]).
+#[derive(Clone)]
+pub struct WeakServiceProvider {
+    options: OptionsRegistrations,
+    services: WeakServiceRegistry,
+    startup: StartupRegistry,
+}
+
+impl WeakServiceProvider {
+    /// The provider, while its scope lives (some clone of it is kept).
+    pub fn upgrade(&self) -> Option<ServiceProvider> {
+        Some(ServiceProvider {
+            options: self.options.clone(),
+            services: self.services.upgrade()?,
+            startup: self.startup.clone(),
+        })
+    }
+}
+
+impl std::fmt::Debug for WeakServiceProvider {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("WeakServiceProvider")
+            .finish_non_exhaustive()
     }
 }
 

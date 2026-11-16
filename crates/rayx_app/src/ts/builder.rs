@@ -24,8 +24,18 @@ use super::options::{
     ApplicationConfigurationOptions, AssetOptions, ConfigurationBuilder, FontOptions, I18nOptions,
     InputMapOptions, NavigationOptions, record,
 };
-use super::provider::ServiceProvider;
+use std::collections::HashMap;
+
+use nsh_core::JsonValue;
+use rayx_core::di::RuntimeKey;
+
+use super::app_options::{self, OptionsBuilder, OptionsToken};
+use super::container::{self, Factory, TsService};
+use super::provider::{ServiceKeyArg, ServiceProvider};
+use super::ready;
 use crate::{AppError, AppSettingsAppBuilderExt as _, NshServicesAppBuilderExt as _};
+use rayx_core::AppBuilder as _;
+use rayx_core::di::{ServiceLifetime, StartupServiceType};
 
 /// The app's composition root, for TSX: `new RayXAppBuilder()` (NSH's services first, as a Rust
 /// root's start adds them), a chain of the Rust builder's methods in camelCase, then
@@ -53,6 +63,8 @@ use crate::{AppError, AppSettingsAppBuilderExt as _, NshServicesAppBuilderExt as
 pub struct RayXAppBuilder {
     /// The Rust builder until `start()` takes it.
     builder: Option<AppBuilder>,
+    /// The TS options registered so far, by their tokens' keys.
+    options: HashMap<RuntimeKey, app_options::SharedOptions>,
 }
 
 impl Default for RayXAppBuilder {
@@ -69,6 +81,7 @@ impl RayXAppBuilder {
         crate::devtools::register();
         Self {
             builder: Some(AppBuilder::new().add_nsh_services()),
+            options: HashMap::new(),
         }
     }
 
@@ -266,6 +279,254 @@ impl RayXAppBuilder {
         })
     }
 
+    /// Registers a singleton written in TS under `token` (a TS class, or a `ServiceToken` for an
+    /// interface): `factory` makes it with the resolving `ServiceProvider` on its first resolve,
+    /// and every scope of the root resolves that one object. It may resolve Rust services and
+    /// other TS services.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_singleton(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(
+            this,
+            ServiceLifetime::Singleton,
+            token,
+            factory,
+            &sys,
+            false,
+        )
+    }
+
+    /// [`addSingleton`](Self::add_singleton) for an implementation registered under an
+    /// interface's token (`addSingletonAs(Clock, () => new SystemClock())`).
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_singleton_as(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(
+            this,
+            ServiceLifetime::Singleton,
+            token,
+            factory,
+            &sys,
+            false,
+        )
+    }
+
+    /// Registers a scoped service written in TS under `token`: one object per scope (the root
+    /// is a scope too), made by `factory` with that scope's `ServiceProvider` and released when
+    /// the scope is disposed.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_scoped(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Scoped, token, factory, &sys, false)
+    }
+
+    /// [`addScoped`](Self::add_scoped) for an implementation registered under an interface's
+    /// token.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_scoped_as(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Scoped, token, factory, &sys, false)
+    }
+
+    /// Registers a transient service written in TS under `token`: `factory` makes a new object
+    /// on every resolve.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_transient(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(
+            this,
+            ServiceLifetime::Transient,
+            token,
+            factory,
+            &sys,
+            false,
+        )
+    }
+
+    /// [`addTransient`](Self::add_transient) for an implementation registered under an
+    /// interface's token.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_transient_as(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(
+            this,
+            ServiceLifetime::Transient,
+            token,
+            factory,
+            &sys,
+            false,
+        )
+    }
+
+    /// Registers a startup service written in TS under `token`, a singleton: the one object `start()` initializes is the one every scope resolves. `factory` makes it
+    /// in `start()`, which awaits its `initialize` (an `AsyncInitializable` or
+    /// `StartupInitializable`) in dependency order with Rust's startup services, within its
+    /// timeout; it is keyed by `token` unless its `startupServiceType()` names another.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_startup_singleton(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Singleton, token, factory, &sys, true)
+    }
+
+    /// [`addStartupSingleton`](Self::add_startup_singleton) for an implementation registered under an
+    /// interface's token.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_startup_singleton_as(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Singleton, token, factory, &sys, true)
+    }
+
+    /// Registers a startup service written in TS under `token`, a scoped service: `start()` initializes the root scope's object. `factory` makes it
+    /// in `start()`, which awaits its `initialize` (an `AsyncInitializable` or
+    /// `StartupInitializable`) in dependency order with Rust's startup services, within its
+    /// timeout; it is keyed by `token` unless its `startupServiceType()` names another.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_startup_scoped(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Scoped, token, factory, &sys, true)
+    }
+
+    /// [`addStartupScoped`](Self::add_startup_scoped) for an implementation registered under an
+    /// interface's token.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_startup_scoped_as(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Scoped, token, factory, &sys, true)
+    }
+
+    /// Registers a startup service written in TS under `token`, a transient service: `start()` initializes an object of its own, and every resolve makes a new one. `factory` makes it
+    /// in `start()`, which awaits its `initialize` (an `AsyncInitializable` or
+    /// `StartupInitializable`) in dependency order with Rust's startup services, within its
+    /// timeout; it is keyed by `token` unless its `startupServiceType()` names another.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_startup_transient(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Transient, token, factory, &sys, true)
+    }
+
+    /// [`addStartupTransient`](Self::add_startup_transient) for an implementation registered under an
+    /// interface's token.
+    #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
+    pub fn add_startup_transient_as(
+        this: Instance<Self>,
+        token: ServiceKeyArg,
+        #[args(services)] factory: Factory,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(this, ServiceLifetime::Transient, token, factory, &sys, true)
+    }
+
+    /// Registers options written in TS under `token` (an `OptionsToken`, JSON-shaped options
+    /// with their defaults): `configure` gets an `OptionsBuilder` at once to bind a
+    /// configuration section, configure, validate and validate them on start
+    /// (`options.bind("Feed").validate(value => value.pageSize > 0, "pageSize must be
+    /// positive")`). `services.getOptions(token)` resolves them.
+    #[ts("<T>(token: OptionsToken<T>, configure?: (options: OptionsBuilder<T>) => void): this")]
+    pub fn add_options(
+        this: Instance<Self>,
+        token: Instance<OptionsToken>,
+        #[args(options)] configure: Option<Callback<Instance<OptionsBuilder>>>,
+    ) -> Result<Instance<Self>, String> {
+        let added = app_options::Added::recorded(configure)?;
+        add_ts_options(this, &token, added)
+    }
+
+    /// Configures the TS options `token` names: `configure` gets the value and returns it
+    /// configured, after the steps added before it.
+    #[ts("<T>(token: OptionsToken<T>, configure: (value: T) => T): this")]
+    pub fn configure_options(
+        this: Instance<Self>,
+        token: Instance<OptionsToken>,
+        #[args(value)] configure: Callback<JsonValue, Option<JsonValue>>,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_options(this, &token, app_options::Added::configure(configure))
+    }
+
+    /// Runs `hook` once every startup service initialized, before the app is ready: the ready
+    /// hooks run one after another in the order added (Rust's, those of `apply`'d extensions
+    /// included), and one that throws or rejects fails `start()` with its message.
+    #[ts("(hook: (context: ReadyContext) => void | Promise<void>): this")]
+    pub fn on_ready(
+        this: Instance<Self>,
+        #[args(context)] hook: ready::Hook,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ready_hook(this, None, hook, &sys)
+    }
+
+    /// [`onReady`](Self::on_ready), run only when `predicate` holds for the root
+    /// `ServiceProvider` then.
+    #[ts(
+        "(predicate: (services: ServiceProvider) => boolean, hook: (context: ReadyContext) => void | Promise<void>): this"
+    )]
+    pub fn on_ready_when(
+        this: Instance<Self>,
+        #[args(services)] predicate: ready::Predicate,
+        #[args(context)] hook: ready::Hook,
+        sys: System,
+    ) -> Result<Instance<Self>, String> {
+        add_ready_hook(this, Some(predicate), hook, &sys)
+    }
+
+    /// Applies `extension` to the builder now, in chain order: an app's Rust extension exported
+    /// to TS (`#[app_extension] fn add_weather(..)` is `addWeather`), or a TS function that
+    /// chains the builder's methods. Throws what the extension throws.
+    #[ts("(extension: (builder: RayXAppBuilder) => RayXAppBuilder): this")]
+    pub fn apply(
+        this: Instance<Self>,
+        #[args(builder)] extension: Callback<Instance<RayXAppBuilder>, Instance<RayXAppBuilder>>,
+    ) -> Result<Instance<Self>, String> {
+        if this.is_disposed() || this.with(|builder| builder.builder.is_none()) {
+            return Err(AppError::BuilderStarted.to_string());
+        }
+        extension.call(this.clone())?;
+        Ok(this)
+    }
+
     /// Starts the app on this surface: builds its services (loading their configuration),
     /// validates the options validated on start, initializes every startup service and runs
     /// the ready hooks, then resolves with the root `ServiceProvider`, and keeps the platform and
@@ -300,6 +561,100 @@ impl RayXAppBuilder {
         self.builder = Some(extend(builder));
         Ok(())
     }
+}
+
+impl RayXAppBuilder {
+    /// `builder` with the Rust app extension `extension` applied: what the TS function
+    /// `#[app_extension]` exports does.
+    pub fn extended(
+        builder: Instance<Self>,
+        extension: fn(AppBuilder) -> AppBuilder,
+    ) -> Result<Instance<Self>, String> {
+        chain_err(builder, extension)
+    }
+}
+
+/// `this` with `added` added to the TS options `token` names.
+fn add_ts_options(
+    this: Instance<RayXAppBuilder>,
+    token: &Instance<OptionsToken>,
+    added: app_options::Added,
+) -> Result<Instance<RayXAppBuilder>, String> {
+    let key = app_options::key_of(token);
+    this.with_mut(|this| {
+        let kept = this.options.get(&key).cloned();
+        let builder = this
+            .builder
+            .as_mut()
+            .ok_or_else(|| AppError::BuilderStarted.to_string())?;
+        let shared = app_options::add(builder.services_mut(), kept, token, added)?;
+        this.options.insert(key, shared);
+        Ok::<_, String>(())
+    })?;
+    Ok(this)
+}
+
+/// `this` with the TS ready `hook` added.
+fn add_ready_hook(
+    this: Instance<RayXAppBuilder>,
+    predicate: Option<ready::Predicate>,
+    hook: ready::Hook,
+    sys: &System,
+) -> Result<Instance<RayXAppBuilder>, String> {
+    let hook = ready::hook(predicate, hook, sys)?;
+    chain_err(this, |builder| ready::add(builder, hook))
+}
+
+/// `this` with the TS service `factory` makes registered under `token` with `lifetime`.
+fn add_ts_service(
+    this: Instance<RayXAppBuilder>,
+    lifetime: ServiceLifetime,
+    token: ServiceKeyArg,
+    factory: Factory,
+    sys: &System,
+    startup: bool,
+) -> Result<Instance<RayXAppBuilder>, String> {
+    if token.is_rayx_service() {
+        return Err(format!(
+            "{} is a RayX service's class: register a TS service under a TS class or a ServiceToken",
+            token.name()
+        ));
+    }
+    if this.is_disposed() || this.with(|builder| builder.builder.is_none()) {
+        return Err(AppError::BuilderStarted.to_string());
+    }
+    let service = TsService::new(&token, factory, sys)?;
+    let key = token.key(sys);
+    let mut failed = None;
+    chain_err(this, |mut builder| {
+        let services = builder.services_mut();
+        if let Err(error) = container::add(services, lifetime, service.clone()) {
+            failed = Some(error);
+            return builder;
+        }
+        let contract = token.contract();
+        if let Some(contract) = contract {
+            (contract.add)(services, lifetime, service.clone());
+        }
+        match (startup, contract) {
+            (true, _) => super::startup::add(
+                services,
+                service,
+                contract.map_or_else(
+                    || StartupServiceType::runtime(&key),
+                    |contract| (contract.startup)(),
+                ),
+                contract.map(|contract| contract.made),
+            ),
+            // Made by `start()`, so Rust resolves it synchronously from then on.
+            (false, Some(contract)) if lifetime == ServiceLifetime::Singleton => {
+                container::make_on_start(services, service, (contract.startup)(), contract.made);
+            }
+            (false, _) => {}
+        }
+        builder
+    })
+    .and_then(|this| failed.map_or(Ok(this), Err))
 }
 
 /// `this` with `extend` applied to its Rust builder, for chaining.

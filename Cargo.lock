@@ -4867,8 +4867,13 @@ dependencies = [
 name = "rayx"
 version = "0.10.1"
 dependencies = [
+ "crossbeam-channel",
  "dxn_i18n",
  "dxn_intl",
+ "nsh-bundler",
+ "nsh-core",
+ "nsh-engine",
+ "nsh-js",
  "rayx_app",
  "rayx_components",
  "rayx_core",
@@ -4930,6 +4935,7 @@ dependencies = [
  "nsh-engine",
  "nsh-js",
  "png",
+ "rayx_app_macros",
  "rayx_core",
  "rayx_devtools_protocol",
  "rayx_runtime",

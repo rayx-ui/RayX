@@ -20,6 +20,9 @@
 //!   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), which the i18n service wraps, for their
 //!   message, number and date types.
 //!
+//! A TSX app's crate is one line at its root, its UI set with every RayX TS class and component
+//! ([`native_module!`]); an app's own Rust services reach TS as [`app_extension`]s.
+//!
 //! ```no_run
 //! use rayx::prelude::*;
 //!
@@ -44,6 +47,53 @@ pub use rayx_runtime as runtime;
 pub use dxn_i18n as i18n;
 pub use dxn_intl as intl;
 
+/// Exports a Rust extension of the app builder to TS (`#[rayx::app_extension] fn
+/// add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` is TS's `addWeather`, applied with
+/// `builder.apply(addWeather)`); register it in [`native_module!`]'s block
+/// (`registry.module::<add_weather>()`).
+pub use rayx_app::app_extension;
+
+/// Makes a Rust trait implementable from TS while Rust resolves it as `Arc<dyn Trait>`; register
+/// it in [`native_module!`]'s block (`registry.contract::<dyn WeatherSource>()`).
+pub use rayx_app::contract;
+
+/// The UI set of an app's crate, at the crate's root: NSH's `#[native_module(..)]` registering
+/// every RayX TS class (`rayx::app::register`: the builder, the provider and its tokens, the
+/// startup classes and interfaces, the services' classes) and RayX's components with their
+/// theme document (`rayx::components::register`), and nothing else. The optional block adds
+/// the app's own exports:
+///
+/// ```ignore
+/// rayx::native_module!("my-app");
+///
+/// rayx::native_module!("my-app", |registry| {
+///     registry.register::<Glyph>().module::<add_weather>();
+/// });
+/// ```
+///
+/// TSX imports the set by the specifier (`import { RayXAppBuilder } from "my-app"`). It makes the
+/// crate's `pub fn registry()`, as `#[native_module]` does, and brings NSH's core into the root's
+/// scope as `nsh_core` (the same crate an app depending on `nsh-core` names so).
+#[macro_export]
+macro_rules! native_module {
+    ($specifier:literal $(,)?) => {
+        $crate::native_module!($specifier, |_registry| {});
+    };
+    ($specifier:literal, |$registry:ident| $body:expr $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::app::__private::nsh_core;
+
+        #[$crate::app::__private::nsh_core::element::native_module($specifier)]
+        fn __rayx_native_module(
+            $registry: &mut $crate::app::__private::nsh_core::element::Registry,
+        ) {
+            $crate::app::register($registry);
+            $crate::components::register($registry);
+            $body;
+        }
+    };
+}
+
 /// `tr!` with the call checked against the app's messages when it builds: `use
 /// rayx::checked::tr;` after the prelude's glob import uses it in place of the prelude's.
 pub use rayx_app::checked;
@@ -55,6 +105,7 @@ pub mod prelude {
     pub use rayx_runtime::prelude::*;
 
     pub use rayx_app::tr;
+    pub use rayx_app::ts::ContractRegistryExt;
     pub use rayx_app::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app::{
         AppError, AppSettingsAppBuilderExt, AppState, NshServicesAppBuilderExt, Observable,

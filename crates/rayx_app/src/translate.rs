@@ -132,8 +132,11 @@ pub mod checked {
     pub use crate::__checked_tr as tr;
 }
 
-/// What the macros use; not part of the API.
+/// What the macros use; not part of the API: `tr!`'s check, and NSH's core for the code
+/// `rayx::native_module!`, `#[app_extension]` and `#[contract]` generate (an app crate may
+/// take NSH through RayX).
 #[doc(hidden)]
 pub mod __private {
     pub use dxn_i18n_macros::check;
+    pub use nsh_core;
 }

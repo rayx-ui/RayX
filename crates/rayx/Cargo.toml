@@ -19,3 +19,11 @@ rayx_components.workspace = true
 rayx_devtools_protocol.workspace = true
 dxn_i18n.workspace = true
 dxn_intl.workspace = true
+
+[dev-dependencies]
+# A headless TSX app on NSH's engine (`tests/native_module.rs`, through `rayx_app`'s harness).
+nsh-core = { workspace = true, features = ["declarations"] }
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
+nsh-bundler.workspace = true
+nsh-js.workspace = true
+crossbeam-channel.workspace = true

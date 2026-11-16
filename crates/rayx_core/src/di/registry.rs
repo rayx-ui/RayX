@@ -5,7 +5,7 @@ use std::any::type_name;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 
 /// A factory as the registry keeps it: typed factories never fail, runtime-keyed ones may.
 type ServiceFactory =
@@ -253,6 +253,22 @@ impl ServiceRegistry {
             .unwrap_or_else(|| Err(ServiceResolutionError::MissingKey { service: service() }))
     }
 
+    /// Whether `other` shares this registry's scoped cache (a clone of the same scope).
+    pub(crate) fn same_scope(&self, other: &ServiceRegistry) -> bool {
+        Arc::ptr_eq(&self.scoped, &other.scoped)
+    }
+
+    /// This registry without keeping its caches alive ([`WeakServiceRegistry::upgrade`]).
+    pub(crate) fn downgrade(&self) -> WeakServiceRegistry {
+        WeakServiceRegistry {
+            singletons: Arc::downgrade(&self.singletons),
+            singleton_resolution_guards: Arc::downgrade(&self.singleton_resolution_guards),
+            scoped: Arc::downgrade(&self.scoped),
+            scoped_resolution_guards: Arc::downgrade(&self.scoped_resolution_guards),
+            descriptors: self.descriptors.clone(),
+        }
+    }
+
     pub(crate) fn create_scope(&self) -> Self {
         Self {
             singletons: Arc::clone(&self.singletons),
@@ -392,6 +408,29 @@ impl ServiceRegistry {
             services.insert(key.clone(), Arc::clone(&value));
         }
         Ok(value)
+    }
+}
+
+/// A [`ServiceRegistry`] that does not keep its caches alive.
+#[derive(Clone)]
+pub(crate) struct WeakServiceRegistry {
+    singletons: Weak<ServiceCache>,
+    singleton_resolution_guards: Weak<ResolutionGuards>,
+    scoped: Weak<ServiceCache>,
+    scoped_resolution_guards: Weak<ResolutionGuards>,
+    descriptors: HashMap<ServiceKey, ServiceDescriptor>,
+}
+
+impl WeakServiceRegistry {
+    /// The registry, while its scope lives.
+    pub(crate) fn upgrade(&self) -> Option<ServiceRegistry> {
+        Some(ServiceRegistry {
+            singletons: self.singletons.upgrade()?,
+            singleton_resolution_guards: self.singleton_resolution_guards.upgrade()?,
+            scoped: self.scoped.upgrade()?,
+            scoped_resolution_guards: self.scoped_resolution_guards.upgrade()?,
+            descriptors: self.descriptors.clone(),
+        })
     }
 }
 

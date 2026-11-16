@@ -30,27 +30,41 @@
 //! services' without clashing with [`rayx_runtime`]'s types. [`register`] adds them all to a UI
 //! set.
 
+mod app_options;
 mod builder;
+mod container;
+mod contract;
 mod i18n;
 mod listeners;
 mod options;
 mod provider;
+mod ready;
 mod region;
 mod services;
+mod startup;
 
 use nsh_core::element::{Registry, TsAlias};
 
+pub use app_options::{OptionsBuilder, OptionsToken};
 pub use builder::RayXAppBuilder;
+#[doc(hidden)]
+pub use contract::__private;
+pub use contract::{Contract, ContractError, ContractRegistryExt, Exception, contract_token};
 pub use i18n::{DateFormat, DateLength, I18nService, NumberFormat, NumberKind, TimeDetail};
 pub use options::{
     ApplicationConfigurationOptions, AssetOptions, ConfigurationBuilder, FontAliasOptions,
     FontOptions, I18nOptions, InputMapOptions, NavigationOptions, RouteOptions,
 };
 pub use provider::{Resolved, ServiceKeyArg, ServiceProvider, ServiceToken};
+pub use ready::ReadyContext;
 pub use region::NavigationRegion;
 pub use services::{
     ApplicationConfigurationService, AssetService, FontService, KeyValueStore, NavigationService,
     PlatformInfoService, SuspensionService,
+};
+pub use startup::{
+    AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
+    StartupInitializationContext, StartupInitializationState,
 };
 
 /// What names a service of type `T` in TS: its class (a RayX service's, whose constructor is
@@ -62,7 +76,9 @@ pub const SERVICE_KEY: TsAlias = TsAlias {
 };
 
 /// Adds RayX's TS classes to `registry` (an app's UI set): the builder, the provider and its
-/// tokens (with the `ServiceKey<T>` alias), the options classes and the services' classes.
+/// tokens (with the `ServiceKey<T>` alias), the TS options' `OptionsToken` and
+/// `OptionsBuilder`, the startup interfaces (`AsyncInitializable`,
+/// `StartupInitializable`) and classes, the options classes and the services' classes.
 pub fn register(registry: &mut Registry) {
     crate::devtools::register();
     registry
@@ -70,6 +86,13 @@ pub fn register(registry: &mut Registry) {
         .class::<RayXAppBuilder>()
         .class::<ServiceProvider>()
         .class::<ServiceToken>()
+        .interface::<JsAsyncInitializable>()
+        .interface::<JsStartupInitializable>()
+        .class::<StartupInitializationState>()
+        .class::<StartupInitializationContext>()
+        .class::<ReadyContext>()
+        .class::<OptionsToken>()
+        .class::<OptionsBuilder>()
         .class::<ConfigurationBuilder>()
         .class::<ApplicationConfigurationOptions>()
         .class::<I18nOptions>()

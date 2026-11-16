@@ -67,6 +67,10 @@
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
+// The code `#[app_extension]` and `#[contract]` generate names this crate `::rayx_app`, in its
+// own tests too.
+extern crate self as rayx_app;
+
 mod binding;
 mod devtools;
 mod i18n_locale;
@@ -80,6 +84,9 @@ mod surface;
 mod suspension;
 mod translate;
 pub mod ts;
+
+pub use rayx_app_macros::{app_extension, contract};
+pub use ts::register;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
 pub use rayx_core::{

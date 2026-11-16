@@ -1,9 +1,101 @@
-//! Procedural macros for `rayx_app`.
+//! Procedural macros for `rayx_app`: the `AppService` derive, `#[app_extension]` and
+//! `#[contract]`.
+
+mod contract;
+mod extension;
 
 use proc_macro::TokenStream;
 use proc_macro_crate::{FoundCrate, crate_name};
 use quote::quote;
 use syn::{Attribute, DeriveInput, parse_macro_input};
+
+/// Exports a Rust extension of the app builder to TS: `#[app_extension] fn add_weather(builder:
+/// RayXAppBuilder) -> RayXAppBuilder` stays a plain Rust function (a Rust root calls it, or
+/// `builder.apply(add_weather)`), and gains a TS function `addWeather(builder:
+/// RayXAppBuilder): RayXAppBuilder` that applies it to a TS builder, which TS passes to
+/// `builder.apply(addWeather)`.
+///
+/// The TS function is a flat NSH module named like the function, which the app registers in
+/// its set: `rayx::native_module!("my-app", |registry| { registry.module::<add_weather>(); })`.
+/// The function's doc comment documents the TS function.
+#[proc_macro_attribute]
+pub fn app_extension(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr = proc_macro2::TokenStream::from(attr);
+    if !attr.is_empty() {
+        return syn::Error::new_spanned(attr, "`#[app_extension]` takes no arguments")
+            .into_compile_error()
+            .into();
+    }
+    let item = parse_macro_input!(item as syn::ItemFn);
+    extension::expand(item, &app_path())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// Makes a Rust trait implementable from TS while Rust keeps using it as `dyn Trait`
+/// (`Arc<dyn WeatherSource>`):
+///
+/// ```ignore
+/// #[rayx::contract]
+/// pub trait WeatherSource {
+///     /// The forecast for `city`.
+///     async fn forecast(&self, city: String) -> Result<String, WeatherError>;
+///     /// Notes `line` (posted to JS when Rust calls it outside a call from JS).
+///     fn note(&self, line: String);
+/// }
+/// ```
+///
+/// Its methods are `async fn .. -> Result<T, E>` (awaited in JS's next turn; `E:
+/// From<ContractError> + From<Exception>`, `String` among them) or `fn ..(&self, ..)` returning
+/// nothing (run on the spot inside a call from JS, posted in order otherwise), with values that
+/// cross to JS (`String`, numbers, `#[derive(JsObject)]` structs); a contract has no generics,
+/// associated items, supertraits or default bodies. The trait gains `Send + Sync` and each
+/// `async fn` becomes a method returning a `LocalBoxFuture`, as `async-trait(?Send)` writes it.
+///
+/// TS gets the interface `WeatherSource` and the token function `weatherSourceToken()`, which
+/// the app adds to its set (`registry.contract::<dyn WeatherSource>()`, with
+/// `rayx::app::ts::ContractRegistryExt`); `builder.addSingletonAs(weatherSourceToken(), () =>
+/// new OpenMeteo())` (and the scoped, transient and startup forms) registers a TS
+/// implementation, which Rust resolves as `Arc<dyn WeatherSource>` on the engine thread (off it,
+/// a method fails with `ContractError::WrongThread`).
+#[proc_macro_attribute]
+pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr = proc_macro2::TokenStream::from(attr);
+    if !attr.is_empty() {
+        return syn::Error::new_spanned(attr, "`#[contract]` takes no arguments")
+            .into_compile_error()
+            .into();
+    }
+    let item = parse_macro_input!(item as syn::ItemTrait);
+    contract::expand(item, &app_path())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// The path of `rayx_app` as the calling crate names it: through the `rayx` umbrella
+/// (`::rayx::app`), else `rayx_app` itself (`::rayx_app`, which names itself so in its own
+/// tests).
+fn app_path() -> proc_macro2::TokenStream {
+    app_path_from(|name| crate_name(name).ok())
+}
+
+fn app_path_from(found: impl Fn(&str) -> Option<FoundCrate>) -> proc_macro2::TokenStream {
+    let ident = |name: &str| syn::Ident::new(name, proc_macro2::Span::call_site());
+    match found("rayx") {
+        Some(FoundCrate::Itself) => quote!(crate::app),
+        Some(FoundCrate::Name(name)) => {
+            let name = ident(&name);
+            quote!(::#name::app)
+        }
+        None => match found("rayx_app") {
+            Some(FoundCrate::Name(name)) => {
+                let name = ident(&name);
+                quote!(::#name)
+            }
+            _ => quote!(::rayx_app),
+        },
+    }
+}
 
 /// Implements `AppService` (RayX's `RayXService`) for a service type.
 ///
@@ -98,6 +190,31 @@ mod tests {
 
     fn named(name: &str) -> FoundCrate {
         FoundCrate::Name(name.to_owned())
+    }
+
+    #[test]
+    fn the_app_layer_is_named_through_the_umbrella_first() {
+        let app = |crates: &[(&str, FoundCrate)]| {
+            app_path_from(|name| {
+                crates
+                    .iter()
+                    .find(|(candidate, _)| *candidate == name)
+                    .map(|(_, found)| found.clone())
+            })
+            .to_string()
+        };
+        assert_eq!(
+            app(&[("rayx_app", named("rayx_app")), ("rayx", named("rayx"))]),
+            quote!(::rayx::app).to_string()
+        );
+        assert_eq!(
+            app(&[("rayx_app", FoundCrate::Itself)]),
+            quote!(::rayx_app).to_string()
+        );
+        assert_eq!(
+            app(&[("rayx_app", named("app_layer"))]),
+            quote!(::app_layer).to_string()
+        );
     }
 
     #[test]

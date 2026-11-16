@@ -26,6 +26,12 @@ impl RayXAppBuilder {
         Self::default()
     }
 
+    /// The builder with `extension` applied: an extension of the builder (`fn add_weather(builder:
+    /// RayXAppBuilder) -> RayXAppBuilder`) in the chain, as TS's `builder.apply(addWeather)`.
+    pub fn apply(self, extension: impl FnOnce(Self) -> Self) -> Self {
+        extension(self)
+    }
+
     /// The root provider: the services, with the [`Configuration`] the sources build registered
     /// as a singleton (where options bind from). Its startup services are not initialized yet
     /// ([`StartupRegistry::initialize`](crate::di::StartupRegistry::initialize) does that, after

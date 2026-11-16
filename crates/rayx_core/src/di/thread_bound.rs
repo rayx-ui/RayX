@@ -155,3 +155,48 @@ impl Drop for ThreadBoundSlot {
         }
     }
 }
+
+/// A value that is neither `Send` nor `Sync`, held by something that must be (a service, a
+/// factory, a startup service): the holder keeps this `Send + Sync` handle, the value stays in
+/// a table of the thread that made it ([`Self::new`]), and [`Self::get`] reaches it on that
+/// thread only. Dropped on another thread, the value is released by its own thread later, as a
+/// thread-bound service's is.
+pub struct ThreadBound<T: 'static> {
+    slot: ThreadBoundSlot,
+    _value: std::marker::PhantomData<fn() -> T>,
+}
+
+impl<T: 'static> ThreadBound<T> {
+    /// Keeps `value` on this thread; `name` names it in errors.
+    pub fn new(
+        value: T,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<Self, ServiceResolutionError> {
+        Ok(Self {
+            slot: ThreadBoundSlot::store(Rc::new(value), name.into())?,
+            _value: std::marker::PhantomData,
+        })
+    }
+
+    /// The value, on the thread that made it; [`ServiceResolutionError::WrongThread`] on any
+    /// other.
+    pub fn get(&self) -> Result<Rc<T>, ServiceResolutionError> {
+        self.slot.get()?.downcast::<T>().map_err(|_| {
+            ServiceResolutionError::failed(self.slot.service.clone(), "its value has another type")
+        })
+    }
+
+    /// Whether this is the thread that made it.
+    pub fn is_owner_thread(&self) -> bool {
+        thread::current().id() == self.slot.owner
+    }
+}
+
+impl<T: 'static> std::fmt::Debug for ThreadBound<T> {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("ThreadBound")
+            .field("name", &self.slot.service)
+            .finish_non_exhaustive()
+    }
+}

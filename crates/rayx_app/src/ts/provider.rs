@@ -16,7 +16,7 @@ use nsh_core::element::{
     Arg, Class, JsHost, JsIn, JsOwned, JsValue, Local, PropError, Ret, TsTypes,
 };
 use nsh_core::prelude::*;
-use rayx_core::di::RuntimeKey;
+use rayx_core::di::{RuntimeKey, StartupServiceType};
 
 use crate::AppError;
 
@@ -74,6 +74,21 @@ impl ServiceProvider {
         resolve(&this, &token, &sys, true)
     }
 
+    /// The TS options `token` names, made now: the token's defaults, the bound configuration
+    /// section, then the configure callbacks in order; throws when a validation fails (with
+    /// every failing validation's message).
+    #[ts("<T>(token: OptionsToken<T>): { value: T }")]
+    pub fn get_options(
+        this: Instance<Self>,
+        token: Instance<super::OptionsToken>,
+    ) -> Result<nsh_core::JsonValue, String> {
+        if this.is_disposed() {
+            return Err("ServiceProvider is disposed".into());
+        }
+        let services = this.with(|provider| provider.provider.clone());
+        super::app_options::resolve(&services, &token)
+    }
+
     /// A child scope: it shares this provider's singletons and has scoped services of its own.
     /// Dispose it when what it serves (a screen) goes.
     pub fn create_scope(&self) -> Instance<ServiceProvider> {
@@ -118,21 +133,20 @@ fn resolve(
     if this.is_disposed() {
         return Err("ServiceProvider is disposed".into());
     }
+    // A TS factory this resolve runs gets `this`.
+    let _resolving = Resolving::push(this);
     if let Some(resolve) = token
         .handle
         .constructor()
         .and_then(|class| RESOLVERS.get(&class))
     {
-        return resolve(this, required);
+        return (resolve.resolve)(this, required);
     }
     let key = sys.locals.get::<ServiceTokens>().key(&token.handle);
     let services = this.with(|provider| provider.provider.clone());
     match key {
         Some(key) => match services.required_thread_bound_service_by_key(&key) {
-            Ok(service) => service
-                .downcast::<JsHandle>()
-                .map(|handle| Resolved::object((*handle).clone()))
-                .map_err(|_| format!("the service {} is no JS object", token.name)),
+            Ok(service) => super::container::object(service, &key).map(Resolved::object),
             Err(_) if !required && !services.contains_service_by_key(&key) => Ok(Resolved::null()),
             Err(error) => Err(error.to_string()),
         },
@@ -151,17 +165,27 @@ pub(crate) trait ServiceClass: Class {
     fn wrap(service: Arc<Self::Service>) -> Self;
 }
 
-/// Resolves a service class's Rust service in a provider and gives its object.
-type Resolve = fn(&Instance<ServiceProvider>, bool) -> Result<Resolved, String>;
+/// A RayX service class as a token: how it resolves its Rust service in a provider (and gives
+/// its object), and the Rust service's startup key.
+struct ClassToken {
+    resolve: fn(&Instance<ServiceProvider>, bool) -> Result<Resolved, String>,
+    startup: fn() -> StartupServiceType,
+}
 
 /// RayX's service classes by their constructors (what a token that is one names).
-static RESOLVERS: LazyLock<HashMap<Constructor, Resolve>> = LazyLock::new(|| {
+static RESOLVERS: LazyLock<HashMap<Constructor, ClassToken>> = LazyLock::new(|| {
     use super::services::{
         ApplicationConfigurationService, AssetService, FontService, KeyValueStore,
         NavigationService, PlatformInfoService, SuspensionService,
     };
-    fn entry<C: ServiceClass>() -> (Constructor, Resolve) {
-        (Constructor::of::<C>(), resolve_class::<C>)
+    fn entry<C: ServiceClass>() -> (Constructor, ClassToken) {
+        (
+            Constructor::of::<C>(),
+            ClassToken {
+                resolve: resolve_class::<C>,
+                startup: StartupServiceType::of::<C::Service>,
+            },
+        )
     }
     HashMap::from([
         entry::<super::I18nService>(),
@@ -213,6 +237,59 @@ fn resolve_class<C: ServiceClass>(
     Ok(Resolved::instance(instance))
 }
 
+thread_local! {
+    /// The TS providers resolving now, innermost last: a TS factory a resolve runs gets the one
+    /// of its scope.
+    static RESOLVING: RefCell<Vec<Instance<ServiceProvider>>> = const { RefCell::new(Vec::new()) };
+}
+
+/// A TS provider on [`RESOLVING`] for as long as it lives.
+struct Resolving;
+
+impl Resolving {
+    fn push(provider: &Instance<ServiceProvider>) -> Self {
+        RESOLVING.with_borrow_mut(|resolving| resolving.push(provider.clone()));
+        Self
+    }
+}
+
+impl Drop for Resolving {
+    fn drop(&mut self) {
+        let popped = RESOLVING.with_borrow_mut(Vec::pop);
+        // Dropped outside the stack's borrow.
+        drop(popped);
+    }
+}
+
+/// The TS provider a TS factory resolving in `provider` gets: the one resolving now in its
+/// scope, else the surface's root when `provider` is the root's scope, else a new one over it.
+pub(crate) fn provider_for(
+    sys: &System,
+    provider: &rayx_core::ServiceProvider,
+) -> Instance<ServiceProvider> {
+    let resolving = RESOLVING.with_borrow(|resolving| {
+        resolving
+            .iter()
+            .rev()
+            .find(|candidate| {
+                !candidate.is_disposed()
+                    && candidate.with(|candidate| candidate.provider.same_scope(provider))
+            })
+            .cloned()
+    });
+    if let Some(resolving) = resolving {
+        return resolving;
+    }
+    let kept = sys.locals.get::<SurfaceRoot>();
+    let root = kept
+        .0
+        .borrow()
+        .as_ref()
+        .map(|(_, root)| root.clone())
+        .filter(|root| !root.is_disposed() && root.with(|root| root.provider.same_scope(provider)));
+    root.unwrap_or_else(|| Instance::new(ServiceProvider::of(provider.clone())))
+}
+
 /// The surface's root as its one TS object, for every `start()` that resolves with it.
 #[derive(Default)]
 struct SurfaceRoot(RefCell<Option<(Arc<rayx_core::Configuration>, Instance<ServiceProvider>)>>);
@@ -259,7 +336,6 @@ impl ServiceTokens {
     }
 
     /// The runtime key `token` names, made (with `name`) the first time.
-    #[allow(dead_code, reason = "the TS registrations key their services with it")]
     pub(crate) fn key_or_insert(&self, token: &JsHandle, name: &str) -> RuntimeKey {
         self.keys
             .borrow_mut()
@@ -278,32 +354,113 @@ impl Local for ServiceTokens {
 
 /// A token TS names a service by: a class (RayX's, or one TS declares), a `ServiceToken` or any
 /// other object, with a name for messages.
+#[derive(Clone)]
 pub struct ServiceKeyArg {
     handle: JsHandle,
     name: String,
+    /// The contract the token is of (a contract's `ServiceToken`).
+    contract: Option<super::contract::ContractDef>,
 }
 
-impl Arg for ServiceKeyArg {
+impl ServiceKeyArg {
+    /// The token's JS object.
+    pub fn handle(&self) -> &JsHandle {
+        &self.handle
+    }
+
+    /// What names the token in messages: a class's name, a `ServiceToken`'s
+    /// (`ServiceToken(clock)`).
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// The contract the token is of.
+    pub(crate) fn contract(&self) -> Option<super::contract::ContractDef> {
+        self.contract
+    }
+
+    /// Whether the token is a RayX service's class (`I18nService`), which names that Rust
+    /// service.
+    pub(crate) fn is_rayx_service(&self) -> bool {
+        self.handle
+            .constructor()
+            .is_some_and(|class| RESOLVERS.contains_key(&class))
+    }
+
+    /// The runtime key the token names in the VM `sys` is of, made the first time: what a TS
+    /// service is registered under, and what Rust code keys a service TS names by this token
+    /// (a Rust startup service's `startup_service_type`).
+    pub fn key(&self, sys: &System) -> RuntimeKey {
+        self.key_or_insert(sys)
+    }
+
+    pub(crate) fn key_or_insert(&self, sys: &System) -> RuntimeKey {
+        sys.locals
+            .get::<ServiceTokens>()
+            .key_or_insert(&self.handle, &self.name)
+    }
+
+    /// What the token names in the startup run: a RayX service's class its Rust service's type
+    /// (`I18nService`: the i18n service), any other token its runtime key.
+    pub(crate) fn startup_type(&self, sys: &System) -> StartupServiceType {
+        if let Some(contract) = self.contract {
+            return (contract.startup)();
+        }
+        match self
+            .handle
+            .constructor()
+            .and_then(|class| RESOLVERS.get(&class))
+        {
+            Some(class) => (class.startup)(),
+            None => StartupServiceType::runtime(&self.key_or_insert(sys)),
+        }
+    }
+}
+
+impl ServiceProvider {
+    /// The runtime key the TS token `token` (a TS class, a `ServiceToken`) names in the VM `sys`
+    /// is of, once a TS service was registered under it: what Rust code resolves that service by
+    /// (`thread_bound_service_by_key`, on the engine thread).
+    pub fn key_of(sys: &System, token: &JsHandle) -> Option<RuntimeKey> {
+        sys.locals.get::<ServiceTokens>().key(token)
+    }
+}
+
+/// A token is a JS object (what TS passes, and what an interface's member returns).
+impl JsValue for ServiceKeyArg {
     fn ts_type(_types: &mut TsTypes) -> String {
         "object".into()
     }
 
     fn from_js(value: JsIn<'_>) -> Result<Self, PropError> {
         let handle = <JsHandle as JsValue>::from_js(value)?;
-        let name = match handle.constructor() {
-            Some(class) => class.def().name.to_owned(),
-            None => token_name(value),
+        let token = <Instance<ServiceToken> as Arg>::from_js(value).ok();
+        let contract = token
+            .as_ref()
+            .and_then(|token| token.with(|token| token.contract));
+        let name = match (handle.constructor(), token) {
+            (Some(class), _) => class.def().name.to_owned(),
+            (None, Some(token)) => token.with(|token| match token.contract {
+                Some(_) => token.name.clone(),
+                None => format!("ServiceToken({})", token.name),
+            }),
+            (None, None) => token_name(value),
         };
-        Ok(Self { handle, name })
+        Ok(Self {
+            handle,
+            name,
+            contract,
+        })
+    }
+
+    fn to_js<'a>(&self, host: &'a dyn JsHost) -> Result<JsOwned<'a>, PropError> {
+        self.handle.to_js(host)
     }
 }
 
-/// What names `value` in a message: a `ServiceToken`'s name, a function's (a TS class's) name,
-/// else what it is.
+/// What names `value` (no `ServiceToken`) in a message: a function's (a TS class's) name, else
+/// what it is.
 fn token_name(value: JsIn<'_>) -> String {
-    if let Ok(token) = <Instance<ServiceToken> as Arg>::from_js(value) {
-        return token.with(|token| format!("ServiceToken({})", token.name));
-    }
     value
         .field("name")
         .ok()
@@ -317,13 +474,28 @@ fn token_name(value: JsIn<'_>) -> String {
 #[class(generic = "T")]
 pub struct ServiceToken {
     name: String,
+    /// The contract it is the token of (`#[contract]`'s token function makes it).
+    contract: Option<super::contract::ContractDef>,
+}
+
+impl ServiceToken {
+    /// A contract's token.
+    pub(crate) fn contract(name: String, contract: super::contract::ContractDef) -> Self {
+        Self {
+            name,
+            contract: Some(contract),
+        }
+    }
 }
 
 #[class]
 impl ServiceToken {
     /// A new token named `name` (the name is for messages: two tokens are two keys).
     pub fn new(name: String) -> Self {
-        Self { name }
+        Self {
+            name,
+            contract: None,
+        }
     }
 
     /// The name it was made with.
