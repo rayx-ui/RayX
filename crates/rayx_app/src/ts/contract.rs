@@ -83,7 +83,8 @@ pub trait Contract: Send + Sync + 'static {
 }
 
 /// Contracts in an app's set: `registry.contract::<dyn WeatherSource>()` in
-/// `rayx::native_module!`'s block adds `WeatherSource`'s interface and its token function.
+/// the body of the app's `#[rayx::native_module]` function adds `WeatherSource`'s interface and
+/// its token function.
 pub trait ContractRegistryExt {
     /// Adds contract `C`'s TS interface and token function.
     fn contract<C: ?Sized + Contract>(&mut self) -> &mut Self;

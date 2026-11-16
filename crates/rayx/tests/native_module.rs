@@ -1,5 +1,5 @@
-//! `rayx::native_module!` and `#[rayx::app_extension]`: an app crate's one-line UI set holds
-//! every RayX TS class, RayX's components and theme document and what its block adds, nothing
+//! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds every RayX
+//! TS class, RayX's components and theme document and what its function's body adds, nothing
 //! else; an extension is a TS function that `builder.apply(..)` runs in chain order.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
@@ -52,13 +52,14 @@ impl Probe {
     }
 }
 
-rayx::native_module!("test/app", |registry| {
+#[rayx::native_module("test/app")]
+fn native(registry: &mut Registry) {
     registry
         .module::<Probe>()
         .module::<add_sunny>()
         .module::<add_rainy>()
         .contract::<dyn Clock>();
-});
+}
 
 /// What a set exports, by kind and name.
 fn exports(set: &Registry) -> BTreeSet<String> {
@@ -84,7 +85,7 @@ fn exports(set: &Registry) -> BTreeSet<String> {
 }
 
 #[test]
-fn the_set_holds_rayx_and_what_the_block_adds_and_nothing_else() {
+fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     let set = registry();
     let mut rayx = Registry::ui_set("test/app");
     rayx::app::register(&mut rayx);

@@ -133,7 +133,7 @@ pub mod checked {
 }
 
 /// What the macros use; not part of the API: `tr!`'s check, and NSH's core for the code
-/// `rayx::native_module!`, `#[app_extension]` and `#[contract]` generate (an app crate may
+/// `#[rayx::native_module]`, `#[app_extension]` and `#[contract]` generate (an app crate may
 /// take NSH through RayX).
 #[doc(hidden)]
 pub mod __private {

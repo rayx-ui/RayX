@@ -58,6 +58,17 @@
 //!   `SuspensionService`), and its `onChange` hears the service's changes. A TSX app has no root
 //!   component, so its `builder.start()` keeps the platform and suspension services current
 //!   itself, as [`use_platform_sync`] does in a Rust root.
+//! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
+//!   Clock())` and every other lifetime, startup and `As` form, keyed by a TS class or a
+//!   [`ts::ServiceToken`], with the TS startup interfaces `AsyncInitializable` and
+//!   `StartupInitializable` in the same startup graph, and TS options (`addOptions`,
+//!   `configureOptions`, `getOptions`). They are made and resolved on the engine's thread only.
+//!   Rust calls a TS service only through a contract: a trait marked `#[contract]`, resolved as
+//!   `Arc<dyn Trait>` ([`ts::ContractError`] off the engine thread).
+//! - **Extensions.** `#[app_extension]` exports a Rust builder extension to TS (`add_weather` is
+//!   `addWeather`, applied with `builder.apply(addWeather)`); `#[rayx::native_module("spec")]`,
+//!   in the umbrella, makes an app's UI set with [`ts::register`]'s classes and RayX's
+//!   components.
 //!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
 //! on [`rayx_core`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
@@ -85,6 +96,9 @@ mod suspension;
 mod translate;
 pub mod ts;
 
+/// The umbrella's `#[rayx::native_module("spec")]`, which names `rayx`: use it through `rayx`.
+#[doc(hidden)]
+pub use rayx_app_macros::native_module;
 pub use rayx_app_macros::{app_extension, contract};
 pub use ts::register;
 

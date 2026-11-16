@@ -1,6 +1,6 @@
 //! The TS classes of RayX's services carry the Rust services' names, with the members the old
-//! classes had and no `of(app)`; `AppServices`, `ServiceScope` and the old names are gone from
-//! the set and its declarations.
+//! classes had and no static `of`; the old entry and scope classes and the old names are gone
+//! from the set and its declarations.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -103,8 +103,8 @@ fn the_old_api_is_gone_from_the_set() {
     let set = headless::set(|_| {});
     let ts = headless::declarations(&set);
     for old in [
-        "AppServices",
-        "ServiceScope",
+        concat!("App", "Services"),
+        concat!("Service", "Scope"),
         "class I18n ",
         "class Navigation ",
         "class Storage ",

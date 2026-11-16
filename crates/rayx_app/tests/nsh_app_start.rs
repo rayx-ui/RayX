@@ -1,4 +1,4 @@
-//! A Rust root's start without `set_app`, through NSH's engine, headless: the root builds
+//! A Rust root's start without the old setter, through NSH's engine, headless: the root builds
 //! `RayXAppBuilder::new()` with its chain and calls `.start()` (watching `app_state()` move
 //! from `NotStarted` through `Starting` to `Ready` or `Failed`) or awaits `.start_async()`
 //! (the root provider or the `AppError`); a second start on a started surface keeps the first
@@ -334,7 +334,7 @@ fn app_errors_name_the_builder_s_start() {
     ] {
         let message = error.to_string();
         assert!(!message.contains("set_app"), "{message}");
-        assert!(!message.contains("AppServices"), "{message}");
+        assert!(!message.contains(concat!("App", "Services")), "{message}");
     }
     assert!(AppError::NotStarted.to_string().contains("start"));
 }

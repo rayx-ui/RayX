@@ -1,8 +1,9 @@
 //! Procedural macros for `rayx_app`: the `AppService` derive, `#[app_extension]` and
-//! `#[contract]`.
+//! `#[contract]`, and the umbrella's `#[native_module]`.
 
 mod contract;
 mod extension;
+mod native_module;
 
 use proc_macro::TokenStream;
 use proc_macro_crate::{FoundCrate, crate_name};
@@ -16,7 +17,8 @@ use syn::{Attribute, DeriveInput, parse_macro_input};
 /// `builder.apply(addWeather)`.
 ///
 /// The TS function is a flat NSH module named like the function, which the app registers in
-/// its set: `rayx::native_module!("my-app", |registry| { registry.module::<add_weather>(); })`.
+/// its set: `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {
+/// registry.module::<add_weather>(); }`.
 /// The function's doc comment documents the TS function.
 #[proc_macro_attribute]
 pub fn app_extension(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -68,6 +70,40 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
     let item = parse_macro_input!(item as syn::ItemTrait);
     contract::expand(item, &app_path())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// The UI set of an app's crate, on the function NSH's `#[native_module]` takes:
+///
+/// ```ignore
+/// #[rayx::native_module("my-app")]
+/// fn native(registry: &mut Registry) {
+///     registry.register::<Glyph>().module::<add_weather>(); // the app's own exports
+/// }
+/// ```
+///
+/// It is NSH's `#[native_module("my-app")]` on the function, whose body first registers every
+/// RayX TS class (`rayx::app::register`) and RayX's components with their theme document
+/// (`rayx::components::register`), and nothing else; the crate gains `pub fn registry()`, as
+/// with NSH's attribute. Written in the crate's source, the attribute line is what NSH's CLI
+/// reads the set's specifier from. Used through the `rayx` umbrella, which it names. It takes
+/// NSH's core from the crate's own `nsh-core` dependency when the crate names one (else through
+/// RayX), so a crate with `nsh-core` only in `[dev-dependencies]` fails its normal build: depend
+/// on it in `[dependencies]`, or not at all.
+#[proc_macro_attribute]
+pub fn native_module(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let specifier = parse_macro_input!(attr as syn::LitStr);
+    let item = parse_macro_input!(item as syn::ItemFn);
+    let rayx = match crate_name("rayx") {
+        Ok(FoundCrate::Name(name)) => {
+            let name = syn::Ident::new(&name, proc_macro2::Span::call_site());
+            quote!(::#name)
+        }
+        _ => quote!(::rayx),
+    };
+    let nsh_core_in_scope = crate_name("nsh-core").is_err();
+    native_module::expand(specifier, item, &rayx, nsh_core_in_scope)
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
