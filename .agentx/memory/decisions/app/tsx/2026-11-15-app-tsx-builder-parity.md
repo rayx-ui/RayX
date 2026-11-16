@@ -4,7 +4,7 @@ agentx:
   scope: decisions/app/tsx
   status: current
   created: 2026-11-15T18:45:00+01:00
-  updated: 2026-11-16T12:00:00+01:00
+  updated: 2026-11-16T23:00:00+01:00
   topics:
     - tsx
     - app-builder
@@ -17,8 +17,8 @@ agentx:
 # Decision: one app builder API in Rust and TypeScript
 
 **Date:** 2026-11-15, decided with the owner. **Status:** current; the epic `ts-app-builder`
-(`.agentx/tasks/ts-app-builder/`) implements it. Until it lands, source still has the API it
-replaces (`set_app`, `AppServices.load()`, `X.of(app)`).
+(`.agentx/tasks/ts-app-builder/`) implemented it (2026-11-16): source no longer has the API it
+replaced (`set_app`, `AppServices.load()`, `X.of(app)`).
 
 ## Context
 
@@ -62,8 +62,12 @@ exchange JSON-like values, class instances and callbacks, but no other JS object
   TS object's other members only inside a synchronous call from JS and the startup run is a task;
   NSH's typed signatures keep the TS shapes above. `StartupInitializable` repeats
   `AsyncInitializable`'s members (NSH interfaces have no supertraits).
-- **A TSX app keeps a one-line Rust crate**: `rayx::native_module!("my-app")`; the app's own Rust
-  services reach TS as `#[rayx::app_extension]` functions passed to `builder.apply(..)`.
+- **A TSX app keeps a minimal Rust crate**: `#[rayx::native_module("my-app")] fn native(registry:
+  &mut Registry) {}`, its body adding the app's own exports. The owner chose this attribute on
+  2026-11-16 over the one-line `macro_rules!` first decided, because NSH's CLI reads a crate's set
+  only from a `#[…native_module("…")]` line and would leave a macro's set out on web. The app's own
+  Rust services reach TS as `#[rayx::app_extension]` functions passed to `builder.apply(..)`; a
+  contract's TS token is a generated function (`weatherSourceToken()`).
 - **NSH first.** The fork gains JS objects Rust keeps (`JsHandle`: identity, traced, engine
   thread only), `#[interface]` on a Rust trait (a TS `export interface` and the stand-in
   `Js<Trait>` calling the JS object) and a class constructor as an argument (`Constructor`), in

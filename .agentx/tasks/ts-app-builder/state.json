@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 120,
-  "planRevision": 15,
+  "revision": 128,
+  "planRevision": 16,
   "specHashes": {
-    "requirements": "246eb619732448f6636b607bbf7b2379f404b03df998bebbad9703336901956e",
-    "design": "039e3c8a4acb9df359d6b02068a539e32efd1840d841c9dfa6da48371888ca36",
-    "plan": "e5b96f2b5533091c1e185adb1caec7adc11088c6e56d60051475e83304138918"
+    "requirements": "de6b1e51971fd1e8c83e980d009aff4294ad109313a148a8b251aef0ef7349f9",
+    "design": "85cc329b79c99b000393373d86c497bf544a1e698407c7d4d432327463d17364",
+    "plan": "1676a4129720083cd8a7bd77498a6e5549b88d39fc807a85dd2026e22e2a2302"
   },
   "tasks": {
     "t01-runtime-keys": {
@@ -170,6 +170,12 @@
       "workerIds": [
         "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
       ]
+    },
+    "t28-error-enums": {
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     }
   },
   "validationBatches": {
@@ -241,7 +247,17 @@
           "root": "5d43e44ab385c670118ce7b6a666b58e143ea189e992a0c105a4985d2eb785b2"
         }
       },
-      "recordedAt": "2026-11-16T14:57:10Z"
+      "recordedAt": "2026-11-16T15:02:19Z"
+    },
+    "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173": {
+      "snapshot": {
+        "specHash": "cb82e1416959348ba32c05393effd9b0c90f14b3fa9a8f847611b09ec7bda161",
+        "repositories": {
+          "rayx": "7e538ea68c55577c1b4723c391afe30716e082a53bd872ad3e5a388270210471",
+          "root": "5d43e44ab385c670118ce7b6a666b58e143ea189e992a0c105a4985d2eb785b2"
+        }
+      },
+      "recordedAt": "2026-11-16T15:12:30Z"
     }
   },
   "checkResults": {
@@ -822,6 +838,650 @@
       "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-5a88603cf3c2.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "inputsHash": "5630f33064ef2f10fc2cee3aa46c57639fe6d5ec4a381a7e53768725abbbf496"
+    },
+    "final/c-di-runtime-keys/final": {
+      "checkId": "c-di-runtime-keys",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "49bb6d60e003ec1b70cd53fe3d8f9ae9cd96c05d83248f56300ab8cd9356c98e",
+      "basisHash": "abd426428e429f606b13341b0328133bf1cce66d0c5bc63bba084d11b035eb6c",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 12,
+      "durationSeconds": 2.4652,
+      "recordedAt": "2026-11-16T14:58:42Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-5256f014ca74.log",
+      "logSha256": "9bb2567191db9434ecb8903c98952d1317170b2dd9d27bfd6a5ba77cca2831bb",
+      "inputsHash": "ff97c7b0249cd6053e5f89475a930a10777fce8653c9d2c44584dda278c3cd51"
+    },
+    "final/c-di-thread-bound/final": {
+      "checkId": "c-di-thread-bound",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "34b7915ab6669c8f339ad74f52ea7c88e6c96c3dcedfd2d19282c9e0d2c56a15",
+      "basisHash": "d3b9c5ea52b8e7a6c1e45184fec4b91f44352d9daa11e72beb707337f5761e0c",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 13,
+      "durationSeconds": 1.0075,
+      "recordedAt": "2026-11-16T14:58:43Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-a02d80911415.log",
+      "logSha256": "e664b9060492aa19ee93a251e13987d29d6f07563934f6410c02b8f42fa8a380",
+      "inputsHash": "eff33b655c8bb448170c1ed733f1907b0c924f6f8db6a4c291c8ee355a9796f8"
+    },
+    "final/c-core-wasm/final": {
+      "checkId": "c-core-wasm",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "3d78ef66e59a09f9c91941ebb34981bac473eea20b28e9cc5fb669581fb433bd",
+      "basisHash": "77300a9daa8f04f28ce4d7e04d3439a2a29310554007f0d1a4116b8d01681223",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 4.1464,
+      "recordedAt": "2026-11-16T14:58:47Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-22e1f100ec21.log",
+      "logSha256": "1599fbb6f2aff5652094ea11cb3ce198f64920cbaf5a0726d80bc59b4d78cc08",
+      "inputsHash": "83311af784f9fff073046b87ef8ad16255596063906b8dfd67127dd6cb3b685c"
+    },
+    "final/c-di-startup-runtime/final": {
+      "checkId": "c-di-startup-runtime",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "90727d80238e145cfa74e09e15d0d451a2ee71f830031f4a993e484b30f8b725",
+      "basisHash": "d282efa6bcf2682dc08d02c180d53aad42d35379e31e593443715111d2b32ced",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 13,
+      "durationSeconds": 1.0134,
+      "recordedAt": "2026-11-16T14:58:48Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-1be697a061ad.log",
+      "logSha256": "6939ce82dba90c7dd99b6bbbead556120e2f27f4ce0f298cb8387496049f6c7b",
+      "inputsHash": "ec36ff5ce4c08ab0bd93e9470133db1e7649a5d93bae7f8163f8bd3f94b34bc4"
+    },
+    "final/c-di-startup-key/final": {
+      "checkId": "c-di-startup-key",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "b06a5fb2cdeb3becc91b377ff5be68d3a7088972fbb95bda0f84c37e089d51cc",
+      "basisHash": "b9ee7b65a8f55a1c7bd9868249de410a35e96e30cec840c7264f4e1939e26d4c",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 9,
+      "durationSeconds": 1.0269,
+      "recordedAt": "2026-11-16T14:58:49Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-563d9bd4abe0.log",
+      "logSha256": "59e58a0bb67837878034115a062d3aa47095b9d6a2042475e2a56726a11031d7",
+      "inputsHash": "5496fbbb57dbebefa570df41991788d57596419141a4aa9ecdb495d8482f7a04"
+    },
+    "final/c-nsh-pin/final": {
+      "checkId": "c-nsh-pin",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "123b54648a0d4162d0205b267231bd128079c5c2f5c9623639f52980ab88c8a9",
+      "basisHash": "b1c8d95739835099f6ec660758ed88fbfa11d0a94b9ec9168d274cb45a313020",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 36,
+      "durationSeconds": 3.7523,
+      "recordedAt": "2026-11-16T14:58:53Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-77bdadcf3200.log",
+      "logSha256": "300dfd6b4a58b853c1e1c42faf39a97851d371d230d911bd2d865cbb57f5d3bf",
+      "inputsHash": "9db8ea6ee99a432ce2dc78c6086ac41410536f2a71926890b165fcb931548a18"
+    },
+    "final/c-tsx-provider/final": {
+      "checkId": "c-tsx-provider",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "0b3514b68e2d39b850fb3ea9e2bc5f6c8937eb6af230c5a1ef8ac38ec768823e",
+      "basisHash": "f8813de4a4c22936af17e93e88453ab517d707956da06fdc701230b896332723",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 7.5461,
+      "recordedAt": "2026-11-16T14:59:00Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f815c9ed3761.log",
+      "logSha256": "787a7ca3f5900dff84149236f8439ae192212690938e6c97cded159a259493ab",
+      "inputsHash": "731deb3821500507aeb19aee4e3380c63ff69d5177c664ff75624be338e907f5"
+    },
+    "final/c-tsx-builder/final": {
+      "checkId": "c-tsx-builder",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "fc89941021de7ace16b7daeae746773009e9a1a2f62dfd4d72f52a4ab3da8d37",
+      "basisHash": "0f3523dfc4bca2bde21e5cdbf9a29c3f46514256179fd51a326bc21faa5f9a72",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 5.6416,
+      "recordedAt": "2026-11-16T14:59:06Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-260dafff00bc.log",
+      "logSha256": "9cb153b466bac51aeb9234e07b6bef7a5c123fc1ee8d8cb67b37f6ca9f537c43",
+      "inputsHash": "5398edc0d8fd89ecee0839fd200e91a79dc2456d51727203848cd856d9664fc9"
+    },
+    "final/c-tsx-builder-options/final": {
+      "checkId": "c-tsx-builder-options",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "dcec260892d42d08dc1c51b0aa6246676efb78c78185bc45d192b1c41fe2c0b3",
+      "basisHash": "b5349d0f4b588d21d5beb4644c6dd3d608117d59a3821012e2671382131c58c7",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 5.4635,
+      "recordedAt": "2026-11-16T14:59:12Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-1a53bfc1fc51.log",
+      "logSha256": "73ada91c43c9c7ff1ae421e6a753f9c195edfd09dd14d3b9593ec93f67f0eec5",
+      "inputsHash": "5331e9440cc4b4d7f2cef1bbc123594f08104d0d5e4ffb0872ed258960b9e466"
+    },
+    "final/c-tsx-start/final": {
+      "checkId": "c-tsx-start",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "828585e4a40fe67803702431a1904411cab7b5ba1597913214288c0bb74c169e",
+      "basisHash": "9b95f62ce278efb269289f2e244c91ee9f65fea63647f5fc92e9919e9430e9bc",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 5.5323,
+      "recordedAt": "2026-11-16T14:59:17Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-0ebbe18a4e96.log",
+      "logSha256": "9dd823c6d16156fe8450751bc6c490e98065be5bb8ff109025470ab2261a229d",
+      "inputsHash": "b1a98079261590397dda666d695ec8a170473be8feea782775711339ac53de31"
+    },
+    "final/c-app-start/final": {
+      "checkId": "c-app-start",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "8a956e38d7a364671d357fd5ec3d2ab40b941a3dd5f9be098bd0d3ad3ca82273",
+      "basisHash": "735256613a829c2eaf3ae923c90c11bdfa8c0fc242d5cb9d2be4c8ed870e938e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 8,
+      "durationSeconds": 4.2879,
+      "recordedAt": "2026-11-16T14:59:21Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-be4cf3a35798.log",
+      "logSha256": "d83ae92326b816f16ed5632d1e3bb745bcff3e2debb3b3a5c15fee8abfe8d4e3",
+      "inputsHash": "45acf8fafeaad71de38f9c97e1cf8a31f7ac71b401c8272b1c3f526823569053"
+    },
+    "final/c-tsx-class-names/final": {
+      "checkId": "c-tsx-class-names",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "7652cf456c58874d93d61007ee7bda6a8bee5f59e5551783cbd3a52a8d5412d8",
+      "basisHash": "e4a9ab3ffeebcd7ebab0effa80b048a803f1702d0e2fc0b8c369b7d9419b5a0d",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 1.7158,
+      "recordedAt": "2026-11-16T14:59:23Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f5c2987e3510.log",
+      "logSha256": "932c7ef25513e3dd3d48a5330a1fecedc7f00fcdaee46905011fb4ea314e6362",
+      "inputsHash": "b480d1bc0422960ae24d5fd9e679e57e468a20429cbe50ef8426697bc7396e01"
+    },
+    "final/c-app-groups/final": {
+      "checkId": "c-app-groups",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "35b81c65629263acd2130514203b39779c08ece686d01b62cb8f57f313c59c42",
+      "basisHash": "fb6a69db1caa5f06e6369cb53db119bf34777589ff70341ee2c35b5f967a176a",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 104,
+      "durationSeconds": 157.8683,
+      "recordedAt": "2026-11-16T15:02:01Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-f42a9f802b1b.log",
+      "logSha256": "ad1651d961aca92eeb3d86079ac3a8b4b161a34638c28cb62369ff72bf75560f",
+      "inputsHash": "775c10b5213ffd6e5983b5cde85b350f03e6d7b813fddfffc9d2ede9a6b8a692"
+    },
+    "final/c-native-module/final": {
+      "checkId": "c-native-module",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "f3c3659de5cb1d5d3558aab18cb81239aa7f9967f433ec58336fbe40ce0967a4",
+      "basisHash": "9f1d7c071415df5acf66618fbed6734e7255652570810db0120dccf812d112c7",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 1.0392,
+      "recordedAt": "2026-11-16T15:02:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-544f21ff211f.log",
+      "logSha256": "9a7042f5f91050c66beb3a0a0aab1f74c564c4a01971a7a6f1e29fa6b1fb047f",
+      "inputsHash": "500a6e6d7d85ee471a09bec760983e633ccdd20894aea748251d0f2b1ea0b699"
+    },
+    "final/c-tsx-container/final": {
+      "checkId": "c-tsx-container",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "69d7e9adc487ff8cf28a58732191b6de4cedb76a9002285ab948351ed94cace4",
+      "basisHash": "cf9b46bc2a1e63558b6f13bb7957d2d62a08fa40cb14fb1f757e70b3848f6062",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.2676,
+      "recordedAt": "2026-11-16T15:02:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-fc4790a1ff0c.log",
+      "logSha256": "7a29e82c4c5e31bd95c96ee6fd4fb1733cff6ac9c2d2b14002211335cbdfbabe",
+      "inputsHash": "ac0dfc686ca22547cccf4a3de5a13f834de19873a5519465700d7861154f49ef"
+    },
+    "final/c-tsx-startup/final": {
+      "checkId": "c-tsx-startup",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "24017c4ae32e396bbc4d011be90c9f62102ce99e18ec3e80b806ab7ef307e8c3",
+      "basisHash": "c3d46496958ee0bdeac551bdf6d11d05ed5aa78b4cbf4e331fcf1424f8617fd5",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 5,
+      "durationSeconds": 0.3468,
+      "recordedAt": "2026-11-16T15:02:03Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-511af7936653.log",
+      "logSha256": "382f6636573dea7d56c5b50fd4765e56ac5f8ef7b739bbd986738ea4c4d146b0",
+      "inputsHash": "70fee342fcdd3b681c659d76ecaa6976bf3086dce74992095074c4cbb102f673"
+    },
+    "final/c-tsx-ready/final": {
+      "checkId": "c-tsx-ready",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "67dd01b0136ecf22200aaac9aa810415c3350dfc0ccacd69a0b559db92efd04f",
+      "basisHash": "74b6163d87e3472898af8bf5561ef44442f0f853908499c7c12780886a85fdd2",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.2813,
+      "recordedAt": "2026-11-16T15:02:03Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-cfa941e5b868.log",
+      "logSha256": "b646e7a6b12e5f7e8210adf9cedf28806d1109ba1a57518c9ae58231634fb02b",
+      "inputsHash": "8cc02dd420fa87dcc45b292a36985e089b3af40439935de3fb6783830bdf8552"
+    },
+    "final/c-tsx-contracts/final": {
+      "checkId": "c-tsx-contracts",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "80df2b3eb38054e8b5671ab76d3662d3e2925de52f1560f8f5267cbc7ae43243",
+      "basisHash": "9634a1cce95397ca741a38e1fd790c4d0d834cf805b8e68bea0043e01007bff0",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 0.287,
+      "recordedAt": "2026-11-16T15:02:03Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-2b8e4348297a.log",
+      "logSha256": "d45def64732af5008e44e2868ba2913d4f4ea9ddad3c5ecf85870e50129c47ca",
+      "inputsHash": "72f62bc816d1148af3f08a5b4cf52d8b57bcc0c7a60f0905c3790ed8f363b44a"
+    },
+    "final/c-tsx-options/final": {
+      "checkId": "c-tsx-options",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "8414d773218f86eaa76c092a9251502a4826b0add2fa2f43dc56e78910c093b5",
+      "basisHash": "feff78f6d71edcb195c1761ad426d959e1578c35f96d588a7dd5a6238a91f665",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.2741,
+      "recordedAt": "2026-11-16T15:02:04Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-a642cd83da2e.log",
+      "logSha256": "e6e25cbbf5ea781055530221f086f19e09da9d970da2548ab815f5e83d3602c8",
+      "inputsHash": "c1e908d3ab8c35dd1a1020c247287fea59572ed9c4b6a76f10f3179c1fddb8f9"
+    },
+    "final/c-new-app-builder/final": {
+      "checkId": "c-new-app-builder",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "a17f0ee999e601c5c10d6cbb47a444ea3412a3a1c5d0794f7a50a4fece12c53c",
+      "definitionHash": "76c27599a0e04dd78bbc041dc87873b0dcdf46c4ba2c5d5fe134dc0e1c2e9128",
+      "basisHash": "4b41eb603033b9a88462aefc3af78c366bcb16672f0324bf91abf30605de518e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 33,
+      "durationSeconds": 3.1866,
+      "recordedAt": "2026-11-16T14:48:11Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-6108414d03b1.log",
+      "logSha256": "5b3d429ff0091e3181415f6a4653c045062cade49f05f7a54baab3df72580c50",
+      "inputsHash": "bfbd7b84992a945674b4bee100091b6f776a922832cdfe77bcf5c5d405b835a0"
+    },
+    "final/c-gallery/final": {
+      "checkId": "c-gallery",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "21580c25aa6e38ac39e8ab0f0e2d92790279fc54780f5bb8b7bbd554532d19d5",
+      "basisHash": "ed8af3f82a55d07c04438cabd81e930edcfb67d250ca0ef0c4ad73a1f6a99696",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 9.2999,
+      "recordedAt": "2026-11-16T14:57:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-513f2741e6a3.log",
+      "logSha256": "f221d04b74eaf25afe8af4e6d3973f1d7df8f7ec90bd517683752e5ee03e9a51",
+      "inputsHash": "22556812df2d990b75b266f0274543f5669626f37484f35af6b18c8e1cca93b7"
+    },
+    "final/c-no-old-api/final": {
+      "checkId": "c-no-old-api",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "73b773846ad6b8b02d2f6ad52f982565df179b4e0969aa34f04558fb3d7c99c5",
+      "basisHash": "4b0dbf4d7b13da3840a9d2ade173ca71c45ca8b6d8eabae531dd0ba8c1b5c199",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0393,
+      "recordedAt": "2026-11-16T14:57:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-9ecc7dd9f790.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+    },
+    "final/c-theme-codegen/final": {
+      "checkId": "c-theme-codegen",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "9921ce54476805ba5a34f08fb7291241db4f6a72b517c366bb1bbd0b7fa815d8",
+      "definitionHash": "01109d3c06d973a798ef8bebf96f0cce45aae0272327fdaa3c56f6a7950ba539",
+      "basisHash": "88fcf3ccb76028277e47a87ea2335c94404a35eec92dc38fa8089cefee06edfd",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 15,
+      "durationSeconds": 0.4375,
+      "recordedAt": "2026-11-16T12:23:55Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s2-theme-final-442ec0b40999.log",
+      "logSha256": "c79f48848918b2fcd7f1b4f52827b9460c4cd99720446b435253ed7001bcc185",
+      "inputsHash": "0dc9e75f4f6e89fd4c8f8aac2fe3d78e05346c7dd2910d86320305fc54698f0f"
+    },
+    "final/c-theme-document/final": {
+      "checkId": "c-theme-document",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "c4898f784aa48f55572733b7440742a1106ad64d26ed447b0869459d5a2a00e8",
+      "basisHash": "cadb9a2be3b88c264e0be8ce41b31c6488375583b9e5e256f4210a452dfbf6c9",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.6203,
+      "recordedAt": "2026-11-16T15:02:04Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-ac35025089ab.log",
+      "logSha256": "4b5a3d6888200549ebf7b410133b4476dc5cbe7b63194ee2fc3ec4c7c5a75fca",
+      "inputsHash": "93f50ec318953cf9ded01fd462e0f1db91663d7788f115c6004233babbce7bca"
+    },
+    "final/c-theme-keys/final": {
+      "checkId": "c-theme-keys",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "ca95cee581995b7af44f5c12d4cb3445967d8df62124141ace88be2a03228247",
+      "basisHash": "86a992f0aa03a3fe16aa433f382bc21ab71ae1d54602bb2a94713d86868e15a9",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 0.6661,
+      "recordedAt": "2026-11-16T15:02:05Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-cd3de8f09a60.log",
+      "logSha256": "841ec25da752301328eecd8d52d9157a68006cc6510c54d4bfe307d92e056245",
+      "inputsHash": "93f50ec318953cf9ded01fd462e0f1db91663d7788f115c6004233babbce7bca"
+    },
+    "final/c-button/final": {
+      "checkId": "c-button",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "c8163119ff783cbe5773f6ea5d1d6dabd06048ed02901a30e2503341b4208927",
+      "basisHash": "5fea8347367ed920780d87c9df3c0d0a76cc7c5d02d9c504198cbd640d2e649b",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 1.4595,
+      "recordedAt": "2026-11-16T15:02:06Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-6667ffe651b4.log",
+      "logSha256": "07a591cae3f15260f621f63432cd0e000e3273b03b076a8dd26b82a684756fee",
+      "inputsHash": "93f50ec318953cf9ded01fd462e0f1db91663d7788f115c6004233babbce7bca"
+    },
+    "final/c-theme-modifiers/final": {
+      "checkId": "c-theme-modifiers",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "29c170911df8eaab1fc6db37f6e90c11d0298eed851f1381e6cb663f1b8ecc3e",
+      "basisHash": "30d79e711940342b1b65ad696b12eaa9198dacb0b03861512f914934496edecc",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 1.3671,
+      "recordedAt": "2026-11-16T15:02:08Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-fca8f2a07965.log",
+      "logSha256": "22247c71941ca2c477dfa1bda2489fadab9dbc37460fe19159ee0cd882a0783a",
+      "inputsHash": "93f50ec318953cf9ded01fd462e0f1db91663d7788f115c6004233babbce7bca"
+    },
+    "final/c-gallery-theme/final": {
+      "checkId": "c-gallery-theme",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "091c769836402691a26c58ff9a42ab2dd23f1e785cf329dcb229680911ef29cd",
+      "basisHash": "6b0830616a6fbce19b6f9cad43839aebdab81317f3c89e36108a2faf7feb40f4",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 1.4356,
+      "recordedAt": "2026-11-16T15:02:09Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-b3a02c3c594c.log",
+      "logSha256": "f87e4ffacb96d3a1d8a8b9f06fac0401ff4874fa1a75258e016c72b0e07b46ff",
+      "inputsHash": "464c01f599bcff6b8c0c8713eee6e0325fcef2afb692ed29f121cad1937849da"
+    },
+    "final/c-no-old-theme-rayx/final": {
+      "checkId": "c-no-old-theme-rayx",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "6b62e5f67014d88103662d643cbb4806907c79bb79fa9cf59744101296b571d4",
+      "basisHash": "e5a468462024fbf30fe007fcf25e236333bb03967cae3715f99d049a7a83ee3f",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0719,
+      "recordedAt": "2026-11-16T15:02:09Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-823bbef26a0c.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+    },
+    "final/c-no-old-theme-root/final": {
+      "checkId": "c-no-old-theme-root",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "d52c505249948c9deaae33af67d6b802e717c484b423c680b5cb3c6e3980bfd6",
+      "basisHash": "5031aa3956b9932abf22fa3856e91bda1608049d7d93e3f6c7d4fd7b329c0204",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0274,
+      "recordedAt": "2026-11-16T15:02:09Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-b35f9c4e08c6.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "5630f33064ef2f10fc2cee3aa46c57639fe6d5ec4a381a7e53768725abbbf496"
+    },
+    "final/c-tsx-listeners/final": {
+      "checkId": "c-tsx-listeners",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "a9a2b1b9cba694bacdc5fd61003336a86aed825df229d312b3a00b28697034de",
+      "basisHash": "b2c9aca4d5dbe1f72f5ae892a45b9090a9a7a47cae1b38e5e3edf17b08f6531f",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 0.4124,
+      "recordedAt": "2026-11-16T15:02:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-30f9c5968c36.log",
+      "logSha256": "e422715161fe2aaf3f136f4db8ed5bd0fb0101c769a03272631cffdf65e24e0d",
+      "inputsHash": "775c10b5213ffd6e5983b5cde85b350f03e6d7b813fddfffc9d2ede9a6b8a692"
+    },
+    "final/c-native-attribute/final": {
+      "checkId": "c-native-attribute",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "eff4de448c6e96d56ded61a70f6633fee71c9fd496e08efe79eea119cfa3eb1b",
+      "basisHash": "9c021d8f32983bbe403503a5143e73daf15d945f1688a9547a8a03cb61833ebc",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 8,
+      "durationSeconds": 7.3404,
+      "recordedAt": "2026-11-16T14:57:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-5e041b26e563.log",
+      "logSha256": "de6557d00196ef7e8516ca530d091e997d70e9ccb9850b7387a602783999f412",
+      "inputsHash": "500a6e6d7d85ee471a09bec760983e633ccdd20894aea748251d0f2b1ea0b699"
+    },
+    "final/c-no-native-macro/final": {
+      "checkId": "c-no-native-macro",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "3f3eed16f3e404d034f23d00e8c4f2f65cd8642beae93810696ae4fab5459995",
+      "basisHash": "64ab3d749409a1dd897160c49da6306e50e69b1ba87588fecc2b41208373d081",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0293,
+      "recordedAt": "2026-11-16T14:57:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-a458e7829d1f.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "05741c3587386b04baad998ff58d2ba67cd25a830c39b52dac23aa471b483c7e"
+    },
+    "final/c-no-native-macro-root/final": {
+      "checkId": "c-no-native-macro-root",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "e4ec55394a51626f9973441d7a35cd8fcd675044c488b5d0addf2489028af3ac",
+      "basisHash": "d9173845a1dbce69ad847b614c070161f2452a578b3ac63ad7294386408e2a29",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0167,
+      "recordedAt": "2026-11-16T14:57:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s4-consumers-final-5a88603cf3c2.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "5630f33064ef2f10fc2cee3aa46c57639fe6d5ec4a381a7e53768725abbbf496"
+    },
+    "final/f-fmt/final": {
+      "checkId": "f-fmt",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "5b163fb7578010dcc41efa89004502c7be9ccec632359990cc1fc911b2527478",
+      "basisHash": "f2ad0f1bebfebd31fb0056d17cb967094f4d85a921ab28aea9f68c45300373af",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.5235,
+      "recordedAt": "2026-11-16T15:02:10Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-4d51bbedc0e8.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/f-clippy/final": {
+      "checkId": "f-clippy",
+      "boundaryId": "final",
+      "phase": "final",
+      "batchId": "d0103cbad4651341d83c1d74a7a99b6bf12a83fc7af60383ea75d41cfc3433ca",
+      "definitionHash": "5977a3f3d8fa6b396830ba6b0d0312acca29655cebf60878afdd70d71fbfa22f",
+      "basisHash": "a2500f388c33fc80b2e1b7c8b3a4427de65b0e3edc1a33d5f4dcadcdfb371b97",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 8.9425,
+      "recordedAt": "2026-11-16T15:02:19Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/final-final-71b7b9a6ff4e.log",
+      "logSha256": "3283b1ce8be732648406b383c5f611dba4f90dca45c0f512f33e9ccfe843b270"
+    },
+    "s5-release/c-error-enums-core/final": {
+      "checkId": "c-error-enums-core",
+      "boundaryId": "s5-release",
+      "phase": "final",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "definitionHash": "62e044479344992dd3ed586d68d59c4407bbe0ff908a9653e4886842c75ca0b5",
+      "basisHash": "43b9993cddcfa96e6218006133e3f542abcab1b78c06fe38179369d97be98d0d",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 0.9317,
+      "recordedAt": "2026-11-16T15:12:29Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s5-release-final-bc988c5da8d3.log",
+      "logSha256": "b5bcbc3e40c6e47c51a3f6f76dcfdc1a82298922508ece263e3f30a708c533a5",
+      "inputsHash": "9b301f1e8c436916a8cae82c8f253342260b858b4e18622992e800c2acb8d958"
+    },
+    "s5-release/c-error-enums-app/final": {
+      "checkId": "c-error-enums-app",
+      "boundaryId": "s5-release",
+      "phase": "final",
+      "batchId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "definitionHash": "0f8366e0852e1ce1eff1dcdfe1564096738b6969f738c01a7bbc464af9df1b57",
+      "basisHash": "d176980e19eb6a98508d901fc19bb6156937519ac892ec4513cbe323c099d3d6",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 1.2969,
+      "recordedAt": "2026-11-16T15:12:30Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s5-release-final-7cc2c11ddaaf.log",
+      "logSha256": "11dacf72aea371e548896fbebfd02c57a6036140970561280a7c7efe0857a5d5",
+      "inputsHash": "e7c9d8c7cb67ebfc712132234fab390a841a78953163c91eb693bb229e7d1243"
     }
   },
   "reviews": {
@@ -2023,6 +2683,73 @@
         "S4R-4"
       ],
       "recordedAt": "2026-11-16T14:57:54Z"
+    },
+    "s5-release": {
+      "reviewerId": "final-reviewer-k4t9",
+      "snapshotId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "criterionIds": [
+        "REL-1"
+      ],
+      "verdict": "passed",
+      "summaryMarkdown": "REL-1 holds. `ServiceResolutionError` (`crates/rayx_core/src/di/registry.rs`) and `AppError` (`crates/rayx_app/src/surface.rs`) are `#[non_exhaustive]`, and nothing else in the source changed (d-error-enums: only the two enums, no sealed commit rewritten). Each enum has a passing doc test with a wildcard arm. Each also has a `compile_fail` test that names exactly the enum's current variants (all nine of `AppError`, all four of `ServiceResolutionError`), so non-exhaustiveness is the only thing that can make it fail. The check logs show 2 doc tests per enum, the compile-fail one included. Nothing outside the two defining crates matches either enum. `aa2217c`'s `Migration: apps:` footers match the code:\n- the wildcard arm;\n- `MissingKey`, `WrongThread` and `Failed` with their fields;\n- `AppError::NoApp` gone and `BuilderStarted` new;\n- `start_app` gone in favour of `start` / `start_async`;\n- the full old-to-new mapping into `rayx_app::ts`, matching the pre-epic root and prelude exports (`I18n`, `Navigation`, `NavigationRegion`, `Storage`, `Platform`, `AppConfiguration`, `Assets`, `Fonts` and the i18n value types);\n- the attribute form, overriding the earlier `native_module!` note.\nThe commit has no AI attribution and touches no forbidden path. The FR-2 memory repair (the app/tsx decision record) is correct but still uncommitted; it should go into the s5 seal commit.",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs",
+          "kind": "source",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "165685c0fc6169d81b85d48d9c16e76085b7b27bdfd6bc219c8647db273f3a91"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs",
+          "kind": "source",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "3577ce382f80cbedc5528b54bc51a17e9092f40f6dede721ee882ce0e6e5fe24"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs",
+          "kind": "test",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "165685c0fc6169d81b85d48d9c16e76085b7b27bdfd6bc219c8647db273f3a91"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs",
+          "kind": "test",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "3577ce382f80cbedc5528b54bc51a17e9092f40f6dede721ee882ce0e6e5fe24"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "artifacts-temp/agentx/ts-app-builder/s5-release-final-bc988c5da8d3.log",
+          "kind": "runtime",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "b5bcbc3e40c6e47c51a3f6f76dcfdc1a82298922508ece263e3f30a708c533a5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "artifacts-temp/agentx/ts-app-builder/s5-release-final-7cc2c11ddaaf.log",
+          "kind": "runtime",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "sha256": "11dacf72aea371e548896fbebfd02c57a6036140970561280a7c7efe0857a5d5"
+        }
+      ],
+      "findingIds": [],
+      "recordedAt": "2026-11-16T15:14:34Z"
     }
   },
   "checkpoints": {
@@ -2070,6 +2797,15 @@
       },
       "reviewHash": "39a884e8b2582bf8c2b97fa74b9e46f23c9240e7d31b39421fc353b86739ff27",
       "recordedAt": "2026-11-16T14:58:28Z"
+    },
+    "s5-release": {
+      "snapshotId": "069da72d19bfb8b9a0ea4c5e1217f0a6df971cd4da79fc087627794de5044173",
+      "commits": {
+        "rayx": "aa2217cd81f481bc850bc7aa2c5a4bf987d934bd",
+        "root": "2f7ae9d82624cabfa119095027d59e5e5f9a9132"
+      },
+      "reviewHash": "8d4ffe33183f564f9516ff24a25220ba6d0d8190583b390d77974b0a73494eef",
+      "recordedAt": "2026-11-16T15:15:27Z"
     }
   },
   "findings": [
@@ -2456,6 +3192,30 @@
           "path": "crates/rayx_app_macros/src/lib.rs"
         }
       ]
+    },
+    {
+      "id": "FR-1",
+      "criterionIds": [
+        "CORE-2",
+        "BLD-4",
+        "RES-2",
+        "BLD-6"
+      ],
+      "severity": "minor",
+      "status": "open",
+      "descriptionMarkdown": "**Expected:** under the epic's constraint, every breaking change has a `Migration: apps: …` footer, and the footers together tell an app how to upgrade from the last release. **Observed:** release-plz would publish these unpushed commits' footers as the upgrade notes, and three gaps remain:\n\n1. **`6a6964c` adds variants to a public enum.** `ServiceResolutionError` (`crates/rayx_core/src/di/registry.rs:488`, exhaustive, not `#[non_exhaustive]`) had only `Missing` and now also has `MissingKey`, `WrongThread` and `Failed`. An app's exhaustive `match` on it stops compiling, and no footer says so.\n2. **`ac2ca48` removes Rust API the footers don't name.** The footers cover only TSX renames, `set_app` and `start()`. Also gone:\n   - `AppError::NoApp`, and `AppError::BuilderStarted` is new (`crates/rayx_app/src/surface.rs:18`, exhaustive).\n   - `rayx_app::start_app`. Its replacement, `start_async`, is named only as an alternative to `set_app`.\n   - The Rust structs `rayx_app::{I18n, Navigation, NavigationRegion, Storage, Platform, AppConfiguration, Assets, Fonts, DateFormat, DateLength, NumberFormat, NumberKind, TimeDetail}` and their `rayx::prelude` re-exports. They now live in `rayx_app::ts` under new names (`crates/rayx_app/src/lib.rs:97,128,132`). One trap: `rayx_app::ts::I18nService` has the same name as the prelude's `rayx_runtime` `I18nService` (`crates/rayx/src/lib.rs:106`).\n3. **`c6752a5` tells apps to adopt an API that never ships.** Its footer says a TSX app's crate \"becomes `rayx::native_module!(\\\"my-app\\\")`\", but `ab8e2d4` removed that macro in the same unreleased range. The release notes would contradict each other.\n\n**Failure scenario:** an app with a Rust bridge taking `Instance<rayx_app::I18n>`, or a `match` over `ServiceResolutionError` or `AppError`, upgrades from the release notes, fails to compile, and finds no migration line.\n\n**Repair:** before the push (the owner's go-ahead covers rewriting unpushed history), reword:\n- `6a6964c`: add a footer for the new `ServiceResolutionError` variants.\n- `ac2ca48`: add footers for `AppError::NoApp` → `BuilderStarted`, `start_app` → `start_async`, and the Rust classes moving to `rayx_app::ts` under the Rust service names.\n- `c6752a5`: drop or redirect its `native_module!` footer so the net instruction is `ab8e2d4`'s attribute form.",
+      "boundaryId": "final"
+    },
+    {
+      "id": "FR-2",
+      "criterionIds": [
+        "DOC-6",
+        "BLD-6"
+      ],
+      "severity": "minor",
+      "status": "open",
+      "descriptionMarkdown": "**Expected:** RayX's memory states the landed shape, and a `current` decision record does not contradict the owner's later decisions or the source (DOC-6; AgentX: sync the narrowest affected memory after proven behavior changes). **Observed:** `.agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md` is `status: current`, and the epic maps d-native-attribute onto it (`buildsOn`). Two passages are now wrong:\n- Line 65 still decides \"A TSX app keeps a one-line Rust crate: `rayx::native_module!(\\\"my-app\\\")`\". The owner replaced that on 2026-11-16 with `#[rayx::native_module(\\\"my-app\\\")]` (d-native-attribute, disposition of d-native-module), and the macro is gone from the source.\n- Lines 19-21 say \"Until it lands, source still has the API it replaces (`set_app`, `AppServices.load()`, `X.of(app)`)\", which is false now.\n\nThe s4 review noted line 65 for promotion. But the runtime lists no promotion for this record (`promoteRequired` holds only d-theme-documents, `promoteCandidates` is empty), so nothing makes sure it gets done.\n\n**Failure scenario:** a later session reads the current app/tsx decision before a structural change and writes or recommends `rayx::native_module!(\\\"my-app\\\")`. That fails to compile, and NSH's `specifier_of` would prune the set on web.\n\n**Repair:** update the record:\n- Replace the bullet with the attribute form and the owner's 2026-11-16 reason (NSH's CLI reads the specifier from the `#[…native_module(\\\"…\\\")]` line).\n- Change the status line to say the epic landed.\n- Bump `updated` and keep the INDEX entry in step.\n- Re-run the memory audit.",
+      "boundaryId": "final"
     }
   ],
   "handoffMarkdown": "Open for the owner (d-contracts): the contract token's form and name. Provisional: flat function <trait>Token() giving the contract's ServiceToken; the macro emits it in one item (crates/rayx_app_macros/src/contract.rs, token_module/token_fn).",

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 15,
+  "revision": 16,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -1118,6 +1118,64 @@
         "AGENTS.md",
         ".claude/skills/**"
       ]
+    },
+    {
+      "id": "c-error-enums-core",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "REL-1"
+      ],
+      "descriptionMarkdown": "`ServiceResolutionError`'s doc tests: an exhaustive match outside the crate fails to compile, one with a wildcard compiles.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_core",
+        "--doc",
+        "ServiceResolutionError"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 2
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_core/**",
+        "crates/rayx_app_macros/src/**"
+      ]
+    },
+    {
+      "id": "c-error-enums-app",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "REL-1"
+      ],
+      "descriptionMarkdown": "`AppError`'s doc tests: an exhaustive match outside the crate fails to compile, one with a wildcard compiles.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--doc",
+        "AppError"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 2
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_core/src/**",
+        "crates/rayx_runtime/src/**",
+        "crates/rayx_app/**",
+        "crates/rayx_app_macros/src/**"
+      ]
     }
   ],
   "finalCheckIds": [
@@ -1925,6 +1983,49 @@
             {
               "repositoryId": "rayx",
               "path": "crates/rayx_app_macros/src/lib.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s5-release",
+      "title": "Release notes: non-exhaustive error enums and the complete migration footers",
+      "dependsOn": [
+        "s4-consumers"
+      ],
+      "memoryScopes": [
+        "core/di",
+        "app"
+      ],
+      "checkIds": [
+        "c-error-enums-core",
+        "c-error-enums-app"
+      ],
+      "tasks": [
+        {
+          "id": "t28-error-enums",
+          "title": "Non-exhaustive error enums, and the release's migration footers",
+          "descriptionMarkdown": "Mark `rayx_core::ServiceResolutionError` and `rayx_app::AppError` `#[non_exhaustive]` (d-error-enums), each with two doc tests: an exhaustive `match` outside the crate (`compile_fail`) and the same with a wildcard arm (compiles). Commit it with `Migration: apps:` footers for every breaking change REL-1 lists. Also correct the memory decision `2026-11-15-app-tsx-builder-parity.md` (its crate bullet names `#[rayx::native_module(\"…\")]`; its status line no longer says the old API is in source), final-review finding FR-2.",
+          "criterionIds": [
+            "REL-1"
+          ],
+          "designIds": [
+            "d-error-enums"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-error-enums-core",
+            "c-error-enums-app"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_core/src/di/registry.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/surface.rs"
             }
           ]
         }

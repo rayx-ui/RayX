@@ -431,6 +431,30 @@
           "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
         }
       ]
+    },
+    {
+      "id": "d-error-enums",
+      "requirementIds": [
+        "R-RELEASE"
+      ],
+      "descriptionMarkdown": "Mark `ServiceResolutionError` and `AppError` `#[non_exhaustive]` and document it with a `compile_fail` doc test (an exhaustive match outside the crate) beside a passing one (with a wildcard). The commit's message carries the complete `Migration: apps:` footers for the release, since the earlier commits are sealed by the sprints' checkpoints and are not rewritten (owner, 2026-11-16: \"Follow-up commit\").",
+      "invariantsMarkdown": "- No sealed commit is rewritten.\n- Only these two enums change.",
+      "sourceRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs"
+        }
+      ],
+      "memoryDecisionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
+      ]
     }
   ]
 }
