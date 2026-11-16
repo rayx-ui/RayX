@@ -78,10 +78,7 @@ changelog_update = false
 [[package]]
 name = "rayx_components"
 version_group = "rayx"
-# RayX's component library and theme, like `rayx_core`. Its first release: no `v*` tag has the
-# package yet, so this name, which matches no tag, makes it a new package (docs/releasing.md).
-# Remove the line right after that release's tag.
-git_tag_name = "rayx_components-v{{ version }}"
+# RayX's component library and theme, like `rayx_core`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -158,10 +155,7 @@ commit_parsers = [
 [[package]]
 name = "rayx_devtools_protocol"
 version_group = "rayx"
-# The agent protocol of the dev tools, like `rayx_core`. Its first release: no `v*` tag has the
-# package yet, so this name, which matches no tag, makes it a new package (docs/releasing.md).
-# Remove the line right after that release's tag.
-git_tag_name = "rayx_devtools_protocol-v{{ version }}"
+# The agent protocol of the dev tools, like `rayx_core`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
