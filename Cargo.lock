@@ -4916,7 +4916,7 @@ dependencies = [
  "nsh-core",
  "nsh-engine",
  "nsh-js",
- "rayx_components",
+ "rayx",
 ]
 
 [[package]]

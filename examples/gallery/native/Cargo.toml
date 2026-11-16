@@ -1,6 +1,6 @@
 [package]
 name = "rayx-gallery"
-description = "The RayX gallery's crate: RayX's component library for the gallery's TSX screens (rayx-gallery/native), and the glyphs its examples draw."
+description = "The RayX gallery's crate: RayX's UI set (its TS classes and component library) for the gallery's TSX screens (rayx-gallery/native), and the glyphs its examples draw."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -13,7 +13,7 @@ workspace = true
 
 [dependencies]
 nsh-core.workspace = true
-rayx_components.workspace = true
+rayx.workspace = true
 
 [dev-dependencies]
 nsh-core = { workspace = true, features = ["declarations"] }

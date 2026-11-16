@@ -17,13 +17,13 @@ It is a mixed NSH app: the screens are TSX, so they reload as you save; the comp
 | `src/pages/<component>.tsx` | One page per component: `button.tsx` |
 | `src/ui.tsx` | The gallery's own layout (pages, sections, captioned examples, choices) and RayX's text styles as classes |
 | `.cargo/config.toml` | The fork's NSH for nsh's own build of the app (`.nsh/rust`, a workspace of its own, where RayX's `[patch.crates-io]` does not reach): the file `rayx new` writes, at RayX's pin. Move it with the root `Cargo.toml`'s patch |
-| `native/` | The app's crate `rayx-gallery`: `#[native_module("rayx-gallery/native")]` registers RayX's library (`rayx_components::register`) and `Glyph`, the icons the examples use |
+| `native/` | The app's crate `rayx-gallery`: its UI set is `#[rayx::native_module("rayx-gallery/native")]`, RayX's (every RayX TS class and the component library with its theme document) with `Glyph`, the icons the examples use, added in its function's body |
 | `App.test.tsx` | `nsh test`: the page, the playground and the modes, headless |
 | `native/tests/gallery_tsx.rs` | The same screens bundled and run by `cargo test`, without the nsh CLI |
 
 ## Run it
 
-From `RayX/`, with the `rayx` this repository builds (it runs the nsh the project pins, `nshx-0.5.0-1`,
+From `RayX/`, with the `rayx` this repository builds (it runs the nsh the project pins, `nshx-0.5.0-4`,
 and installs it the first time):
 
 ```sh
