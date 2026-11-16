@@ -1,7 +1,15 @@
-use super::lifecycle::{StartupInitializable, StartupRegistry, StartupServiceType};
+use super::key::{ErasedService, RuntimeKey, ServiceKey};
+use super::lifecycle::{
+    StartupInitializable, StartupInitializationContext, StartupRegistry, StartupServiceFuture,
+    StartupServiceType,
+};
 use super::ready::DiReady;
-use super::registry::{ServiceRegistry, ServiceResolutionError};
+use super::registry::{ServiceLifetime, ServiceRegistry, ServiceResolutionError};
+use super::thread_bound::LocalService;
 use crate::options::OptionsRegistrations;
+use std::any::type_name;
+use std::borrow::Cow;
+use std::rc::Rc;
 use std::sync::Arc;
 
 pub trait IntoServiceArc<T>
@@ -60,6 +68,9 @@ where
 /// a provider after scopes were created does not affect those scopes'
 /// registrations, except that pre-built singletons (`add_singleton`) land in the
 /// shared singleton cache.
+///
+/// Services are keyed by a Rust type or by a [`RuntimeKey`] (`add_*_keyed`,
+/// `service_by_key`); both kinds follow the rules above.
 #[derive(Clone, Debug)]
 pub struct ServiceProvider {
     options: OptionsRegistrations,
@@ -108,6 +119,71 @@ impl ServiceProvider {
 
     pub fn service_registry(&self) -> &ServiceRegistry {
         &self.services
+    }
+
+    /// The runtime-keyed service `key`, or `None` when nothing is registered under it or its
+    /// factory failed ([`Self::required_service_by_key`] says why).
+    pub fn service_by_key(&self, key: &RuntimeKey) -> Option<ErasedService> {
+        self.required_service_by_key(key).ok()
+    }
+
+    /// The runtime-keyed service `key`: [`ServiceResolutionError::MissingKey`] (naming the key)
+    /// when nothing is registered under it, or its factory's error.
+    pub fn required_service_by_key(
+        &self,
+        key: &RuntimeKey,
+    ) -> Result<ErasedService, ServiceResolutionError> {
+        self.services.required_resolved_by_key(key, self)
+    }
+
+    /// Whether a service is registered under the runtime key `key`.
+    pub fn contains_service_by_key(&self, key: &RuntimeKey) -> bool {
+        self.services
+            .contains_key(&ServiceKey::Runtime(key.clone()))
+    }
+
+    /// Registers a singleton under the runtime key `key`: one value per root provider, shared
+    /// by every scope, made by `factory` on first resolve (a failure is not cached).
+    pub fn add_singleton_keyed(
+        &mut self,
+        key: RuntimeKey,
+        factory: impl Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.services
+            .insert_keyed(key, ServiceLifetime::Singleton, factory);
+        self
+    }
+
+    /// Registers a scoped service under the runtime key `key`: one value per scope.
+    pub fn add_scoped_keyed(
+        &mut self,
+        key: RuntimeKey,
+        factory: impl Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.services
+            .insert_keyed(key, ServiceLifetime::Scoped, factory);
+        self
+    }
+
+    /// Registers a transient service under the runtime key `key`: `factory` runs on every
+    /// resolve.
+    pub fn add_transient_keyed(
+        &mut self,
+        key: RuntimeKey,
+        factory: impl Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.services
+            .insert_keyed(key, ServiceLifetime::Transient, factory);
+        self
     }
 
     pub fn contains_service<T>(&self) -> bool
@@ -265,6 +341,153 @@ impl ServiceProvider {
         self.services.insert(Arc::clone(&service));
         self.startup.add_resolved::<T>();
         service
+    }
+
+    /// Registers the thread-bound singleton `T`, a value that is neither `Send` nor `Sync`:
+    /// `factory` makes it on the first resolving thread, and it resolves on that thread only
+    /// ([`Self::thread_bound_service`]); elsewhere resolving fails with
+    /// [`ServiceResolutionError::WrongThread`]. It is never dropped off its thread.
+    pub fn add_singleton_thread_bound<T>(
+        &mut self,
+        factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: 'static,
+    {
+        self.add_thread_bound_typed::<T>(ServiceLifetime::Singleton, factory)
+    }
+
+    /// Registers the thread-bound scoped service `T`: one value per scope, made on the thread
+    /// that first resolves it there.
+    pub fn add_scoped_thread_bound<T>(
+        &mut self,
+        factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: 'static,
+    {
+        self.add_thread_bound_typed::<T>(ServiceLifetime::Scoped, factory)
+    }
+
+    /// Registers the thread-bound transient service `T`: a new value per resolve, on the
+    /// resolving thread.
+    pub fn add_transient_thread_bound<T>(
+        &mut self,
+        factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: 'static,
+    {
+        self.add_thread_bound_typed::<T>(ServiceLifetime::Transient, factory)
+    }
+
+    /// Registers a thread-bound singleton under the runtime key `key`.
+    pub fn add_singleton_thread_bound_keyed(
+        &mut self,
+        key: RuntimeKey,
+        factory: impl Fn(&ServiceProvider) -> Result<LocalService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.add_thread_bound_keyed(key, ServiceLifetime::Singleton, factory)
+    }
+
+    /// Registers a thread-bound scoped service under the runtime key `key`.
+    pub fn add_scoped_thread_bound_keyed(
+        &mut self,
+        key: RuntimeKey,
+        factory: impl Fn(&ServiceProvider) -> Result<LocalService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.add_thread_bound_keyed(key, ServiceLifetime::Scoped, factory)
+    }
+
+    /// Registers a thread-bound transient service under the runtime key `key`.
+    pub fn add_transient_thread_bound_keyed(
+        &mut self,
+        key: RuntimeKey,
+        factory: impl Fn(&ServiceProvider) -> Result<LocalService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.add_thread_bound_keyed(key, ServiceLifetime::Transient, factory)
+    }
+
+    /// The thread-bound service `T`, or `None` when it is not registered, lives on another
+    /// thread or failed ([`Self::required_thread_bound_service`] says why).
+    pub fn thread_bound_service<T>(&self) -> Option<Rc<T>>
+    where
+        T: 'static,
+    {
+        self.required_thread_bound_service::<T>().ok()
+    }
+
+    /// The thread-bound service `T`, on the thread that made it.
+    pub fn required_thread_bound_service<T>(&self) -> Result<Rc<T>, ServiceResolutionError>
+    where
+        T: 'static,
+    {
+        let service = || Cow::Borrowed(type_name::<T>());
+        self.services
+            .resolve_thread_bound(&ServiceKey::of::<T>(), service, self)
+            .unwrap_or_else(|| Err(ServiceResolutionError::missing::<T>()))?
+            .downcast::<T>()
+            .map_err(|_| ServiceResolutionError::failed(service(), "its value has another type"))
+    }
+
+    /// The thread-bound service under the runtime key `key`, or `None` when nothing is
+    /// registered under it, it lives on another thread or it failed.
+    pub fn thread_bound_service_by_key(&self, key: &RuntimeKey) -> Option<LocalService> {
+        self.required_thread_bound_service_by_key(key).ok()
+    }
+
+    /// The thread-bound service under the runtime key `key`, on the thread that made it.
+    pub fn required_thread_bound_service_by_key(
+        &self,
+        key: &RuntimeKey,
+    ) -> Result<LocalService, ServiceResolutionError> {
+        self.services
+            .resolve_thread_bound(&ServiceKey::Runtime(key.clone()), || key.name_cow(), self)
+            .unwrap_or_else(|| Err(ServiceResolutionError::missing_key(key)))
+    }
+
+    fn add_thread_bound_typed<T>(
+        &mut self,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: 'static,
+    {
+        self.services.insert_thread_bound(
+            ServiceKey::of::<T>(),
+            Cow::Borrowed(type_name::<T>()),
+            lifetime,
+            move |services| {
+                let value: LocalService = Rc::new(factory(services));
+                Ok(value)
+            },
+        );
+        self
+    }
+
+    fn add_thread_bound_keyed(
+        &mut self,
+        key: RuntimeKey,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&ServiceProvider) -> Result<LocalService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        let service = key.name_cow();
+        self.services
+            .insert_thread_bound(ServiceKey::Runtime(key), service, lifetime, factory);
+        self
     }
 
     pub fn has_startup_role<T>(&self) -> bool
@@ -586,6 +809,19 @@ impl ServiceProvider {
         T: StartupInitializable + ?Sized,
     {
         self.startup.add_shared(service);
+        self
+    }
+
+    /// Adds a startup service made by the asynchronous `factory` when startup runs
+    /// ([`StartupRegistry::add_resolved_async`]): keyed by `service_type` (a Rust type or a
+    /// [`RuntimeKey`]) unless the service names its own, and run with every other startup
+    /// service.
+    pub fn add_startup_resolved_async(
+        &mut self,
+        service_type: impl Into<StartupServiceType>,
+        factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
+    ) -> &mut Self {
+        self.startup.add_resolved_async(service_type, factory);
         self
     }
 

@@ -10,8 +10,10 @@ implement two traits:
 
 - `AsyncInitializable`: `initialize(context)`, a future, `is_initialized()`, and optionally
   `initialization_timeout()`.
-- `StartupInitializable`: `startup_service_type()`, and optionally `initialization_depends_on()`, the services that must
-  initialize first.
+- `StartupInitializable`: optionally `initialization_depends_on()`, the services that must initialize first, and
+  `startup_service_type()`, the key others name to wait for it. Leave `startup_service_type()` out to key the service
+  by what it was registered as: `add_startup_singleton::<T>` keys it `T`, `add_startup_singleton_as::<dyn X>` keys it
+  `dyn X` (the scoped and transient forms alike).
 
 ```rust
 #[derive(Clone, Default, AppService)]
@@ -38,22 +40,26 @@ impl AsyncInitializable for Catalog {
     }
 }
 
+// Registered with `add_startup_singleton(Catalog::default())`, so keyed `Catalog`.
 impl StartupInitializable for Catalog {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<Self>()
-    }
-
     fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
         vec![StartupServiceType::of::<ApiClient>()]
     }
 }
 ```
 
+A startup service that is not a Rust type is keyed by a runtime key (`StartupServiceType::runtime(&key)`) and may be
+made asynchronously when startup runs: `add_startup_resolved_async(&key, |context| async { … }.boxed_local())`. It is
+ordered, initialized, timed and reported (by the key's display name) with every other startup service, and it may wait
+for typed services and they for it. A factory that fails, or does not finish within the default timeout, fails startup,
+naming the service.
+
 ## How the app starts
 
 Starting the app builds the root provider (its configuration sources may load asynchronously), makes the options
-registered with `validate_on_start`, and initializes every startup service in dependency order, the services of one
-layer concurrently. The app is ready, and services resolve, only once all of them initialized.
+registered with `validate_on_start`, makes the startup services that factories make, and initializes every startup
+service in dependency order, the services of one layer concurrently. The app is ready, and services resolve, only once
+all of them initialized.
 
 - **Failure:** one failing service fails startup, with the services that failed and why; nothing is installed.
 - **Timeout:** each service may set `initialization_timeout()`; one that sets none gets the builder's default

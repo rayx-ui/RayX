@@ -1,9 +1,12 @@
+use super::key::{RuntimeKey, ServiceKey};
 use super::provider::ServiceProvider;
 use super::ready::DiReady;
 use crate::options::OptionsError;
+use futures::FutureExt;
 use futures::future::{Either, LocalBoxFuture, join_all, select};
 use std::{
-    any::{TypeId, type_name},
+    any::type_name,
+    borrow::Cow,
     collections::HashSet,
     fmt,
     future::Future,
@@ -15,10 +18,13 @@ use std::{
     time::Duration,
 };
 
-#[derive(Clone, Copy)]
+/// What a startup service is keyed by: a Rust type ([`Self::of`]) or a runtime key
+/// ([`Self::runtime`]), with the name failure reports use. Two values are equal when their keys
+/// are; a runtime key never equals a type.
+#[derive(Clone)]
 pub struct StartupServiceType {
-    id: TypeId,
-    name: &'static str,
+    key: ServiceKey,
+    name: Cow<'static, str>,
 }
 
 impl StartupServiceType {
@@ -27,13 +33,31 @@ impl StartupServiceType {
         T: ?Sized + 'static,
     {
         Self {
-            id: TypeId::of::<T>(),
-            name: type_name::<T>(),
+            key: ServiceKey::of::<T>(),
+            name: Cow::Borrowed(type_name::<T>()),
         }
     }
 
-    pub fn name(&self) -> &'static str {
-        self.name
+    /// The startup service keyed by `key`, named by its display name.
+    pub fn runtime(key: &RuntimeKey) -> Self {
+        Self {
+            key: ServiceKey::Runtime(key.clone()),
+            name: key.name_cow(),
+        }
+    }
+
+    pub fn key(&self) -> &ServiceKey {
+        &self.key
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl From<&RuntimeKey> for StartupServiceType {
+    fn from(key: &RuntimeKey) -> Self {
+        Self::runtime(key)
     }
 }
 
@@ -42,20 +66,20 @@ impl fmt::Debug for StartupServiceType {
         formatter
             .debug_struct("StartupServiceType")
             .field("name", &self.name)
-            .field("id", &self.id)
+            .field("key", &self.key)
             .finish()
     }
 }
 
 impl fmt::Display for StartupServiceType {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(self.name)
+        formatter.write_str(&self.name)
     }
 }
 
 impl PartialEq for StartupServiceType {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
+        self.key == other.key
     }
 }
 
@@ -63,7 +87,7 @@ impl Eq for StartupServiceType {}
 
 impl Hash for StartupServiceType {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
+        self.key.hash(state);
     }
 }
 
@@ -134,7 +158,14 @@ pub trait AsyncInitializable: DiReady {
 }
 
 pub trait StartupInitializable: AsyncInitializable {
-    fn startup_service_type(&self) -> StartupServiceType;
+    /// The key other startup services name in
+    /// [`initialization_depends_on`](Self::initialization_depends_on) to wait for this one.
+    /// `None` (the default) keys it by what it was registered as: `add_startup_singleton::<T>`
+    /// keys it `T`, `add_startup_singleton_as::<dyn X>` keys it `dyn X` (the scoped and
+    /// transient forms alike), [`StartupRegistry::add`] by its concrete type.
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        None
+    }
 
     fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
         Vec::new()
@@ -165,7 +196,7 @@ impl<T> StartupInitializable for Arc<T>
 where
     T: StartupInitializable + ?Sized,
 {
-    fn startup_service_type(&self) -> StartupServiceType {
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
         self.as_ref().startup_service_type()
     }
 
@@ -193,17 +224,61 @@ impl StartupInitializationContext {
     }
 }
 
-type StartupService = Arc<dyn StartupInitializable>;
-type StartupServiceFactory = Arc<
-    dyn Fn(&StartupInitializationContext) -> Result<StartupService, StartupInitializationFailure>
-        + Send
-        + Sync,
->;
+/// A startup service as the registry runs it.
+pub type StartupService = Arc<dyn StartupInitializable>;
+
+/// What a startup factory gives: the service, or the failure startup reports.
+pub type StartupServiceFuture =
+    LocalBoxFuture<'static, Result<StartupService, StartupInitializationFailure>>;
+
+type StartupServiceFactory =
+    Arc<dyn Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync>;
 
 #[derive(Clone)]
 struct StartupRegistryFactory {
     service_type: StartupServiceType,
     factory: StartupServiceFactory,
+}
+
+/// A registered startup service with the key the run orders it by: its own
+/// [`StartupInitializable::startup_service_type`], else its registration key.
+struct KeyedStartupService {
+    key: StartupServiceType,
+    service: StartupService,
+}
+
+impl KeyedStartupService {
+    fn new(service: StartupService, registered_as: StartupServiceType) -> Arc<Self> {
+        let key = service.startup_service_type().unwrap_or(registered_as);
+        Arc::new(Self { key, service })
+    }
+}
+
+impl AsyncInitializable for KeyedStartupService {
+    fn is_initialized(&self) -> bool {
+        self.service.is_initialized()
+    }
+
+    fn initialize(
+        &self,
+        context: StartupInitializationContext,
+    ) -> LocalBoxFuture<'static, StartupInitializationResult> {
+        self.service.initialize(context)
+    }
+
+    fn initialization_timeout(&self) -> Option<Duration> {
+        self.service.initialization_timeout()
+    }
+}
+
+impl StartupInitializable for KeyedStartupService {
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(self.key.clone())
+    }
+
+    fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
+        self.service.initialization_depends_on()
+    }
 }
 
 struct SharedStartupService<T>
@@ -237,7 +312,7 @@ impl<T> StartupInitializable for SharedStartupService<T>
 where
     T: StartupInitializable + ?Sized,
 {
-    fn startup_service_type(&self) -> StartupServiceType {
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
         self.service.startup_service_type()
     }
 
@@ -370,7 +445,7 @@ impl fmt::Display for StartupInitializationFailures {
 
 #[derive(Clone, Default)]
 pub struct StartupRegistry {
-    services: Vec<StartupService>,
+    services: Vec<Arc<KeyedStartupService>>,
     factories: Vec<StartupRegistryFactory>,
     default_timeout: Option<Duration>,
 }
@@ -394,50 +469,63 @@ impl StartupRegistry {
         self
     }
 
+    /// Adds `service`, keyed by its [`StartupInitializable::startup_service_type`], else by its
+    /// concrete type `T`.
     pub fn add<T>(&mut self, service: T) -> &mut Self
     where
         T: StartupInitializable,
     {
-        let service: StartupService = Arc::new(service);
-        let service_type = service.startup_service_type();
-        self.remove(service_type);
-        self.services.push(service);
-        self
+        self.push(KeyedStartupService::new(
+            Arc::new(service),
+            StartupServiceType::of::<T>(),
+        ))
     }
 
+    /// Adds the shared `service`, keyed by its [`StartupInitializable::startup_service_type`],
+    /// else by `T` (the type it is registered as, `dyn X` for a trait object).
     pub fn add_shared<T>(&mut self, service: Arc<T>) -> &mut Self
     where
         T: StartupInitializable + ?Sized,
     {
-        let service_type = service.startup_service_type();
-        self.remove(service_type);
-        self.services
-            .push(Arc::new(SharedStartupService { service }));
-        self
+        self.push(KeyedStartupService::new(
+            Arc::new(SharedStartupService { service }),
+            StartupServiceType::of::<T>(),
+        ))
     }
 
+    /// Adds the startup service `T`, resolved from the run's provider when startup runs and keyed
+    /// by its [`StartupInitializable::startup_service_type`], else by `T`.
     pub fn add_resolved<T>(&mut self) -> &mut Self
     where
         T: StartupInitializable + ?Sized,
     {
         let service_type = StartupServiceType::of::<T>();
-        self.remove(service_type);
-        self.factories.push(StartupRegistryFactory {
-            service_type,
-            factory: Arc::new(move |context| {
-                let service = context
-                    .services()
-                    .required_service::<T>()
-                    .map_err(|error| StartupInitializationFailure {
-                        service: service_type,
-                        message: error.to_string(),
-                        timed_out: false,
-                    })?;
-                let startup_service: StartupService = Arc::new(SharedStartupService { service });
-                Ok(startup_service)
-            }),
-        });
-        self
+        self.add_factory(service_type.clone(), move |context| {
+            let resolved = context
+                .services()
+                .required_service::<T>()
+                .map(|service| -> StartupService { Arc::new(SharedStartupService { service }) })
+                .map_err(|error| StartupInitializationFailure {
+                    service: service_type.clone(),
+                    message: error.to_string(),
+                    timed_out: false,
+                });
+            futures::future::ready(resolved).boxed_local()
+        })
+    }
+
+    /// Adds a startup service made by the asynchronous `factory` when startup runs, before any
+    /// service is ordered or initialized. It is keyed by its own
+    /// [`StartupInitializable::startup_service_type`], else by `service_type` (a Rust type or a
+    /// runtime key), and ordered, initialized, timed and reported with every other startup
+    /// service. A failing factory fails startup, reported under `service_type`; with a timer
+    /// ([`Self::initialize_with_timer`]), so does one not done within the default timeout.
+    pub fn add_resolved_async(
+        &mut self,
+        service_type: impl Into<StartupServiceType>,
+        factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
+    ) -> &mut Self {
+        self.add_factory(service_type.into(), factory)
     }
 
     pub fn with<T>(mut self, service: T) -> Self
@@ -461,13 +549,13 @@ impl StartupRegistry {
         self.services.is_empty() && self.factories.is_empty()
     }
 
-    pub fn services(&self) -> &[StartupService] {
-        &self.services
+    /// The services added already made (not those a factory makes when startup runs).
+    pub fn services(&self) -> Vec<StartupService> {
+        self.services.iter().map(Self::erased).collect()
     }
 
     pub(crate) fn remove(&mut self, service_type: StartupServiceType) {
-        self.services
-            .retain(|service| service.startup_service_type() != service_type);
+        self.services.retain(|service| service.key != service_type);
         self.factories
             .retain(|factory| factory.service_type != service_type);
     }
@@ -475,18 +563,42 @@ impl StartupRegistry {
     pub(crate) fn contains(&self, service_type: StartupServiceType) -> bool {
         self.services
             .iter()
-            .any(|service| service.startup_service_type() == service_type)
+            .any(|service| service.key == service_type)
             || self
                 .factories
                 .iter()
                 .any(|factory| factory.service_type == service_type)
     }
 
+    fn push(&mut self, service: Arc<KeyedStartupService>) -> &mut Self {
+        self.remove(service.key.clone());
+        self.services.push(service);
+        self
+    }
+
+    fn add_factory(
+        &mut self,
+        service_type: StartupServiceType,
+        factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
+    ) -> &mut Self {
+        self.remove(service_type.clone());
+        self.factories.push(StartupRegistryFactory {
+            service_type,
+            factory: Arc::new(factory),
+        });
+        self
+    }
+
+    fn erased(service: &Arc<KeyedStartupService>) -> StartupService {
+        Arc::clone(service) as StartupService
+    }
+
     /// Initializes every startup service, layer by layer in dependency order (a layer's services
     /// concurrently), stopping at the first layer with failures. Without a timer, nothing times
     /// out; see [`Self::initialize_with_timer`]. First it makes the options registered with
     /// `validate_on_start` ([`ServiceProvider::validate_options_on_start`]); when one fails,
-    /// no service is initialized.
+    /// no service is initialized. Then it makes every startup service a factory makes (awaiting
+    /// asynchronous factories); when one fails, no service is initialized.
     pub async fn initialize(
         &self,
         context: StartupInitializationContext,
@@ -522,8 +634,10 @@ impl StartupRegistry {
             .services()
             .validate_options_on_start()
             .map_err(|failures| StartupInitializationError::Options { failures })?;
-        let services = self.resolved_services(&context)?;
         let default_timeout = self.default_initialization_timeout();
+        let services = self
+            .resolved_services(&context, timer.as_ref(), default_timeout)
+            .await?;
         for layer in Self::runtime_initialization_layers_for(&services)? {
             let results = join_all(layer.into_iter().map(|service| {
                 let context = context.clone();
@@ -532,10 +646,10 @@ impl StartupRegistry {
                     (timeout, Box::pin(timer(timeout)))
                 });
                 async move {
-                    let service_type = service.startup_service_type();
                     if service.is_initialized() {
                         return Ok(());
                     }
+                    let service_type = service.key.clone();
                     let failed = |message: String, timed_out: bool| StartupInitializationFailure {
                         service: service_type,
                         message,
@@ -573,25 +687,30 @@ impl StartupRegistry {
         Ok(())
     }
 
+    /// The initialization layers of the services added already made (factories make theirs
+    /// only when startup runs).
     pub fn initialization_layers(
         &self,
     ) -> Result<Vec<Vec<StartupService>>, StartupInitializationError> {
-        Self::runtime_initialization_layers_for(&self.services)
+        Ok(Self::runtime_initialization_layers_for(&self.services)?
+            .into_iter()
+            .map(|layer| layer.iter().map(Self::erased).collect())
+            .collect())
     }
 
     fn runtime_initialization_layers_for(
-        services: &[StartupService],
-    ) -> Result<Vec<Vec<StartupService>>, StartupInitializationError> {
+        services: &[Arc<KeyedStartupService>],
+    ) -> Result<Vec<Vec<Arc<KeyedStartupService>>>, StartupInitializationError> {
         Self::initialization_layers_for(services, StartupInitializationPhase::Runtime, |service| {
             service.initialization_depends_on()
         })
     }
 
     fn initialization_layers_for(
-        services: &[StartupService],
+        services: &[Arc<KeyedStartupService>],
         phase: StartupInitializationPhase,
-        dependencies_for: impl Fn(&StartupService) -> Vec<StartupServiceType>,
-    ) -> Result<Vec<Vec<StartupService>>, StartupInitializationError> {
+        dependencies_for: impl Fn(&KeyedStartupService) -> Vec<StartupServiceType>,
+    ) -> Result<Vec<Vec<Arc<KeyedStartupService>>>, StartupInitializationError> {
         let dependency_matches = Self::dependency_matches(services, phase, dependencies_for)?;
         let mut initialized = HashSet::new();
         let mut remaining = (0..services.len()).collect::<Vec<_>>();
@@ -614,7 +733,7 @@ impl StartupRegistry {
                     services: ServiceTypeList::new(
                         remaining
                             .iter()
-                            .map(|index| services[*index].startup_service_type())
+                            .map(|index| services[*index].key.clone())
                             .collect(),
                     ),
                 });
@@ -637,9 +756,9 @@ impl StartupRegistry {
     }
 
     fn dependency_matches(
-        services: &[StartupService],
+        services: &[Arc<KeyedStartupService>],
         phase: StartupInitializationPhase,
-        dependencies_for: impl Fn(&StartupService) -> Vec<StartupServiceType>,
+        dependencies_for: impl Fn(&KeyedStartupService) -> Vec<StartupServiceType>,
     ) -> Result<Vec<Vec<usize>>, StartupInitializationError> {
         let mut dependency_matches = Vec::with_capacity(services.len());
         for service in services {
@@ -648,15 +767,13 @@ impl StartupRegistry {
                 let mut matches = services
                     .iter()
                     .enumerate()
-                    .filter_map(|(index, candidate)| {
-                        (candidate.startup_service_type() == dependency).then_some(index)
-                    })
+                    .filter_map(|(index, candidate)| (candidate.key == dependency).then_some(index))
                     .collect::<Vec<_>>();
 
                 if matches.is_empty() {
                     return Err(StartupInitializationError::MissingDependency {
                         phase,
-                        service: service.startup_service_type(),
+                        service: service.key.clone(),
                         dependency,
                     });
                 }
@@ -672,18 +789,56 @@ impl StartupRegistry {
         Ok(dependency_matches)
     }
 
-    fn resolved_services(
+    /// The services added already made, then the ones every factory makes (awaited together,
+    /// each within the default timeout when there is a timer); a made service replaces an
+    /// earlier one of its key.
+    async fn resolved_services<F>(
         &self,
         context: &StartupInitializationContext,
-    ) -> Result<Vec<StartupService>, StartupInitializationError> {
+        timer: Option<&impl Fn(Duration) -> F>,
+        default_timeout: Duration,
+    ) -> Result<Vec<Arc<KeyedStartupService>>, StartupInitializationError>
+    where
+        F: Future<Output = ()>,
+    {
+        let made = join_all(self.factories.iter().map(|factory| {
+            let service_type = factory.service_type.clone();
+            let making = (factory.factory)(context);
+            let expired = timer.map(|timer| Box::pin(timer(default_timeout)));
+            async move {
+                let result = match expired {
+                    None => making.await,
+                    Some(expired) => match select(making, expired).await {
+                        Either::Left((result, _)) => result,
+                        Either::Right(_) => {
+                            return Err(StartupInitializationFailure {
+                                service: service_type,
+                                message: format!(
+                                    "was not made within {} ms",
+                                    default_timeout.as_millis()
+                                ),
+                                timed_out: true,
+                            });
+                        }
+                    },
+                };
+                match result {
+                    Ok(service) => Ok(KeyedStartupService::new(service, service_type)),
+                    Err(failure) => Err(StartupInitializationFailure {
+                        service: service_type,
+                        ..failure
+                    }),
+                }
+            }
+        }))
+        .await;
+
         let mut services = self.services.clone();
         let mut failures = Vec::new();
-
-        for factory in &self.factories {
-            match (factory.factory)(context) {
+        for result in made {
+            match result {
                 Ok(service) => {
-                    let service_type = service.startup_service_type();
-                    services.retain(|existing| existing.startup_service_type() != service_type);
+                    services.retain(|existing| existing.key != service.key);
                     services.push(service);
                 }
                 Err(failure) => failures.push(failure),

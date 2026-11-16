@@ -112,7 +112,7 @@ impl AsyncInitializable for InMemoryHistoryStore {
 }
 
 impl StartupInitializable for InMemoryHistoryStore {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<dyn HistoryStore>()
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(StartupServiceType::of::<dyn HistoryStore>())
     }
 }

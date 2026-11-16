@@ -1,11 +1,17 @@
+use super::key::{ErasedService, RuntimeKey, ServiceKey};
 use super::provider::ServiceProvider;
-use std::any::{Any, TypeId, type_name};
+use super::thread_bound::{LocalService, ThreadBoundSlot};
+use std::any::type_name;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
 use std::sync::{Arc, Mutex};
 
-type ErasedService = Arc<dyn Any + Send + Sync>;
-type ServiceFactory = Arc<dyn Fn(&ServiceProvider) -> ErasedService + Send + Sync>;
+/// A factory as the registry keeps it: typed factories never fail, runtime-keyed ones may.
+type ServiceFactory =
+    Arc<dyn Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError> + Send + Sync>;
+type ServiceCache = Mutex<HashMap<ServiceKey, ErasedService>>;
+type ResolutionGuards = Mutex<HashMap<ServiceKey, Arc<Mutex<()>>>>;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ServiceLifetime {
@@ -17,15 +23,30 @@ pub enum ServiceLifetime {
 #[derive(Clone)]
 struct ServiceDescriptor {
     lifetime: ServiceLifetime,
+    /// Made by a thread-bound registration: its cache entries are [`ThreadBoundSlot`]s.
+    thread_bound: bool,
     factory: ServiceFactory,
 }
 
+/// Which API a resolve comes through: the shared one (`service`, `service_by_key`) or the
+/// thread-bound one. A registration of the other kind is refused before its factory runs.
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum Access {
+    Shared,
+    ThreadBound,
+}
+
+/// The registrations and instance caches of a provider, keyed by [`ServiceKey`].
+///
+/// Typed services are stored as an erased `Arc<T>`; runtime-keyed services as the erased value
+/// their factory made. Both kinds share the caches, the per-key resolution guards and the scope
+/// rules.
 pub struct ServiceRegistry {
-    singletons: Arc<Mutex<HashMap<TypeId, ErasedService>>>,
-    singleton_resolution_guards: Arc<Mutex<HashMap<TypeId, Arc<Mutex<()>>>>>,
-    scoped: Arc<Mutex<HashMap<TypeId, ErasedService>>>,
-    scoped_resolution_guards: Arc<Mutex<HashMap<TypeId, Arc<Mutex<()>>>>>,
-    descriptors: HashMap<TypeId, ServiceDescriptor>,
+    singletons: Arc<ServiceCache>,
+    singleton_resolution_guards: Arc<ResolutionGuards>,
+    scoped: Arc<ServiceCache>,
+    scoped_resolution_guards: Arc<ResolutionGuards>,
+    descriptors: HashMap<ServiceKey, ServiceDescriptor>,
 }
 
 impl Clone for ServiceRegistry {
@@ -61,39 +82,36 @@ impl ServiceRegistry {
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        let type_id = TypeId::of::<T>();
-        self.descriptors.remove(&type_id);
-        self.scoped
-            .lock()
-            .ok()
-            .and_then(|mut services| services.remove(&type_id));
-        if let Ok(mut services) = self.singletons.lock() {
-            services.insert(type_id, erase_service(service));
-        }
-        self
+        self.insert_erased(ServiceKey::of::<T>(), erase_service(service))
     }
 
     pub fn contains<T>(&self) -> bool
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        let type_id = TypeId::of::<T>();
-        self.descriptors.contains_key(&type_id)
+        self.contains_key(&ServiceKey::of::<T>())
+    }
+
+    /// Whether anything is registered (or cached) under `key`.
+    pub fn contains_key(&self, key: &ServiceKey) -> bool {
+        self.descriptors.contains_key(key)
             || self
                 .singletons
                 .lock()
-                .is_ok_and(|services| services.contains_key(&type_id))
+                .is_ok_and(|services| services.contains_key(key))
             || self
                 .scoped
                 .lock()
-                .is_ok_and(|services| services.contains_key(&type_id))
+                .is_ok_and(|services| services.contains_key(key))
     }
 
     pub fn get<T>(&self) -> Option<Arc<T>>
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        self.cached::<T>(TypeId::of::<T>())
+        self.cached(&ServiceKey::of::<T>())
+            .as_ref()
+            .and_then(downcast_service::<T>)
     }
 
     pub fn required<T>(&self) -> Result<Arc<T>, ServiceResolutionError>
@@ -111,7 +129,7 @@ impl ServiceRegistry {
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        self.insert_descriptor::<T>(ServiceLifetime::Singleton, factory)
+        self.insert_typed_descriptor::<T>(ServiceLifetime::Singleton, factory)
     }
 
     pub fn insert_scoped<T>(
@@ -121,7 +139,7 @@ impl ServiceRegistry {
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        self.insert_descriptor::<T>(ServiceLifetime::Scoped, factory)
+        self.insert_typed_descriptor::<T>(ServiceLifetime::Scoped, factory)
     }
 
     pub fn insert_transient<T>(
@@ -131,39 +149,86 @@ impl ServiceRegistry {
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        self.insert_descriptor::<T>(ServiceLifetime::Transient, factory)
+        self.insert_typed_descriptor::<T>(ServiceLifetime::Transient, factory)
+    }
+
+    /// Registers a runtime-keyed service: `factory` makes its erased value, or fails.
+    pub fn insert_keyed(
+        &mut self,
+        key: RuntimeKey,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.insert_descriptor(ServiceKey::Runtime(key), lifetime, false, Arc::new(factory))
+    }
+
+    /// Registers a thread-bound service under `key`: `factory` makes its value on the resolving
+    /// thread, and the value stays on that thread ([`super::thread_bound`]).
+    pub(crate) fn insert_thread_bound(
+        &mut self,
+        key: ServiceKey,
+        service: Cow<'static, str>,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&ServiceProvider) -> Result<LocalService, ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        self.insert_descriptor(
+            key,
+            lifetime,
+            true,
+            Arc::new(move |provider| {
+                let value = factory(provider)?;
+                let slot: ErasedService = Arc::new(ThreadBoundSlot::store(value, service.clone())?);
+                Ok(slot)
+            }),
+        )
+    }
+
+    /// The thread-bound service under `key`, on the thread that made it: `None` when nothing is
+    /// registered under it.
+    pub(crate) fn resolve_thread_bound(
+        &self,
+        key: &ServiceKey,
+        service: impl Fn() -> Cow<'static, str>,
+        provider: &ServiceProvider,
+    ) -> Option<Result<LocalService, ServiceResolutionError>> {
+        Some(
+            self.resolve_erased(key, Access::ThreadBound, &service, provider)?
+                .and_then(|erased| match erased.downcast_ref::<ThreadBoundSlot>() {
+                    Some(slot) => slot.get(),
+                    None => Err(Access::ThreadBound.refused(service())),
+                }),
+        )
     }
 
     pub(crate) fn resolve<T>(&self, provider: &ServiceProvider) -> Option<Arc<T>>
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        let type_id = TypeId::of::<T>();
-        if let Some(service) = self.cached::<T>(type_id) {
-            return Some(service);
-        }
+        self.resolve_typed::<T>(provider)?.ok()
+    }
 
-        let descriptor = self.descriptors.get(&type_id)?.clone();
-        match descriptor.lifetime {
-            ServiceLifetime::Singleton => self.resolve_cached::<T>(
-                type_id,
-                &self.singletons,
-                &self.singleton_resolution_guards,
-                provider,
-                descriptor.factory,
-            ),
-            ServiceLifetime::Scoped => self.resolve_cached::<T>(
-                type_id,
-                &self.scoped,
-                &self.scoped_resolution_guards,
-                provider,
-                descriptor.factory,
-            ),
-            ServiceLifetime::Transient => {
-                let value = (descriptor.factory)(provider);
-                downcast_service::<T>(&value)
-            }
-        }
+    fn resolve_typed<T>(
+        &self,
+        provider: &ServiceProvider,
+    ) -> Option<Result<Arc<T>, ServiceResolutionError>>
+    where
+        T: ?Sized + Send + Sync + 'static,
+    {
+        let service = || Cow::Borrowed(type_name::<T>());
+        Some(
+            self.resolve_erased(&ServiceKey::of::<T>(), Access::Shared, service, provider)?
+                .and_then(|erased| {
+                    downcast_service::<T>(&erased).ok_or_else(|| {
+                        ServiceResolutionError::failed(service(), "its value has another type")
+                    })
+                }),
+        )
     }
 
     pub(crate) fn required_resolved<T>(
@@ -173,8 +238,19 @@ impl ServiceRegistry {
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        self.resolve::<T>(provider)
-            .ok_or_else(ServiceResolutionError::missing::<T>)
+        self.resolve_typed::<T>(provider)
+            .unwrap_or_else(|| Err(ServiceResolutionError::missing::<T>()))
+    }
+
+    pub(crate) fn required_resolved_by_key(
+        &self,
+        key: &RuntimeKey,
+        provider: &ServiceProvider,
+    ) -> Result<ErasedService, ServiceResolutionError> {
+        let service = || key.name_cow();
+        let key = ServiceKey::Runtime(key.clone());
+        self.resolve_erased(&key, Access::Shared, service, provider)
+            .unwrap_or_else(|| Err(ServiceResolutionError::MissingKey { service: service() }))
     }
 
     pub(crate) fn create_scope(&self) -> Self {
@@ -187,7 +263,63 @@ impl ServiceRegistry {
         }
     }
 
-    fn insert_descriptor<T>(
+    /// The service under `key`: `None` when nothing is registered under it, else what its
+    /// cache or factory gives.
+    fn resolve_erased(
+        &self,
+        key: &ServiceKey,
+        access: Access,
+        service: impl Fn() -> Cow<'static, str>,
+        provider: &ServiceProvider,
+    ) -> Option<Result<ErasedService, ServiceResolutionError>> {
+        // The kind is checked first: a resolve through the other API makes and reads nothing.
+        let descriptor = self.descriptors.get(key).cloned();
+        let thread_bound = descriptor
+            .as_ref()
+            .is_some_and(|descriptor| descriptor.thread_bound);
+        if thread_bound != (access == Access::ThreadBound)
+            && (descriptor.is_some() || self.cached(key).is_some())
+        {
+            return Some(Err(access.refused(service())));
+        }
+
+        if let Some(service) = self.cached(key) {
+            return Some(Ok(service));
+        }
+
+        let descriptor = descriptor?;
+        Some(match descriptor.lifetime {
+            ServiceLifetime::Singleton => self.resolve_cached(
+                key,
+                &self.singletons,
+                &self.singleton_resolution_guards,
+                provider,
+                descriptor.factory,
+            ),
+            ServiceLifetime::Scoped => self.resolve_cached(
+                key,
+                &self.scoped,
+                &self.scoped_resolution_guards,
+                provider,
+                descriptor.factory,
+            ),
+            ServiceLifetime::Transient => (descriptor.factory)(provider),
+        })
+    }
+
+    fn insert_erased(&mut self, key: ServiceKey, service: ErasedService) -> &mut Self {
+        self.descriptors.remove(&key);
+        self.scoped
+            .lock()
+            .ok()
+            .and_then(|mut services| services.remove(&key));
+        if let Ok(mut services) = self.singletons.lock() {
+            services.insert(key, service);
+        }
+        self
+    }
+
+    fn insert_typed_descriptor<T>(
         &mut self,
         lifetime: ServiceLifetime,
         factory: impl Fn(&ServiceProvider) -> Arc<T> + Send + Sync + 'static,
@@ -195,78 +327,101 @@ impl ServiceRegistry {
     where
         T: ?Sized + Send + Sync + 'static,
     {
-        let type_id = TypeId::of::<T>();
+        self.insert_descriptor(
+            ServiceKey::of::<T>(),
+            lifetime,
+            false,
+            Arc::new(move |provider| Ok(erase_service(factory(provider)))),
+        )
+    }
+
+    fn insert_descriptor(
+        &mut self,
+        key: ServiceKey,
+        lifetime: ServiceLifetime,
+        thread_bound: bool,
+        factory: ServiceFactory,
+    ) -> &mut Self {
         if let Ok(mut services) = self.singletons.lock() {
-            services.remove(&type_id);
+            services.remove(&key);
         }
         if let Ok(mut services) = self.scoped.lock() {
-            services.remove(&type_id);
+            services.remove(&key);
         }
-
         self.descriptors.insert(
-            type_id,
+            key,
             ServiceDescriptor {
                 lifetime,
-                factory: Arc::new(move |provider| erase_service(factory(provider))),
+                thread_bound,
+                factory,
             },
         );
         self
     }
 
-    fn cached<T>(&self, type_id: TypeId) -> Option<Arc<T>>
-    where
-        T: ?Sized + Send + Sync + 'static,
-    {
-        self.cached_from::<T>(&self.singletons, type_id)
-            .or_else(|| self.cached_from::<T>(&self.scoped, type_id))
+    fn cached(&self, key: &ServiceKey) -> Option<ErasedService> {
+        cached_from(&self.singletons, key).or_else(|| cached_from(&self.scoped, key))
     }
 
-    fn cached_from<T>(
+    fn resolve_cached(
         &self,
-        services: &Mutex<HashMap<TypeId, ErasedService>>,
-        type_id: TypeId,
-    ) -> Option<Arc<T>>
-    where
-        T: ?Sized + Send + Sync + 'static,
-    {
-        services
-            .lock()
-            .ok()
-            .and_then(|services| services.get(&type_id).and_then(downcast_service::<T>))
-    }
-
-    fn resolve_cached<T>(
-        &self,
-        type_id: TypeId,
-        cache: &Mutex<HashMap<TypeId, ErasedService>>,
-        resolution_guards: &Mutex<HashMap<TypeId, Arc<Mutex<()>>>>,
+        key: &ServiceKey,
+        cache: &ServiceCache,
+        resolution_guards: &ResolutionGuards,
         provider: &ServiceProvider,
         factory: ServiceFactory,
-    ) -> Option<Arc<T>>
-    where
-        T: ?Sized + Send + Sync + 'static,
-    {
-        if let Some(service) = self.cached_from::<T>(cache, type_id) {
-            return Some(service);
+    ) -> Result<ErasedService, ServiceResolutionError> {
+        if let Some(service) = cached_from(cache, key) {
+            return Ok(service);
         }
 
+        let poisoned = || ServiceResolutionError::poisoned(key);
         let resolution_guard = resolution_guards
             .lock()
-            .ok()?
-            .entry(type_id)
+            .map_err(|_| poisoned())?
+            .entry(key.clone())
             .or_insert_with(|| Arc::new(Mutex::new(())))
             .clone();
-        let _resolution = resolution_guard.lock().ok()?;
-        if let Some(service) = self.cached_from::<T>(cache, type_id) {
-            return Some(service);
+        let _resolution = resolution_guard.lock().map_err(|_| poisoned())?;
+        if let Some(service) = cached_from(cache, key) {
+            return Ok(service);
         }
 
-        let value = factory(provider);
+        let value = factory(provider)?;
         if let Ok(mut services) = cache.lock() {
-            services.insert(type_id, Arc::clone(&value));
+            services.insert(key.clone(), Arc::clone(&value));
         }
-        downcast_service::<T>(&value)
+        Ok(value)
     }
+}
+
+impl Access {
+    /// The error of a resolve through this API of a registration of the other kind.
+    fn refused(self, service: Cow<'static, str>) -> ServiceResolutionError {
+        let message = match self {
+            Self::Shared => {
+                "it is thread-bound: resolve it with `thread_bound_service` or `thread_bound_service_by_key`"
+            }
+            Self::ThreadBound => {
+                "it is not thread-bound: resolve it with `service` or `service_by_key`"
+            }
+        };
+        ServiceResolutionError::failed(service, message)
+    }
+}
+
+fn key_name(key: &ServiceKey) -> Cow<'static, str> {
+    match key {
+        ServiceKey::Type(_) => Cow::Borrowed("<type>"),
+        ServiceKey::Runtime(key) => key.name_cow(),
+    }
+}
+
+fn cached_from(services: &ServiceCache, key: &ServiceKey) -> Option<ErasedService> {
+    services
+        .lock()
+        .ok()
+        .and_then(|services| services.get(key).cloned())
 }
 
 impl fmt::Debug for ServiceRegistry {
@@ -292,13 +447,37 @@ impl fmt::Debug for ServiceRegistry {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ServiceResolutionError {
+    /// No service is registered under the Rust type `service`.
     Missing { service: &'static str },
+    /// No service is registered under the runtime key named `service`.
+    MissingKey { service: Cow<'static, str> },
+    /// The thread-bound service `service` was resolved on a thread other than the one that made
+    /// it; its value was not touched.
+    WrongThread { service: Cow<'static, str> },
+    /// Resolving `service` failed: its factory gave an error, or a lock it needs was poisoned.
+    Failed {
+        service: Cow<'static, str>,
+        message: String,
+    },
 }
 
 impl fmt::Display for ServiceResolutionError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Missing { service } => write!(formatter, "service `{service}` is not registered"),
+            Self::MissingKey { service } => {
+                write!(formatter, "service `{service}` is not registered")
+            }
+            Self::WrongThread { service } => write!(
+                formatter,
+                "service `{service}` is thread-bound and resolves on its own thread only"
+            ),
+            Self::Failed { service, message } => {
+                write!(
+                    formatter,
+                    "service `{service}` could not be resolved: {message}"
+                )
+            }
         }
     }
 }
@@ -306,13 +485,31 @@ impl fmt::Display for ServiceResolutionError {
 impl std::error::Error for ServiceResolutionError {}
 
 impl ServiceResolutionError {
-    fn missing<T>() -> Self
+    /// A factory's failure to make the service named `service`.
+    pub fn failed(service: impl Into<Cow<'static, str>>, message: impl Into<String>) -> Self {
+        Self::Failed {
+            service: service.into(),
+            message: message.into(),
+        }
+    }
+
+    pub(crate) fn missing<T>() -> Self
     where
         T: ?Sized + 'static,
     {
         Self::Missing {
             service: type_name::<T>(),
         }
+    }
+
+    pub(crate) fn missing_key(key: &RuntimeKey) -> Self {
+        Self::MissingKey {
+            service: key.name_cow(),
+        }
+    }
+
+    fn poisoned(key: &ServiceKey) -> Self {
+        Self::failed(key_name(key), "a resolution lock was poisoned")
     }
 }
 

@@ -437,7 +437,7 @@ impl AsyncInitializable for OperationService {
 }
 
 impl StartupInitializable for OperationService {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<Self>()
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(StartupServiceType::of::<Self>())
     }
 }

@@ -54,6 +54,35 @@ let scope = services.create_scope();                  // a child scope
 
 In a Rust component, `rayx_app::services()` returns the provider of the nearest screen scope (or the surface's root).
 
+## Runtime keys
+
+A service that is not a Rust type (a service written in TypeScript, for one) is registered under a `RuntimeKey`, an
+opaque key with a display name. It follows the same lifetimes, scopes and disposal as a typed service; its value is
+type-erased (`ErasedService`, an `Arc<dyn Any + Send + Sync>`), and its factory may fail:
+
+```rust
+let settings = RuntimeKey::new("Settings"); // a new key per call, even for a name used before
+services.add_singleton_keyed(settings.clone(), |services| {
+    let api = services.required_service::<ApiClient>()?;
+    Ok(Arc::new(Settings::new(api)) as ErasedService)
+});
+let value = services.required_service_by_key(&settings)?; // or `service_by_key`, an Option
+```
+
+A missing key fails with `ServiceResolutionError::MissingKey`, naming the key's display name.
+
+## Thread-bound services
+
+A value that is neither `Send` nor `Sync` is registered thread-bound (`add_singleton_thread_bound`,
+`add_scoped_thread_bound`, `add_transient_thread_bound`, and the `_keyed` forms). It is made on the thread that first
+resolves it and resolves there only, as an `Rc` (`required_thread_bound_service::<T>()`,
+`required_thread_bound_service_by_key(&key)`); on any other thread resolving fails with
+`ServiceResolutionError::WrongThread`, without touching the value. Resolving it through the shared API (`service`,
+`service_by_key`), or a shared service through the thread-bound one, fails without making anything. The provider itself
+stays usable from every thread.
+A thread-bound value is never dropped on another thread: released elsewhere, it is dropped on its own thread at that
+thread's next thread-bound resolve, or by `release_orphaned_thread_bound_services()`.
+
 ## Lifetimes
 
 | Lifetime | Core | On NSH |

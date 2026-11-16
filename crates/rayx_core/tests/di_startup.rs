@@ -46,8 +46,8 @@ macro_rules! recorder {
         }
 
         impl StartupInitializable for $name {
-            fn startup_service_type(&self) -> StartupServiceType {
-                StartupServiceType::of::<Self>()
+            fn startup_service_type(&self) -> Option<StartupServiceType> {
+                Some(StartupServiceType::of::<Self>())
             }
 
             $(fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
@@ -88,8 +88,8 @@ impl AsyncInitializable for TraitStartupRecorderImpl {
 }
 
 impl StartupInitializable for TraitStartupRecorderImpl {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<dyn TraitStartupRecorder>()
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(StartupServiceType::of::<dyn TraitStartupRecorder>())
     }
 }
 
@@ -142,8 +142,8 @@ impl<const ID: usize> AsyncInitializable for ParallelRecorder<ID> {
 }
 
 impl<const ID: usize> StartupInitializable for ParallelRecorder<ID> {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<Self>()
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(StartupServiceType::of::<Self>())
     }
 }
 
@@ -164,8 +164,8 @@ impl AsyncInitializable for FailingRecorder {
 }
 
 impl StartupInitializable for FailingRecorder {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<Self>()
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(StartupServiceType::of::<Self>())
     }
 }
 
@@ -254,14 +254,12 @@ fn di_startup_registry_builds_dependency_layers() -> TestResult {
     let layers = registry.initialization_layers()?;
     assert_eq!(layers.len(), 2);
     assert_eq!(layers[0].len(), 2);
-    assert!(
-        layers[0]
-            .iter()
-            .any(|service| service.startup_service_type() == StartupServiceType::of::<Recorder>())
-    );
+    assert!(layers[0].iter().any(
+        |service| service.startup_service_type() == Some(StartupServiceType::of::<Recorder>())
+    ));
     assert_eq!(
         layers[1][0].startup_service_type(),
-        StartupServiceType::of::<DependentRecorder>()
+        Some(StartupServiceType::of::<DependentRecorder>())
     );
     Ok(())
 }
@@ -274,14 +272,14 @@ fn di_startup_registry_reports_missing_dependencies() {
         .err()
         .expect("missing dependency should fail");
     assert!(matches!(
-        error,
+        &error,
         StartupInitializationError::MissingDependency {
             phase: StartupInitializationPhase::Runtime,
             service,
             dependency,
         }
-            if service == StartupServiceType::of::<MissingDependencyRecorder>()
-                && dependency == StartupServiceType::of::<Unregistered>()
+            if *service == StartupServiceType::of::<MissingDependencyRecorder>()
+                && *dependency == StartupServiceType::of::<Unregistered>()
     ));
     assert!(error.to_string().contains("Unregistered"));
 }

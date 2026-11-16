@@ -468,8 +468,8 @@ impl AsyncInitializable for I18nService {
 }
 
 impl StartupInitializable for I18nService {
-    fn startup_service_type(&self) -> StartupServiceType {
-        StartupServiceType::of::<Self>()
+    fn startup_service_type(&self) -> Option<StartupServiceType> {
+        Some(StartupServiceType::of::<Self>())
     }
 
     fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
