@@ -98,6 +98,11 @@ A token is a `ServiceKey<T>`: a class (`I18nService`, or a TS class) or a `Servi
 so no call site casts. A screen makes its scope when it mounts and disposes it in its cleanup; disposing drops the
 scoped services it resolved and deactivates the view models activated through it, and using it afterwards throws.
 
+**Identity.** A TS singleton is one JS object per root, so `===` holds across every scope. A RayX service's class is a
+wrapper each provider makes around the Rust service: `===` holds for a singleton resolved twice through the same
+provider, but the root and a scope give two wrappers of the one Rust singleton. Compare Rust services by identity only
+within one provider; the wrappers behave the same, since they share the Rust service.
+
 ```tsx
 const scope = services.createScope(); // on a screen's mount
 const editor = scope.getRequiredService(EditorState);
