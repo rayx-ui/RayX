@@ -43,7 +43,7 @@ let subscription = platform.subscribe(|event| relayout(event)); // a PlatformCha
 
 Every surface (window) has its own root provider, so a surface's service describes that surface. Starting the app
 copies NSH's environment into it before the startup services initialize, so they see the device and the user's
-settings; `use_platform_sync()` in a Rust root component, and `AppServices.load()` in a TSX app, keep it current from
+settings; `use_platform_sync()` in a Rust root component, and `builder.start()` in a TSX app, keep it current from
 then on.
 
 The displays and the window come from NSH's `displays()` and `window_state()`, which only desktops report; the text
@@ -56,8 +56,10 @@ user-writable directory: apps write through [storage](storage.md).
 
 ## TSX
 
+`PlatformInfoService`, resolved from the provider `start()` gives:
+
 ```tsx
-const platform = Platform.of(app);
+const platform = services.getRequiredService(PlatformInfoService);
 const device = platform.current();
-platform.onChange((snapshot) => relayout(snapshot));
+const stop = platform.onChange((snapshot) => relayout(snapshot)); // `stop()` ends it
 ```

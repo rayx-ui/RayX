@@ -11,8 +11,18 @@ examples, DO and DON'T) is the `rayx-components` skill in RayX.Root (`.claude/sk
 
 ## Use it
 
-Register the library in the app's UI set. It adds the components and the theme document (RayX's tokens become the
-app's theme: its classes, `token()`, the modifiers `setModifier` picks and the roles NSH's own parts draw with):
+The library is in the app's UI set: `#[rayx::native_module]` registers it with every RayX TS class. It adds the
+components and the theme document (RayX's tokens become the app's theme: its classes, `token()`, the modifiers
+`setModifier` picks and the roles NSH's own parts draw with):
+
+```rust
+use rayx::prelude::*;
+
+#[rayx::native_module("my-app/native")]
+fn native(registry: &mut Registry) {}
+```
+
+A hand-written `#[native_module]` registers it with `rayx::components::register`:
 
 ```rust
 use nsh_core::prelude::*;

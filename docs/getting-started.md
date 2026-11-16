@@ -38,49 +38,48 @@ from RayX's `Cargo.toml` at that tag.
 
 ## A first app
 
-An app has one composition root: a function that adds its configuration and services to a `RayXAppBuilder`.
-`set_app` names it, and every NSH surface builds its own root provider from it when the app starts there. This is the
-`src/lib.rs` `rayx new` writes for a TSX app, with the TSX classes the UI uses:
+An app has one composition root: a `RayXAppBuilder` with its configuration and services, started once on each NSH
+surface, which builds its own root provider from it. A TSX app builds it in TS, with the same methods in camelCase; its
+Rust crate is its UI set: RayX's attribute on one function, with every RayX TS class and component. This is what
+`rayx new` writes for a TSX app:
 
 ```rust
-use nsh_core::prelude::*;
+// src/lib.rs
 use rayx::prelude::*;
 
-#[native_module("my-app")]
-fn native(registry: &mut Registry) {
-    set_app(build_app);
-    registry
-        .class::<AppServices>()
-        .class::<ServiceScope>()
-        .class::<I18n>();
-}
+#[rayx::native_module("my-app")]
+fn native(registry: &mut Registry) {}
+```
 
-fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    builder
-        .add_app_settings("my-app") // assets/appsettings.json
+```tsx
+// App.tsx
+import { I18nService, RayXAppBuilder } from "my-app";
+
+const services = await new RayXAppBuilder()
+  .addAppSettings("my-app") // assets/appsettings.json
+  .addStorage()
+  .addHistory()
+  .addI18n((options) => options.defaultLanguage("en"))
+  .start();                 // rejects if a startup service failed
+const i18n = services.getRequiredService(I18nService);
+const scope = services.createScope(); // one scope per screen
+```
+
+A Rust UI builds the same chain in its root component and starts it there:
+
+```rust
+use rayx::prelude::*;
+
+#[component]
+pub fn App() -> impl IntoElement {
+    RayXAppBuilder::new()
+        .add_app_settings("my-app")
         .add_storage()
         .add_history()
         .add_i18n(|options| {
             options.default_language("en");
         })
-}
-```
-
-The UI starts the app before it uses a service:
-
-```tsx
-// App.tsx
-const app = await AppServices.load(); // starts the app; rejects if a startup service failed
-const scope = app.scope();            // one scope per screen
-```
-
-A Rust UI starts it in its root component instead:
-
-```rust
-#[component]
-pub fn App() -> impl IntoElement {
-    set_app(build_app);
-    rayx::app::start();
+        .start();
     dynamic(|| match rayx::app::app_state() {
         AppState::Ready => home().into_element(),
         AppState::Failed(message) => error_screen(message).into_element(),
@@ -89,8 +88,11 @@ pub fn App() -> impl IntoElement {
 }
 ```
 
-Next: [Dependency injection](dependency-injection.md), [Configuration and options](configuration.md) and
-[Startup](startup.md).
+The app's own Rust services reach TS as [app extensions](tsx.md#app-extensions), and services written in TS live in
+the same container ([TSX](tsx.md)).
+
+Next: [TSX](tsx.md), [Dependency injection](dependency-injection.md), [Configuration and options](configuration.md)
+and [Startup](startup.md).
 
 ## Upgrading
 

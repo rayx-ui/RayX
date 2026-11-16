@@ -48,8 +48,10 @@ let motion = app_config.effective_motion(None);
 
 ## TSX
 
+`ApplicationConfigurationService`, resolved from the provider `start()` gives:
+
 ```tsx
-const settings = AppConfiguration.of(app);
+const settings = services.getRequiredService(ApplicationConfigurationService);
 settings.layoutDirection(); // "ltr" or "rtl"
 settings.reducedMotion();
 settings.onChange((current) => apply(current));

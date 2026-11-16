@@ -6,10 +6,12 @@
 - [Architecture](architecture.md): the crates, the two layers, dependencies and releases.
 - [Dependency injection](dependency-injection.md): services, lifetimes, scopes and screens.
 - [Configuration and options](configuration.md): configuration sources and .NET's options model.
-- [Startup](startup.md): services that initialize asynchronously, and starting the app from TSX or Rust.
+- [Startup](startup.md): services that initialize asynchronously (in Rust or TS), ready hooks, and starting the app
+  from TSX or Rust.
 - [View models](view-models.md): activation, and binding dXn.Reactive state to Rust components and TSX.
 - [Navigation](navigation.md): navigation regions as NSH navigation stacks.
-- [TSX](tsx.md): the classes a TSX app uses.
+- [TSX](tsx.md): a TSX app's crate (RayX's attribute), its builder and provider, services written in TS, contracts, options and
+  app extensions, each beside its Rust twin.
 - [Components and theme](components.md): RayX's component library, its theme from the Figma tokens, custom themes, and the
   gallery app.
 - [Dev tools](devtools.md): the in-app agent of dev builds, how it connects to a tool, and the agent protocol.

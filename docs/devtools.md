@@ -28,8 +28,8 @@ program and a runner see the same names; without the dev tools their bodies do n
 
 ## The agent
 
-- **When it starts.** Once the app is ready: `AppServices.load()` (TSX) or `rayx_app::start()` (a Rust
-  root) starts it in a host's dev session. It stays off in a plain engine (a test's) and in a test
+- **When it starts.** Once the app is ready: `await builder.start()` (TSX) or
+  `RayXAppBuilder::new()….start()` (a Rust root) starts it in a host's dev session. It stays off in a plain engine (a test's) and in a test
   session, whose host refuses the app's connections; there `await DevTools.start({ url })` (TSX) or
   `rayx_app::start_devtools(options)` (Rust) starts it. `DevTools:Enabled = false` in the
   configuration turns it off.
@@ -43,7 +43,7 @@ program and a runner see the same names; without the dev tools their bodies do n
   session knows its root itself) and a credential when one is set (`DevTools:Credential`, or `DevTools.start`'s
   `credential`; opaque, empty by default).
 - **Natively** the connection runs on a thread of its own; on the web it is the page's WebSocket,
-  through NSH's transport (`AppServices.load()` hands it over; a Rust root on the web has none).
+  through NSH's transport (TSX's `builder.start()` hands it over; a Rust root on the web has none).
 
 ## What it answers
 

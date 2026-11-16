@@ -40,13 +40,16 @@ the engine thread):
 
 ## TSX
 
+`KeyValueStore`, resolved from the provider `start()` gives (`dyn KeyValueStore` in Rust):
+
 ```tsx
-const storage = Storage.of(app);
+const storage = services.getRequiredService(KeyValueStore);
 storage.setJson("settings", "theme", { mode: "dark" });
 const theme = storage.getJson("settings", "theme");
 ```
 
-`get`, `set`, `getJson`, `setJson`, `remove`, `keys` and `clear` take a bucket and a key.
+`get`, `set`, `getJson`, `setJson`, `remove`, `keys` and `clear` take a bucket and a key (`keys` and `clear` a bucket
+only).
 
 ## Not available yet
 

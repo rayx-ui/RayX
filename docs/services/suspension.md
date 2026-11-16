@@ -61,7 +61,7 @@ Linux); elsewhere the system decides when an app ends, and they do nothing.
 
 ## On NSH
 
-`rayx_app` publishes, from `use_platform_sync()` in a Rust root or `AppServices.load()` in a TSX app:
+`rayx_app` publishes, from `use_platform_sync()` in a Rust root or `builder.start()` in a TSX app:
 
 - NSH's `lifecycle()`: NSH folds the platforms' own callbacks into one app state, so an event's reason is
   `AppStateChanged` (or the host's start);
@@ -77,14 +77,15 @@ thread. The [platform service](platform.md) holds the platform's state.
 
 ## TSX
 
-`Platform.of(app)`: `lifecycle()` returns the snapshot, `onLifecycle(listener)` hears every event (`{ kind, reason,
-timestamp_unix_millis, window }`, with `kind` as Rust names it: `"Woke"`, `"QuitRequested"`, `"Destroying"`, ...),
-`askBeforeQuit(listener)` asks before quitting until the object is disposed, and `quit()` quits.
+`SuspensionService`, resolved from the provider `start()` gives: `lifecycle()` returns the snapshot,
+`onLifecycle(listener)` hears every event (`{ kind, reason, timestamp_unix_millis, window }`, with `kind` as Rust names
+it: `"Woke"`, `"QuitRequested"`, `"Destroying"`, ...), `askBeforeQuit(listener)` asks before quitting, and `quit()`
+quits. Each listener lasts until the function it returns is called, or the object is disposed.
 
 ```tsx
-const platform = Platform.of(app);
-platform.onLifecycle((event) => {
+const suspension = services.getRequiredService(SuspensionService);
+suspension.onLifecycle((event) => {
   if (event.kind === "Woke") reconnect();
 });
-platform.askBeforeQuit(() => (hasUnsavedWork() ? confirmQuit.set(true) : platform.quit()));
+const stopAsking = suspension.askBeforeQuit(() => (hasUnsavedWork() ? confirmQuit.set(true) : suspension.quit()));
 ```

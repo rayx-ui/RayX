@@ -48,6 +48,23 @@ impl StartupInitializable for Catalog {
 }
 ```
 
+A startup service written in TS implements the interfaces of the same names ([below](#startup-services-in-ts)); this
+one waits for the translations:
+
+```tsx
+class Catalog implements StartupInitializable {
+  private state = new StartupInitializationState();
+  isInitialized() { return this.state.isInitialized(); }
+  async initialize(context: StartupInitializationContext) {
+    // load what the service needs
+    this.state.markInitialized();
+  }
+  initializationDependsOn() { return [I18nService]; }
+}
+
+builder.addStartupSingleton(Catalog, () => new Catalog());
+```
+
 A startup service that is not a Rust type is keyed by a runtime key (`StartupServiceType::runtime(&key)`) and may be
 made asynchronously when startup runs: `add_startup_resolved_async(&key, |context| async { … }.boxed_local())`. It is
 ordered, initialized, timed and reported (by the key's display name) with every other startup service, and it may wait
@@ -63,7 +80,27 @@ all of them initialized.
 
 - **Failure:** one failing service fails startup, with the services that failed and why; nothing is installed.
 - **Timeout:** each service may set `initialization_timeout()`; one that sets none gets the builder's default
-  (`default_initialization_timeout(..)`, 30 s unless set). A service past its timeout fails startup.
+  (`default_initialization_timeout(..)`, 30 s unless set; TS's `defaultInitializationTimeout(ms)`). A service past its
+  timeout fails startup.
+
+## Startup services in TS
+
+TS startup services are in the same startup graph as Rust's: they wait for Rust services and Rust services for them,
+with the same timeout and failure report. They are registered with `addStartupSingleton`, `addStartupScoped`,
+`addStartupTransient` and their `As` forms, and implement:
+
+- `AsyncInitializable`: `isInitialized()`, `initialize(context)` (it may return a promise; `context.services` is the
+  root provider) and, optionally, `initializationTimeout()` in milliseconds.
+- `StartupInitializable`: the same members and, optionally, `initializationDependsOn()`, the services (TS classes,
+  `ServiceToken`s, RayX's classes) that must initialize first, and `startupServiceType()`, the key others name to wait
+  for it. Without it, the service is keyed by the token it was registered under.
+
+`StartupInitializationState` (`isInitialized()`, `markInitialized()`) holds the flag, as in Rust.
+
+- `startupServiceType`, `initializationDependsOn` and `initializationTimeout` are read once, when the service is made;
+  `isInitialized` is asked just before it would initialize, so a service another one initialized meanwhile is skipped.
+- A service that throws or rejects fails startup, named by its class (or token).
+- A timeout fails startup but cannot stop the JS work: what `initialize` started still runs.
 
 ## Ready hooks
 
@@ -93,24 +130,41 @@ builder
   stops the rest and fails startup (`AppError::Ready`, `AppState::Failed`).
 - On NSH they run on the engine's thread, so they may call NSH's functions; `app_state()` turns `Ready` after them.
 
+The same in TS: `onReady(hook)` and `onReadyWhen(predicate, hook)`, whose hook gets a `ReadyContext`
+(`context.services`) and may return a promise. TS and Rust hooks (from an [app extension](tsx.md#app-extensions)) run
+in the order they were added; one that throws or rejects fails `start()` with its message.
+
+```tsx
+builder.onReady(async (context) => {
+  const store = context.services.getRequiredService(KeyValueStore);
+  const language = store.getJson("settings", "language");
+  if (typeof language === "string") context.services.getRequiredService(I18nService).setLanguage(language);
+});
+```
+
 ## Starting from TSX
 
 ```tsx
-const app = await AppServices.load(); // once: starts the app; rejects if a service failed or timed out
-const scope = app.scope();            // on a screen's mount
+const services = await new RayXAppBuilder()
+  .addStorage()
+  .addI18n()
+  .start();                           // once: rejects if a service failed or timed out
+const scope = services.createScope(); // on a screen's mount
 scope.dispose();                      // in its cleanup
 ```
 
-Register `AppServices` and `ServiceScope` in the app's UI set. `load()` is asynchronous because startup awaits the
-services; everything after it is synchronous. A TSX app has no root component, so `load()` also keeps the platform and
-suspension services current from NSH.
+The app's crate is `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {}`, whose set holds the
+builder and every RayX class
+([TSX](tsx.md#the-apps-crate)). `start()` is asynchronous because startup awaits the services; everything after it is
+synchronous. A TSX app has no root component, so `start()` also keeps the platform and suspension services current
+from NSH.
 
 ## Starting from a Rust root
 
 ```rust
 #[component]
 fn Root() -> impl IntoElement {
-    rayx_app::start();
+    RayXAppBuilder::new().add_storage().add_i18n(|_| {}).start();
     dynamic(|| match rayx_app::app_state() {
         AppState::Ready => home().into_element(),
         AppState::Failed(message) => error_screen(message).into_element(),
@@ -119,6 +173,8 @@ fn Root() -> impl IntoElement {
 }
 ```
 
-`app_state()` is `NotStarted`, `Starting`, `Ready` or `Failed(message)`; reading it subscribes, so the root shows a
-splash until the app is ready. Call `use_platform_sync()` in the root to keep the platform and suspension services
+`start()` starts the app on the surface in a task of its own; a second start on a surface whose app started (or is
+starting) keeps that app. `app_state()` is `NotStarted`, `Starting`, `Ready` or `Failed(message)`; reading it
+subscribes, so the root shows a splash until the app is ready. `start_async()` instead gives the root provider, or the
+`AppError`, to await in an NSH task. Call `use_platform_sync()` in the root to keep the platform and suspension services
 current from NSH.

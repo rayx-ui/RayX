@@ -53,7 +53,9 @@ goes to NSH's `register_font`. Both read WOFF and WOFF2 fonts too.
 
 ## TSX
 
+`FontService`, resolved from the provider `start()` gives:
+
 ```tsx
-const fonts = Fonts.of(app);
+const fonts = services.getRequiredService(FontService);
 <Text style={{ fontFamily: fonts.family("body") }}>Hello</Text>
 ```

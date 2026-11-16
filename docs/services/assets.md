@@ -70,7 +70,9 @@ reload).
 
 ## TSX
 
+`AssetService`, resolved from the provider `start()` gives:
+
 ```tsx
-const assets = Assets.of(app);
+const assets = services.getRequiredService(AssetService);
 const logo = assets.url("images/logo.png"); // asset:/@my-app/images/logo.png
 ```

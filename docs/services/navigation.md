@@ -54,10 +54,12 @@ route in its query: `/app/projects/12?panel=%2Fsettings`.
 
 ## TSX
 
+`NavigationService`, resolved from the provider `start()` gives:
+
 ```tsx
-const navigation = Navigation.of(app);
+const navigation = services.getRequiredService(NavigationService);
 navigation.navigate("/projects/12");
 navigation.onChange(({ region, from, to }) => render(to));
 ```
 
-`NavigationRegion.of(app, name)` drives a named region; see [Navigation regions](../navigation.md#from-tsx).
+`navigation.region(name)` drives a named region; see [Navigation regions](../navigation.md#from-tsx).

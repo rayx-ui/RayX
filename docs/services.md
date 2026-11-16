@@ -27,18 +27,27 @@ through the operation service). It will come with a standalone dXn collaboration
 ## How a service works
 
 **Registered with a builder extension.** Each service adds methods to the app builder through an `AppBuilder`
-extension trait, so an app registers it in one call in its composition root:
+extension trait, so an app registers it in one call in its composition root, and TSX's `RayXAppBuilder` has the same
+method in camelCase:
 
 ```rust
-fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    builder
-        .add_app_settings("my-app")
-        .add_storage()
-        .add_persistent_history()
-        .add_i18n(|options| {
-            options.default_language("en");
-        })
-}
+RayXAppBuilder::new()
+    .add_app_settings("my-app")
+    .add_storage()
+    .add_persistent_history()
+    .add_i18n(|options| {
+        options.default_language("en");
+    })
+    .start();
+```
+
+```tsx
+const services = await new RayXAppBuilder()
+  .addAppSettings("my-app")
+  .addStorage()
+  .addPersistentHistory()
+  .addI18n((options) => options.defaultLanguage("en"))
+  .start();
 ```
 
 `add_<service>(..)` keeps a service registered earlier; `with_<service>_service(..)` replaces it, for tests or a
@@ -59,8 +68,11 @@ the result, so `appsettings.json` sets the defaults and code has the last word. 
 startup instead of the first use.
 
 **Resolved by type.** Rust code resolves a service from the provider: `services.required_service::<I18nService>()`, or
-`rayx_app::services()` in a component. TSX reaches the services through classes made with `X.of(app)`
-([TSX](tsx.md)).
+`rayx_app::services()` in a component. TSX resolves them by their classes, named after the Rust services, from the
+provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.md#rayxs-services)).
+
+**Written in TS too.** An app's own services may be TS classes in the same container, and a Rust trait marked
+`#[rayx::contract]` lets Rust call a TS implementation ([TSX](tsx.md#services-written-in-ts)).
 
 **Platform-independent.** `rayx_runtime` has no NSH dependency and builds for `wasm32-unknown-unknown`. What a service
 needs from the platform is a trait (`AssetReader`, `FontRegistrar`, `KeyValueStore`,
@@ -76,7 +88,7 @@ needs from the platform is a trait (`AssetReader`, `FontRegistrar`, `KeyValueSto
   asynchronously when the app starts.
 - `use_platform_sync()`, in a Rust root component, keeps the [platform](services/platform.md) and
   [suspension](services/suspension.md) services current from NSH once the app is ready. A TSX app has no root
-  component, so `AppServices.load()` does it.
+  component, so `builder.start()` does it.
 
 ## Writing a service
 
@@ -118,4 +130,6 @@ pub trait WeatherAppBuilderExt: AppBuilder {
 impl<T> WeatherAppBuilderExt for T where T: AppBuilder {}
 ```
 
-An app then calls `builder.add_weather(|options| options.refresh_minutes = 15)`.
+An app then calls `builder.add_weather(|options| options.refresh_minutes = 15)`. To reach TS, an app exports such a
+function as an [app extension](tsx.md#app-extensions) (`#[rayx::app_extension]`, a function of the builder alone),
+which TS applies with `builder.apply(addWeather)`.

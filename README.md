@@ -33,18 +33,25 @@ Or add RayX to an existing crate. Releases are git tags `vX.Y.Z`; nothing is pub
 rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }
 ```
 
-An app names the function that builds its services, and its UI starts them:
+An app builds its services with `RayXAppBuilder` and starts them, the same way in Rust and in TSX:
 
 ```rust
 use rayx::prelude::*;
 
-fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    builder.add_app_settings("my-app").add_storage().add_history()
-}
+// In the root component.
+RayXAppBuilder::new().add_app_settings("my-app").add_storage().add_history().start();
 ```
 
 ```tsx
-const app = await AppServices.load(); // resolves once every startup service is ready
+// The crate's src/lib.rs: `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {}`
+import { KeyValueStore, RayXAppBuilder } from "my-app";
+
+const services = await new RayXAppBuilder() // resolves once every startup service is ready
+  .addAppSettings("my-app")
+  .addStorage()
+  .addHistory()
+  .start();
+const store = services.getRequiredService(KeyValueStore);
 ```
 
 [Getting started](docs/getting-started.md) walks through it.
@@ -53,11 +60,11 @@ const app = await AppServices.load(); // resolves once every startup service is 
 
 | Crate | What it is |
 | --- | --- |
-| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;` |
+| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;` and `#[rayx::native_module]` |
 | `rayx_core` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
 | `rayx_runtime` | The app services; no NSH, builds for wasm32 |
-| `rayx_app` | The NSH layer: surfaces, screens, view-model binding, navigation regions, TSX classes |
-| `rayx_app_macros` | `#[derive(AppService)]` |
+| `rayx_app` | The NSH layer: the app's start, surfaces, screens, view-model binding, navigation regions, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
+| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]` |
 | `rayx-cli` | The `rayx` command-line tool |
 
 ## Documentation

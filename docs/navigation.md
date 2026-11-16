@@ -59,18 +59,20 @@ NSH's address and its moves out of the navigation, startup included.
 
 ## From TSX
 
-`Navigation.of(app)` drives the URL region: `navigate(uri)`, `back()`, `forward()`, `current()` and `onChange`.
+`NavigationService`, resolved from the provider `start()` gives, drives the URL region: `navigate(uri)`, `back()`,
+`forward()`, `current()` and `onChange`; in Rust, `services.required_service::<NavigationService>()`.
 
-`NavigationRegion.of(app, "panel")` drives a named region:
+`navigation.region("panel")` drives a named region (made when missing), as `navigation_region("panel")` shows one in
+a Rust component:
 
 - `navigate(uri, replace?)`, `back()`, `forward()`, `goTo(index)`, `close()`;
 - `pages()`: the journal up to the current entry, for a `NavStack` of `NavPage`s, each `onDismiss` going to the page
   below;
-- `onChange`: every change of its pages.
+- `onChange`: every change of its pages, until the function it returns is called.
 
 ```tsx
-const panel = NavigationRegion.of(app, "panel");
+const panel = services.getRequiredService(NavigationService).region("panel");
 const pages = signal(panel.pages());
-panel.onChange(pages.set); // called with the pages after every change
+const stop = panel.onChange(pages.set); // called with the pages after every change
 panel.navigate("/settings");
 ```

@@ -13,28 +13,36 @@ a dependency. The workspace has eight crates sharing one version, and the galler
   `rayx_runtime`. It depends on `rayx_core` alone, has no NSH dependency and builds for
   `wasm32-unknown-unknown`; what a service needs from the platform is a trait here that
   `rayx_app` implements. `docs/services.md` describes each service and how it is registered.
-- `crates/rayx_app`: the NSH layer: a root provider per engine surface, a scope per screen, view
-  models activated with their screen, the `AppServices`/`ServiceScope` classes for TSX, and the
-  NSH side of the services (bundled settings, asset reading, font registration, the device's
-  state). With `rayx_components`, it is one of the two crates that depend on NSH.
+- `crates/rayx_app`: the NSH layer: the app's start on each engine surface (a Rust root's
+  `RayXAppBuilder::new()….start()`), a root provider per surface, a scope per screen, view models
+  activated with their screen, the TS side (`src/ts/`: TS's `RayXAppBuilder` with a camelCase
+  twin of every builder method, its `ServiceProvider`, services written in TS in the one
+  container, contracts and the services' classes under their Rust names), and the NSH side of
+  the services (bundled settings, asset reading, font registration, the device's state). With `rayx_components`, it is one of the two crates that depend on NSH.
 - `crates/rayx_components`: RayX's component library, the RayX design system in code: its tokens
   as an NSH theme document, `theme.json` (generated from the Figma export by the
   `rayx-components` skill's `theme_codegen.py` and never edited by hand), read through typed keys
   (`src/theme/`: `theme_keys!`, the modifiers `accent`, `density`, `os` set by the app, `color!`
   for custom tokens), and the components, each the
   Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
-  to TSX (`rayx_components::register` in an app's UI set). It depends on `nsh-core` and
+  to TSX (in the set `#[rayx::native_module]` makes, or `rayx_components::register` in a
+  hand-written `#[native_module]`). It depends on `nsh-core` and
   `nsh-base`, not on the other RayX crates. The `rayx-components` skill
   (`../RayX.Root/.claude/skills/rayx-components/`) is its guide: how each component is used and
   how one is built.
-- `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers.
+- `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers,
+  `#[app_extension]` (a Rust builder extension exported to TS) and `#[contract]` (a Rust trait TS
+  implements), re-exported by `rayx_app` and `rayx`, and `#[native_module]`, used as
+  `#[rayx::native_module]`.
 - `crates/rayx_devtools_protocol`: the agent protocol of the dev tools (`docs/devtools.md`): the
   JSON-RPC 2.0 messages between an app's dev-build agent in `rayx_app` and a tool's hub, with its
   golden messages embedded. It depends on serde and serde_json alone (no RayX or NSH crate, no
   sockets, threads or clocks), builds for `wasm32-unknown-unknown`, and names nothing of a product built on RayX.
 - `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_core`, `rayx_runtime`,
   `rayx_app`, `rayx_components` (`rayx::components`), `rayx_devtools_protocol`, `dxn_i18n` and
-  `dxn_intl`, with a prelude. It holds no code of its own.
+  `dxn_intl`, with a prelude, and `#[rayx::native_module("spec")]` (from `rayx_app_macros`), the
+  attribute of a TSX app's UI set (every RayX TS class and RayX's components, then the
+  function's body).
 - `examples/gallery`: the RayX gallery, a mixed NSH app (TSX screens with hot reload, its crate
   `rayx-gallery` in `native/`) showing every component's Figma properties, variants, sizes and
   examples in code. Its crate is a workspace member and is never released.
