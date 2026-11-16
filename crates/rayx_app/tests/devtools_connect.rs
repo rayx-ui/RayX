@@ -255,7 +255,11 @@ fn switch_compiles(features: &[&str], env: &[(&str, &str)]) -> Result<(), String
     let patch = &workspace[workspace.find("[patch.crates-io]").unwrap()..];
     let manifest = std::fs::read_to_string(crate_dir.join("tests/devtools_switch/Cargo.toml.in"))
         .unwrap()
-        .replace("@RAYX_APP@", crate_dir.to_str().unwrap())
+        // Forward slashes: a Windows path's backslashes are escapes in a TOML string.
+        .replace(
+            "@RAYX_APP@",
+            &crate_dir.to_str().unwrap().replace('\\', "/"),
+        )
         .replace("@PATCH@", patch);
     std::fs::write(dir.join("Cargo.toml"), manifest).unwrap();
     std::fs::copy(
