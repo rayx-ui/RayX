@@ -64,13 +64,6 @@ specifier from (`specifier_of`), which the web runtime keeps the set's gate by; 
 macro would hide it, so there is none. The `rayx new` templates and the gallery's crate use it
 ([cli](../cli/state.md)).
 
-## Open follow-ups
-
-- `rayx_app::ts` reads whether a TS factory may run on the spot from NSH's `#[doc(hidden)]`
-  `JsHandle::handle().in_call()` (`ts/container.rs`): ask the fork to make it public API.
-- The TS wrapper objects of Rust services are per TS `ServiceProvider` (`===` holds within one
-  provider, not across scopes), unlike TS singletons, which are one object per root.
-
 ## Backlinks
 
 Code and docs: [docs/tsx.md](../../../../docs/tsx.md),
