@@ -38,21 +38,23 @@ fn the_changelog_body_prints_migration_footers_under_their_commit() {
         .split("{% for commit in commits %}")
         .nth(1)
         .expect("the commit loop");
-    let footers = commit_loop
-        .find("{% for footer in commit.footers")
-        .expect("a loop over the commit's footers");
+    // The notes come from the commit's raw message, split at each `Migration:` footer, so a footer
+    // wrapped over several lines is printed whole (the footer parser drops some of its lines).
+    let notes = commit_loop
+        .find("{% for note in commit.raw_message | split(pat=\"\nMigration: \")")
+        .expect("a loop over the commit's `Migration:` footers in its raw message");
     let message = commit_loop
         .rfind("{{ commit.message }}")
         .expect("the commit line");
-    assert!(message < footers, "footers come after the commit line");
-    let footer_loop = &commit_loop[footers..];
+    assert!(message < notes, "the notes come after the commit line");
+    let note_loop = &commit_loop[notes..];
     assert!(
-        footer_loop.contains("footer.token == \"Migration\""),
-        "{footer_loop}"
+        note_loop.contains("{% if not loop.first %}"),
+        "the part before the first footer is the message, not a note: {note_loop}"
     );
     assert!(
-        footer_loop.contains("- Migration: {{ footer.value }}"),
-        "a nested `- Migration: <value>` line: {footer_loop}"
+        note_loop.contains("- Migration: {{ note | trim | replace(from=\"\n\", to=\" \") }}"),
+        "a nested `- Migration: <note>` line, its wrapped lines joined: {note_loop}"
     );
 }
 
