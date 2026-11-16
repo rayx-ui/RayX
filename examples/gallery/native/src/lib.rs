@@ -1,7 +1,8 @@
 //! The RayX gallery's crate: what its TSX screens import from `rayx-gallery/native`.
 //!
-//! - RayX's component library (`rayx_components::register`): the components (`Button`), the
-//!   theme type (RayX's tokens as the app's classes and `token()`) and `Themes` (the modes).
+//! - RayX's component library (`rayx_components::register`): the components (`Button`) and the
+//!   theme document (RayX's tokens as the app's classes and `token()`, its modes as the modifiers
+//!   `setModifier` picks).
 //! - [`Glyph`](glyph::Glyph): the icons the examples put in the components' icon slots, drawn in
 //!   the color of the text around them. RayX's own `Icon` (Figma `primitives/Icon`) takes its
 //!   place once it is built.
@@ -26,7 +27,6 @@ mod tests {
         let ts = nsh_core::element::declarations(&set, &[]);
         for export in [
             "export declare const Button:",
-            "export declare const Themes:",
             "export declare const Glyph:",
         ] {
             assert!(ts.contains(export), "no `{export}`");

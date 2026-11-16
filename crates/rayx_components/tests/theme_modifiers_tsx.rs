@@ -1,8 +1,8 @@
-//! RayX's tokens as TSX classes, headless: with the library in the app's UI set, a TSX screen
-//! names RayX's tokens in classes (`bg-surfaces-panel1`, `p-insets-inset4`,
+//! RayX's tokens and modifiers from TSX, headless: with the library in the app's UI set, a TSX
+//! screen names RayX's tokens in classes (`bg-surfaces-panel1`, `p-insets-inset4`,
 //! `rounded-borders-radius4`, the parts of a text style, line height and letter spacing through
-//! `leading-(--spacing-…)` and `tracking-(--spacing-…)`) and gets their values, and
-//! `Themes.set` gives them the values of another mode.
+//! `leading-(--spacing-…)` and `tracking-(--spacing-…)`) and `token()`, and gets the document's
+//! values; `setModifier` gives them another mode's, and `<ThemeScope modifiers>` a subtree's.
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -13,11 +13,10 @@ use std::time::{Duration, Instant};
 
 use nsh_core::{ApproxTextEngine, Color, MountBatch, MountItem};
 use nsh_engine::{App, Bundle, Engine, EngineConfig};
-use rayx_components::theme::{Accent, Density, RayXTheme};
-use support::{ChannelSink, ui_sets};
+use support::{ChannelSink, Document, ui_sets};
 
-const TSX: &str = r#"import { mount, Text, View } from "nsh";
-import { Button, Themes } from "test/native";
+const TSX: &str = r#"import { mount, setModifier, Text, ThemeScope, token, View } from "nsh";
+import { Button } from "test/native";
 
 mount(() => (
   <View class="bg-surfaces-panel1 p-insets-inset4 rounded-borders-radius4 gap-gap2">
@@ -27,7 +26,11 @@ mount(() => (
     <Text class="text-surfaces-text-muted text-size-default-text-regular-font-size leading-(--spacing-size-default-text-regular-line-height) font-size-default-text-regular-font-weight tracking-(--spacing-size-default-text-regular-letter-spacing)">
       Body
     </Text>
-    <Button text="Touch" onPress={() => Themes.set("blue", "touch")} />
+    <Button text="Touch" onPress={() => { setModifier("accent", "blue"); setModifier("density", "touch"); }} />
+    <Text>{`app ${token("roles-primary-bg")}`}</Text>
+    <ThemeScope modifiers={{ accent: "sky" }}>
+      <Text>{`scope ${token("roles-primary-bg")}`}</Text>
+    </ThemeScope>
   </View>
 ));
 "#;
@@ -123,45 +126,74 @@ fn wait(
 }
 
 #[test]
-fn rayx_tokens_are_tsx_classes_and_follow_the_modes() {
+fn rayx_tokens_are_tsx_classes_and_follow_the_modifiers() {
     let (engine, rx) = start();
     let mut seen = Seen::default();
     assert!(wait(&rx, &mut seen, |s| s.texts.contains_key("Body")
         && s.panel.is_some()));
-    let check = |seen: &Seen, theme: &RayXTheme| {
-        let colors = &theme.theme.colors;
-        let density = &theme.platform.density;
+    let doc = Document::load();
+    let check = |seen: &Seen, picked: &[(&str, &str)]| {
         let panel = seen.panel.as_ref().unwrap();
         assert_eq!(
             panel.background_color,
-            Color::from(colors.surfaces.panel1.light)
+            doc.color("surfaces-panel1", picked).0
         );
-        assert_eq!(panel.border_radius.0, density.borders.radius4);
-        assert_eq!(seen.padding, Some(density.insets.inset4));
-        let h3 = &density.typography.h3;
+        assert_eq!(
+            panel.border_radius.0,
+            doc.number("radius-borders-radius4", picked)
+        );
+        assert_eq!(
+            seen.padding,
+            Some(doc.number("spacing-insets-inset4", picked))
+        );
         let (size, leading, weight, color, tracking) = seen.texts["Heading"];
         assert_eq!(
             (size, leading, weight),
-            (h3.font_size, h3.line_height, h3.font_weight as u16)
+            (
+                doc.number("text-typography-h3-font-size", picked),
+                doc.number("spacing-typography-h3-line-height", picked),
+                doc.number("font-weight-typography-h3-font-weight", picked) as u16
+            )
         );
-        assert_eq!(tracking, h3.letter_spacing);
-        assert_eq!(color, Color::from(colors.surfaces.text.light));
-        let regular = &density.size.default.text.regular;
+        assert_eq!(
+            tracking,
+            doc.number("spacing-typography-h3-letter-spacing", picked)
+        );
+        assert_eq!(color, doc.color("surfaces-text", picked).0);
         let (size, leading, weight, color, tracking) = seen.texts["Body"];
-        assert_eq!(tracking, regular.letter_spacing);
+        assert_eq!(
+            tracking,
+            doc.number("spacing-size-default-text-regular-letter-spacing", picked)
+        );
         assert_eq!(
             (size, leading, weight),
             (
-                regular.font_size,
-                regular.line_height,
-                regular.font_weight as u16
+                doc.number("text-size-default-text-regular-font-size", picked),
+                doc.number("spacing-size-default-text-regular-line-height", picked),
+                doc.number("font-weight-size-default-text-regular-font-weight", picked) as u16
             )
         );
-        assert_eq!(color, Color::from(colors.surfaces.text_muted.light));
+        assert_eq!(color, doc.color("surfaces-text-muted", picked).0);
     };
-    check(&seen, &RayXTheme::default());
+    let token_text = |picked: &[(&str, &str)]| {
+        let (light, _) = doc.value("roles-primary-bg", picked);
+        light.as_str().unwrap().to_owned()
+    };
+    check(&seen, &[]);
+    assert!(
+        seen.texts.contains_key(&format!("app {}", token_text(&[]))),
+        "{:?}",
+        seen.texts.keys()
+    );
+    assert!(
+        seen.texts
+            .contains_key(&format!("scope {}", token_text(&[("accent", "sky")]))),
+        "{:?}",
+        seen.texts.keys()
+    );
 
-    // Another mode: the classes take its values.
+    // `setModifier`: the classes and `token()` take the context's values; the scope keeps its
+    // own accent.
     let touch = support::Screen::pressable(&seen.screen, "Touch").unwrap();
     for kind in [
         nsh_core::EventKind::PressDown,
@@ -172,13 +204,23 @@ fn rayx_tokens_are_tsx_classes_and_follow_the_modes() {
             .control()
             .dispatch_event(touch, kind, nsh_core::EventPayload::None);
     }
-    let blue_touch = RayXTheme::new(Accent::Blue, Density::Touch);
-    let inset = blue_touch.platform.density.insets.inset4;
+    let picked = [("accent", "blue"), ("density", "touch")];
+    let inset = doc.number("spacing-insets-inset4", &picked);
     assert!(
         wait(&rx, &mut seen, |s| s.padding == Some(inset)),
         "padding {:?}",
         seen.padding
     );
-    check(&seen, &blue_touch);
+    check(&seen, &picked);
+    let app_token = format!("app {}", token_text(&picked));
+    assert!(
+        wait(&rx, &mut seen, |s| s.texts.contains_key(&app_token)),
+        "{:?}",
+        seen.texts.keys()
+    );
+    assert!(seen.texts.contains_key(&format!(
+        "scope {}",
+        token_text(&[("accent", "sky"), ("density", "touch")])
+    )));
     drop(engine);
 }

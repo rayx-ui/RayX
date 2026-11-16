@@ -8,7 +8,7 @@ depends on `rayx_core` alone.
 | `rayx_core` | Dependency injection (singleton, scoped and transient services, scopes, async startup), configuration sources, .NET's options model and the `RayXAppBuilder` | no |
 | `rayx_runtime` | The app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets, fonts, translations | no |
 | `rayx_app` | The NSH layer: a root provider per surface, a scope per screen, view-model activation and binding, navigation regions, the TSX classes, and the NSH side of the services | yes |
-| `rayx_components` | The component library: the design system's tokens as the NSH theme type `RayXTheme` (generated from the Figma export), the macros of custom themes, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
+| `rayx_components` | The component library: the design system's tokens as an NSH theme document (`theme.json`, generated from the Figma export) read through typed keys, its modes as the document's modifiers, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
 | `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_core`, `rayx_app` and `rayx` | no |
 | `rayx` | The umbrella: re-exports the other crates and dXn.I18n and dXn.Intl, with a prelude | yes |

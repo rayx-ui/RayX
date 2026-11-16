@@ -2,12 +2,14 @@
 //!
 //! nsh-base's `Button` owns the behavior: presses, keyboard activation, focus, the disabled
 //! state and the role screen readers hear. This file gives it RayX's look, from the theme's
-//! tokens: the variant's role colors (`theme.colors.roles.<role>`), the size's level 5
+//! typed keys: the variant's role colors (`theme.colors.roles.<role>`), the size's level 5
 //! (`platform.density.size.<size>.lvl5`), its spacing, radius and `title1Bold` text style.
 
 use nsh_core::prelude::*;
 
-use crate::theme::{ComponentSize, RayXTheme, RoleColors, TextStyle, rayx, weight};
+use crate::theme::keys::platform::density::borders;
+use crate::theme::keys::theme::colors::{interaction, surfaces};
+use crate::theme::{ComponentSize, RoleKeys, value, weight};
 
 /// A [`Button`]'s color and emphasis (Figma's `variant`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, PropEnum)]
@@ -126,19 +128,21 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
     // or a prop it depends on changes it.
     let look = computed(move || {
         Look::of(
-            &rayx(),
             props.variant.get(),
             props.size.get(),
             props.outlined.get(),
             props.disabled.get(),
         )
     });
-    let at_rest = rayx();
-    let at_rest = at_rest.platform.density.size.of(props.size.get_untracked());
-    // A weight and an outline width are no bindings in NSH: read once, from the theme the
-    // button is made in (the same for every size and density in the export).
-    let font_weight = weight(at_rest.text.title1_bold.font_weight);
-    let ring_width = rayx().platform.density.borders.focus_ring_width;
+    // A weight and an outline width are no bindings in NSH: read once, from the tokens the
+    // button is made with (the same for every size and density in the export).
+    let at_rest = props.size.get_untracked().keys();
+    let (font_weight, ring_width) = untracked(|| {
+        (
+            weight(value(at_rest.text.title1_bold.font_weight)),
+            value(borders::FOCUS_RING_WIDTH),
+        )
+    });
 
     // Each icon and slot is a box of the button's own, there while the app fills the slot and
     // its `show*` prop is on, with the app's content centered in it. The box is a view of this
@@ -197,9 +201,9 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
         // The label's text style and color, which the label and the icons inherit (an icon's
         // `currentColor` is its view's text color).
         .text_color(move || look.with(|l| l.fg))
-        .text_size(move || px(look.with(|l| l.text.font_size)))
-        .line_height(move || px(look.with(|l| l.text.line_height)))
-        .letter_spacing(move || px(look.with(|l| l.text.letter_spacing)))
+        .text_size(move || px(look.with(|l| l.font_size)))
+        .line_height(move || px(look.with(|l| l.line_height)))
+        .letter_spacing(move || px(look.with(|l| l.letter_spacing)))
         .font_weight(font_weight)
         .transition_colors()
         .duration(120.0_f32)
@@ -239,89 +243,94 @@ pub(crate) struct Look {
     pub(crate) gap: f32,
     pub(crate) radius: f32,
     pub(crate) adornment: f32,
-    pub(crate) text: TextStyle,
+    pub(crate) font_size: f32,
+    pub(crate) line_height: f32,
+    pub(crate) letter_spacing: f32,
 }
 
 impl Look {
-    /// The tokens Figma's `buttons/Button` binds, for these props.
+    /// The tokens Figma's `buttons/Button` binds, for these props, read where the button is
+    /// (reactive in a binding).
     pub(crate) fn of(
-        theme: &RayXTheme,
         variant: ButtonVariant,
         size: ComponentSize,
         outlined: bool,
         disabled: bool,
     ) -> Self {
-        let colors = &theme.theme.colors;
-        let sizes = theme.platform.density.size.of(size);
+        let sizes = size.keys();
         let none = AdaptiveColor::TRANSPARENT;
-        let neutral = &colors.roles.neutral;
-        let role = |r: &RoleColors| (r.bg, r.bg_hover, r.bg_active, r.text, r.text);
+        let role = |r: RoleKeys| {
+            (
+                value(r.bg),
+                value(r.bg_hover),
+                value(r.bg_active),
+                value(r.text),
+                value(r.text),
+            )
+        };
+        let neutral = RoleKeys::NEUTRAL;
         let (bg, bg_hover, bg_active, fg, fg_hover) = match variant {
-            ButtonVariant::Neutral => (
-                neutral.bg,
-                neutral.bg_hover,
-                neutral.bg_active,
-                neutral.text,
-                neutral.text,
-            ),
-            ButtonVariant::Primary => role(&colors.roles.primary),
-            ButtonVariant::Danger => role(&colors.roles.danger),
-            ButtonVariant::Success => role(&colors.roles.success),
+            ButtonVariant::Neutral => role(neutral),
+            ButtonVariant::Primary => role(RoleKeys::PRIMARY),
+            ButtonVariant::Danger => role(RoleKeys::DANGER),
+            ButtonVariant::Success => role(RoleKeys::SUCCESS),
             ButtonVariant::Ghost => (
                 none,
-                neutral.bg_hover,
-                neutral.bg_active,
-                neutral.text,
-                neutral.text,
+                value(neutral.bg_hover),
+                value(neutral.bg_active),
+                value(neutral.text),
+                value(neutral.text),
             ),
             ButtonVariant::Link => (
                 none,
                 none,
                 none,
-                colors.surfaces.link,
-                colors.surfaces.link_hover,
+                value(surfaces::LINK),
+                value(surfaces::LINK_HOVER),
             ),
         };
-        let interaction = &colors.interaction;
-        let ring = match variant {
-            ButtonVariant::Danger => interaction.focus_ring_danger,
-            ButtonVariant::Success => interaction.focus_ring_success,
-            _ => interaction.focus_ring,
-        };
+        let ring = value(match variant {
+            ButtonVariant::Danger => interaction::FOCUS_RING_DANGER,
+            ButtonVariant::Success => interaction::FOCUS_RING_SUCCESS,
+            _ => interaction::FOCUS_RING,
+        });
         let outlined = outlined && variant != ButtonVariant::Link;
         let border_width = if outlined {
-            theme.platform.density.borders.outline_width
+            value(borders::OUTLINE_WIDTH)
         } else {
             0.0
         };
-        let level = &sizes.lvl5;
+        let level = sizes.level(5);
+        let text = sizes.text.title1_bold;
         let mut look = Look {
             bg,
             bg_hover,
             bg_active,
             fg,
             fg_hover,
-            border: colors.surfaces.border,
+            border: value(surfaces::BORDER),
             border_width,
             ring,
-            height: level.height,
-            inset: level.inset,
-            gap: sizes.spacing.content,
-            radius: sizes.borders.radius,
-            adornment: level.adornment_size,
-            text: sizes.text.title1_bold.clone(),
+            height: value(level.height).0,
+            inset: value(level.inset).0,
+            gap: value(sizes.content).0,
+            radius: value(sizes.radius).0,
+            adornment: value(level.adornment_size).0,
+            font_size: value(text.font_size).0,
+            line_height: value(text.line_height).0,
+            letter_spacing: value(text.letter_spacing).0,
         };
         if disabled {
             let fill = match variant {
                 ButtonVariant::Ghost | ButtonVariant::Link => none,
-                _ => interaction.disabled_bg,
+                _ => value(interaction::DISABLED_BG),
             };
             look.bg = fill;
             look.bg_hover = fill;
             look.bg_active = fill;
-            look.fg = interaction.disabled_fg;
-            look.fg_hover = interaction.disabled_fg;
-            look.border = interaction.disabled_border;
+            look.fg = value(interaction::DISABLED_FG);
+            look.fg_hover = value(interaction::DISABLED_FG);
+            look.border = value(interaction::DISABLED_BORDER);
         }
         look
     }

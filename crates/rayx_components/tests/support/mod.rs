@@ -196,3 +196,127 @@ impl Running {
         }
     }
 }
+
+/// RayX's theme document as the tests' oracle (`theme.json`): what each token's value is with
+/// some of its modifiers' contexts picked.
+pub struct Document(serde_json::Value);
+
+impl Document {
+    pub fn load() -> Document {
+        Document(serde_json::from_str(rayx_components::theme::DOCUMENT).expect("theme.json"))
+    }
+
+    /// Every declared token: its name and kind.
+    pub fn tokens(&self) -> Vec<(String, String)> {
+        self.0["tokens"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|(name, d)| (name.clone(), d["kind"].as_str().unwrap().to_owned()))
+            .collect()
+    }
+
+    /// The contexts of `modifier`, in the document's order.
+    pub fn contexts(&self, modifier: &str) -> Vec<String> {
+        self.0["modifiers"][modifier]["contexts"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect()
+    }
+
+    /// The token the role `role` is mapped onto.
+    pub fn role(&self, role: &str) -> String {
+        self.0["roles"][role].as_str().unwrap().to_owned()
+    }
+
+    /// `name`'s (light, dark) values with the contexts `picked` (`("accent", "sky")`), every
+    /// other modifier at its default.
+    pub fn value(
+        &self,
+        name: &str,
+        picked: &[(&str, &str)],
+    ) -> (serde_json::Value, serde_json::Value) {
+        let mut light = None;
+        let mut dark = None;
+        let mut over = |css: &serde_json::Value| {
+            if let Some(v) = css.get("theme").and_then(|s| s.get(name)) {
+                light = Some(v.clone());
+                dark = Some(v.clone());
+            }
+            if let Some(v) = css.get("light").and_then(|s| s.get(name)) {
+                light = Some(v.clone());
+            }
+            if let Some(v) = css.get("dark").and_then(|s| s.get(name)) {
+                dark = Some(v.clone());
+            }
+        };
+        over(&self.0["cssVars"]);
+        for (modifier, m) in self.0["modifiers"].as_object().unwrap() {
+            let context = picked
+                .iter()
+                .find(|(n, _)| n == modifier)
+                .map(|(_, c)| (*c).to_owned())
+                .unwrap_or_else(|| m["default"].as_str().unwrap().to_owned());
+            over(&m["contexts"][context.as_str()]);
+        }
+        (light.expect(name), dark.expect(name))
+    }
+
+    /// `name`'s color in Light and Dark.
+    pub fn color(&self, name: &str, picked: &[(&str, &str)]) -> (nsh_core::Color, nsh_core::Color) {
+        let (light, dark) = self.value(name, picked);
+        (hex(light.as_str().unwrap()), hex(dark.as_str().unwrap()))
+    }
+
+    /// `name`'s number (a length in points, a weight).
+    pub fn number(&self, name: &str, picked: &[(&str, &str)]) -> f32 {
+        self.value(name, picked).0.as_f64().unwrap() as f32
+    }
+}
+
+/// `"#rrggbbaa"` as a color.
+pub fn hex(text: &str) -> nsh_core::Color {
+    let value = u32::from_str_radix(text.trim_start_matches('#'), 16).unwrap();
+    nsh_core::Color::from(nsh_core::color::rgba(value))
+}
+
+/// Each declared token of `tokens` whose value is not the document's with `picked`, read by its
+/// kind (colors in both appearances, numbers in Light; a shadow only has to be there).
+pub fn mismatches(
+    tokens: &nsh_core::element::Tokens,
+    doc: &Document,
+    picked: &[(&str, &str)],
+) -> Vec<String> {
+    use nsh_core::element::{AdaptiveColor, AdaptiveShadow, SharedString};
+    use nsh_core::geometry::Points;
+    let mut out = Vec::new();
+    for (name, kind) in doc.tokens() {
+        let wrong = match kind.as_str() {
+            "color" => match tokens.get_as::<AdaptiveColor>(&name) {
+                Ok(c) => {
+                    (
+                        nsh_core::Color::from(c.light),
+                        nsh_core::Color::from(c.dark),
+                    ) != doc.color(&name, picked)
+                }
+                Err(_) => true,
+            },
+            "number" | "weight" => tokens
+                .get_as::<f32>(&name)
+                .map_or(true, |v| v != doc.number(&name, picked)),
+            "font" => tokens.get_as::<SharedString>(&name).map_or(true, |v| {
+                doc.value(&name, picked).0.as_str() != Some(v.as_ref())
+            }),
+            "shadow" => tokens.get_as::<AdaptiveShadow>(&name).is_err(),
+            _ => tokens
+                .get_as::<Points>(&name)
+                .map_or(true, |v| v.0 != doc.number(&name, picked)),
+        };
+        if wrong {
+            out.push(name);
+        }
+    }
+    out
+}

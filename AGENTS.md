@@ -18,9 +18,10 @@ a dependency. The workspace has eight crates sharing one version, and the galler
   NSH side of the services (bundled settings, asset reading, font registration, the device's
   state). With `rayx_components`, it is one of the two crates that depend on NSH.
 - `crates/rayx_components`: RayX's component library, the RayX design system in code: its tokens
-  as one NSH theme type, `RayXTheme` (`src/theme/`; `tokens.rs` is generated from the Figma
-  export by the `rayx-components` skill's `theme_codegen.py` and never edited by hand), the
-  macros of custom themes (`rayx_theme!`, `rayx_patch!`, `color!`), and the components, each the
+  as an NSH theme document, `theme.json` (generated from the Figma export by the
+  `rayx-components` skill's `theme_codegen.py` and never edited by hand), read through typed keys
+  (`src/theme/`: `theme_keys!`, the modifiers `accent`, `density`, `os` set by the app, `color!`
+  for custom tokens), and the components, each the
   Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
   to TSX (`rayx_components::register` in an app's UI set). It depends on `nsh-core` and
   `nsh-base`, not on the other RayX crates. The `rayx-components` skill

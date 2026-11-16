@@ -1,7 +1,7 @@
 # Components and theme
 
-`rayx_components` (`rayx::components` in the umbrella) is the RayX design system in code: the Figma file's tokens as one
-NSH theme type, and its components, each the Figma component of the same name on the NSH base component it mirrors.
+`rayx_components` (`rayx::components` in the umbrella) is the RayX design system in code: the Figma file's tokens as an
+NSH theme document read through typed keys, and its components, each the Figma component of the same name on the NSH base component it mirrors.
 Components are written in Rust and exported to TSX with typed props. The full guide for each component (props,
 examples, DO and DON'T) is the `rayx-components` skill in RayX.Root (`.claude/skills/rayx-components/`).
 
@@ -11,8 +11,8 @@ examples, DO and DON'T) is the `rayx-components` skill in RayX.Root (`.claude/sk
 
 ## Use it
 
-Register the library in the app's UI set. It adds the components, the theme type (RayX's tokens become the app's theme:
-its classes, `token()` and the roles NSH's own parts draw with) and the `Themes` module:
+Register the library in the app's UI set. It adds the components and the theme document (RayX's tokens become the
+app's theme: its classes, `token()`, the modifiers `setModifier` picks and the roles NSH's own parts draw with):
 
 ```rust
 use nsh_core::prelude::*;
@@ -26,7 +26,7 @@ fn native(registry: &mut Registry) {
 TSX imports them by the set's specifier; props are Figma's properties in camel case:
 
 ```tsx
-import { Button, Themes } from "my-app/native";
+import { Button } from "my-app/native";
 
 <Button text="Save changes" variant="primary" onPress={save} />
 <Button text="Inbox" iconLeft={<Icon name="inbox" />} showSlotRight slotRight={<Badge count={3} />} />
@@ -45,15 +45,25 @@ variant in the library and in Figma.
 
 ## The theme
 
-`RayXTheme` has the tokens' Figma WEB code syntax as its fields: `theme/colors/roles/primary/bgHover` is
-`rayx().theme.colors.roles.primary.bg_hover`, `platform/density/size/default/lvl5/height` is
-`rayx().platform.density.size.default.lvl5.height`. Read `rayx()` inside bindings so they follow the theme:
+RayX's tokens are an NSH **theme document**, `crates/rayx_components/theme.json`: every token declared once (its kind,
+its path, its Figma description), its values in Light and Dark, the modes as **modifiers**, and the roles NSH's own
+parts draw with. `register` registers it, so classes, `token()`, theme files and nsh-base read RayX's tokens.
+
+Rust reads a token through its **typed key** (`rayx::components::theme::keys`), at the token's path, its Figma WEB code
+syntax: `theme/colors/roles/primary/bgHover` is `keys::theme::colors::roles::primary::BG_HOVER`,
+`platform/density/size/default/lvl5/height` is `keys::platform::density::size::default::lvl5::HEIGHT`. `key.get()`
+(or `value(key)`, the kind's default when missing) inside a binding follows every change of the token: the appearance, a
+modifier, the app's tokens. `ComponentSize::keys()`, `SizeKeys::level(n)`, `RoleKeys` and `TextStyleKeys` pick keys by
+a component's size, level and role.
 
 ```rust
+use nsh_core::prelude::*;
+use rayx::components::prelude::*;
+
 view()
-    .bg(move || rayx().theme.colors.surfaces.panel1)
-    .p(move || px(rayx().platform.density.insets.inset5))
-    .child(bind_text_style(text("Settings"), |t| t.platform.density.typography.h3.clone()))
+    .bg(move || value(keys::theme::colors::surfaces::PANEL1))
+    .p(move || px(value(keys::platform::density::insets::INSET5).0))
+    .child(bind_text_style(text("Settings"), text_style_keys!(keys::platform::density::typography::h3)))
 ```
 
 In TSX the tokens are classes: the token's path after its collection in kebab case behind its kind's namespace:
@@ -61,44 +71,42 @@ In TSX the tokens are classes: the token's path after its collection in kebab ca
 `rounded-borders-radius4`, `shadow-default`. Line heights and letter spacing are points, through `var()`:
 `leading-(--spacing-typography-body2-line-height)`, `tracking-(--spacing-typography-body2-letter-spacing)`. So are the
 shadows and blurs named as Tailwind's sizes (`sm`, `md`, `lg`, `xl`), whose classes stay Tailwind's:
-`shadow-(--shadow-md)`, `blur-(--blur-md)`.
+`shadow-(--shadow-md)`, `blur-(--blur-md)`. `token("roles-primary-bg")` reads one by name.
 
 | Mode | Values | Switch |
 | --- | --- | --- |
-| Appearance | Light, Dark: every color holds both | `setColorScheme("dark")`, `set_color_scheme(..)`, `nsh.json` `"appearance"` |
-| Accent | Cyan, Sky, Blue | `Themes.set("sky")`, `set_theme(RayXTheme::new(Accent::Sky, Density::Desktop))` |
-| Density | Desktop, Touch | `Themes.set("cyan", "touch")`, `RayXTheme::new(.., Density::Touch)` |
-| OS | Windows, macOS, GNOME, KDE | `Themes.set(.., .., "macos")`, `RayXTheme::of(Modes { os: Os::Macos, .. })` |
+| Appearance | Light, Dark: every color holds both, in every context | `setColorScheme("dark")`, `set_color_scheme(..)`, `nsh.json` `"appearance"` |
+| Accent | cyan, sky, blue | `setModifier("accent", "sky")`, `Accent::Sky.set()` |
+| Density | desktop, touch | `setModifier("density", "touch")`, `Density::Touch.set()` |
+| OS | windows, macos, gnome, kde | `setModifier("os", "macos")`, `Os::Macos.set()` |
+
+Each modifier starts at the document's default (cyan, desktop, windows) on every platform: RayX sets none itself, the
+app picks them. For one part of the app, `<ThemeScope modifiers={{ accent: "blue" }}>` or
+`theme_scope().modifiers(Some(ScopeModifiers::from(Accent::Blue)))` (build what it holds where it places it: a view
+built before is outside the scope). `modifier("accent")` and `Accent::current()` say what is picked.
 
 ## Custom themes
 
-A custom theme is a `RayXTheme` value, made from a base and the tokens it changes, and drawn with NSH's `set_theme`:
+A custom theme is NSH's: the app's tokens over RayX's, by key or by name.
 
 ```rust
+use nsh_core::prelude::*;
 use rayx::components::prelude::*;
 
-fn brand() -> RayXTheme {
-    rayx_theme! {
-        extends: RayXTheme::new(Accent::Blue, Density::Desktop),
-        theme.colors.roles.primary.bg: color!("#7c3aed", "#8b5cf6"),
-        theme.colors.roles.success: RoleColors::set(RoleSet::Green),
-        platform.density.size.default.borders.radius: 10.0,
-    }
-}
-
-set_theme(brand());
-update_theme::<RayXTheme>(rayx_patch! { theme.colors.roles.primary.bg: color!("#e11d48") });
-reset_theme::<RayXTheme>();
+let primary = keys::theme::colors::roles::primary::BG;
+update_tokens(Tokens::default().with(primary, color!("#7c3aed", "#8b5cf6")));
+reset_tokens([primary.name()]); // RayX's again
 ```
 
-`color!` checks its hex colors at compile time; a path that is no token, or a value of the wrong type, fails to compile.
-An app's `nsh.json` theme file and TSX's `updateTheme` set tokens by name (`"roles-primary-bg": "#7c3aed"`).
+`color!` checks its hex colors at compile time (`color!("#e11d48")` for both appearances). An app's `nsh.json` theme
+file and TSX's `updateTheme` set tokens by name (`"roles-primary-bg": "#7c3aed"`), and `ThemeScope` gives a subtree a
+theme of its own.
 
 ## Where it comes from
 
-`crates/rayx_components/src/theme/tokens.rs` is generated from the Figma file's DTCG export (in RayX.Design) by the
+`crates/rayx_components/theme.json` is generated from the Figma file's DTCG export (in RayX.Design) by the
 `rayx-components` skill's `theme_codegen.py`: after an export, run `write` from RayX.Root, and `check` before committing.
-Never edit it by hand.
+Never edit it by hand; `theme_keys!` makes the keys and the modifier enums from it when the crate builds.
 
 ## The gallery
 

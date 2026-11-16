@@ -10,9 +10,9 @@
 //!   TSX classes (`AppServices`, `ServiceScope`, `I18n`, `Navigation`, `Storage`,
 //!   `AppConfiguration`, `Assets`, `Fonts`, `Platform`) and the services' NSH side.
 //! - [`components`] ([`rayx_components`]): RayX's component library: the design system's theme
-//!   (its tokens as an NSH theme type, its modes and the macros of custom themes) and its
-//!   components (`Button`), for Rust views and TSX; `rayx::components::register` adds them to an
-//!   app's UI set.
+//!   (its tokens as an NSH theme document read through typed keys, its modes as the document's
+//!   modifiers) and its components (`Button`), for Rust views and TSX;
+//!   `rayx::components::register` adds them to an app's UI set.
 //! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
 //!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and

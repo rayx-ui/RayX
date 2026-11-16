@@ -10,7 +10,7 @@ Rust and TSX.
   assets, fonts, and translations with MessageFormat 2 messages.
 - **NSH integration:** a scope per screen, view models bound to NSH signals, navigation regions as native navigation
   stacks, and a TSX class for every service.
-- **Components:** the RayX design system in code: its Figma tokens as an NSH theme type with custom themes, and its
+- **Components:** the RayX design system in code: its Figma tokens as an NSH theme document read through typed keys, and its
   components written in Rust on NSH's base components, for Rust and TSX ([Components and theme](docs/components.md),
   the [gallery](examples/gallery/README.md)).
 - **The `rayx` CLI:** sets a machine up for NSH work, runs apps through the NSH their project pins, and creates new RayX

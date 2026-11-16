@@ -1,21 +1,38 @@
 // The gallery's shell: the components in a sidebar, the theme's modes in a toolbar (Figma's
-// Light/Dark, Theme.Colors and Platform.Density), and the selected component's page.
-import { colorScheme, Scroll, setColorScheme, signal, Text, View, windowSize } from "nsh";
-import { Themes, type Accent, type Density } from "rayx-gallery/native";
+// Light/Dark, Theme.Colors and Platform.Density: the appearance and RayX's theme document's
+// `accent` and `density` modifiers), and the selected component's page.
+import {
+  colorScheme,
+  modifier,
+  modifiers,
+  Scroll,
+  setColorScheme,
+  setModifier,
+  signal,
+  Text,
+  type ThemeModifiers,
+  View,
+  windowSize,
+} from "nsh";
 import { ButtonPage } from "./pages/button";
 import { Choice, type } from "./ui";
 
 type Appearance = "system" | "light" | "dark";
 
-/** The theme's modes the gallery shows: the toolbar owns them. */
-const appearance = signal<Appearance>("system");
-const accent = signal<Accent>("cyan");
-const density = signal<Density>("desktop");
+type Accent = ThemeModifiers["accent"];
+type Density = ThemeModifiers["density"];
 
-function setModes(next: { accent?: Accent; density?: Density }) {
-  if (next.accent) accent.set(next.accent);
-  if (next.density) density.set(next.density);
-  Themes.set(accent(), density());
+/** The appearance the gallery shows: the toolbar owns it. */
+const appearance = signal<Appearance>("system");
+
+/** The contexts of the theme's modifier `name`, in the document's order. */
+function contexts<M extends keyof ThemeModifiers>(name: M): ThemeModifiers[M][] {
+  return (modifiers().find((m) => m.name === name)?.contexts ?? []) as ThemeModifiers[M][];
+}
+
+/** The context of modifier `name` picked now. */
+function picked<M extends keyof ThemeModifiers>(name: M): ThemeModifiers[M] {
+  return modifier(name) as ThemeModifiers[M];
 }
 
 /** The components the gallery has a page for, in the Figma file's order. */
@@ -57,19 +74,19 @@ function Toolbar() {
       />
       <Choice
         label="Accent"
-        options={Themes.accents()}
-        value={accent()}
-        name={(a) => a[0].toUpperCase() + a.slice(1)}
-        onChange={(a) => setModes({ accent: a })}
+        options={contexts("accent")}
+        value={picked("accent")}
+        name={(a: Accent) => a[0].toUpperCase() + a.slice(1)}
+        onChange={(a: Accent) => setModifier("accent", a)}
       />
       <Choice
         label="Density"
-        options={Themes.densities()}
-        value={density()}
-        name={(d) => d[0].toUpperCase() + d.slice(1)}
-        onChange={(d) => setModes({ density: d })}
+        options={contexts("density")}
+        value={picked("density")}
+        name={(d: Density) => d[0].toUpperCase() + d.slice(1)}
+        onChange={(d: Density) => setModifier("density", d)}
       />
-      <Text class={`text-surfaces-text-subtle ${type.code}`}>{`${colorScheme()} · ${accent()} · ${density()}`}</Text>
+      <Text class={`text-surfaces-text-subtle ${type.code}`}>{`${colorScheme()} · ${picked("accent")} · ${picked("density")}`}</Text>
     </View>
   );
 }

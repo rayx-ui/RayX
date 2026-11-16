@@ -1,7 +1,7 @@
-//! RayX's `Button` and `Themes` from TSX, headless: an app's UI set that registers the library
-//! exports them with typed declarations, a TSX screen sets the Figma props in camel case and fills
-//! the slots with JSX, presses reach `onPress`, RayX's tokens are classes (`bg-surfaces-app`,
-//! `p-gap4`), and `Themes.set` switches the modes.
+//! RayX's `Button` from TSX, headless: an app's UI set that registers the library exports it with
+//! typed declarations, a TSX screen sets the Figma props in camel case and fills the slots with
+//! JSX, presses reach `onPress`, RayX's tokens are classes (`bg-surfaces-app`, `p-gap4`), and
+//! `setModifier` switches the modes. The expected values are the theme document's (`theme.json`).
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -11,14 +11,14 @@ mod support;
 use std::time::{Duration, Instant};
 
 use crossbeam_channel::Receiver;
+use nsh_core::color::rgba;
 use nsh_core::element::{Registry, declarations};
 use nsh_core::{ApproxTextEngine, Color, MountBatch};
 use nsh_engine::{App, Bundle, Engine, EngineConfig};
-use rayx_components::theme::{Accent, ComponentSize, Density, RayXTheme};
 use support::{ChannelSink, Screen, ui_sets};
 
-const TSX: &str = r#"import { mount, signal, Text, View } from "nsh";
-import { Button, Themes } from "test/native";
+const TSX: &str = r#"import { mount, setModifier, signal, Text, View } from "nsh";
+import { Button } from "test/native";
 
 const presses = signal(0);
 mount(() => (
@@ -27,7 +27,7 @@ mount(() => (
     <Button text="Inbox" iconLeft={<Text>+</Text>} showSlotRight slotRight={<Text>3</Text>} />
     <Button text="Small" size="small" outlined />
     <Button text="Off" disabled onPress={() => presses.set(presses() + 100)} />
-    <Button text="Touch" variant="ghost" onPress={() => Themes.set("sky", "touch")} />
+    <Button text="Touch" variant="ghost" onPress={() => { setModifier("accent", "sky"); setModifier("density", "touch"); }} />
     <Text class="text-surfaces-text-muted">{`presses ${presses()}`}</Text>
   </View>
 ));
@@ -129,8 +129,6 @@ fn the_ui_set_declares_the_figma_props_for_tsx() {
         "  slotRight?: JSX.Element;",
         "  onPress?: () => void;",
         "export declare const Button: ((props: ButtonProps) => JSX.Element);",
-        "  set(accent?: Accent | null, density?: Density | null, os?: Os | null): void;",
-        "export declare const Themes: ThemesModule;",
     ] {
         assert!(ts.contains(line), "no `{line}` in:\n{ts}");
     }
@@ -146,19 +144,12 @@ fn a_tsx_screen_uses_buttons_tokens_and_modes() {
         "{:?}",
         app.screen.shown()
     );
-    let theme = RayXTheme::default();
-    let density = &theme.platform.density;
+    let hex = |value: u32| Color::from(rgba(value));
 
     // The props: sizes from lvl5, slots filled with JSX.
     let height = |s: &Screen, label: &str| s.frames.get(&s.button(label).unwrap()).unwrap().1;
-    assert_eq!(
-        height(&app.screen, "Save"),
-        density.size.of(ComponentSize::Default).lvl5.height
-    );
-    assert_eq!(
-        height(&app.screen, "Small"),
-        density.size.of(ComponentSize::Small).lvl5.height
-    );
+    assert_eq!(height(&app.screen, "Save"), 32.0, "default lvl5, desktop");
+    assert_eq!(height(&app.screen, "Small"), 24.0, "small lvl5, desktop");
     assert!(
         app.wait(|s| s.text_node("+").is_some() && s.text_node("3").is_some()),
         "{:?}",
@@ -169,10 +160,11 @@ fn a_tsx_screen_uses_buttons_tokens_and_modes() {
     let save = app.screen.button("Save").unwrap();
     let page = *app.screen.parents.get(&save).unwrap();
     let fill = app.screen.styles.get(&page).unwrap().background_color;
-    assert_eq!(fill, Color::from(theme.theme.colors.surfaces.app.light));
+    assert_eq!(fill, hex(0xf5f5f5ff), "surfaces-app, light");
     assert_eq!(
         app.screen.origins.get(&save).unwrap().0,
-        density.spacing.gap4
+        12.0,
+        "spacing-gap4"
     );
 
     // Presses: `onPress` hears the enabled button only.
@@ -187,22 +179,14 @@ fn a_tsx_screen_uses_buttons_tokens_and_modes() {
         "a disabled button hears no presses"
     );
 
-    // `Themes.set("sky", "touch")`: Touch's lvl5 and Sky's primary, on the same views.
+    // `setModifier`: Touch's lvl5 and Sky's primary, on the same views.
     app.press("Touch");
-    let touch = RayXTheme::new(Accent::Sky, Density::Touch);
-    let expected = touch
-        .platform
-        .density
-        .size
-        .of(ComponentSize::Default)
-        .lvl5
-        .height;
     assert!(
-        app.wait(|s| s.frames.get(&save).is_some_and(|f| f.1 == expected)),
+        app.wait(|s| s.frames.get(&save).is_some_and(|f| f.1 == 48.0)),
         "{:?}",
         app.screen.frames.get(&save)
     );
-    let primary = Color::from(touch.theme.colors.roles.primary.bg.light);
+    let primary = hex(0x075e8eff);
     assert!(app.wait(|s| {
         s.styles
             .get(&save)

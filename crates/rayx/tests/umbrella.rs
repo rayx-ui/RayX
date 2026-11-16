@@ -39,8 +39,13 @@ fn the_crates_are_reachable_by_name() {
     let _: Option<&rayx::app::AppServices> = None;
     // The screen's (or the surface root's) provider, for Rust components.
     let _: fn() -> Result<ServiceProvider, AppError> = services;
-    // The component library and its theme.
-    let theme = rayx::components::theme::RayXTheme::default();
-    assert_eq!(theme.platform.density.size.default.lvl5.height, 32.0);
+    // The component library and its theme: the document, its typed keys and modifiers.
+    assert!(rayx::components::theme::DOCUMENT.contains("\"spacing-size-default-lvl5-height\""));
+    let key = rayx::components::theme::keys::platform::density::size::default::lvl5::HEIGHT;
+    assert_eq!(key.name(), "spacing-size-default-lvl5-height");
+    assert_eq!(
+        rayx::components::theme::modifiers::Accent::DEFAULT,
+        rayx::components::theme::modifiers::Accent::Cyan
+    );
     let _register = rayx::components::register;
 }

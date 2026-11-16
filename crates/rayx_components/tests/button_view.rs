@@ -1,17 +1,20 @@
 //! RayX's `Button` in a Rust view, headless: its height, padding and radius come from the size's
 //! level 5, its fill from the variant's role, its slots and icons show as their props say,
-//! presses reach `on_press` unless it is disabled, and a new theme (Touch) resizes it in place.
+//! presses reach `on_press` unless it is disabled, and the app's modifiers (Sky, Touch) resize and
+//! recolor it in place. The expected values are the theme document's (`theme.json`).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 mod support;
 
 use nsh_core::Color;
+use nsh_core::color::rgba;
 use nsh_core::element::Root;
 use nsh_core::prelude::*;
 use nsh_engine::App;
 use rayx_components::button::{ButtonVariant, button};
-use rayx_components::theme::{Accent, ComponentSize, Density, RayXTheme};
+use rayx_components::theme::ComponentSize;
+use rayx_components::theme::modifiers::{Accent, Density};
 use support::{Running, Screen};
 
 #[component]
@@ -50,11 +53,10 @@ fn Buttons() -> impl IntoElement {
                 .show_left_icon(false)
                 .slot_left(text("y")),
         )
-        .child(
-            button()
-                .text("Touch")
-                .on_press(|| set_theme(RayXTheme::new(Accent::Sky, Density::Touch))),
-        )
+        .child(button().text("Touch").on_press(|| {
+            Accent::Sky.set();
+            Density::Touch.set();
+        }))
         .child(text(move || format!("presses {}", presses.get())))
 }
 
@@ -70,6 +72,11 @@ fn start() -> Running {
 fn frame(screen: &Screen, label: &str) -> (f32, f32) {
     let id = screen.button(label).expect(label);
     *screen.frames.get(&id).expect("laid out")
+}
+
+/// A color of the document, `0xRRGGBBAA`.
+fn hex(value: u32) -> Color {
+    Color::from(rgba(value))
 }
 
 fn fill(screen: &Screen, label: &str) -> Color {
@@ -97,17 +104,17 @@ fn a_buttons_size_is_its_level_5_and_its_look_its_variant() {
     let label_width = screen.frames.get(&label).unwrap().0;
     assert_eq!(width, label_width + 2.0 * 12.0, "default lvl5/inset is 12");
 
-    let theme = RayXTheme::default();
-    let colors = &theme.theme.colors;
     let style = screen.styles.get(&save).unwrap();
     assert_eq!(style.border_radius.0, 8.0, "size/default/borders/radius");
     assert_eq!(
         fill(screen, "Save"),
-        Color::from(colors.roles.primary.bg.light)
+        hex(0x007796ff),
+        "roles-primary-bg, cyan"
     );
     assert_eq!(
         fill(screen, "Small"),
-        Color::from(colors.roles.neutral.bg.light)
+        hex(0x00000008),
+        "roles-neutral-bg, light"
     );
     assert_eq!(
         fill(screen, "Quiet"),
@@ -116,14 +123,16 @@ fn a_buttons_size_is_its_level_5_and_its_look_its_variant() {
     );
     assert_eq!(
         fill(screen, "Off"),
-        Color::from(colors.interaction.disabled_bg.light)
+        hex(0x0000000a),
+        "interaction-disabled-bg, light"
     );
     // `outlined`: borders/outlineWidth in surfaces/border.
     let large = screen.styles.get(&screen.button("Large").unwrap()).unwrap();
     assert_eq!(large.borders.widths.top.0, 1.0);
     assert_eq!(
         large.borders.colors[0],
-        Color::from(colors.surfaces.border.light)
+        hex(0x0000001a),
+        "surfaces-border, light"
     );
     assert_eq!(style.borders.widths.top.0, 0.0, "not outlined");
 }
@@ -170,7 +179,7 @@ fn presses_reach_on_press_unless_disabled() {
 }
 
 #[test]
-fn a_new_theme_resizes_the_buttons_in_place() {
+fn the_apps_modifiers_resize_and_recolor_the_buttons_in_place() {
     let mut app = start();
     let save = app.screen.button("Save").unwrap();
     app.press("Touch");
@@ -178,6 +187,6 @@ fn a_new_theme_resizes_the_buttons_in_place() {
     assert!(app.wait(|s| s.frames.get(&save).is_some_and(|f| f.1 == 48.0)));
     assert_eq!(app.screen.button("Save"), Some(save));
     assert_eq!(frame(&app.screen, "Small").1, 40.0);
-    let sky = RayXTheme::new(Accent::Sky, Density::Touch);
-    assert!(app.wait(|s| fill(s, "Save") == Color::from(sky.theme.colors.roles.primary.bg.light)));
+    // Sky's roles-primary-bg, light.
+    assert!(app.wait(|s| fill(s, "Save") == hex(0x075e8eff)));
 }

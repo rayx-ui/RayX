@@ -1,6 +1,6 @@
 [package]
 name = "rayx_components"
-description = "RayX's component library for NSH apps: the design system's tokens as an NSH theme type, with macros for custom themes, and its components on nsh-base's behavior, for Rust and TSX."
+description = "RayX's component library for NSH apps: the design system's tokens as an NSH theme document read through typed keys, and its components on nsh-base's behavior, for Rust and TSX."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -21,3 +21,4 @@ nsh-engine = { workspace = true, features = ["js"] }
 nsh-bundler.workspace = true
 nsh-js.workspace = true
 crossbeam-channel.workspace = true
+serde_json.workspace = true
