@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 9,
+  "revision": 11,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -1005,6 +1005,36 @@
         "AGENTS.md",
         ".claude/skills/**"
       ]
+    },
+    {
+      "id": "c-tsx-listeners",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "RES-1"
+      ],
+      "descriptionMarkdown": "Each listener of a shared TS service object stops on its own (`Stop`), another consumer's keeps hearing; a stopped `askBeforeQuit` no longer blocks quitting; the declarations return `() => void`.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "nsh_tsx_listeners"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_core/src/**",
+        "crates/rayx_runtime/src/**",
+        "crates/rayx_app/**",
+        "crates/rayx_app_macros/src/**"
+      ]
     }
   ],
   "finalCheckIds": [
@@ -1341,7 +1371,7 @@
         {
           "id": "t06-ts-provider",
           "title": "TS `ServiceProvider` with class tokens",
-          "descriptionMarkdown": "Add `#[class] ServiceProvider` in `rayx_app::ts` (d-provider): `getService`, `getRequiredService`, `createScope`, `dispose`, view models activated until disposal; token arguments as `JsHandle`s, RayX's service classes recognized by `JsHandle::constructor()` and keyed by `Constructor`; typed declarations over `ServiceKey<T>` (d-ts-signatures); the static resolver table for RayX's service classes (one wrapper object per resolved `Arc` per provider); the surface's token table for runtime keys (used by s3). Rust bridges take `Instance<ServiceProvider>`. `AppServices` and `ServiceScope` stay until t11 removes them. New group `crates/rayx_app/tests/nsh_tsx_provider.rs` (a headless TSX app as `nsh_tsx_services.rs` runs one): resolve by class, `===` for a singleton, `null` and the thrown error for a missing token, a scope's scoped service, `dispose` releasing it and deactivating a view model, use after dispose throwing, the declarations typing `getService` and `getRequiredService`.",
+          "descriptionMarkdown": "Add `#[class] ServiceProvider` in `rayx_app::ts` (d-provider): `getService`, `getRequiredService`, `createScope`, `dispose`, view models activated until disposal; token arguments as `JsHandle`s, RayX's service classes recognized by `JsHandle::constructor()` and keyed by `Constructor`; typed declarations over `ServiceKey<T>` (d-ts-signatures); the static resolver table for RayX's service classes (one wrapper object per resolved `Arc` per provider); the surface's token table for runtime keys (used by s3). Rust bridges take `Instance<ServiceProvider>`. `AppServices` and `ServiceScope` stay until t11 removes them. New group `crates/rayx_app/tests/nsh_tsx_provider.rs` (a headless TSX app as `nsh_tsx_services.rs` runs one): resolve by class, `===` for a singleton, `null` and the thrown error for a missing token, a scope's scoped service, `dispose` releasing it and deactivating a view model, use after dispose throwing, the declarations typing `getService` and `getRequiredService`.\n\n**Implementation notes (against `nshx-0.5.0-4`):** a resolved RayX service is a class *instance* made in Rust, which cannot become a `JsHandle` without the JS host, so lookups return a `Resolved` (an `nsh_core::element::Ret` that gives the instance's object, a kept `JsHandle` or `null`), and the token parameter is a `ServiceKeyArg` (`Arg`: the `JsHandle` plus a name for messages); both are declared by the typed `#[ts]` signatures. The wrapper cache keeps one `Instance` per resolved `Arc` per provider. Synchronous class members cannot reach `global`, so the surface's token table and the root's one TS object live in VM `Local`s (`sys.locals`). `ServiceKey<T>` names `ServiceToken<T>`, so a minimal generic `ServiceToken` (name only) is added here; t13 adds the registrations. `rayx_app::ts::register(registry)` registers every TS class and the alias (t12 builds `rayx_app::register` on it).",
           "criterionIds": [
             "RES-1"
           ],
@@ -1353,7 +1383,8 @@
             "t05-nsh-pin"
           ],
           "checkIds": [
-            "c-tsx-provider"
+            "c-tsx-provider",
+            "c-tsx-listeners"
           ],
           "sourceRefs": [
             {
@@ -1436,7 +1467,7 @@
         {
           "id": "t10-rust-start",
           "title": "Rust's start without `set_app`",
-          "descriptionMarkdown": "Add the extension trait giving `RayXAppBuilder::start()` and `start_async()` (d-start); remove `set_app`, the global builder function, `AppError::NoApp` and `rayx_app::start()`/`start_app()`; reword `AppError`'s messages. New group `crates/rayx_app/tests/nsh_app_start.rs`: a Rust root's `app_state()` moving through its states, `start_async` returning the root or the error, a second start keeping the first root, two surfaces with two providers.",
+          "descriptionMarkdown": "Add the extension trait giving `RayXAppBuilder::start()` and `start_async()` (d-start); remove `set_app`, the global builder function, `AppError::NoApp` and `rayx_app::start()`/`start_app()`; reword `AppError`'s messages. New group `crates/rayx_app/tests/nsh_app_start.rs`: a Rust root's `app_state()` moving through its states, `start_async` returning the root or the error, a second start keeping the first root, two surfaces with two providers.\n\n**Implementation note:** a Rust root's chain runs before `start()` adds NSH's services, so `add_storage()` would have registered the in-memory store first. `rayx_runtime`'s `add_storage()` now makes the platform's `PlatformKeyValueStore` (which `add_nsh_services` registers) the app's store when there is one, in either order, as the asset reader and suspension host are already resolved lazily; `start_app_with` adds NSH's services where the app registered none. New `AppError::BuilderStarted` for a TS builder used after `start()`.",
           "criterionIds": [
             "BLD-4"
           ],
