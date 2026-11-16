@@ -7,6 +7,44 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.11.0] - 2026-11-16
+
+### Features
+- *(devtools)* Add the dev tools' agent protocol crate
+- *(cli)* Make new apps with the dev tools' layer
+- *(cli)* Make new apps with RayX's app builder
+- *(components)* Add rayx_components with RayX's theme and Button, and the gallery app
+- *(components)* [**breaking**] Move RayX's theme onto NSH theme documents and typed keys, on nshx-0.5.0-4
+  - Migration: apps: read tokens through `rayx_components::theme::keys` (`keys::theme::colors::roles::primary::BG.get()`, or `value(key)`) instead of `rayx().theme.…`; `bind_text_style` takes `text_style_keys!(path)` instead of a closure.
+  - Migration: apps: switch modes with `setModifier("accent", "sky")` / `Accent::Sky.set()` instead of `Themes.set(..)` / `set_theme(RayXTheme::of(..))`.
+  - Migration: apps: make custom themes with NSH's `update_tokens( Tokens::default().with(KEY, color!(..)))`, `reset_tokens`, theme files and `ThemeScope` instead of `rayx_theme!`, `rayx_patch!`, `update_theme` and `reset_theme`.
+  - Migration: apps: pin NSH to `nshx-0.5.0-4` with RayX.
+- *(app)* [**breaking**] Add the dev tools' agent and layer to dev builds
+  - Migration: apps: Rust code that calls `AppServices::load()` directly passes the `System` it has (TSX's `AppServices.load()` is unchanged); mount `DevLayer` once at the root, absolute (`.child(dev_layer())`, `<DevLayer style={{ position: "absolute" }} />`), to get the dev tools' layer in dev builds.
+- *(core)* [**breaking**] Key services at run time, keep thread-bound ones and make startup services asynchronously
+  - Migration: apps: `StartupInitializable::startup_service_type` returns `Option<StartupServiceType>`: wrap the key in `Some(..)`, or leave the method out to key the service by its registration.
+  - Migration: apps: `StartupServiceType` is `Clone`, no longer `Copy`, and `name()` returns `&str`; `StartupRegistry::services()` returns a `Vec`.
+- *(app)* [**breaking**] Build, start and resolve RayX apps from TypeScript as from Rust
+  - Migration: apps: replace `rayx_app::set_app(build)` and `rayx_app::start()` with `build(RayXAppBuilder::new()).start()` (or `.start_async().await`) in the root.
+  - Migration: apps: in TSX, replace `await AppServices.load()` with `const services = await new RayXAppBuilder()…start()`, `app.scope()` / `scope.child()` with `services.createScope()`, and `X.of(app)` with `services.getRequiredService(X)` under the Rust service names (`I18n` → `I18nService`, `Navigation` → `NavigationService`, `Storage` → `KeyValueStore`, `Platform` → `PlatformInfoService` and `SuspensionService`, …).
+  - Migration: apps: keep the function an `onChange` returns to stop that listener; Rust bridges take `Instance<ServiceProvider>`.
+- *(app)* [**breaking**] Write services in TypeScript in RayX's one container, and give TSX apps a one-line crate
+  - Migration: apps: a TSX app's crate becomes `rayx::native_module!("my-app")` (with a block for its own exports) in place of a hand-written `#[native_module]` that registers RayX's classes.
+  - Migration: apps: app-defined Rust services reach a TS-built app through `#[rayx::app_extension]` functions and `builder.apply(..)`.
+- *(app)* [**breaking**] Declare an app crate's UI set with the #[rayx::native_module] attribute
+  - Migration: apps: replace `rayx::native_module!("my-app", |registry| { … })` with `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) { … }`.
+- *(core)* [**breaking**] Mark ServiceResolutionError and AppError non-exhaustive
+  - Migration: apps: a `match` over `ServiceResolutionError` or `AppError` outside RayX needs a wildcard arm (`_ => …`).
+  - Migration: apps: `ServiceResolutionError` has new variants: `MissingKey { service }` (a runtime key with nothing registered), `WrongThread { service }` (a thread-bound service resolved on another thread) and `Failed { service, message }` (a factory's error).
+  - Migration: apps: `AppError::NoApp` is gone (there is no `set_app` to name a builder), and `AppError::BuilderStarted` is new (a TS builder used after `start()`).
+  - Migration: apps: `rayx_app::start_app()` is gone: call `RayXAppBuilder::start()` (a task) or `.start_async().await` (`StartAppBuilderExt`) on the app's builder.
+  - Migration: apps: the Rust structs behind the TS service classes moved to `rayx_app::ts` under the Rust services' names (`I18n` → `ts::I18nService`, `Navigation` → `ts::NavigationService`, `Storage` → `ts::KeyValueStore`, `Platform` → `ts::PlatformInfoService` and `ts::SuspensionService`, `Assets` → `ts::AssetService`, `Fonts` → `ts::FontService`, `AppConfiguration` → `ts::ApplicationConfigurationService`, `NavigationRegion` → `ts::NavigationRegion`), with the i18n class's value types (`DateFormat`, `DateLength`, `NumberFormat`, `NumberKind`, `TimeDetail` → `rayx_app::ts::…`). They are no longer in `rayx_app`'s root or prelude; Rust bridges take `Instance<ServiceProvider>` and resolve through it.
+  - Migration: apps: declare an app crate's UI set with `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) { … }`. The `rayx::native_module!` named in an earlier note of this release was replaced before the release.
+
+### Tests
+- *(cli)* Prove the dev tools on apps made by rayx new
+- *(release)* Expect migration notes read from the commit's raw message
+
 ## [0.10.1] - 2026-11-15
 
 ### Features
