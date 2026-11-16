@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 11,
+  "revision": 13,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -470,6 +470,7 @@
         "crates/rayx_core/src/**",
         "crates/rayx_runtime/src/**",
         "crates/rayx_app/src/**",
+        "crates/rayx_app/tests/headless/**",
         "crates/rayx_app_macros/src/**",
         "crates/rayx_components/src/**"
       ]
