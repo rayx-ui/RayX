@@ -10,174 +10,353 @@
   "decisions": [
     {
       "id": "d-runtime-keys",
-      "requirementIds": ["R-CORE"],
+      "requirementIds": [
+        "R-CORE"
+      ],
       "descriptionMarkdown": "`rayx_core` keys services by a `ServiceKey`: `Type(TypeId)` as today, or `Runtime(RuntimeKey)`, an opaque id with a display name made by `RuntimeKey::new(name)` (unique per call, compared by id). The registry's descriptor and cache maps, its resolution guards and the scope cache key by `ServiceKey`; the typed API (`add_singleton::<T>`, `required_service::<T>`) maps to `Type` and is unchanged. A runtime-keyed entry stores an erased value (`Arc<dyn Any + Send + Sync>`) made by a factory `Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError>`; the provider gains `add_*_keyed(key, factory)` and `service_by_key` / `required_service_by_key` returning the erased value. `StartupServiceType` gains the same two kinds (its name becomes `Cow<'static, str>`), so ordering and failure reports treat both alike.",
       "invariantsMarkdown": "- One key space: a runtime key never equals a type key.\n- Lifetimes, scopes, disposal and cycle detection are shared code paths for both kinds, not a parallel container.\n- No NSH dependency; `wasm32-unknown-unknown` keeps building.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/registry.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/provider.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/lifecycle.rs", "symbol": "StartupServiceType"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/provider.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/lifecycle.rs",
+          "symbol": "StartupServiceType"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-thread-bound",
-      "requirementIds": ["R-CORE"],
+      "requirementIds": [
+        "R-CORE"
+      ],
       "descriptionMarkdown": "Thread-bound values are kept without `unsafe`: the provider stores a `Send + Sync` slot (an id and the owning thread's id), and the value itself lives in a `thread_local!` table of the thread that made it, keyed by the slot id. Resolving on that thread reads the table; on any other thread it fails with `ServiceResolutionError::WrongThread` (naming the service). Dropping the last slot on the owning thread removes the value; dropping it elsewhere pushes the id onto a shared orphan list that the owning thread drains on its next table access (and the table drops with its thread), so a value is never dropped off its thread. `add_singleton_thread_bound` / `_scoped_` / `_transient_` (typed and keyed) register such services; their factories run on the resolving thread.",
       "invariantsMarkdown": "- No `unsafe` and no `send_wrapper`-style unchecked `Send`.\n- A wrong-thread resolve never touches the value.",
       "rationaleMarkdown": "`send_wrapper` needs `unsafe` underneath and panics when dropped on the wrong thread, which a provider released by a background task would do. The thread-local table keeps every access and drop on the owning thread and works on wasm32.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/registry.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/ready.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/ready.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-startup-async",
-      "requirementIds": ["R-CORE"],
+      "requirementIds": [
+        "R-CORE"
+      ],
       "descriptionMarkdown": "The startup registry accepts asynchronous factories: `StartupRegistry::add_resolved_async(key, factory)` where the factory returns a `LocalBoxFuture<Result<StartupService, StartupInitializationFailure>>`. The run resolves every startup service first (awaiting async factories), then orders layers over both key kinds, then initializes as today. `startup_service_type` becomes a provided method returning `None`; the registry keys a service by the explicit type when given, else by its registration key (`add_startup_singleton::<T>` records `T`, the `_as::<dyn X>` forms `dyn X`), and `StartupRegistry::add(service)` (no registration key) by the concrete type.",
       "invariantsMarkdown": "- One run, one ordering, one default timeout, one failure report for every startup service.\n- Existing implementations of `startup_service_type` keep their keys.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/lifecycle.rs", "symbol": "StartupRegistry"},
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/services/app/service_ext.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/lifecycle.rs",
+          "symbol": "StartupRegistry"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/services/app/service_ext.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-nsh-pin",
-      "requirementIds": ["R-NSH"],
-      "descriptionMarkdown": "RayX reaches the fork's JS-object features only through its new `nshx-0.5.0-<n>` tag, moved everywhere the previous pin moves (`Cargo.toml` `[patch.crates-io]`, `crates/rayx_cli/src/project/pins.rs` with its tests and fixtures, `docs/cli/projects.md`, the CLI README, `examples/gallery/.cargo/config.toml`), as `feat(nsh): Pin NSH to nshx-0.5.0-<n>` did before. Until the owner has tagged it, `s2-nsh-layer` is blocked; no path, branch or commit dependency bridges the gap.",
+      "requirementIds": [
+        "R-NSH"
+      ],
+      "descriptionMarkdown": "RayX reaches the fork's JS-object features only through `nshx-0.5.0-4` (commit `55074d3f9`, released by the owner on 2026-11-16), which carries #262 and #265 (the typed TS signatures), moved everywhere the previous pin moves (`Cargo.toml` `[patch.crates-io]`, `crates/rayx_cli/src/project/pins.rs` with its tests and fixtures, `docs/cli/projects.md`, the CLI README, `examples/gallery/.cargo/config.toml`), as `7775dcc` (`feat(nsh): Pin NSH to nshx-0.5.0-3`) did. The tag also carries [dXnSix/nsh#264](https://github.com/dXnSix/nsh/pull/264), which removes NSH's theme types (`AppTheme`, `#[derive(AppTheme)]`, `TokenSpec`, `theme_of`, `set_theme` and their patch types) in favour of theme documents and typed keys, and the upstream sync #263. On the tag `rayx_components` does not compile (checked 2026-11-16 with `cargo check --workspace`: 267 errors, all in `crates/rayx_components/src/theme/`, 262 of them in the generated `tokens.rs`); `rayx_core`, `rayx_runtime`, `rayx_app`, `rayx_app_macros` and `rayx-cli` compile, and `rayx` and the gallery wait on `rayx_components`. Moving RayX's theme onto theme documents is outside this epic: it supersedes the owner's 2026-11-15 decision that the code reads tokens as Rust structs on NSH's theme types, and it changes `rayx_components`' theme, the `rayx-components` skill's `theme_codegen.py` (RayX.Root) and `tokens.rs`, which stays a forbidden path here. It lands on `main` first, as its own change decided with the owner, and t05 pins only once `rayx_components` builds on the tag. No path, branch or commit dependency on the fork.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "Cargo.toml"},
-        {"repositoryId": "rayx", "path": "crates/rayx_cli/src/project/pins.rs"},
-        {"repositoryId": "rayx", "path": "examples/gallery/.cargo/config.toml"}
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/project/pins.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/.cargo/config.toml"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-ts-builder",
-      "requirementIds": ["R-BUILD"],
+      "requirementIds": [
+        "R-BUILD"
+      ],
       "descriptionMarkdown": "`rayx_app`'s TS layer (a `ts` module) holds `#[class] RayXAppBuilder`, wrapping an `Option<rayx_core::RayXAppBuilder>` that starts with `add_nsh_services()`. Each method is a synchronous member taking `this: Instance<Self>` and returning it, so calls chain; it takes the inner builder out, applies the Rust extension method, and puts it back (a builder used after `start()` throws). Options callbacks are `Callback<(Instance<XOptions>,)>` called during the builder call with a recording options class (`I18nOptions`, `NavigationOptions`, `AssetOptions`, `FontOptions`, `InputMapOptions`) whose camelCase methods record a patch; the patch (plain `Send + Sync` data) is replayed in the Rust `configure` closure, so it applies after configuration binding exactly as Rust's closure does. `configureAppConfiguration(configuration => …)` passes a recording configuration builder (`addJson`, `addInMemory`, `addValue`).",
       "invariantsMarkdown": "- Every TS builder method delegates to the Rust extension method of the same name: no second implementation of a service's registration.\n- Each method and options class is documented, so `Registry::undocumented` stays empty.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/services/app/rayx_app_builder.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/platform.rs", "symbol": "NshServicesAppBuilderExt"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/settings.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/services/app/rayx_app_builder.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/platform.rs",
+          "symbol": "NshServicesAppBuilderExt"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/settings.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-start",
-      "requirementIds": ["R-BUILD"],
+      "requirementIds": [
+        "R-BUILD"
+      ],
       "descriptionMarkdown": "The surface's startup (`surface.rs`) takes a built-up `RayXAppBuilder` instead of `set_app`'s function: `start_app_with(builder)` keeps today's shared, cancellation-safe startup in the surface slot (a second call while starting or started gets the first root and drops its builder). Rust: an extension trait in `rayx_app` gives `RayXAppBuilder::start(self)` (spawned in the current owner, as `rayx_app::start()` was) and `start_async(self) -> Result<ServiceProvider, AppError>`; `set_app`, the global `APP` and `AppError::NoApp` go. TS: `async fn start(this) -> Result<Instance<ServiceProvider>, AppError>` runs the same startup and then `keep_platform_current()`, as `AppServices.load()` did.",
       "invariantsMarkdown": "- One startup implementation for Rust and TS roots.\n- Each surface builds its own provider: the builder is per surface by construction (each engine runs its own root or module).",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/surface.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/scope_class.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/surface.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/scope_class.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-provider",
-      "requirementIds": ["R-RESOLVE"],
-      "descriptionMarkdown": "`#[class] ServiceProvider` replaces `AppServices` and `ServiceScope`: it holds a `rayx_core::ServiceProvider` and the activations of view models resolved through it. A token argument is a JS object (NSH's kept JS object): a RayX service class's constructor (recognized by NSH's class argument) maps to a resolver in a static table `rayx_app` builds for its service classes (resolve the Rust service, wrap it in its class, one wrapper object per resolved `Arc` per provider so `===` holds for singletons); any other object (a TS class, a `ServiceToken`) maps to its runtime key through the surface's token table. Results are JS objects (`getService` gives `null` when missing). The service classes are renamed to the Rust services' names and lose their `of(app)` statics; `NavigationRegion` is made with `navigationService.region(name)`.",
+      "requirementIds": [
+        "R-RESOLVE"
+      ],
+      "descriptionMarkdown": "`#[class] ServiceProvider` replaces `AppServices` and `ServiceScope`: it holds a `rayx_core::ServiceProvider` and the activations of view models resolved through it. A token argument is a `JsHandle`. When `token.constructor()` is the `Constructor` of one of RayX's service classes, it keys a static resolver table `rayx_app` builds for its service classes, by `Constructor` (`Eq`/`Hash` by class): resolve the Rust service, wrap it in its class, one wrapper object per resolved `Arc` per provider so `===` holds for singletons. Any other object (a TS class, a `ServiceToken`) is looked up by the `JsHandle` itself (`Eq`/`Hash` by identity) in the surface's token table, which gives its runtime key. Results are `JsHandle`s (`getService` gives `null` when missing), and the members are declared typed (d-ts-signatures). The service classes are renamed to the Rust services' names and lose their `of(app)` statics; `NavigationRegion` is made with `navigationService.region(name)`.",
       "invariantsMarkdown": "- No `X.of(app)`, `AppServices` or `ServiceScope` left, in Rust or TS.\n- The Rust structs behind the TS classes live in `rayx_app::ts` so their names (`I18nService`) do not clash with `rayx_runtime`'s types at the crate root.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/scope_class.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/service_classes.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/i18n_class.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/region.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/scope_class.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/service_classes.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/i18n_class.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/region.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-native-module",
-      "requirementIds": ["R-BUILD"],
+      "requirementIds": [
+        "R-BUILD"
+      ],
       "descriptionMarkdown": "`rayx::native_module!(\"spec\")` (a `macro_rules!` in the umbrella) expands to NSH's `#[native_module(\"spec\")]` function calling `rayx::app::register(registry)` (every TS class of `rayx_app`), `rayx::components::register(registry)` and an optional app block. `#[rayx::app_extension]` (in `rayx_app_macros`) keeps the function and generates a flat `#[module]` exporting it to TS as `addX(builder: RayXAppBuilder): RayXAppBuilder`; the app names it in its `native_module!` block to export it, and `builder.apply(extension)` calls it with the builder during the chain.",
       "invariantsMarkdown": "- `native_module!` registers nothing the app did not ask for beyond RayX's own set.\n- An extension is plain Rust (`fn(RayXAppBuilder) -> RayXAppBuilder`), usable from a Rust root too.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx/src/lib.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_app_macros/src"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-ts-services",
-      "requirementIds": ["R-TS"],
-      "descriptionMarkdown": "A TS service is a thread-bound, runtime-keyed entry (`d-runtime-keys`, `d-thread-bound`) whose value is NSH's kept JS object and whose factory is a `Callback<(Instance<ServiceProvider>,), JsObject>`. From a TS resolve (a synchronous call from JS) the factory runs with `Callback::call`; from Rust's startup task it runs through the async factory path with `call_async`. A TS singleton registered `As` a contract, and every TS startup service, is made during `start()`, so Rust can resolve it synchronously afterwards; other TS services are made on first resolve. Resolving a TS service that is not made yet from Rust code outside a JS call fails with a resolution error saying so.",
+      "requirementIds": [
+        "R-TS"
+      ],
+      "descriptionMarkdown": "A TS service is a thread-bound, runtime-keyed entry (`d-runtime-keys`, `d-thread-bound`) whose value is a `JsHandle` and whose factory is a `Callback<(Instance<ServiceProvider>,), JsHandle>`. From a TS resolve (a synchronous call from JS) the factory runs with `Callback::call`; from `start()`'s startup run (a core task, outside any JS call) it runs through the async factory path with `call_async`. A TS singleton registered `As` a contract, and every TS startup service, is made during `start()`, so Rust can resolve it synchronously afterwards; other TS services are made on first resolve. Resolving a TS service that is not made yet from Rust code outside a JS call fails with a resolution error saying so.",
       "invariantsMarkdown": "- TS services never cross threads; Rust sees a TS-only service as an opaque entry.\n- Scoped TS services are released with their scope.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_app/src/scope_class.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/scope_class.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-ts-startup",
-      "requirementIds": ["R-TS"],
-      "descriptionMarkdown": "`AsyncInitializable` and `StartupInitializable` are NSH `#[interface]` traits in `rayx_app::ts` (declared to TS as interfaces with optional members where the Rust traits have defaults); a Rust stand-in implements `rayx_core`'s traits for the registry. When the async factory makes the object it reads `startupServiceType`, `initializationDependsOn` and `initializationTimeout` once (`call_async`); the run asks `isInitialized` and awaits `initialize(context)` with `call_async` (a rejection or throw is the failure message). `StartupInitializationState` and `StartupInitializationContext` are `#[class]`es. Ready hooks from TS are `Callback`s added to the same `ReadyHooks` list as Rust's, run with `call_async`.",
+      "requirementIds": [
+        "R-TS"
+      ],
+      "descriptionMarkdown": "`AsyncInitializable` and `StartupInitializable` are NSH `#[interface]` traits in `rayx_app::ts`; NSH interfaces have no supertraits, so `StartupInitializable` repeats `AsyncInitializable`'s members. Every member is an `async fn` in Rust: the startup run is a core task, and NSH calls a TS object's non-`async` members only inside a synchronous call from JS. NSH's member signatures (d-ts-signatures) keep the agreed TS shapes (`isInitialized(): boolean`, `initialize(context): Promise<void>`, `initializationTimeout?(): number | undefined`, `startupServiceType?()`, `initializationDependsOn?()`); a member with a default body is optional in TS and runs the default for an object without it. A Rust adapter over the stand-in (`JsAsyncInitializable` / `JsStartupInitializable`) implements `rayx_core`'s traits for the registry: once the run has made the object it awaits `startupServiceType`, `initializationDependsOn` and `initializationTimeout` once and keeps them for the synchronous trait methods; its `initialize` first awaits `isInitialized()` and returns at once when it is true (so the check happens just before initializing, as in Rust), else awaits `initialize(context)` (a rejection or throw is the failure message). `StartupInitializationState` and `StartupInitializationContext` are `#[class]`es. Ready hooks from TS are `Callback`s added to the same `ReadyHooks` list as Rust's, run with `call_async`.",
       "invariantsMarkdown": "- One `ReadyHooks` list and one startup run for both languages.\n- A timeout fails startup; the JS work is not cancelled (documented).",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/di/lifecycle.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/services/app/ready.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/lifecycle.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/services/app/ready.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-contracts",
-      "requirementIds": ["R-TS"],
-      "descriptionMarkdown": "`#[rayx::contract]` (in `rayx_app_macros`) applies NSH's `#[interface]` to the trait, exports a token of the trait's name, and generates a `Send + Sync` adapter implementing the trait over a thread-bound handle to the NSH stand-in, registered `As` `dyn Trait`. Methods are `async fn … -> Result<T, E>` with `E: From<ContractError>` (their JS calls are `call_async`) or `fn …()` (posted in order); called off the engine thread, an async method returns `Err(ContractError::WrongThread)` and a posted one is dropped with a log line.",
+      "requirementIds": [
+        "R-TS"
+      ],
+      "descriptionMarkdown": "`#[rayx::contract]` (in `rayx_app_macros`) takes a trait whose methods are `async fn … -> Result<T, E>` (`E: From<ContractError> + From<nsh::Exception>`) or `fn …()`, with no generics, associated items or supertraits (NSH's interface rules; the macro refuses the rest, and a method returning a plain value, at compile time). It emits: the public trait made `dyn`-compatible (each `async fn` becomes a method returning `LocalBoxFuture<'_, Result<T, E>>`, as `async-trait(?Send)` does, since a trait with `async fn` is not `dyn`-compatible), so Rust resolves `Arc<dyn Trait>`; a hidden NSH `#[interface]` trait of the same TS name with the original methods, whose stand-in `Js<Trait>` calls the JS object, registered by `rayx::native_module!` with `Registry::interface`; and a `Send + Sync` adapter implementing the public trait over a thread-bound slot (d-thread-bound) holding the stand-in, registered `As` `dyn Trait` when TS registers an implementation. Async methods are awaited through NSH (posted, a returned promise settled); `()` methods run on the spot inside a synchronous call from JS and are posted in order otherwise. Called off the engine thread, an async method returns `Err(ContractError::WrongThread)` and a posted one is dropped with a log line. The contract's TS token cannot carry the trait's name: in `nshx-0.5.0-4` an interface shares no name with a class, a module, a component or a type alias of its set (`Registry::interface` and `Registry::ts_alias` panic), and a set exports no plain value of its own. t16 brings the token's form and name to the owner before choosing one.",
       "invariantsMarkdown": "- Rust reaches a TS service only through a contract.\n- A Rust startup service may depend on `dyn Trait`; the TS implementation is made and initialized first.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_app_macros/src"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-ts-options",
-      "requirementIds": ["R-TS"],
+      "requirementIds": [
+        "R-TS"
+      ],
       "descriptionMarkdown": "TS options are JSON values keyed at runtime by `OptionsToken` (a name and defaults). `addOptions` records the pipeline: defaults, `bind(section)` read from the app's `Configuration` as JSON, `configure` and `validate` callbacks. Resolving from TS runs the callbacks with `Callback::call`; `validateOnStart` runs them in the startup run with `call_async` before startup services initialize, as Rust's `validate_on_start` does. `getOptions(token)` gives `{ value }`.",
       "invariantsMarkdown": "- Rust's typed options are unchanged; TS options live beside them, not inside the typed pipeline.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/options/pipeline.rs"},
-        {"repositoryId": "rayx", "path": "crates/rayx_core/src/configuration/root.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/options/pipeline.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/configuration/root.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     },
     {
       "id": "d-consumers",
-      "requirementIds": ["R-DOCS"],
+      "requirementIds": [
+        "R-DOCS"
+      ],
       "descriptionMarkdown": "Everything that shows how to write a RayX app moves to the new API in the same epic: `rayx new`'s RayX templates (`crates/rayx_cli/src/new.rs` and the files it writes), the gallery's crate, RayX's docs and crate docs, `AGENTS.md`, the `rayx-components` skill in RayX.Root, and RayX's memory states. Docs show each Rust example with its TS twin.",
       "sourceRefs": [
-        {"repositoryId": "rayx", "path": "crates/rayx_cli/src/new.rs"},
-        {"repositoryId": "rayx", "path": "docs/tsx.md"},
-        {"repositoryId": "rayx", "path": "examples/gallery/native/src/lib.rs"}
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/src/lib.rs"
+        }
       ],
       "memoryDecisionRefs": [
-        {"repositoryId": "rayx", "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"}
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
+      ]
+    },
+    {
+      "id": "d-ts-signatures",
+      "requirementIds": [
+        "R-RESOLVE",
+        "R-TS"
+      ],
+      "descriptionMarkdown": "TS members whose Rust signature takes or returns a `JsHandle`, a `Constructor` or a callback of them declare their TS signature with NSH's `#[ts(\"…\")]` ([dXnSix/nsh#265](https://github.com/dXnSix/nsh/pull/265); nsh `docs/dev/rust-classes.md`, \"Signatures written in TypeScript\"), which `nsh-macros` checks against the Rust function. `ServiceKey<T>` is exported once with `Registry::ts_alias(TsAlias { name: \"ServiceKey<T>\", ts: \"{ readonly prototype: T } | ServiceToken<T>\", doc })`, so signatures write `ServiceKey<T>`; `ServiceToken` and `OptionsToken` are `#[class(generic = \"T\")]`. `ServiceKey<T>` is `{ readonly prototype: T } | ServiceToken<T>`: a class declared with `private constructor()` (every RayX service class) is accepted through `prototype`, not through `new (...) => T`. `getRequiredService<T>(token: ServiceKey<T>): T`, `getService<T>(token: ServiceKey<T>): T | null`, `addSingleton<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this` and the other registrations alike; `getOptions<T>(token: OptionsToken<T>): { value: T }`. `ServiceToken<T>` and `OptionsToken<T>` are generic classes whose `T` TS checks. The startup interfaces keep their agreed TS shapes over `async fn` members with `#[ts(\"…\")]` on the trait's methods (`async fn is_initialized(&self) -> Result<bool, String>` with `#[ts(\"(): boolean\")]`; d-ts-startup). Each task's test group reads the generated `.d.ts` for the members it adds.",
+      "invariantsMarkdown": "- No TS call site needs a cast to use what it resolved.\n- A declared signature names the Rust member's parameters in order.",
+      "sourceRefs": [
+        {
+          "repositoryId": "nsh",
+          "path": "docs/dev/rust-classes.md"
+        }
+      ],
+      "memoryDecisionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
       ]
     }
   ]
