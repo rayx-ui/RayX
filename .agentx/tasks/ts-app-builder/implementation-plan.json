@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 3,
+  "revision": 5,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -27,12 +27,12 @@
       "root"
     ],
     "forbiddenPaths": [
-      "CHANGELOG.md",
-      "rust-toolchain.toml",
-      "release-plz.toml",
-      ".github/workflows/release-plz.yml",
-      ".github/workflows/release.yml",
-      "crates/rayx_components/src/theme/tokens.rs"
+      "rayx:CHANGELOG.md",
+      "rayx:rust-toolchain.toml",
+      "rayx:release-plz.toml",
+      "rayx:.github/workflows/release-plz.yml",
+      "rayx:.github/workflows/release.yml",
+      "rayx:crates/rayx_components/src/theme/tokens.rs"
     ]
   },
   "checks": [

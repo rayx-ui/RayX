@@ -1,25 +1,37 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 2,
-  "planRevision": 3,
+  "revision": 19,
+  "planRevision": 5,
   "specHashes": {
-    "requirements": "1f59f3b7660d9c9df837fdaea038a97750a48ae810a24454f25374a5ddd1892d",
-    "design": "2659c22e6a882718f883582ca0cb5121bf45f4593e98af15010db077461b5744",
-    "plan": "3380eeef42b023d6f94efafdb1d26b136f6dad42f81f7dc3531af4a36983d8c0"
+    "requirements": "b7fe0d3e3b4d3f9485102da3b993982a04f8bd459404d909b8e9169fcf448234",
+    "design": "c141ed9604990733d7dfc9766e5af178442bbea930087ded5da79868d00c7f7d",
+    "plan": "0f4a91b0174d5a0c8005ba8a4647015421ef85625fe358a5e0dd1e2c85005db9"
   },
   "tasks": {
     "t01-runtime-keys": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t02-thread-bound": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t03-startup-runtime": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t04-startup-key-default": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "ad0aed5e-2f17-4200-9c0b-3530a3aa7eff"
+      ]
     },
     "t05-nsh-pin": {
       "status": "pending"
@@ -76,28 +88,327 @@
       "status": "pending"
     }
   },
-  "validationBatches": {},
-  "checkResults": {},
-  "reviews": {},
-  "checkpoints": {},
-  "findings": [],
+  "validationBatches": {
+    "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7": {
+      "snapshot": {
+        "specHash": "e16f2822470dbccf53c136706a7d6354718324ca9bc0c0272c4489d06024a005",
+        "repositories": {
+          "rayx": "783bc21125b46e9f059f249541a3ab399953841970b4a855f6823853b4a432fb",
+          "root": "5d8e17dfcd54a002d19ae6f58cb1f0518845003d4a759a4020d24c0bb21bb62e"
+        }
+      },
+      "recordedAt": "2026-11-16T11:17:30Z"
+    }
+  },
+  "checkResults": {
+    "s1-core/c-di-runtime-keys/final": {
+      "checkId": "c-di-runtime-keys",
+      "boundaryId": "s1-core",
+      "phase": "final",
+      "batchId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "definitionHash": "49bb6d60e003ec1b70cd53fe3d8f9ae9cd96c05d83248f56300ab8cd9356c98e",
+      "basisHash": "3ee6201d2d5fae497600cea589e1a2504e70e992bea1a3d36f3470b21cabda31",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 12,
+      "durationSeconds": 1.2484,
+      "recordedAt": "2026-11-16T11:17:26Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s1-core-final-947b503959fc.log",
+      "logSha256": "01c3293d347d46368f7b958d3f457d921c72ab09373f6f46230e4f59a4cfe597",
+      "inputsHash": "64c2ec1142eb34ad67b63ee5df839c1adbdac6a889a0c8522925317c6278fcad"
+    },
+    "s1-core/c-di-thread-bound/final": {
+      "checkId": "c-di-thread-bound",
+      "boundaryId": "s1-core",
+      "phase": "final",
+      "batchId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "definitionHash": "34b7915ab6669c8f339ad74f52ea7c88e6c96c3dcedfd2d19282c9e0d2c56a15",
+      "basisHash": "8bfb82129b70444ef188597ff0eb66f0668749c89001d034073b6c44d302364f",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 13,
+      "durationSeconds": 0.7122,
+      "recordedAt": "2026-11-16T11:17:27Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s1-core-final-b67653c6ab04.log",
+      "logSha256": "18258230e4f20546e500fd202c779afebef59314362cda3bc0cdde94389b06ca",
+      "inputsHash": "3e9b333ac38e94078ad12edd52e56efa07b075b74fa0f85a3826d8f4aa62aedf"
+    },
+    "s1-core/c-core-wasm/final": {
+      "checkId": "c-core-wasm",
+      "boundaryId": "s1-core",
+      "phase": "final",
+      "batchId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "definitionHash": "3d78ef66e59a09f9c91941ebb34981bac473eea20b28e9cc5fb669581fb433bd",
+      "basisHash": "59c2792e713de70ec83cc0b9a8d6cf9137d99f784f13c1201935f017711b9d0e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 1.2519,
+      "recordedAt": "2026-11-16T11:17:28Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s1-core-final-f7ccdff0f512.log",
+      "logSha256": "7930d414b4a0542596fc43bfe9624a5a6b0862d3b53b947c1232f6af90fe44b1",
+      "inputsHash": "11f5fd028a40f5d51f65d17599f075dfb0aa414b70d8c879ca84c0e48d9ee65f"
+    },
+    "s1-core/c-di-startup-runtime/final": {
+      "checkId": "c-di-startup-runtime",
+      "boundaryId": "s1-core",
+      "phase": "final",
+      "batchId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "definitionHash": "90727d80238e145cfa74e09e15d0d451a2ee71f830031f4a993e484b30f8b725",
+      "basisHash": "28fc23e3673b02a21ce7514b034f1c46b4c27926a863144a91a301b3b569ee5f",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 13,
+      "durationSeconds": 0.8556,
+      "recordedAt": "2026-11-16T11:17:29Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s1-core-final-adac64c14d25.log",
+      "logSha256": "a5c2e46585b9460d1fc7ee7a0881cf674ac058fd2e4382d0414d4e0484827313",
+      "inputsHash": "a903c88ecbcc39903b440489920cfa43f1baa10e8688b89052a5515fdbcfe745"
+    },
+    "s1-core/c-di-startup-key/final": {
+      "checkId": "c-di-startup-key",
+      "boundaryId": "s1-core",
+      "phase": "final",
+      "batchId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "definitionHash": "b06a5fb2cdeb3becc91b377ff5be68d3a7088972fbb95bda0f84c37e089d51cc",
+      "basisHash": "b5cfc3238c944506353c696089aab8ee7445faeb3905cdeb2188d12cd80e65fb",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 9,
+      "durationSeconds": 0.751,
+      "recordedAt": "2026-11-16T11:17:30Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/ts-app-builder/s1-core-final-79a5cf5db107.log",
+      "logSha256": "5f117314c8b8c4cc6a419f716d9dd1017927007c4a25d3be1d9595b153ad6636",
+      "inputsHash": "3d465664f587667c8bbd3df121514064165fbac14b132613dbc02a0a3ec1aae0"
+    }
+  },
+  "reviews": {
+    "s1-core": {
+      "reviewerId": "s1-core-reviewer-subagent-7c41e9",
+      "snapshotId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "criterionIds": [
+        "CORE-1",
+        "CORE-2",
+        "CORE-3",
+        "CORE-4"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/key.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1",
+            "CORE-3"
+          ],
+          "sha256": "b7eede35167f2eff0b3c6c439782e7f85fbca6296a3c1cb197fbe22e866b5503"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1",
+            "CORE-2"
+          ],
+          "sha256": "ed0ea739f4d37221619dd44aa790cd1600d9f9023b460369c3f773bcf4a6967e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/provider.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1",
+            "CORE-2",
+            "CORE-3",
+            "CORE-4"
+          ],
+          "sha256": "2f900529e800327457928f5aa3d123aa47779998d29280b88cbbecc531dcb1ca"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/thread_bound.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-2"
+          ],
+          "sha256": "f1edb63306f8b40fd1b6aa8b847fcb786d3625414393b4388ea807facdc71570"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/lifecycle.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-3",
+            "CORE-4"
+          ],
+          "sha256": "7ffb693248825448bc26b4ee8d612a5eb98b64aacf9c22dd92c5e088497d4a44"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_runtime_keys.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-1"
+          ],
+          "sha256": "495b9297b9e7a4475122583109caa6e4834bf0590ce8e6a7afbe9cb6599fa871"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_thread_bound.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-2"
+          ],
+          "sha256": "fd042daca3d8214ddfcfccb8883560b04f5a21a42d3ae9fe1c70382cdde19fb6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_startup_runtime.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-3"
+          ],
+          "sha256": "87444b868bcfbf2e4ce6b0f03765006c93a95ee6c87b1f03fad9b225c3ac003e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_startup_registration_key.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CORE-4"
+          ],
+          "sha256": "70c8dec1084aec909c44c91af5cbb9c2c05fcb7b2a02f71ce42eba5b337ca3dd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/dependency-injection.md",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-1",
+            "CORE-2"
+          ],
+          "sha256": "e791ce058adebca1ea88711e7ef0cd3114cda250b73114bfd962285087c69baf"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/startup.md",
+          "kind": "source",
+          "criterionIds": [
+            "CORE-3",
+            "CORE-4"
+          ],
+          "sha256": "2ea199e39be5366292d495bf2e53067dc701860b4dd28c8202998f4200839b8a"
+        }
+      ],
+      "summaryMarkdown": "Full review at plan revision 5 (the stored review was cleared by the repair batch and CORE-2/CORE-3 changed, so no reattest). CORE-1: one `ServiceKey` space; runtime and type keys share descriptors, caches, resolution guards, scope and disposal paths; factory errors are not cached; typed behavior unchanged apart from a poisoned-lock or wrong-API resolve now naming its cause instead of `Missing`. CORE-2: thread-bound slots without `unsafe`; a wrong-thread resolve fails before touching the table; values are never dropped off their thread (drains run outside the `RefCell` borrow, the table drops with its thread); the API kind is checked before any factory runs or cached value is returned. CORE-3: factories are made (bounded by the default timeout under a timer) before ordering over both key kinds; per-service timeouts, concurrent layers, failures and timeouts all named. CORE-4: registration-key defaulting for every `add_startup_*` form, explicit keys kept. The four test groups prove each, including the new factory-timeout and wrong-API tests; my scratch probe confirmed the three repairs. The earlier findings f1-f3 are resolved. Residual, non-blocking: a scope whose descriptor snapshot predates the root re-registering a key as the other kind can read that kind's cached singleton as an opaque value (never the thread-bound value).",
+      "findingIds": [
+        "s1-core-f1-async-factory-unbounded",
+        "s1-core-f2-wrong-api-resolve-makes-value",
+        "s1-core-f3-orphan-drain-docs"
+      ],
+      "recordedAt": "2026-11-16T11:19:13Z"
+    }
+  },
+  "checkpoints": {
+    "s1-core": {
+      "snapshotId": "c99bd68784df5d324b7239fdece5a2a0122e277fca9f124d15800eb7e4e6ada7",
+      "commits": {
+        "rayx": "6a6964cbf95b6cdccb312305d8601d351185ddb8",
+        "root": "2f4f410e69b4d480d254935bb9faea994f8846ac"
+      },
+      "reviewHash": "84eac876d05446889a4746cf700a09d969d47d0052059f70b096a41d644065b9",
+      "recordedAt": "2026-11-16T11:22:06Z"
+    }
+  },
+  "findings": [
+    {
+      "id": "s1-core-f1-async-factory-unbounded",
+      "criterionIds": [
+        "CORE-3"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "Resolved: under `initialize_with_timer` each startup factory races the registry's default timeout; expiry fails startup as `timed_out` under the registration key with the display name.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/lifecycle.rs",
+          "symbol": "StartupRegistry::resolved_services"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_startup_runtime.rs",
+          "symbol": "di_startup_runtime_unsettled_factory_times_out_naming_the_service"
+        }
+      ],
+      "boundaryId": "s1-core"
+    },
+    {
+      "id": "s1-core-f2-wrong-api-resolve-makes-value",
+      "criterionIds": [
+        "CORE-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "Resolved: registrations record `thread_bound`, and `resolve_erased` refuses a resolve through the other API before any factory runs or a cached value is returned, typed and keyed.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/registry.rs",
+          "symbol": "ServiceRegistry::resolve_erased"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_thread_bound.rs",
+          "symbol": "di_thread_bound_resolve_through_the_shared_api_makes_nothing"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/tests/di_thread_bound.rs",
+          "symbol": "di_thread_bound_api_on_a_shared_service_makes_nothing"
+        }
+      ],
+      "boundaryId": "s1-core"
+    },
+    {
+      "id": "s1-core-f3-orphan-drain-docs",
+      "criterionIds": [
+        "CORE-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "Resolved: the docs now say orphans are released at the owning thread's next thread-bound resolve (table access) or by `release_orphaned_thread_bound_services`, matching the code.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_core/src/di/thread_bound.rs",
+          "symbol": "release_orphaned_thread_bound_services"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/dependency-injection.md"
+        }
+      ],
+      "boundaryId": "s1-core"
+    }
+  ],
   "handoffMarkdown": "",
   "protectedPaths": {
     "rayx": {
-      "CHANGELOG.md": "7d66bfa0d9c93f2194c4456b411704b3fff28e0468a69e36a96ecf8c61583325",
-      "rust-toolchain.toml": "c6d224ba07d323514695abf50856d62efb4115b2db068c5970f542848495b64b",
-      "release-plz.toml": "e2d5aae5f1f860065e97d98e859d621a5990e3b9875fc6b1c45a3444fd177a7d",
-      ".github/workflows/release-plz.yml": "31c80f3230202c16dd47f6cb29d683dfa92dd6a502e2ccecba9fdca96997feab",
-      ".github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156",
-      "crates/rayx_components/src/theme/tokens.rs": "8ee3d5b68e0ad8648857cf4480cdc16bbfc664733f2f0831a42f84e9c7d2777e"
+      "rayx:CHANGELOG.md": "7d66bfa0d9c93f2194c4456b411704b3fff28e0468a69e36a96ecf8c61583325",
+      "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",
+      "rayx:release-plz.toml": "a89bc37b668e636c8aaea8dfcf57d77281ef8bd87fdaebc9dad225fc555085a5",
+      "rayx:.github/workflows/release-plz.yml": "31c80f3230202c16dd47f6cb29d683dfa92dd6a502e2ccecba9fdca96997feab",
+      "rayx:.github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156",
+      "rayx:crates/rayx_components/src/theme/tokens.rs": "8ee3d5b68e0ad8648857cf4480cdc16bbfc664733f2f0831a42f84e9c7d2777e"
     },
-    "root": {
-      "CHANGELOG.md": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "rust-toolchain.toml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "release-plz.toml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      ".github/workflows/release-plz.yml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      ".github/workflows/release.yml": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "crates/rayx_components/src/theme/tokens.rs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
-    }
+    "root": {}
   }
 }

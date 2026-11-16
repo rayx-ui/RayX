@@ -43,7 +43,7 @@
         "R-CORE"
       ],
       "descriptionMarkdown": "Thread-bound values are kept without `unsafe`: the provider stores a `Send + Sync` slot (an id and the owning thread's id), and the value itself lives in a `thread_local!` table of the thread that made it, keyed by the slot id. Resolving on that thread reads the table; on any other thread it fails with `ServiceResolutionError::WrongThread` (naming the service). Dropping the last slot on the owning thread removes the value; dropping it elsewhere pushes the id onto a shared orphan list that the owning thread drains on its next table access (and the table drops with its thread), so a value is never dropped off its thread. `add_singleton_thread_bound` / `_scoped_` / `_transient_` (typed and keyed) register such services; their factories run on the resolving thread.",
-      "invariantsMarkdown": "- No `unsafe` and no `send_wrapper`-style unchecked `Send`.\n- A wrong-thread resolve never touches the value.",
+      "invariantsMarkdown": "- No `unsafe` and no `send_wrapper`-style unchecked `Send`.\n- A wrong-thread resolve never touches the value.\n- A registration records whether it is thread-bound; the API kind is checked before any factory runs or cache entry is read.",
       "rationaleMarkdown": "`send_wrapper` needs `unsafe` underneath and panics when dropped on the wrong thread, which a provider released by a background task would do. The thread-local table keeps every access and drop on the owning thread and works on wasm32.",
       "sourceRefs": [
         {
@@ -68,7 +68,7 @@
         "R-CORE"
       ],
       "descriptionMarkdown": "The startup registry accepts asynchronous factories: `StartupRegistry::add_resolved_async(key, factory)` where the factory returns a `LocalBoxFuture<Result<StartupService, StartupInitializationFailure>>`. The run resolves every startup service first (awaiting async factories), then orders layers over both key kinds, then initializes as today. `startup_service_type` becomes a provided method returning `None`; the registry keys a service by the explicit type when given, else by its registration key (`add_startup_singleton::<T>` records `T`, the `_as::<dyn X>` forms `dyn X`), and `StartupRegistry::add(service)` (no registration key) by the concrete type.",
-      "invariantsMarkdown": "- One run, one ordering, one default timeout, one failure report for every startup service.\n- Existing implementations of `startup_service_type` keep their keys.",
+      "invariantsMarkdown": "- One run, one ordering, one default timeout, one failure report for every startup service.\n- Existing implementations of `startup_service_type` keep their keys.\n- An asynchronous factory is bounded like an initialization: under a timer it races the registry's default timeout, and expiry is a timed-out failure under its registration key.",
       "sourceRefs": [
         {
           "repositoryId": "rayx",
