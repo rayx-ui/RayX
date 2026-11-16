@@ -78,7 +78,10 @@ changelog_update = false
 [[package]]
 name = "rayx_components"
 version_group = "rayx"
-# RayX's component library and theme, like `rayx_core`.
+# RayX's component library and theme, like `rayx_core`. Its first release: no `v*` tag has the
+# package yet, so this name, which matches no tag, makes it a new package (docs/releasing.md).
+# Remove the line right after that release's tag.
+git_tag_name = "rayx_components-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -87,7 +90,9 @@ changelog_update = false
 name = "rayx-gallery"
 version_group = "rayx"
 # The gallery app's crate (`examples/gallery/native`): it takes the workspace's version, and is
-# never released.
+# never released. No `v*` tag has it and none will, so this name, which matches no tag, keeps
+# release-plz from looking for it in the previous release's tag (docs/releasing.md). Keep it.
+git_tag_name = "rayx-gallery-v{{ version }}"
 release = false
 
 [[package]]
@@ -110,7 +115,9 @@ one release tag `vX.Y.Z`. The format follows
 Conventional Commits by release-plz.
 
 """
-# Each `Migration:` footer of a commit is printed as a nested line under its entry. The
+# Each `Migration:` footer of a commit is printed as a nested line under its entry, read from the
+# commit's raw message so that a footer wrapped over several lines is joined into one (the footer
+# parser drops some continuation lines, such as those starting with inline code). The
 # `## [X.Y.Z] - YYYY-MM-DD` heading is the form dist's changelog parser reads for the release notes.
 body = """
 ## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
@@ -122,8 +129,8 @@ body = """
 {% else -%}
 - {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}
 {% endif -%}
-{% for footer in commit.footers -%}
-{% if footer.token == "Migration" %}{{ "  " }}- Migration: {{ footer.value }}
+{% for note in commit.raw_message | split(pat="\nMigration: ") -%}
+{% if not loop.first %}{{ "  " }}- Migration: {{ note | trim | replace(from="\n", to=" ") }}
 {% endif -%}
 {% endfor -%}
 {% endfor -%}

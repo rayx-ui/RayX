@@ -57,7 +57,13 @@ release pull request counts the crate as new again and repeats its history. `ray
 `rayx_core` this way in `v0.5.0`. A new crate takes the same route: `rayx_runtime` and `rayx`, which
 the `v0.5.0` tag does not have, carried the line until `v0.5.1`, and `rayx-cli`, which moved here
 from `rayx-ui/RayX.CLI` (never released there), carried `git_tag_name = "rayx-cli-v{{ version }}"`
-until `v0.6.0`.
+until `v0.6.0`. `rayx_components` and `rayx_devtools_protocol` carry the line until the
+release after `v0.10.1`. A crate that is never released (`release = false`, such as `rayx-gallery`)
+still needs it, and keeps it: release-plz looks every workspace crate up in the previous tag.
+
+A `Migration:` footer may wrap over several lines: the changelog template reads it from the commit's
+raw message and joins its lines (the footer parser alone drops some continuation lines, such as
+those that start with inline code).
 
 ## Commit types and the 0.x policy
 
