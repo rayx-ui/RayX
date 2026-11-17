@@ -12,8 +12,8 @@ use rayx_app::ChangeSubscription;
 use rayx_runtime::services::i18n::{Args, I18nService as I18n, Value};
 use std::sync::Arc;
 
-use super::listeners::Listeners;
-use super::provider::ServiceClass;
+use crate::di::provider_ts::ServiceClass;
+use crate::services::listeners_ts::Listeners;
 
 /// The app's translations, for TSX: `const i18n = services.getRequiredService(I18nService)` once
 /// `await builder.start()` resolved, then `i18n.t("cart", { n: 3 })`,

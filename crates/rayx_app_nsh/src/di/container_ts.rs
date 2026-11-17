@@ -23,7 +23,7 @@ use rayx_app::di::{
     LocalService, RuntimeKey, ServiceLifetime, ServiceResolutionError, ThreadBound,
 };
 
-use super::provider::{ServiceKeyArg, ServiceProvider, provider_for, root_of};
+use crate::di::provider_ts::{ServiceKeyArg, ServiceProvider, provider_for, root_of};
 
 /// A TS service's factory: the resolving `ServiceProvider` in, the service's JS object out.
 pub(crate) type Factory = Callback<Instance<ServiceProvider>, JsHandle>;

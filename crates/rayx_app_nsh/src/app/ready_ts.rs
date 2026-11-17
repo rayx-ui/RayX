@@ -9,7 +9,7 @@ use nsh_core::prelude::*;
 use rayx_app::di::ThreadBound;
 use rayx_app::{RayXAppBuilder, ReadyAppBuilderExt as _, ReadyError};
 
-use super::provider::{ServiceProvider, root_of};
+use crate::di::provider_ts::{ServiceProvider, root_of};
 
 /// A TS ready hook: the context in, nothing (or a promise of nothing) out.
 pub(crate) type Hook = Callback<Instance<ReadyContext>, ()>;

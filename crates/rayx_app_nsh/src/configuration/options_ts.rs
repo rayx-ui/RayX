@@ -7,6 +7,14 @@
 //! (`services.getOptions(Token)`) runs the callbacks on the spot ([`Callback::call`]);
 //! `validateOnStart` runs them in the startup run, before any startup service initializes
 //! ([`Callback::call_async`]).
+//!
+//! Here too: what the options objects of TS builder methods share
+//! (`builder.addI18n(options => { options.defaultLanguage("en"); })`). Each records what its
+//! methods set, in order, as plain data. The builder method replays the record in the Rust
+//! `configure` closure it passes to the Rust extension method of its name, so what TS sets
+//! applies after the options bound from configuration, exactly as a Rust closure's changes do. An
+//! options object is valid during its callback only: it is disposed after it, and using it later
+//! throws.
 
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
@@ -152,10 +160,14 @@ impl Added {
         configure: Option<Callback<Instance<OptionsBuilder>>>,
     ) -> Result<Self, String> {
         let mut on_start = false;
-        let steps = super::options::record(OptionsBuilder::new(), configure, |options| {
-            on_start = options.on_start;
-            std::mem::take(&mut options.steps)
-        })?;
+        let steps = crate::configuration::options_ts::record(
+            OptionsBuilder::new(),
+            configure,
+            |options| {
+                on_start = options.on_start;
+                std::mem::take(&mut options.steps)
+            },
+        )?;
         Ok(Self { steps, on_start })
     }
 
@@ -263,7 +275,7 @@ fn add_on_start(provider: &mut Provider, shared: SharedOptions, options: &TsOpti
                     failures.join("; ")
                 )));
             }
-            Ok(Arc::new(super::container::Made) as StartupService)
+            Ok(Arc::new(crate::di::container_ts::Made) as StartupService)
         }
         .boxed_local() as StartupServiceFuture
     });
@@ -361,4 +373,39 @@ pub(crate) fn resolve(
         None => token.with(|token| token.defaults.clone()),
     };
     Ok(serde_json::json!({ "value": value }))
+}
+
+/// Calls `configure` (when there is one) with a new recording options object and gives what it
+/// recorded; the object is disposed after the call. A callback that throws fails with its
+/// message.
+pub(crate) fn record<C, S>(
+    options: C,
+    configure: Option<Callback<Instance<C>>>,
+    steps: impl FnOnce(&mut C) -> Vec<S>,
+) -> Result<Vec<S>, String>
+where
+    C: nsh_core::element::Class,
+{
+    let Some(configure) = configure else {
+        return Ok(Vec::new());
+    };
+    let options = Instance::new(options);
+    let called = configure.call(options.clone());
+    let recorded = if options.is_disposed() {
+        Vec::new()
+    } else {
+        let recorded = options.with_mut(steps);
+        options.dispose();
+        recorded
+    };
+    called.map(|()| recorded)
+}
+
+/// Records `step` on `this` and gives it back, for chaining.
+pub(crate) fn push<C: nsh_core::element::Class>(
+    this: Instance<C>,
+    step: impl FnOnce(&mut C),
+) -> Instance<C> {
+    this.with_mut(step);
+    this
 }

@@ -24,8 +24,8 @@ use rayx_app::di::{
     WeakServiceProvider,
 };
 
-use super::container::SharedTsService;
-use super::provider::ServiceToken;
+use crate::di::container_ts::SharedTsService;
+use crate::di::provider_ts::ServiceToken;
 
 pub use nsh_core::element::Exception;
 
@@ -176,7 +176,7 @@ fn resolved(
             },
         })
         .and_then(|value| {
-            super::container::object(value, key)
+            crate::di::container_ts::object(value, key)
                 .map_err(|message| ContractError::Unavailable { contract, message })
         })
 }

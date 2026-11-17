@@ -26,46 +26,44 @@
 //! [`FontAliasOptions`]), [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
 //! `configureAppConfiguration`: what a builder method's callback gets, valid during the call.
 //!
-//! The structs live here, not at the crate root, so their names (`I18nService`) are the Rust
+//! The structs live beside their services (`services/<name>/`, `di/`, `app/`, `configuration/`)
+//! and are re-exported here, not at the crate root, so their names (`I18nService`) are the Rust
 //! services' without clashing with [`rayx_runtime`]'s types. [`register`] adds them all to a UI
 //! set.
 
-mod app_options;
-mod builder;
-mod container;
-mod contract;
-mod i18n;
-mod listeners;
-mod options;
-mod provider;
-mod ready;
-mod region;
-mod services;
-mod startup;
-
 use nsh_core::element::{Registry, TsAlias};
 
-pub use app_options::{OptionsBuilder, OptionsToken};
-pub use builder::RayXAppBuilder;
+pub use crate::app::builder_ts::RayXAppBuilder;
+pub use crate::app::ready_ts::ReadyContext;
+pub use crate::configuration::configuration_builder_ts::ConfigurationBuilder;
+pub use crate::configuration::options_ts::{OptionsBuilder, OptionsToken};
 #[doc(hidden)]
-pub use contract::__private;
-pub use contract::{Contract, ContractError, ContractRegistryExt, Exception, contract_token};
-pub use i18n::{DateFormat, DateLength, I18nService, NumberFormat, NumberKind, TimeDetail};
-pub use options::{
-    ApplicationConfigurationOptions, AssetOptions, ConfigurationBuilder, FontAliasOptions,
-    FontOptions, I18nOptions, InputMapOptions, NavigationOptions, RouteOptions,
+pub use crate::di::contract_ts::__private;
+pub use crate::di::contract_ts::{
+    Contract, ContractError, ContractRegistryExt, Exception, contract_token,
 };
-pub use provider::{Resolved, ServiceKeyArg, ServiceProvider, ServiceToken};
-pub use ready::ReadyContext;
-pub use region::NavigationRegion;
-pub use services::{
-    ApplicationConfigurationService, AssetService, FontService, KeyValueStore, NavigationService,
-    PlatformInfoService, SuspensionService,
-};
-pub use startup::{
+pub use crate::di::provider_ts::{Resolved, ServiceKeyArg, ServiceProvider, ServiceToken};
+pub use crate::di::startup_ts::{
     AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
     StartupInitializationContext, StartupInitializationState,
 };
+pub use crate::services::application_configuration::application_configuration_ts::ApplicationConfigurationService;
+pub use crate::services::application_configuration::options_ts::ApplicationConfigurationOptions;
+pub use crate::services::assets::assets_ts::AssetService;
+pub use crate::services::assets::options_ts::AssetOptions;
+pub use crate::services::fonts::fonts_ts::FontService;
+pub use crate::services::fonts::options_ts::{FontAliasOptions, FontOptions};
+pub use crate::services::i18n::i18n_ts::{
+    DateFormat, DateLength, I18nService, NumberFormat, NumberKind, TimeDetail,
+};
+pub use crate::services::i18n::options_ts::I18nOptions;
+pub use crate::services::input_map::options_ts::InputMapOptions;
+pub use crate::services::navigation::navigation_ts::NavigationService;
+pub use crate::services::navigation::options_ts::{NavigationOptions, RouteOptions};
+pub use crate::services::navigation::region_ts::NavigationRegion;
+pub use crate::services::platform::platform_ts::PlatformInfoService;
+pub use crate::services::storage::storage_ts::KeyValueStore;
+pub use crate::services::suspension::suspension_ts::SuspensionService;
 
 /// What names a service of type `T` in TS: its class (a RayX service's, whose constructor is
 /// private, so it is taken through its `prototype`), or a [`ServiceToken`].

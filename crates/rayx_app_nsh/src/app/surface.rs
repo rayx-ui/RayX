@@ -286,7 +286,7 @@ impl StartAppBuilderExt for RayXAppBuilder {
 async fn initialize(builder: RayXAppBuilder) -> Result<ServiceProvider, AppError> {
     crate::binding::start_dispatcher();
     let root = builder.add_nsh_services().build_async().await?;
-    crate::platform::seed_platform(&root);
+    crate::services::platform::sync::seed_platform(&root);
     let registry = root.startup_registry().clone();
     registry
         .initialize_with_timer(
@@ -294,8 +294,8 @@ async fn initialize(builder: RayXAppBuilder) -> Result<ServiceProvider, AppError
             |timeout: Duration| timer(timeout),
         )
         .await?;
-    crate::i18n_locale::keep_nsh_locale(&root);
-    crate::translate::follow_i18n_changes(&root);
+    crate::services::i18n::locale::keep_nsh_locale(&root);
+    crate::services::i18n::translate::follow_i18n_changes(&root);
     // On the engine's thread, before the app counts as ready.
     if let Some(hooks) = root.service::<ReadyHooks>() {
         hooks.run(&root).await?;

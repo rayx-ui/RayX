@@ -15,7 +15,7 @@ a dependency. The workspace has eight crates sharing one version, and the galler
   `rayx_app_nsh` implements. `docs/services.md` describes each service and how it is registered.
 - `crates/rayx_app_nsh`: the NSH layer: the app's start on each engine surface (a Rust root's
   `RayXAppBuilder::new()….start()`), a root provider per surface, a scope per screen, view models
-  activated with their screen, the TS side (`src/ts/`: TS's `RayXAppBuilder` with a camelCase
+  activated with their screen, the TS side (the `ts` module, its classes beside what they wrap: TS's `RayXAppBuilder` with a camelCase
   twin of every builder method, its `ServiceProvider`, services written in TS in the one
   container, contracts and the services' classes under their Rust names), and the NSH side of
   the services (bundled settings, asset reading, font registration, the device's state). With `rayx_components`, it is one of the two crates that depend on NSH.

@@ -6,11 +6,12 @@ use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use rayx_runtime::services::navigation::{NavigationArgs, NavigationService, Route};
 
-use super::listeners::Listeners;
+use crate::services::json;
+use crate::services::listeners_ts::Listeners;
 
 /// Posts a region's pages to a listener.
 type PostPages = dyn Fn(&NavigationService, &str) + Send + Sync;
-use crate::region::pages;
+use crate::services::navigation::region::pages;
 
 /// A navigation region for TSX: `navigationService.region("panel")`, then `navigate`, `back`,
 /// `forward`, `goTo(index)` and `close`; `pages()` is its journal up to the current entry (for
@@ -21,10 +22,6 @@ pub struct NavigationRegion {
     navigation: Arc<NavigationService>,
     name: String,
     listeners: Listeners,
-}
-
-fn json(value: &impl serde::Serialize) -> JsonValue {
-    serde_json::to_value(value).unwrap_or(JsonValue::Null)
 }
 
 #[class]

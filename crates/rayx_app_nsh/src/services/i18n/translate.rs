@@ -42,7 +42,7 @@ pub fn translate(id: &str, args: &Args) -> String {
     if let Some(revision) = try_global::<I18nRevision>() {
         revision.with(|_| ());
     }
-    crate::surface::tracked_root()
+    crate::app::surface::tracked_root()
         .and_then(|root| root.service::<I18nService>())
         .map_or_else(|| id.to_owned(), |i18n| i18n.format(id, args))
 }

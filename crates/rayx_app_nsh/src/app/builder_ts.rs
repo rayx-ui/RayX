@@ -20,19 +20,20 @@ use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 use rayx_runtime::services::storage::StorageAppBuilderExt as _;
 use rayx_runtime::services::suspension::SuspensionAppBuilderExt as _;
 
-use super::options::{
+use crate::configuration::options_ts::record;
+use crate::ts::{
     ApplicationConfigurationOptions, AssetOptions, ConfigurationBuilder, FontOptions, I18nOptions,
-    InputMapOptions, NavigationOptions, record,
+    InputMapOptions, NavigationOptions,
 };
 use std::collections::HashMap;
 
 use nsh_core::JsonValue;
 use rayx_app::di::RuntimeKey;
 
-use super::app_options::{self, OptionsBuilder, OptionsToken};
-use super::container::{self, Factory, TsService};
-use super::provider::{ServiceKeyArg, ServiceProvider};
-use super::ready;
+use crate::app::ready_ts as ready;
+use crate::configuration::options_ts::{self as app_options, OptionsBuilder, OptionsToken};
+use crate::di::container_ts::{self as container, Factory, TsService};
+use crate::di::provider_ts::{ServiceKeyArg, ServiceProvider};
 use crate::{AppError, AppSettingsAppBuilderExt as _, NshServicesAppBuilderExt as _};
 use rayx_app::AppBuilder as _;
 use rayx_app::di::{ServiceLifetime, StartupServiceType};
@@ -542,10 +543,10 @@ impl RayXAppBuilder {
             this.with_mut(|this| this.builder.take())
         };
         Later::new(async move {
-            let root = crate::surface::start_app_with(builder).await?;
-            crate::platform::keep_platform_current();
+            let root = crate::app::surface::start_app_with(builder).await?;
+            crate::services::platform::sync::keep_platform_current();
             crate::devtools::app_ready(Some(&sys));
-            Ok::<_, AppError>(super::provider::root_of(&sys, root))
+            Ok::<_, AppError>(crate::di::provider_ts::root_of(&sys, root))
         })
     }
 }
@@ -637,7 +638,7 @@ fn add_ts_service(
             (contract.add)(services, lifetime, service.clone());
         }
         match (startup, contract) {
-            (true, _) => super::startup::add(
+            (true, _) => crate::di::startup_ts::add(
                 services,
                 service,
                 contract.map_or_else(

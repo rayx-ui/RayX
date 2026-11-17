@@ -22,8 +22,8 @@ use rayx_app::di::{
     StartupServiceError, StartupServiceFuture, StartupServiceType, ThreadBound,
 };
 
-use super::container::{self, SharedTsService};
-use super::provider::{ServiceKeyArg, ServiceProvider, root_of};
+use crate::di::container_ts::{self as container, SharedTsService};
+use crate::di::provider_ts::{ServiceKeyArg, ServiceProvider, root_of};
 
 /// A service written in TS that initializes asynchronously when the app starts: `start()`
 /// awaits its `initialize` once, within its timeout, before the app is ready.

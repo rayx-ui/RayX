@@ -80,13 +80,13 @@ impl ServiceProvider {
     #[ts("<T>(token: OptionsToken<T>): { value: T }")]
     pub fn get_options(
         this: Instance<Self>,
-        token: Instance<super::OptionsToken>,
+        token: Instance<crate::ts::OptionsToken>,
     ) -> Result<nsh_core::JsonValue, String> {
         if this.is_disposed() {
             return Err("ServiceProvider is disposed".into());
         }
         let services = this.with(|provider| provider.provider.clone());
-        super::app_options::resolve(&services, &token)
+        crate::configuration::options_ts::resolve(&services, &token)
     }
 
     /// A child scope: it shares this provider's singletons and has scoped services of its own.
@@ -146,7 +146,7 @@ fn resolve(
     let services = this.with(|provider| provider.provider.clone());
     match key {
         Some(key) => match services.required_thread_bound_service_by_key(&key) {
-            Ok(service) => super::container::object(service, &key).map(Resolved::object),
+            Ok(service) => crate::di::container_ts::object(service, &key).map(Resolved::object),
             Err(_) if !required && !services.contains_service_by_key(&key) => Ok(Resolved::null()),
             Err(error) => Err(error.to_string()),
         },
@@ -174,7 +174,7 @@ struct ClassToken {
 
 /// RayX's service classes by their constructors (what a token that is one names).
 static RESOLVERS: LazyLock<HashMap<Constructor, ClassToken>> = LazyLock::new(|| {
-    use super::services::{
+    use crate::ts::{
         ApplicationConfigurationService, AssetService, FontService, KeyValueStore,
         NavigationService, PlatformInfoService, SuspensionService,
     };
@@ -188,7 +188,7 @@ static RESOLVERS: LazyLock<HashMap<Constructor, ClassToken>> = LazyLock::new(|| 
         )
     }
     HashMap::from([
-        entry::<super::I18nService>(),
+        entry::<crate::ts::I18nService>(),
         entry::<NavigationService>(),
         entry::<KeyValueStore>(),
         entry::<ApplicationConfigurationService>(),
@@ -359,7 +359,7 @@ pub struct ServiceKeyArg {
     handle: JsHandle,
     name: String,
     /// The contract the token is of (a contract's `ServiceToken`).
-    contract: Option<super::contract::ContractDef>,
+    contract: Option<crate::di::contract_ts::ContractDef>,
 }
 
 impl ServiceKeyArg {
@@ -375,7 +375,7 @@ impl ServiceKeyArg {
     }
 
     /// The contract the token is of.
-    pub(crate) fn contract(&self) -> Option<super::contract::ContractDef> {
+    pub(crate) fn contract(&self) -> Option<crate::di::contract_ts::ContractDef> {
         self.contract
     }
 
@@ -475,12 +475,12 @@ fn token_name(value: JsIn<'_>) -> String {
 pub struct ServiceToken {
     name: String,
     /// The contract it is the token of (`#[contract]`'s token function makes it).
-    contract: Option<super::contract::ContractDef>,
+    contract: Option<crate::di::contract_ts::ContractDef>,
 }
 
 impl ServiceToken {
     /// A contract's token.
-    pub(crate) fn contract(name: String, contract: super::contract::ContractDef) -> Self {
+    pub(crate) fn contract(name: String, contract: crate::di::contract_ts::ContractDef) -> Self {
         Self {
             name,
             contract: Some(contract),

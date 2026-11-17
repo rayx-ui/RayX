@@ -82,18 +82,12 @@
 // own tests too.
 extern crate self as rayx_app_nsh;
 
+mod app;
 mod binding;
+pub mod configuration;
 mod devtools;
-mod i18n_locale;
-mod location;
-mod platform;
-mod region;
-mod screen;
-mod settings;
-mod storage;
-mod surface;
-mod suspension;
-mod translate;
+pub mod di;
+pub mod services;
 pub mod ts;
 
 /// The umbrella's `#[rayx::native_module("spec")]`, which names `rayx`: use it through `rayx`.
@@ -108,29 +102,31 @@ pub use rayx_app::{
     ConfigurationBuilder, ConfigurationError, Options, OptionsBuilder, OptionsError,
     OptionsMonitor, OptionsSnapshot, RayXAppBuilder, ReadyAppBuilderExt, ReadyContext, ReadyError,
     ReadyHooks, ReadyResult, ServiceAppBuilderExt, ServiceLifetime, ServiceProvider,
-    ServiceResolutionError, StartupRegistry, configuration, di, options, prelude, services,
+    ServiceResolutionError, StartupRegistry, options, prelude,
 };
 
+pub use app::surface::{AppError, AppState, StartAppBuilderExt, app_services, app_state, install};
 pub use binding::{
     Observable, ReactiveCommand, UiCommand, use_command, use_list, use_reactive, use_stream,
     use_two_way,
 };
+pub use configuration::settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
 pub use devtools::{
     DevLayer, DevTools, DevToolsOptions, dev_layer, devtools_backoff, devtools_enabled,
     devtools_hook_calls, start_devtools,
 };
-pub use location::{NshLocationSynchronizer, location_of_address};
-pub use platform::{
-    NshAssetReader, NshFontRegistrar, NshServicesAppBuilderExt, platform_snapshot,
-    use_platform_sync,
-};
+pub use di::screen::{ScreenScope, services, use_screen_scope, use_view_model};
 pub use rayx_runtime;
-pub use region::{navigation_region, navigation_view};
-pub use screen::{ScreenScope, services, use_screen_scope, use_view_model};
-pub use settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
-pub use storage::{NshKeyValueStore, STORAGE_PREFIX};
-pub use surface::{AppError, AppState, StartAppBuilderExt, app_services, app_state, install};
-pub use suspension::NshSuspensionHost;
+#[doc(inline)]
+pub use services::NshServicesAppBuilderExt;
+pub use services::assets::reader::NshAssetReader;
+pub use services::fonts::registrar::NshFontRegistrar;
 #[doc(hidden)]
-pub use translate::__private;
-pub use translate::{checked, translate};
+pub use services::i18n::translate::__private;
+pub use services::i18n::translate::{checked, translate};
+pub use services::navigation::location::{NshLocationSynchronizer, location_of_address};
+pub use services::navigation::region::{navigation_region, navigation_view};
+pub use services::platform::snapshot::platform_snapshot;
+pub use services::platform::sync::use_platform_sync;
+pub use services::storage::store::{NshKeyValueStore, STORAGE_PREFIX};
+pub use services::suspension::host::NshSuspensionHost;
