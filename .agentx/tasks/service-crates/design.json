@@ -331,6 +331,23 @@
           "path": ".agentx/memory/decisions/workspace/2026-11-14-rayx-root-control-root.md"
         }
       ]
+    },
+    {
+      "id": "d-plain-startup-dependency",
+      "requirementIds": [
+        "R-VALIDATION",
+        "R-SERVICES"
+      ],
+      "descriptionMarkdown": "Extends d-validation's startup ordering by trait: a startup dependency on a key that no startup service is keyed by is met when a service registered under that key is no startup service (an app's own implementation, a `rayx_app::testing` fake): there is nothing to wait for. A startup service registered under the key with a startup key of its own still never meets it, so ordering is never skipped silently. `StartupRegistry` keeps what each startup service was registered as and asks the run's provider whether the key is registered.",
+      "invariantsMarkdown": "- A dependency on a key nothing is registered under still fails startup.\n- A dependency on a startup service's registration key, when it reports another startup key, still fails.",
+      "rationaleMarkdown": "Found in `s4` (t09): `add_fonts` and `add_i18n` over an app's own `dyn AssetService`, or a test's fake, failed startup, which contradicts R-SERVICES' replaceability. New group `crates/rayx_app/tests/di_startup_plain_dependency.rs`.",
+      "sourceRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/lifecycle.rs",
+          "symbol": "StartupRegistry"
+        }
+      ]
     }
   ]
 }

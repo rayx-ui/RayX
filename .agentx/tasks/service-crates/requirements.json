@@ -114,6 +114,11 @@
           "id": "VAL-2",
           "verification": "automated",
           "descriptionMarkdown": "The host requires platform, suspension, assets and fonts: a Rust app (`.start()`, `.start_async()`) or a TSX app (`await builder.start()`) whose builder lacks any of `dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService`, `dyn FontService` fails startup (`app_state()` is `Failed`; the promise rejects) with one message listing each missing one with how to register it in that language (`.add_platform()` in Rust, `builder.addPlatform()` in TS, from `rayx_services_platform`) or registering one's own. `RayXAppBuilder::new()` and TS's `new RayXAppBuilder()` register nothing; `add_nsh_services` and `NshServicesAppBuilderExt` are gone. Test group `crates/rayx_app_nsh/tests/nsh_required_services.rs`; the existing start groups pass with builders that register the four."
+        },
+        {
+          "id": "VAL-3",
+          "verification": "automated",
+          "descriptionMarkdown": "A startup dependency on a key that no startup service is keyed by is met when a service registered under that key is no startup service (an app's own implementation of a trait, a test's fake); a dependency on a key nothing is registered under, or on the registration key of a startup service that reports a startup key of its own, still fails startup. `StartupRegistry::initialization_layers()` documents that it sees startup services only. Test group `crates/rayx_app/tests/di_startup_plain_dependency.rs`."
         }
       ]
     },

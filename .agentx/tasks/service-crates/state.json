@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 62,
-  "planRevision": 5,
+  "revision": 76,
+  "planRevision": 7,
   "specHashes": {
-    "requirements": "0c2432e744a0230b560d424550948d9195d8cfecd69a951e255bb052b7159742",
-    "design": "64eca2ea40e8020b310a4c38548f2a6f4961b8af78d1f0d92e7a7cbcc3744690",
-    "plan": "54ad127f7ea2ad4b5cade86d2249102ad79ccae57eb9e6da50472b1b31f2ddbe"
+    "requirements": "949a9040a097193404369c5a8ab94406aef6467815ca587482a0a26b36034038",
+    "design": "a5a4637afa32bed7daedc3193c5b9fece25c02ca2fdc3006cf5739566eb09aa9",
+    "plan": "f0fbe65549aa224d166e3a1b10a7002b70abd3de41c5306fa33430091b2c1f04"
   },
   "tasks": {
     "t01-crate-renames": {
@@ -52,16 +52,28 @@
       ]
     },
     "t08-host-hooks": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t09-mandatory-services": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t10-storage-navigation": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t11-i18n": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t12-operations-history-selection": {
       "status": "pending"
@@ -134,6 +146,36 @@
         }
       },
       "recordedAt": "2026-11-17T19:40:02Z"
+    },
+    "6ff78977e03daa9c3bd55303fe7389faf77424bb44e53fc1e8fca0e3241db6a2": {
+      "snapshot": {
+        "specHash": "6df3691c8543e6166b7e5418fc05e40f0f62c9388615c8d1c412cc0b53752bb4",
+        "repositories": {
+          "rayx": "65595b1b66744e1ac9cc9d395096046ebd02df2a0a715a0217126195fede0070",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T21:18:23Z"
+    },
+    "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a": {
+      "snapshot": {
+        "specHash": "c063d7236fafe096603b9ca63d3dc8fc307711a8a67e14e33cb2e32f67a94482",
+        "repositories": {
+          "rayx": "75eeefcfe23873ff5521ffbe0ad75ef5b668b29f6b748c4a8d39a2153bdc1614",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T21:53:47Z"
+    },
+    "2031856edb681a77edbbd8b05fb04558b98a9287739330328d8adcebad40ed6f": {
+      "snapshot": {
+        "specHash": "c063d7236fafe096603b9ca63d3dc8fc307711a8a67e14e33cb2e32f67a94482",
+        "repositories": {
+          "rayx": "8d1e45e2dd9c5529266e133e93b4bb54c449d5058016084d3b5453184a8d0ff6",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T21:56:14Z"
     }
   },
   "checkResults": {
@@ -425,6 +467,176 @@
       "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-b8a873e6d6cc.log",
       "logSha256": "88ed0266772824b604adf07a9925c50b0de6c1b8d1584513f910e711b647b776",
       "inputsHash": "06858afd6313595b00823652a223c5d643523429847264576984562b79bd91eb"
+    },
+    "s4-service-crates/c-release-wiring/final": {
+      "checkId": "c-release-wiring",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "6ff78977e03daa9c3bd55303fe7389faf77424bb44e53fc1e8fca0e3241db6a2",
+      "definitionHash": "44720a59a63a9184b7a5bcb71f863cc04c0f0045d261a3f6c80f2ff1628aa988",
+      "basisHash": "bfb09620e711f23f54d2a4e8038986377e80d0d8b1655d1a10c847ac9abbd267",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 26,
+      "durationSeconds": 1.1753,
+      "recordedAt": "2026-11-17T21:15:37Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-44e7fa565a9e.log",
+      "logSha256": "46157cf9260e81e5ea9bd2079ec8edb3826d40c5730fc203cc53558ecf2fbfbd",
+      "inputsHash": "d04d624169d3ed6da6ee3a28d871e18f3de6cb93d58ae3bbe6b2f34382c99e00"
+    },
+    "s4-service-crates/c-host-hooks/final": {
+      "checkId": "c-host-hooks",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "01746000950ba5a82fa65937102aaad4fea5b379ad19bef119b2b8c73e285aea",
+      "basisHash": "d479ac1df8d533bdd3cfbb5833af22f80da6704008981e166d27ee312fd71e84",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 10.4825,
+      "recordedAt": "2026-11-17T21:51:23Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-a28b90f05d76.log",
+      "logSha256": "efecf0cbb68bb056d712135c359f82361f56cb6b57d8ea6cdaac85e879b17938",
+      "inputsHash": "658c910fc84f827f8827fcb6d4efe1857d5900d46f3d9bc213cfe87f91ae1cee"
+    },
+    "s4-service-crates/c-app-extension-methods/final": {
+      "checkId": "c-app-extension-methods",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "66591b8023bb6760636151fc36537d2601bce31bd56c69aae31ce7d4fdfcc25f",
+      "basisHash": "609f6623055ba9fdf7d3dd32c83e9c869a22964578b1bee04c3a569ff1e657e8",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 6.6465,
+      "recordedAt": "2026-11-17T21:51:30Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-9f9bd674efe3.log",
+      "logSha256": "8c80d5b941a47aade901165313437233ee4d47790b4441a174be3f3e19010f47",
+      "inputsHash": "789a0b4d580f959bb93e1ca46394c3a67525d7cb029ef36d26da43c0f429d280"
+    },
+    "s4-service-crates/c-app-extension-umbrella/final": {
+      "checkId": "c-app-extension-umbrella",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "f091105e7e6f901f38dbd89f6a83e752226ff7c543012bf95b5ef2e9a5724688",
+      "basisHash": "ecedb1fd6a252da6d7f21efe72afdc2ab211db0b24bd024b73e38be6d6b704e9",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 8,
+      "durationSeconds": 12.9791,
+      "recordedAt": "2026-11-17T21:51:43Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-d4385a9f3ccd.log",
+      "logSha256": "fe5d21c189a6e69ce04aa0e983094ac6f812d03ee0e6ea0889b591988c3073b2",
+      "inputsHash": "a34c32f637946363bfc6a810ceef9a028744416cc135ff3095f159038e89e0a1"
+    },
+    "s4-service-crates/c-required-services/final": {
+      "checkId": "c-required-services",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "d274bc31781aae26c24e02c47b6c8b30aa5dc1933d030d8fede3dc40e53d914d",
+      "basisHash": "694483fa9ae86bc753030688e5a3778d4a22c6f449e1be873ad2d10ed036aa06",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 3.6981,
+      "recordedAt": "2026-11-17T21:51:47Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-57bb51febc3c.log",
+      "logSha256": "a9017894973327628322a14466a9a0e424a7f36fd3deee28b89201af3ce399bb",
+      "inputsHash": "e621f87ba1f57c00c0544f2e87909e64a78f0e4a289a056c1ad5def72f1264af"
+    },
+    "s4-service-crates/c-host-start/final": {
+      "checkId": "c-host-start",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "c48279dd5b667d1e6abf2fb12ccf9ee9809ae37dad0128345faf5d090f84541e",
+      "basisHash": "e91a274eafed2258a35a2a871305510a92fb461581b5026280e983dbb25d6241",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 15,
+      "durationSeconds": 6.9163,
+      "recordedAt": "2026-11-17T21:51:54Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-6702259f1c7b.log",
+      "logSha256": "36eb665e86c0985f1109bc966b0bd549c3b516c29a66a97faa9b87d5a3f0482d",
+      "inputsHash": "fa2eb030e86e540c95372589218ee910a4cd1183bc03dcb70858abadc5bdaa02"
+    },
+    "s4-service-crates/c-svc-mandatory/final": {
+      "checkId": "c-svc-mandatory",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "8442b48a41dcacf8d267fd0f9127674ae2a98722c0c38c1ab0034261007aa098",
+      "basisHash": "1e2b873f8450c19f05ac8d421dd3ddc510a99449748cc0f08094b79b661cbee0",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 75,
+      "durationSeconds": 55.1489,
+      "recordedAt": "2026-11-17T21:52:49Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-07944d1edf95.log",
+      "logSha256": "bb9ce82e94058dc8847e367ab5e01750f4aff03f9f8cba64330ecbc51be0fbce",
+      "inputsHash": "c183af3f37034dbfcb0f54505957d9c7d3584587d9242d5e6a368f45b1ed0b58"
+    },
+    "s4-service-crates/c-svc-storage-navigation/final": {
+      "checkId": "c-svc-storage-navigation",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "1015ae3a5f26ca90076a70b5728fe2b8c352db26c16089600444e0b16bc829fa",
+      "basisHash": "dca6669d98c06c7bedc25da2a8bd9ab7fdfb4374077be315832b6946b1a1e1f1",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 60,
+      "durationSeconds": 29.9847,
+      "recordedAt": "2026-11-17T21:53:19Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-4f034c01346d.log",
+      "logSha256": "52e021f0ae1db726a9fa1b078cf7c45984d5452e6985ab65f263ef2ec9bc3839",
+      "inputsHash": "346d7a37065a475c316f97fb84de9a95511e770ac7b4a868eb7ccdb34982021c"
+    },
+    "s4-service-crates/c-svc-i18n/final": {
+      "checkId": "c-svc-i18n",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "2031856edb681a77edbbd8b05fb04558b98a9287739330328d8adcebad40ed6f",
+      "definitionHash": "066f551a2908f214983850f85d6c140e42d59cb8659b84c69970c3f4b81c6c96",
+      "basisHash": "f0aac0472e427feb6fba9563f94f03d67d24b84c418cf337738819bbb49e4866",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 33,
+      "durationSeconds": 0.8363,
+      "recordedAt": "2026-11-17T21:56:14Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-3648c22f7391.log",
+      "logSha256": "eff6e2043e42e518ad7f6255dd49ef37ab32b814d50a85a66f440aed6dee31e0",
+      "inputsHash": "775648e03ef2a440febd534de0a01b47698b735ea58ec8ed3f709b9d0b951bf6"
+    },
+    "s4-service-crates/c-plain-startup-dependency/final": {
+      "checkId": "c-plain-startup-dependency",
+      "boundaryId": "s4-service-crates",
+      "phase": "final",
+      "batchId": "e6ae483364816420be57a5183080b878ce7d32a4a0f5be145f389bc297cd2e5a",
+      "definitionHash": "9929c9d6ae8bd7c11850ccc77f588c034ca9c1c31cba39cc65a0791ee61200ac",
+      "basisHash": "fff12602e7f48487bdc88c56fe16d6ff28dd0f30217e24dbd8639a25a5c15d15",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 3.9272,
+      "recordedAt": "2026-11-17T21:53:47Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-717a7b2ccdff.log",
+      "logSha256": "adb5353d694de7655623696d63813a493e8928be0801478b471fad15d026fdc3",
+      "inputsHash": "c4f7682d9471cccdb45458cf0ac554f9ca9474bfa22e78e09c142bfe13e2c140"
     }
   },
   "reviews": {
@@ -946,6 +1158,350 @@
         "S3-F12"
       ],
       "recordedAt": "2026-11-17T19:40:26Z"
+    },
+    "s4-service-crates": {
+      "reviewerId": "reviewer-s4-independent",
+      "snapshotId": "2031856edb681a77edbbd8b05fb04558b98a9287739330328d8adcebad40ed6f",
+      "criterionIds": [
+        "CRATES-4",
+        "VAL-2",
+        "VAL-3",
+        "SVC-1",
+        "SVC-2",
+        "SVC-3",
+        "SVC-4",
+        "SVC-10"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "release-plz.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "277e679d616ffb8a4c2339831717ee625a3a1d92ecc2e6eb1f34a5141f1f31f7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".github/workflows/ci.yml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "088844c64553515379fc7bba9575c9c85b65b0a5268fbb84f5a9e2461f5e52d4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/library_guard.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "281ad010f5044cd406b4b4ab582393102df158d4645191d9019c7a4f2a2bc665"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/release_config.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "89cf6c264cb4772e03dc8e9fcfb0dbc0d0f62a890a2d4af1ddb714d23cac39ea"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/app/surface.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-2"
+          ],
+          "sha256": "22b821e8f90fa530b88e3197baa2e824f1c518d5bffef8000f269ce9799aade1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_required_services.rs",
+          "kind": "test",
+          "criterionIds": [
+            "VAL-2"
+          ],
+          "sha256": "1391de6729785136773fc4b56561e6315e0a3a545baa60957fbe8db034329121"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/app/builder_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-1",
+            "VAL-2"
+          ],
+          "sha256": "8a301f59a042ccfd48676678a18a614075c1134ddf123172cdf48f05d3840701"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/testing.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-1"
+          ],
+          "sha256": "5e933367dd5fbb00483cba19612208a876fa682d7bb4e9fce4c0f4555dcadd97"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/provider_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-1"
+          ],
+          "sha256": "aad360400a823c3483798b11776422dcf9b9299724c5207f777de92b3a3c7aaf"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-1"
+          ],
+          "sha256": "67dd37420c72f0d837285e9a0e132d14850e00e70ad1d13899a3530dda5e01c9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/extension.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-10"
+          ],
+          "sha256": "d906d21c19cd1fe48d30fe6f6f81d236f05c447626dac8996d81b65008d7a0f9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-10"
+          ],
+          "sha256": "023885dedf341c0fe789088b0eef343721b215f96eace7739bfa34011f110e95"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-10"
+          ],
+          "sha256": "127881093f7575763e41d45f5dbc7c59b9cfe7bdbe91e6727aab344cf879ccf5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_platform/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "ab2d53ec3ea3a9a67792307edf187ef43e6d12f4d8b428ad2c28739234d9b9cd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "e304876ab6a69abad4c55ead9e5afba28f2590b5b4626ac13ee8fb9438aa8386"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_assets/src/nsh_reader.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "b9acb85c48e215b907b7f8969d846cb77e07abdb5220ad81abab76ec332eae47"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_fonts/src/nsh_registrar.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "c188d86bedf4dd92001f9257430337a86a2953f7deb30577317a7a724a7e2109"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_platform/tests/nsh_platform_environment.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "37f0cd7c0b16b7226b3c96218d21c7ccd900a2e5b652eac25ae90dd45bc5062c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/tests/nsh_quit_and_wake.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "da17dca6ae880e8929b2c5df0a40cbc01a155b8f63967bcd7d85c4fbfa09f077"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_assets/tests/nsh_assets.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "882e1885445f7fee89a144a36840ec132df5ff4e76ef0c754df2262e10670e65"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_fonts/tests/nsh_fonts_once.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "475a909a02b52d1f0766fa8761e35380ca50f19f6a2b8947b9460205d30f6254"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/src/nsh_store.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "3edc35b30b476713af1c515a24554b058d9bf70ad2b366e0fc24e57aee2ba24a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "4d42714a36da432ad0c681b5b4a5ff19cbb68688266eba26f8a52b8ad8103dc8"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/nsh_storage.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "31434ad0a121ad5e657a3b4f39c5d8f33410aa601144d22aa82f8e716909bcf4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/nsh_storage_quit.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "af2fde9290717e16aab6b52f86f0bb3663750f2dbe094478527606f3edd0c099"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/tests/nsh_regions.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "2a6adf8778e255a983fcc84a8cc31c90f3a7ff51cc81252b124f2ec9230f74b3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/formatter.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "4c557697b02eaf0fde3205b1f820dd113f6162cd39d982d2cd1590b3932464e5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "53d9367545c39c6503d6404a45a2b1f6cf63cd30799a1f550dea5f954dfbfb3e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/i18n_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "43df55b5708e07e31b55e247dbc7c3b0e8126f295d8bfd407dad883fd630f5dc"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/formatter.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "b0bc1dc90ed99268282ca374380209657d615b47cb79747ac0cf92d2e1bf3fe0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/nsh_tr.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "db944c2492dccf7b735c7f6df4701dc6ca9ec8aac3a207fdea689a566c71002d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/lifecycle.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-3"
+          ],
+          "sha256": "6f69d7948c89d5c5e80f1ebe4e2d9ecce53fa3ea2552928d9802c1f5cc1e35d2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_startup_plain_dependency.rs",
+          "kind": "test",
+          "criterionIds": [
+            "VAL-3"
+          ],
+          "sha256": "498b81b24fe80a3cc0c085faf08d7732675d039a59ecea02306e7c956a3fe9de"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/tests/suspension_concurrency.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "f3bbb89b13b1c7fb59885471401949f1c2295bde91fb58c47409d2c8578f0f65"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/i18n_concurrency.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "c5625e97fd34f7bbf93a94c30e9c1bce515684b625f80c6162eb562271b2d01f"
+        }
+      ],
+      "summaryMarkdown": "I re-reviewed s4 at snapshot 2031856e (through 983b0a0). All seven findings, S4-F1 to S4-F7, are resolved, and I found no regression from the repairs.\n\n- **F1:** i18n and suspension publish their latest state through a single-publisher stale loop, covered by concurrency groups.\n- **F2:** the formatter is keyed on the published state object and reads it under its lock.\n- **F3:** platform and suspension tests run on RayX's own services, and the provider's null/throw lookup is back.\n- **F4:** coverage is restored. Every service crate has a `nsh_tsx_class_names` group; i18n's (983b0a0) checks `private constructor();`, no `static of(`, every member, and the commands as `Promise<void>`.\n- **F5:** the i18n TS commands return promises; `loadMessages` and `addResource` exist.\n- **F6:** VAL-3 is mapped to t09 with its check, and its second invariant is tested.\n- **F7:** storage and navigation use `runtime_entered()`.\n\nCRATES-4, VAL-2, VAL-3, SVC-1, SVC-2, SVC-3, SVC-4 and SVC-10 hold at their source and test anchors.\n\nTwo observations were handed to the coordinator rather than filed: the doc-hidden public `rayx_services_suspension::testing` module, which t14 will reconsider, and event-before-state ordering under a concurrent publisher.",
+      "findingIds": [
+        "S4-F1",
+        "S4-F2",
+        "S4-F3",
+        "S4-F4",
+        "S4-F5",
+        "S4-F6",
+        "S4-F7"
+      ],
+      "recordedAt": "2026-11-17T21:56:33Z"
     }
   },
   "checkpoints": {
@@ -975,6 +1531,15 @@
       },
       "reviewHash": "265e75a6950b3240c21a6a9956e1214553a340bbdecb2eb2768a27aa202f9f52",
       "recordedAt": "2026-11-17T19:40:40Z"
+    },
+    "s4-service-crates": {
+      "snapshotId": "2031856edb681a77edbbd8b05fb04558b98a9287739330328d8adcebad40ed6f",
+      "commits": {
+        "rayx": "983b0a0606a4e7d01591910eb1e1bf0504a85561",
+        "root": "f8f986197908b834f4302803f1880231d6cbb7ee"
+      },
+      "reviewHash": "479b58c0314d605fc416663ac07f55def19671d8f9127f53753f528518d93f86",
+      "recordedAt": "2026-11-17T21:56:41Z"
     }
   },
   "findings": [
@@ -1384,9 +1949,192 @@
         }
       ],
       "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S4-F1",
+      "criterionIds": [
+        "SVC-4",
+        "SVC-2"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Published state can be left on an older value: i18n and suspension compute the next state, then publish it with no ordering.**\n\n*i18n*: `RayxI18n::change` (`crates/rayx_services_i18n/src/service.rs:119-127`) bumps `version` and builds the state under `inner`, then publishes after releasing the lock. `StateCell` delivers in call order, not version order.\n\n- Thread A (`set_language`, a contract command called on the caller's thread) builds v5 and releases the lock.\n- Thread B (the platform's time-zone or locale callback on the engine thread, `apply_platform`) builds v6 and publishes it.\n- A then publishes v5.\n\nThe cell stays at v5 without B's change until the next change. The formatter recompiles v5 (`5 != 6`), and TS and `chosen_language` readers see v5. Before the move, readers read the service's `RwLock` and were always current.\n\n*Suspension*: `NshSuspension::publish` (`crates/rayx_services_suspension/src/service.rs:59-66`) and `ask_before_quit` (`232-240`) each read `suspension.get()`, derive the next snapshot and publish it. `ask_before_quit` can be awaited from any thread while the engine thread publishes lifecycle or window events, so one update can overwrite the other: `asks_before_quit` reverted, or a lifecycle change lost.\n\nNavigation does this right (`publish_state`'s `publishing` guard and `stale` loop, `navigation/src/service.rs:110-130`), and so do fonts (publishing under `changing`).\n\n*Expected* (d-published-values, SVC-2/SVC-4): the published value is the service's latest state.\n\n*Repair*: serialize derive-and-publish. Either publish while holding a dedicated publish lock (fonts' pattern), or use navigation's stale-loop pattern: re-read the latest state after publishing and publish again if it moved. In i18n, publish only when the state's version is the newest. Add tests that run concurrent `set_language` and platform updates, and concurrent `ask_before_quit` and lifecycle events, and assert the final cell equals the service's state.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/i18n_concurrency.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/tests/suspension_concurrency.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/service.rs",
+          "symbol": "publish_latest"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/src/service.rs",
+          "symbol": "publish_state"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S4-F2",
+      "criterionIds": [
+        "SVC-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**The formatter only notices a change when `version` changes.** `crates/rayx_services_i18n/src/formatter.rs:69-86` (`current()` compares only `cached.version == state.version`; the time zone `local_time` uses also comes from the cache).\n\n*Expected* (SVC-4): \"with any implementation a published language change is used by the next format call\".\n\n*Observed*: the contract documents `version` as \"counts the changes\". But a TS implementation cannot see that field: the TS alias of `I18nState` is `Record<string, unknown>` (`rayx_services_i18n/src/lib.rs:52-56`), and the field defaults to 0. A language or time-zone change published at the same version is ignored, and `tests/formatter.rs:223-224` asserts that it is ignored.\n\nAlso, `current()` reads the state *before* taking the cache lock, so concurrent callers can store an older version's compile over a newer one, which costs a full recompile.\n\n*Repair*:\n\n- Key the cache on the identity of the published `Arc<I18nState>` (each publish is a new `Arc`), or compare `locale`, `time_zone`, `default_language` and `fallback_languages` as well as `version`. Re-locale the cached translator when only those changed.\n- Read the state after taking the lock.\n- Type `I18nState` in TS, or document `version` there.\n- Change the test at lines 223-224 so a same-version language change is used.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/formatter.rs",
+          "symbol": "current"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/formatter.rs"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S4-F3",
+      "criterionIds": [
+        "SVC-2",
+        "SVC-1"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Some moved test groups now test `rayx_app::testing` fakes instead of RayX's implementations, so behaviour those implementations still have lost its only coverage.** R-SERVICES 5 asks for today's groups to be moved under their names and passing; d-service-crates says moved groups keep their names.\n\n- **Platform**: `rayx_runtime/tests/platform.rs::updates_notify_only_real_changes` became `rayx_services_platform/tests/platform.rs::subscribers_hear_each_published_snapshot_until_they_stop`, which runs on `FakePlatform`. Nothing tests that `NshPlatform` publishes only when the snapshot changed (`rayx_services_platform/src/service.rs:48`).\n- **Suspension**: `suspension.rs` and `suspension_window.rs` now run on `FakeSuspension`, which publishes every state; they assert \"Active, Active, …\", the opposite of the old rule. The old checks (two `Activated` events give one change; `!publish(same window)`) are gone. `NshSuspension::publish`'s change-only state (`rayx_services_suspension/src/service.rs:59-66`) has no test. `suspension_quit_and_wake.rs`'s main test also uses the fake.\n- **Provider**: `rayx_app_nsh/tests/nsh_tsx_provider.rs` lost `getService(NavigationService)` giving `null` and `getRequiredService(NavigationService)` throwing with the class's name. The service-class branch of `provider_ts.rs` (`class_of` then `resolve_class`) for a class whose service is not registered is now untested anywhere.\n\n*Repair*: in each crate's group, test the crate's own service. Unit-test `NshSuspension::publish` through `add_suspension()`'s `dyn SuspensionService` without an engine, and check `NshPlatform`'s change-only publish through an NSH group or a seam. Keep the fakes for consumer tests. Restore the null/throw provider check with a service class registered by a test set (the `testing` harness's fakes, or a service crate's set in that crate's group).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_platform/tests/platform.rs",
+          "symbol": "updates_notify_only_real_changes"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/tests/suspension.rs",
+          "symbol": "event_subscribers_hear_every_event_and_state_subscribers_only_changes"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/tests/suspension_window.rs",
+          "symbol": "state_subscribers_hear_each_change_of_the_window_once"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_provider.rs"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S4-F4",
+      "criterionIds": [
+        "SVC-2",
+        "SVC-3",
+        "SVC-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Partly repaired: `rayx_services_i18n` still has no `nsh_tsx_class_names` group.** Commit 1e8a777 restored most of the lost coverage:\n\n- a `nsh_tsx_class_names.rs` for assets, fonts, platform, storage and suspension (navigation already had one);\n- the host's `onChange(listener: (settings: unknown) => void): () => void;` declaration;\n- fonts' `appsettings.json` layering;\n- navigation and storage registration order;\n- i18n's missing-service hints (61aed6a).\n\n*Observed*: there is no `crates/rayx_services_i18n/tests/nsh_tsx_class_names.rs`, and no i18n group checks the `I18nService` class's TS declaration. That covers its member list (`t(`, `formatDate(`, `formatNumber(`, `has(`, `locale(`, `languages(`, `direction(`, `timeZone(`, the promise-returning `setLanguage`/`followPlatform`/`setTimeZone`/`loadMessages`/`addResource`, `onChange(`), `private constructor();` and the absence of `static of(`. `nsh_tsx_builder_options.rs` checks only `export declare class I18nService {` and its `contract` getter. 1e8a777's message says each service crate has such a group.\n\n*Repair*: add `crates/rayx_services_i18n/tests/nsh_tsx_class_names.rs`, like the other crates' groups, asserting those declarations (the commands as `Promise<void>`).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/nsh_tsx_class_names.rs",
+          "symbol": "the_i18n_class_carries_its_members"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_listeners.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_fonts/tests/nsh_tsx_builder_options.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/tests/navigation.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/storage.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/i18n.rs",
+          "symbol": "building_without_an_asset_or_platform_service_fails_with_their_hints"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S4-F5",
+      "criterionIds": [
+        "SVC-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**The TS `I18nService` class's commands are synchronous, so over a TS implementation they return before taking effect and lose its errors.** `crates/rayx_services_i18n/src/i18n_ts.rs:57-66` (`answered` uses `now_or_never`) and lines 141-155 (`setLanguage`, `followPlatform`, `setTimeZone`).\n\n*Expected*: the class works over any `dyn I18nService` (R-SERVICES 3), and a command's failure reaches TS.\n\n*Observed*: over a TS implementation the call is pending, so `answered` returns `Ok(())` and drops the future. The command completes after the method returns, and a rejection is lost; the comment's claim that it reaches TS from its own promise is not true for the caller. `addResource` and `loadMessages`, contract commands, have no method on the class.\n\n*Repair*: make these methods `async fn` (`Promise<void>`), as `storage_ts.rs` does, and add `addResource` and `loadMessages`. Test them over a TS implementation (one that throws).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/i18n_ts.rs",
+          "symbol": "answered"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S4-F6",
+      "criterionIds": [
+        "SVC-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Decision d-plain-startup-dependency is not covered by the sprint: no task or criterion maps to it, its test group is in no check, and one of its invariants is untested.**\n\n*Observed*:\n\n- No s4 task lists `d-plain-startup-dependency` in `designIds`, and no criterion or check covers it. `crates/rayx_app/tests/di_startup_plain_dependency.rs` is in none of the nine s4 checks (it passes when run alone: 2/2).\n- The invariant \"a dependency on a startup service's registration key, when it reports another startup key, still fails\" has no test.\n- `StartupRegistry::initialization_layers()` (`crates/rayx_app/src/di/lifecycle.rs`, which calls `runtime_initialization_layers_for(&self.services, |_| false)`) still reports `MissingDependency` for a plain dependency that an actual startup run accepts. That inconsistency is undocumented.\n\n*Repair*: attach the decision to a task and criterion (for example VAL-2 or a new VAL-3) with a check for `-p rayx_app --test di_startup_plain_dependency`. Add a test for the second invariant. Either make `initialization_layers()` take the provider into account or document that it reports only startup services.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_startup_plain_dependency.rs",
+          "symbol": "a_dependency_on_a_startup_service_s_registration_key_under_another_startup_key_still_fails"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/lifecycle.rs",
+          "symbol": "initialization_layers"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S4-F7",
+      "criterionIds": [
+        "SVC-3"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Two service crates still use a `try_global` probe to check whether NSH's runtime is entered, instead of NSH 0.5.0-7's `runtime_entered()`.**\n\n*Observed*: `NshStorage::reachable` (`crates/rayx_services_storage/src/nsh_store.rs:80-87`) and `crates/rayx_services_navigation/src/nsh_location.rs:76-79` each call `try_global::<Probe>()`. This is the side-effecting probe S3-F4 replaced in the host, and NSH has offered `nsh_core::prelude::runtime_entered()` since `nshx-0.5.0-7`. The epic's constraint is to use NSH's API, not workarounds.\n\n*Repair*: replace both probes with `runtime_entered()` and delete the `Probe` types.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/src/nsh_store.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/src/nsh_location.rs"
+        }
+      ],
+      "boundaryId": "s4-service-crates"
     }
   ],
-  "handoffMarkdown": "",
+  "handoffMarkdown": "I18n (1e99bbe): I18nService contract + Rust-only MessageFormatter in rayx_services_i18n; add_i18n requires platform and assets.",
   "protectedPaths": {
     "rayx": {
       "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 5,
+  "revision": 7,
   "title": "RayX's services as replaceable crates: abstractions in rayx_app, implementations in rayx_services_*",
   "validationMode": "sprint",
   "repositories": [
@@ -1438,6 +1438,36 @@
       "expected": {
         "exitCode": 0
       }
+    },
+    {
+      "id": "c-plain-startup-dependency",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "VAL-3"
+      ],
+      "descriptionMarkdown": "Startup dependencies met by a plain registration (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "di_startup_plain_dependency"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/di_startup_plain_dependency.rs"
+      ]
     }
   ],
   "finalCheckIds": [
@@ -1828,7 +1858,8 @@
           "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: platform, suspension, assets, fonts. Also: the NSH asset reader and font registrar become private to their crates and run their NSH calls through the `EngineRunner` (callable from any thread); platform and suspension keep themselves current from their initialization on (what `use_platform_sync`, `keep_platform_current` and the quit wiring did, in Rust and TSX apps alike), and those functions go; fonts resolves `dyn AssetService`; `add_nsh_services`, `NshServicesAppBuilderExt` and the builders' pre-registration go, and the host requires the four (d-validation) in Rust's and TS's start with hints per language. Update the host's start groups to register the four. New group `crates/rayx_app_nsh/tests/nsh_required_services.rs` (each one missing, all missing in one message, Rust and TS, both builders empty when new).",
           "criterionIds": [
             "SVC-2",
-            "VAL-2"
+            "VAL-2",
+            "VAL-3"
           ],
           "supportingCriterionIds": [
             "CRATES-4"
@@ -1836,7 +1867,8 @@
           "designIds": [
             "d-abstractions",
             "d-service-crates",
-            "d-validation"
+            "d-validation",
+            "d-plain-startup-dependency"
           ],
           "dependsOn": [
             "t08-host-hooks"
@@ -1845,7 +1877,8 @@
             "c-svc-mandatory",
             "c-required-services",
             "c-host-start",
-            "c-release-wiring"
+            "c-release-wiring",
+            "c-plain-startup-dependency"
           ],
           "sourceRefs": [
             {
