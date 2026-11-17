@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 18,
-  "planRevision": 1,
+  "revision": 62,
+  "planRevision": 5,
   "specHashes": {
-    "requirements": "7f61a19d0a33b5696be1f2e11632bf0f87fe1b476b31d2bdb02d8d44ef477312",
-    "design": "7d678d8c7765142180a74d3632e715760f9213e0e0d15ed362dd05fc7a1befff",
-    "plan": "f28a25b79e7f49e4ab45a25b0b3550723e048a76a2fa6c6fe8b102f2fd38c755"
+    "requirements": "0c2432e744a0230b560d424550948d9195d8cfecd69a951e255bb052b7159742",
+    "design": "64eca2ea40e8020b310a4c38548f2a6f4961b8af78d1f0d92e7a7cbcc3744690",
+    "plan": "54ad127f7ea2ad4b5cade86d2249102ad79ccae57eb9e6da50472b1b31f2ddbe"
   },
   "tasks": {
     "t01-crate-renames": {
@@ -22,19 +22,34 @@
       ]
     },
     "t03-published-values": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t04-contract-kinds": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t05-any-thread": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t06-validation": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t07-contract-tokens": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t08-host-hooks": {
       "status": "pending"
@@ -109,6 +124,16 @@
         }
       },
       "recordedAt": "2026-11-17T12:03:37Z"
+    },
+    "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b": {
+      "snapshot": {
+        "specHash": "b99f9e34a0fcc7b5a3521d3d79e4115e651a315aa26dd03e30945e0ce5a627f1",
+        "repositories": {
+          "rayx": "9cd28d1f67287cd0725f096eb655a344f44a6a446f1d07e1629ec3ee6598962d",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T19:40:02Z"
     }
   },
   "checkResults": {
@@ -247,6 +272,159 @@
       "logPath": "artifacts-temp/agentx/service-crates/s2-layout-final-b4934167958e.log",
       "logSha256": "39e21cd15d54fae930b6ceb4fa0255c34ad800f7f8d98652d5aa9f5e76cacf28",
       "inputsHash": "4d60afb68a1a793ab6bd25ed69750eff23adf0a60313f6e87b78b18e175cfedb"
+    },
+    "s3-contracts/c-core-wasm/final": {
+      "checkId": "c-core-wasm",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "51484270ab9a705ddacd8d3c2004fb5441ad324c1204f8472f2c53f611f12238",
+      "basisHash": "b5caa064aa2e9bddf40d2e0e5c7ea4e598339bd9cf5aee2c8714a2013c8ff4a1",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.8815,
+      "recordedAt": "2026-11-17T19:39:34Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-76033ad207d1.log",
+      "logSha256": "7388598bce66009d778879263462dd02943b23a199d4e814c5e9201719737a25",
+      "inputsHash": "abf941b5805b08f5c046fdbcd6bc21e7e39687629b8f97a891e71a954629c0d4"
+    },
+    "s3-contracts/c-published-values/final": {
+      "checkId": "c-published-values",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "501f74645e985d6b2503aece7c28770e92d4464faf11af7780fe73d5c21ec2b9",
+      "basisHash": "7deb9e026e7fa2ed27390d75297b3413814a833ab410dc94ac54cbdf24ee89e4",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 12,
+      "durationSeconds": 1.6664,
+      "recordedAt": "2026-11-17T19:39:36Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-78fd4ed9ecaf.log",
+      "logSha256": "352e266ff365beca265ce6d664bd11d749c69742b402ccaa4ab3fe35bcf72b29",
+      "inputsHash": "7c5149d83f9076c7d23f8ce5201f51baac41eb93dcbb4939652f4e9e0aa662c3"
+    },
+    "s3-contracts/c-published-binding/final": {
+      "checkId": "c-published-binding",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "0bf57a16ba3f6eae12c33a1e1b3b550e7966b1c10fc22163ce284088abe44b62",
+      "basisHash": "46c9cffc5651a0248bb256c0153d0a491aed8e947fb025369b1ec6145cd2bd31",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 1,
+      "durationSeconds": 5.9101,
+      "recordedAt": "2026-11-17T19:39:42Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-430916f49ea7.log",
+      "logSha256": "2ea1a7930cedebdbfc96af2ba9f94821337edae26f7ef42d87299d40c8e0bc65",
+      "inputsHash": "a431b80ea660b59090d7d8d02c6bfedd4d31964208b86083f87f373995ae214e"
+    },
+    "s3-contracts/c-contract-macro/final": {
+      "checkId": "c-contract-macro",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "b20569f1b50297dfa8df2beac5d0a5e78674ec6eb7f12d27a7d713833ed4aee9",
+      "basisHash": "24b8d6cb2cb16ff462adc4416588f10549afe0ebb3b720926b6a08612ac097c3",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 8,
+      "durationSeconds": 0.6873,
+      "recordedAt": "2026-11-17T19:39:42Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-2134599a3c2e.log",
+      "logSha256": "eaf618f79d8429c698f0ff7ff3e982cdf776b2f17d148301b1a9e4fb5c478954",
+      "inputsHash": "f270f564d3c89495a4862208876e189005042c04cadf81bd9443400bb0127808"
+    },
+    "s3-contracts/c-contract-kinds/final": {
+      "checkId": "c-contract-kinds",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "17ed1c72531e57ccb004ffa6396d8e842bd4d98860efcd1dbd2dc95a918b5e72",
+      "basisHash": "59da732b03b3c4e3cbc6a0f982816ebf06d1b6e93f666f069c9360ea2e59769f",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 14,
+      "durationSeconds": 7.0387,
+      "recordedAt": "2026-11-17T19:39:49Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-97aeb4297249.log",
+      "logSha256": "ca3186212c30836504f06c92c206b8ef8b1a999b678b8b0ed57217a7b48d2f6e",
+      "inputsHash": "b175b9a7cd0acd539514abf61d685923d98141d46a8b13199018e42531cfaec3"
+    },
+    "s3-contracts/c-contracts-any-thread/final": {
+      "checkId": "c-contracts-any-thread",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "827c8df78b79beaeb6182ec40e9f1f4973280582fed6794b2c90f2654eedb372",
+      "basisHash": "2f65677236e4daec3a0b406224a8cb7c6b23bd267ab5a58f2d1b5740c3e8a553",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 3,
+      "durationSeconds": 4.6466,
+      "recordedAt": "2026-11-17T19:39:54Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-4f710446e09b.log",
+      "logSha256": "96f836bb7da99cdcfd3e40386a23fc71a304ec6a1a0588955925cc4221e00e1d",
+      "inputsHash": "86eac02e92a06cfe6b1f7a76498e57f93f449fc260d2726cc2de4f9772c6c15e"
+    },
+    "s3-contracts/c-engine-runner/final": {
+      "checkId": "c-engine-runner",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "56fd0fead510e6f3a4cc631940f9fd8016776e6cfeb878a007485fb91308d5c9",
+      "basisHash": "4aa7b74f2d194068826ae75461fcb0e50c1ce689c9d5a50a6b1a9b0ea5364dbb",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 1,
+      "durationSeconds": 3.1916,
+      "recordedAt": "2026-11-17T19:39:57Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-c169a0b989a0.log",
+      "logSha256": "449752b850bd5944205481d9e419841d8aedbce96fcc8822fd0e32222b4427c6",
+      "inputsHash": "7cdc95af541431c3ea5d708b8ab1d5c2e529bd0e1fef072da167997fc712b5a3"
+    },
+    "s3-contracts/c-di-validation/final": {
+      "checkId": "c-di-validation",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "3f6a9e2a3c53cb35150b24db2437124b4027b8ef719686ced4bff0f2986d3707",
+      "basisHash": "0ff4a3c13cf8535bfecd22f7a88ecc272a6a05a33c09ad7f2b9e587260f62824",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 9,
+      "durationSeconds": 0.6431,
+      "recordedAt": "2026-11-17T19:39:58Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-63eab76232d6.log",
+      "logSha256": "cf88333e4a7ae68733df00b4973b3bc625dff38d92a5c5121e739a94f48330b5",
+      "inputsHash": "834400aeb19540b6d1a802ffda8963eb7e7f5f896ade5a0cf604fe027765f249"
+    },
+    "s3-contracts/c-contract-tokens/final": {
+      "checkId": "c-contract-tokens",
+      "boundaryId": "s3-contracts",
+      "phase": "final",
+      "batchId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "definitionHash": "77e43e6c7aaabd616b0930a046f4f9fca602d6cbbd3d4a08be7396e92bc90851",
+      "basisHash": "c75069cf81b2c014eebeb8f69189c71243c83203a78df3c0616f3e63d8c40bd7",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 5,
+      "durationSeconds": 3.956,
+      "recordedAt": "2026-11-17T19:40:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s3-contracts-final-b8a873e6d6cc.log",
+      "logSha256": "88ed0266772824b604adf07a9925c50b0de6c1b8d1584513f910e711b647b776",
+      "inputsHash": "06858afd6313595b00823652a223c5d643523429847264576984562b79bd91eb"
     }
   },
   "reviews": {
@@ -564,6 +742,210 @@
         "S2-F3"
       ],
       "recordedAt": "2026-11-17T12:03:59Z"
+    },
+    "s3-contracts": {
+      "reviewerId": "reviewer-s3-independent",
+      "snapshotId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "criterionIds": [
+        "CON-1",
+        "CON-2",
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7",
+        "CON-8",
+        "CON-9",
+        "VAL-1"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/published.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-5",
+            "CON-2",
+            "CON-3"
+          ],
+          "sha256": "ff2488426ed1d3e1d738cd5d8a223e9d8a4f3258ac2f64fc3dec8667b8a08ca1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/published_values.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-5"
+          ],
+          "sha256": "1ad0b7ea189cb6f3fd6391d3f77c4efe935c1c27fd33c907bf63488b894502c1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/binding.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-6",
+            "CON-7",
+            "CON-8"
+          ],
+          "sha256": "328a564bb1a3a9df2dee961c4e5411aa50e743c02440ef722345ff4e8988c82a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_published_binding.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-8"
+          ],
+          "sha256": "2b1f00c49bc39eb15ab5a51846bd2883dc486c56088280e206567ba0fe0cf863"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-1",
+            "CON-4",
+            "CON-9"
+          ],
+          "sha256": "7e8316913fd1c6b8b279bd520d7e69463963f825261380842b8bfa2963da7296"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/contract_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-6",
+            "CON-9"
+          ],
+          "sha256": "04d99fb9782788e628359ffbdc5d655731a8135786b24bcbb71432a14ae36aac"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/app/builder_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-2",
+            "CON-9"
+          ],
+          "sha256": "eb2570fae7d2fde580764050a34d900c99bb7346ad9f9f371bbd7bb401bf5be0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4"
+          ],
+          "sha256": "025216787b5e0fff897ebb2769f36bfeab92142fab4fb30bf56a47bcb0e978f3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-1"
+          ],
+          "sha256": "bf40d53e956a8d3fca29cd085ee73c0844491884e1ede3238e7e8092b249492d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/app/surface.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-7",
+            "VAL-1"
+          ],
+          "sha256": "17706307ffa8b33bac8db9c00d35964033f4342a7cd1d8fc1686b5af2c440259"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-6"
+          ],
+          "sha256": "a23f81daa40ec5771571c20994af6e1aeeeb6bbc12c01075bafff3591d2eb472"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_engine_runner.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-7"
+          ],
+          "sha256": "07579443873cc3bf208fc86e546b7aa60fc1021850a27d431a4ba76737aeaec6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/provider_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-9"
+          ],
+          "sha256": "df531aae4c0e1b5fb32b97d443f8c86d197c90e7cb70ec7241f7c5ea9812317f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-9"
+          ],
+          "sha256": "8b50e4e5c895e0bd124a2987613b6781caceca47844858818fa8b46b2ce7f4cb"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/validation.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-1"
+          ],
+          "sha256": "71765ab6c7a0865b787dd322f97d01b5246f587f04788f150c17bc7db25d8490"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/app/rayx_app_builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-1"
+          ],
+          "sha256": "a75fb8704d47352130393c7965896eba65e7f582b3ec59500289b6439a362b1d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_validation.rs",
+          "kind": "test",
+          "criterionIds": [
+            "VAL-1"
+          ],
+          "sha256": "14a0f8f3d4cb6f90d15cb6423eaec30a6c0ed3ae862de681381ec2e0c283b9b8"
+        }
+      ],
+      "summaryMarkdown": "I ran a full review at snapshot 0444a092 (specs at amendment revision 59). The sprint passes; every finding, S3-F1 to S3-F12, is resolved and none is open.\n\n- **Published values:** `StateCell`/`EventStream` deliver one publish at a time, in order, with no lost wake-up. `use_state_cell` subscribes first, then reads, and settles on `get()`.\n- **Contract kinds:** `#[contract]` takes the five shapes; every member refusal lists them.\n- **Linking:** publishing adapters of every lifetime link once. A singleton's in `start()`; scoped or transient ones when made on the engine thread, or on the first read off it, outside the adapter's own factory. A failed link is kept and named.\n- **Any thread:** contracts are callable from any thread through `EngineRunner`. On the engine thread calls never queue (NSH-7's `runtime_entered`/`start_task`), and queued or in-flight calls resolve `EngineGone` once the engine stops. Transient adapters make one object, with posted calls kept in order.\n- **Contract classes:** a contract class is the token for every lifetime, in Rust and TS.\n- **Validation:** checks every requirement before anything is made, deduplicated, transitive through transient services, with `Configuration` counted as present.\n- **Docs:** the off-engine factory-read rule is in the `#[contract]` rustdoc, in `link_on_engine`'s docs and in d-any-thread; `docs/tsx.md` and the services reference follow in t19.",
+      "findingIds": [
+        "S3-F1",
+        "S3-F2",
+        "S3-F3",
+        "S3-F4",
+        "S3-F5",
+        "S3-F6",
+        "S3-F7",
+        "S3-F8",
+        "S3-F9",
+        "S3-F10",
+        "S3-F11",
+        "S3-F12"
+      ],
+      "recordedAt": "2026-11-17T19:40:26Z"
     }
   },
   "checkpoints": {
@@ -584,6 +966,15 @@
       },
       "reviewHash": "e1da9b85c582d72d531e3299eebe5653bc43353ff949f913dd458df65cfa1d4e",
       "recordedAt": "2026-11-17T12:04:13Z"
+    },
+    "s3-contracts": {
+      "snapshotId": "0444a092b372b0e37607b6bb75264691c90454398b880f43f40ca849306ab38b",
+      "commits": {
+        "rayx": "8de628a9da709267092e62609dedb115ccd01cba",
+        "root": "f8f986197908b834f4302803f1880231d6cbb7ee"
+      },
+      "reviewHash": "265e75a6950b3240c21a6a9956e1214553a340bbdecb2eb2768a27aa202f9f52",
+      "recordedAt": "2026-11-17T19:40:40Z"
     }
   },
   "findings": [
@@ -700,6 +1091,299 @@
         }
       ],
       "boundaryId": "s2-layout"
+    },
+    {
+      "id": "S3-F1",
+      "criterionIds": [
+        "CON-2",
+        "CON-5",
+        "CON-8"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Still open after the repair: a publish can be left undelivered.** The repaired `crates/rayx_app/src/published.rs` (`deliver`, lines 61-86, with `queue`, lines 90-99) fixes the ordering. A re-entrant publish now reaches both subscribers as [1,2,3], and `use_state_cell` subscribes first and then sets the signal from `cell.get()`. But it adds a lost-wakeup race.\n\n*How it happens*: the delivering thread finds `pending` empty and releases the lock (lines 76-80). It then returns, and only afterwards does the `Delivering` drop guard take the lock again to set `delivering = false`. A publish from another thread in that gap stores its value, queues it, sees `delivering == true` and returns without delivering. The guard then clears the flag, so the value stays queued with nobody delivering it until the next publish. `EventStream::publish_arc` shares the path, so an event can go unheard too.\n\n*Observed*: a scratch stress program against the repaired working tree (8 threads × 3 publishes to a `StateCell` and an `EventStream`, 30,000 rounds, release build) printed `rounds with lost deliveries: 16, rounds ending stale: 7 (of 30000)`. In the stale rounds, the subscriber's last value differs from `get()`. Because a lost delivery never wakes `use_state_cell`'s task either, an NSH signal can keep an old value. The new 20-round concurrency test is too short to catch this.\n\n*Expected* (CON-5, CON-2, CON-8): every publish reaches every subscriber once, in order, and the last value a subscriber hears is the cell's.\n\n*Repair*: in `deliver`, when `pop_front()` gives `None`, set `delivering = false` in the same critical section before returning. Keep the drop guard only for unwinding (for example, disarm it on the normal return). Add a stress test (many rounds, several threads, few publishes each) that asserts every subscriber heard every publish and that each subscriber's last value equals `get()`, for both `StateCell` and `EventStream`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/published_values.rs",
+          "symbol": "no_publish_is_left_undelivered_under_contention"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/published_values.rs",
+          "symbol": "a_publish_from_a_callback_reaches_every_subscriber_after_the_one_it_came_from"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_published_binding.rs",
+          "symbol": "a_component_follows_published_values_and_stops_with_its_owner"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F2",
+      "criterionIds": [
+        "CON-9",
+        "CON-2",
+        "CON-3",
+        "CON-4"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**A contract with state, events or constants can only be implemented in TS as a singleton. That narrows CON-9 and no decision records it.** `crates/rayx_app_nsh/src/app/builder_ts.rs:639-649` (`add_ts_service` refuses scoped and transient registrations when `contract.publishes`) and `crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs`.\n\n*Expected*: CON-9 says `addSingletonAs(Class, …)` \"(and every other lifetime, startup and `As` form) registers a TS implementation for the contract\". The epic scope says every core abstraction can be implemented in TS. When an NSH API falls short (here: an interface getter can be read only inside a synchronous call from JS), the constraints say to stop on a blocker for the owner rather than settle it in RayX.\n\n*Observed*: the singleton-only rule is reasonable given NSH, but it is recorded only in rustdoc and in an error message, not in d-contract-kinds, CON-9 or a decision with the owner. CON-9's test proves only `addSingletonAs` and `addStartupSingletonAs`, both under a publishing contract. No test shows that the other forms (`addSingleton`, `addScoped(As)`, `addTransient(As)`, `addStartupScoped(As)`, `addStartupTransient(As)`) work under a contract class for a contract that publishes nothing.\n\n*Repair*: take the restriction to the owner. Then either amend CON-9 and d-contract-kinds (and later the services docs) to say that a TS implementation of a contract with state, events or constants is a singleton, or add the NSH capability in the fork. Extend `nsh_tsx_contract_tokens` with a contract under a class that has commands only, registered with each of the other forms and reached from both Rust and TS.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs",
+          "symbol": "every_lifetime_registers_an_implementation_under_the_class"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+          "symbol": "a_scoped_or_transient_ts_implementation_publishes_too"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F3",
+      "criterionIds": [
+        "CON-4",
+        "CON-6",
+        "CON-7"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Missing tests for behavior the criteria name.**\n\n- CON-6 and CON-7: \"a call **queued** when the surface's engine stops resolves `Err`\". `nsh_tsx_contracts_any_thread.rs:178-197` and `nsh_engine_runner.rs:144-152` only test calls made after the engine stopped, which fail immediately in `unbounded_send`. No test leaves a call in the queue, or a spawned call in flight, when the engine stops. The code looks right (dropping the receiver drops the jobs and their oneshot senders), but nothing proves it does not hang.\n- CON-6: the any-thread group never calls a *command* on the engine thread. It only checks a posted member from a synchronous call from JS. The skip-the-queue path for commands is covered only indirectly, through `EngineRunner::run` in `nsh_engine_runner`.\n- CON-4: a constant that *does not convert* is untested. Only a missing constant (`MISSING`) and state that does not convert are tested.\n\n*Repair*: add a case in which a synchronous JS call (which queues) or another thread starts a command, the TSX ends the app in the same turn, and after `headless::run` returns, awaiting the kept future gives `ContractError::EngineGone` (and `Err(EngineGone)` for the runner). Add a command awaited from a `#[module]` async fn on the engine thread, asserting it runs before the call returns. Add a `version = \"x\"` variant to `nsh_tsx_contract_kinds` and assert the rejection names `Theme.version`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "symbol": "a_ts_implementation_is_called_from_any_thread_until_the_engine_stops"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_engine_runner.rs",
+          "symbol": "the_runner_reaches_the_engine_from_any_thread_until_it_is_gone"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F4",
+      "criterionIds": [
+        "CON-6",
+        "CON-7"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**On the engine thread, during a synchronous call from JS, calls go through the queue. The criteria and design do not allow for this.** `crates/rayx_app_nsh/src/binding.rs:165-167` (`runs_now`).\n\n*Expected*: CON-6 and CON-7 say \"on the engine thread … without the queue\". The d-any-thread invariant says \"On `wasm32-unknown-unknown` there is one thread and the queue is never used.\"\n\n*Observed*: inside a synchronous call from JS, `runs_now()` is false, so commands and `EngineRunner::run` are queued for the engine's next turn. On web this means the queue is used. `nsh_engine_runner` asserts this (`returned,made`). To tell whether NSH's runtime is entered, the code calls `try_global::<RuntimeProbe>()`, which creates a global signal as a side effect. That works around a check NSH does not offer publicly (`try_with_data` is crate-private).\n\n*Repair*: record the exception in CON-6, CON-7 and d-any-thread with the owner, and drop or reword the wasm invariant. Under the constraints, ask the owner whether NSH's fork should expose a public check that the runtime is entered (or a way to spawn from a synchronous call) in place of the `RuntimeProbe` global.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_engine_runner.rs",
+          "symbol": "the_runner_reaches_the_engine_from_any_thread_until_it_is_gone"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "symbol": "a_ts_implementation_is_called_from_any_thread_until_the_engine_stops"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/binding.rs",
+          "symbol": "EngineRunner"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F5",
+      "criterionIds": [
+        "CON-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Not every refused member lists the five shapes.** `crates/rayx_app_macros/src/contract.rs`.\n\n*Expected* (CON-1): \"Any other member is a compile error that lists these shapes.\"\n\n*Observed*: several member refusals give a message without `SHAPE`:\n\n- a non-method item, \"methods only\" (lines 77-81)\n- generics on a method (439-443)\n- a default body (445-449)\n- a receiver that is not `&self` (466-471)\n- `self` not first (475)\n- a pattern parameter (478-483)\n\n`every_refusal_lists_the_five_shapes` checks one refusal (`fn a(&self) -> u32`).\n\n*Repair*: add `SHAPE` to every member-level refusal. Make the test loop over each refused member (the cases in `a_contract_has_no_generics_supertraits_or_other_items` and the receiver cases) and assert that all five shapes appear.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs",
+          "symbol": "every_refusal_lists_the_five_shapes"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F6",
+      "criterionIds": [
+        "VAL-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Gaps in how validation reports problems.** `crates/rayx_app/src/di/validation.rs:139-148`, `crates/rayx_app/src/di/registry.rs:98-113` and `crates/rayx_app/src/services/app/rayx_app_builder.rs:85-99`.\n\n*Expected* (VAL-1, d-validation): one error with one line per problem, and an app that registers everything builds as before.\n\n*Observed*:\n\n1. `Missing` problems are deduplicated, but `SingletonOnScoped` problems are not. Declaring the same `require_for::<dyn S, dyn T>` twice for a singleton on a scoped service gives two identical lines.\n2. `build` registers `Configuration` (`Self::root`, `with_singleton`) only *after* `validate()`. A registration that declares `require_for::<_, Configuration>` is therefore reported missing, although every app has it.\n3. `lifetime_of` reads a poisoned cache mutex as \"not registered\" (`is_ok_and`). The rest of the crate uses `PoisonError::into_inner`, so this can produce a false `Missing`.\n4. A singleton that depends on a transient service which depends on a scoped one is just as captive, but is not reported. The check is one level deep.\n\n*Repair*: deduplicate `SingletonOnScoped` the same way as `Missing`. Treat `Configuration` as registered during validation, or register it before validating. Use `unwrap_or_else(PoisonError::into_inner)` in `lifetime_of`. Either follow declared dependencies through transient registrations to report singleton → transient → scoped, or record that only direct dependencies are checked. Add the matching cases to `di_validation`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_validation.rs",
+          "symbol": "a_singleton_keeping_a_scoped_service_through_transient_ones_fails_naming_the_chain"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_validation.rs",
+          "symbol": "the_same_problem_declared_twice_is_one_line"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_validation.rs",
+          "symbol": "the_app_s_configuration_counts_as_registered"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F7",
+      "criterionIds": [
+        "CON-6",
+        "CON-9"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Partly repaired, and the repair breaks transient TS contracts.** The scoped part holds: `add_adapter` (`crates/rayx_app_nsh/src/di/contract_ts.rs:213-237`) reads the key at registration, and a scoped implementation made in its scope is reached from another thread (`a_scoped_ts_implementation_resolved_on_another_thread_is_called_there`). The unreachable branch is gone.\n\n*Observed*: a transient adapter now makes its TS object lazily, in `ContractSlot::get` (`Object::Transient`, lines 508-531). A command calls `get` inside the runner's job, in an engine **task**, not in a synchronous call from JS. Making a TS service there goes through `required_thread_bound_service_by_key`, and its factory refuses whenever `!service.factory.can_call_now()` (`container_ts.rs:124-130`: \"it is a TS service that is not made yet: TS services are made in a call from JS\"). NSH's `can_call_now` is true only inside a synchronous call from JS. So every command on a transient TS contract fails with `ContractError::Unavailable`, wherever the adapter was resolved. That includes the engine thread in a synchronous JS call, which worked before this repair because the old `Source::Made` made the object when the adapter was resolved there. Posted members work only when called on the spot inside a JS call. No test registers a contract with `addTransient(As)`, so the checks pass.\n\n*Expected* (CON-6, CON-9): every command of a contract implemented in TS works from any thread, for every lifetime the registration accepts.\n\n*Repair*: make a transient adapter's object on the engine with the factory's asynchronous call, the way `container_ts::make` does (`factory.call_async`). For example, give `ContractSlot` an async lookup used by `call`'s runner job. Alternatively, keep making the object when the adapter is resolved inside a JS call, and fail the resolve elsewhere with a clear error. Add a test that registers a contract with `addTransientAs` and awaits a command from the engine thread (a module async fn) and from another thread.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "symbol": "a_transient_ts_implementation_is_made_on_the_engine_when_first_called"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "symbol": "a_scoped_ts_implementation_resolved_on_another_thread_is_called_there"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F8",
+      "criterionIds": [
+        "CON-6"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Mostly repaired, but a posted member from another thread can be left waiting forever.** `crates/rayx_app_nsh/src/di/contract_ts.rs`: `wait_to_post` (lines 615-626), `get_async` (548-600) and `post` (708-731).\n\nWhat holds: the in-flight make is shared through `making`, so TS's factory runs once per adapter. Posted members that arrive before the object exists queue in `posts`, and `run_posts` runs them in order. `first_calls` proves this for calls made on the engine thread: one object, both commands answered by it, posts `a,b,c` in order.\n\n*Observed*: `wait_to_post` checks `made.get().is_none()` without holding the `posts` lock. On the engine, `get_async` sets `made` (`keep_made`) and then drains `posts` (`run_posts`). A poster on another thread can read `made` as empty, then the engine sets `made` and drains `posts`, and only then does the poster push its call. The poster's own `runner.run(get_async)` job finds the object made and takes the early `if let Ok(object) = self.get() { return Ok(object); }` return, which never drains `posts`. The call is never run and nothing logs that it was dropped. This is the same lost-wakeup pattern S3-F1 had, across threads. `first_calls` fires everything from a task on the engine thread, so it cannot hit it.\n\n*Expected* (CON-6, d-any-thread): every posted member reaches the TS object, in order, from any thread.\n\n*Repair*: decide the `made` check and the push under the `posts` lock, and set `made` and drain while holding that same lock (or drain under it right after setting). Alternatively, drain `posts` on every successful return of `get_async`, the early return included. Add a case where posted members come from another thread while the first make is in flight.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "symbol": "a_transient_ts_implementation_is_made_on_the_engine_when_first_called"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/contract_ts.rs",
+          "symbol": "wait_to_post"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F9",
+      "criterionIds": [
+        "CON-2",
+        "CON-3",
+        "CON-4",
+        "CON-6"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Scoped and transient TS adapters now link lazily: a first read from another thread blocks, and the design does not say so.** The macro's `Adapter::linked` (`crates/rayx_app_macros/src/contract.rs:286-300`) calls `__private::link_on_engine` (`crates/rayx_app_nsh/src/di/contract_ts.rs:779-799`).\n\n*Observed*: a scoped or transient adapter reads its TS object's state, events and constants the first time one of them is read. On the engine thread this happens in place. On any other thread, `link_on_engine` posts the link to the runner and waits for it with a blocking `std::sync::mpsc::Receiver::recv()`. A plain `theme.current()` or `theme.version()` (`&StateCell<T>` / `T`, which look non-blocking) therefore blocks a non-engine thread until the engine's next turn. It deadlocks if the engine thread is waiting on that thread at that moment: a `join`, a lock the reader holds, or a pool thread the engine waits on. The old tests did exactly this (`std::thread::spawn(..).join()` on the engine thread), and the coordinator changed them to await instead.\n\n*Expected*: the current design says otherwise.\n\n- d-contract-kinds: \"When the adapter is made (on the engine thread, during `start()`), it reads every state and events member once\", and its invariant: \"The adapter never calls into JS for a state, events or constant read after it is made.\"\n- d-any-thread's invariant: \"Never a blocking wait on the engine thread for a call that needs it: there is no blocking API.\"\n- CON-4: \"each constant is read once, when the adapter is made (on the engine thread, during `start()`)\".\n\nNone of these was amended, and the owner's amendment covers only the NSH pin. Lazy linking with a blocking first read off the engine thread is a new design decision.\n\n*Repair*: decide it with the owner. Either (a) record it: amend d-contract-kinds, d-any-thread and CON-4 to say when a scoped or transient adapter links, and that its first read off the engine thread waits for the engine. Document it, together with the rule never to make the engine thread wait on a thread that reads a contract's state, in `rustdoc` and later `docs/tsx.md`. Also link at the adapter's creation when it is made on the engine thread (the usual place a TS service is resolved), so only adapters made off the engine block. Or (b) avoid the wait: link at creation on the engine thread, and refuse (or link through the runner when resolving) adapters of publishing contracts made off the engine thread. Either way, add a test with the rule's case.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+          "symbol": "a_scoped_or_transient_ts_implementation_publishes_too"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs",
+          "symbol": "link_when_made"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F10",
+      "criterionIds": [
+        "CON-4",
+        "CON-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A bad member of a scoped or transient TS implementation panics at the consumer's read, with a misleading message.** `crates/rayx_app_nsh/src/di/contract_ts.rs:825-836` (`__private::linked`) and the macro's `linked`/`link_now` (`contract.rs:275-300`).\n\n*Expected* (CON-4): a missing constant, or one that does not convert, fails making the adapter with a `ContractError` naming the contract and the member. For singletons it still does: `start()` rejects (`a_missing_constant_fails_making_the_implementation`, `BAD_CONSTANT`).\n\n*Observed*: for a scoped or transient implementation, linking happens at the first read of any state, events or constant member. A missing constant, a constant that does not convert or state that does not convert makes `link_now` return `ContractError::Member`, and `__private::linked` turns that into a panic in the consumer's thread. The message says \"`Theme.version` is read before RayX linked its TS implementation (`start()` does, for a singleton): …\", which is wrong here. Nothing is kept, so every later read retries the link: it reads the TS object again and adds another set of sinks to the `ContractState`s of members that did convert, then panics again. No test covers a bad member on a scoped or transient implementation.\n\n*Repair*: give a failed link its own panic message, naming the contract, the member and why (not \"read before linked\"). Keep the failure, so a failed adapter neither reads JS again nor adds sinks. Where the adapter is linked at creation on the engine thread (see S3-F9), report the failure there: log it with the contract and the member, or fail the resolve if the container allows. Add a scoped case with `version = \"x\"` to `nsh_tsx_contract_kinds` and assert the message. Update CON-4's text to say what a non-singleton does.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+          "symbol": "a_scoped_implementation_with_a_bad_constant_fails_reading_it_naming_it"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/contract_ts.rs",
+          "symbol": "ContractLinked"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F11",
+      "criterionIds": [
+        "CON-2",
+        "CON-4",
+        "CON-6"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**The adapter waits for the engine inside its DI factory, while the registry holds the service's resolution guard. The engine thread can block on that guard and deadlock.** The generated `adapter()` (`crates/rayx_app_macros/src/contract.rs:269-280`, `433-441`) calls `link_on_engine` (`crates/rayx_app_nsh/src/di/contract_ts.rs:779-799`) from the factory that `add_adapter` registers. Off the engine thread, that call posts the link to the runner and blocks on `mpsc::recv()`.\n\n*Observed*: for a singleton or a scoped registration, `ServiceRegistry::resolve_cached` (`crates/rayx_app/src/di/registry.rs:404-432`) runs the factory while holding the key's resolution guard, a `std::sync::Mutex` (line 423). Suppose thread T resolves a publishing contract's adapter for the first time in a scope (or the root, for a singleton) and is waiting in `recv()`. If the engine thread now resolves the same `dyn Trait` in that scope, it finds nothing cached and blocks on the same guard (`resolution_guard.lock()`). It never drains the queue, so T's link job never runs and neither thread moves on.\n\nWays to hit it:\n\n- a component or view model on the engine resolving the scoped service while a background thread does the same;\n- `start()`'s `made` hook (`provider.service::<C>()`) resolving a singleton that another thread is resolving during startup.\n\nThe amended d-any-thread invariant says \"the engine thread never waits on a thread that resolves such a contract\". The registry's guard makes it wait. No test resolves the same publishing contract on both threads at once.\n\n*Expected* (d-any-thread, CON-6): no call blocks the engine thread; the only off-engine wait is a publishing scoped or transient adapter made there, and it cannot keep the engine thread from draining the queue.\n\n*Repair*: never wait for the engine while a resolution guard is held.\n\n- Singletons: do not link in the factory off the engine thread. `start()`'s `made` hook links them on the engine, and after `start()` the singleton is cached.\n- Scoped (and transient, for consistency): when made off the engine thread, return the adapter unlinked and link it on its first read. The wait then happens outside the registry's locks; record that in d-contract-kinds/d-any-thread instead of \"links when made\". Or link off the engine thread through a step that runs after `resolve_cached` releases the guard.\n\nAdd a test where a scoped publishing contract is resolved from another thread while the engine thread resolves it in the same scope (for example, the engine resolving it right after starting the other thread's resolve), and assert both get the same linked adapter without hanging (with a timeout).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+          "symbol": "a_scoped_contract_resolved_on_two_threads_at_once_links_once_without_waiting"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs",
+          "symbol": "link_when_made"
+        }
+      ],
+      "boundaryId": "s3-contracts"
+    },
+    {
+      "id": "S3-F12",
+      "criterionIds": [
+        "CON-6"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**The first-read wait can still happen under the container's locks when the reader is itself a factory: worth a documented rule.** `crates/rayx_app_nsh/src/di/contract_ts.rs:779-799` (`link_on_engine`), reached from the adapter's `linked()`.\n\n*Observed*: the adapter's own factory no longer waits, which closes S3-F11. But the first read of an adapter made off the engine thread still blocks on `mpsc::recv()` until the engine links it. If that first read comes from another singleton or scoped service's factory, it happens under that service's resolution guard (`registry.rs:423`). A typical case is a Rust service that resolves `dyn Theme` and reads `theme.current().get()` in its constructor. If the engine thread resolves that same service in the same scope at the same moment, it blocks on the guard and never runs the link, which is the S3-F11 deadlock one level up. The amended invariant says the wait is \"outside the container's locks\". That holds for the adapter itself, not for a consumer's factory.\n\n*Expected* (d-any-thread): the engine thread never waits on a thread that reads such a contract for the first time.\n\n*Repair*: document the rule where consumers will see it: the `#[contract]` rustdoc, `ContractSlot`/`link_on_engine` docs, and later `docs/tsx.md` and the services reference (t19). The rule: a factory that runs off the engine thread must not read a TS contract's published values or constants (resolve it there, read it after). Add the same caveat to d-any-thread's invariant. No code change is needed unless the owner prefers to refuse such a read inside a factory.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/lib.rs",
+          "symbol": "contract"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/contract_ts.rs",
+          "symbol": "link_on_engine"
+        }
+      ],
+      "boundaryId": "s3-contracts"
     }
   ],
   "handoffMarkdown": "",
