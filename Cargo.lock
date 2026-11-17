@@ -4928,6 +4928,8 @@ dependencies = [
  "rayx_app_macros",
  "serde",
  "serde_json",
+ "thiserror",
+ "toml 0.9.12+spec-1.1.0",
 ]
 
 [[package]]
@@ -5002,6 +5004,62 @@ dependencies = [
  "thiserror",
  "toml 0.9.12+spec-1.1.0",
  "url",
+]
+
+[[package]]
+name = "rayx_services_assets"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "rayx_services_fonts"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "rayx_services_platform"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "dxn_intl",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde_json",
+]
+
+[[package]]
+name = "rayx_services_suspension"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde_json",
 ]
 
 [[package]]

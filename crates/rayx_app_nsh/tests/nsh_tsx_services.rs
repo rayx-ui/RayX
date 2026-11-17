@@ -1,10 +1,11 @@
-//! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root:
-//! `builder.start()` keeps the platform and suspension services current itself, and the
-//! `NavigationService`, `KeyValueStore`, `ApplicationConfigurationService`, `AssetService`,
-//! `FontService`, `PlatformInfoService` and `SuspensionService` classes reach their services.
+//! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root: the
+//! `NavigationService`, `KeyValueStore` and `ApplicationConfigurationService` classes reach their
+//! services. (The service crates' classes have their groups in their crates.)
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
+
+mod headless;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -36,22 +37,17 @@ impl EngineAssets for AppAssets {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, AssetService, FontService, KeyValueStore, NavigationService,
-  PlatformInfoService, RayXAppBuilder, SuspensionService,
+  ApplicationConfigurationService, KeyValueStore, NavigationService, RayXAppBuilder,
 } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addNavigation((options) => { options.addRoute("/").addRoute("/projects/{id}"); })
       .addStorage()
       .addApplicationConfiguration()
-      .addAssets((options) => { options.package("app"); })
-      .addFonts()
-      .addPlatform()
-      .addSuspension()
       .start();
 
     const navigation = services.getRequiredService(NavigationService);
@@ -74,14 +70,6 @@ setTimeout(async () => {
     const configuration = services.getRequiredService(ApplicationConfigurationService);
     lines.push(`${configuration.layoutDirection()} ${typeof configuration.current()}`);
 
-    lines.push(services.getRequiredService(AssetService).url("images/logo.png"));
-    lines.push(services.getRequiredService(FontService).family("serif"));
-
-    const platform = services.getRequiredService(PlatformInfoService);
-    lines.push(typeof platform.current().form_factor);
-    // Kept current by `start()`: the suspension service heard the app start.
-    const suspension = services.getRequiredService(SuspensionService);
-    lines.push(suspension.lifecycle().last_reason === null ? "not synced" : "synced");
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -112,6 +100,7 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
+    set.class_extension::<headless::HostFakes>();
     let dir = std::env::temp_dir().join(format!("rayx-app-tsx-services-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");
@@ -142,6 +131,6 @@ fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(
         last,
-        "done Success|/projects/12|/|changes /projects/12,/|hr 1.25|lang,theme|true null|ltr object|asset:/@app/images/logo.png|serif|string|synced"
+        "done Success|/projects/12|/|changes /projects/12,/|hr 1.25|lang,theme|true null|ltr object"
     );
 }

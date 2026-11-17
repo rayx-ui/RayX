@@ -12,14 +12,15 @@ use syn::{Attribute, DeriveInput, parse_macro_input};
 
 /// Exports a Rust extension of the app builder to TS: `#[app_extension] fn add_weather(builder:
 /// RayXAppBuilder) -> RayXAppBuilder` stays a plain Rust function (a Rust root calls it, or
-/// `builder.apply(add_weather)`), and gains a TS function `addWeather(builder:
-/// RayXAppBuilder): RayXAppBuilder` that applies it to a TS builder, which TS passes to
-/// `builder.apply(addWeather)`.
+/// `builder.apply(add_weather)`), and gains a TS builder method `addWeather()` on every TS
+/// `RayXAppBuilder` that applies it, chaining with RayX's own methods
+/// (`new RayXAppBuilder().addStorage().addWeather().start()`) and throwing once the builder
+/// started.
 ///
-/// The TS function is a flat NSH module named like the function, which the app registers in
+/// The method is a class extension of the host's `RayXAppBuilder`, which the app registers in
 /// its set: `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {
-/// registry.module::<add_weather>(); }`.
-/// The function's doc comment documents the TS function.
+/// registry.class_extension::<add_weather>(); }`. The function's doc comment documents the
+/// method.
 #[proc_macro_attribute]
 pub fn app_extension(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attr = proc_macro2::TokenStream::from(attr);
@@ -91,7 +92,12 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
     });
     parse_macro_input!(attr with parser);
     let item = parse_macro_input!(item as syn::ItemTrait);
-    contract::expand_named(item, ts, &app_path())
+    let expanded = match core_path() {
+        // In the core: the trait and its descriptor; a service crate makes the NSH side.
+        Some(core) => contract::expand_mode(item, ts, &core, contract::Mode::Core),
+        None => contract::expand_named(item, ts, &app_path()),
+    };
+    expanded
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -101,7 +107,7 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// ```ignore
 /// #[rayx::native_module("my-app")]
 /// fn native(registry: &mut Registry) {
-///     registry.register::<Glyph>().module::<add_weather>(); // the app's own exports
+///     registry.register::<Glyph>().class_extension::<add_weather>(); // the app's own exports
 /// }
 /// ```
 ///
@@ -128,6 +134,108 @@ pub fn native_module(attr: TokenStream, item: TokenStream) -> TokenStream {
     native_module::expand(specifier, item, &rayx, nsh_core_in_scope)
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
+}
+
+/// The core's path when the calling crate is the core (`rayx_app`) or reaches RayX only through
+/// it (no `rayx`, no `rayx_app_nsh`): where `#[contract]` makes the trait and its descriptor
+/// alone.
+fn core_path() -> Option<proc_macro2::TokenStream> {
+    if crate_name("rayx").is_ok() || crate_name("rayx_app_nsh").is_ok() {
+        return None;
+    }
+    match crate_name("rayx_app").ok()? {
+        FoundCrate::Itself => Some(quote!(::rayx_app)),
+        FoundCrate::Name(name) => {
+            let name = syn::Ident::new(&name, proc_macro2::Span::call_site());
+            Some(quote!(::#name))
+        }
+    }
+}
+
+/// The NSH side of a contract the core defines, in a service crate (or an app):
+/// `contract_nsh!(rayx_app::services::storage::KeyValueStore as KeyValueStoreContract)` makes
+/// the marker type `KeyValueStoreContract`, which implements `Contract` for the trait (its TS
+/// interface, the adapter over a TS implementation, its token function), with the trait's
+/// values crossing as JSON. Invoke it where the trait's module is imported (`use
+/// rayx_app::services::storage::*;`): the NSH side names the trait's types as the trait writes
+/// them. Register the marker in the crate's set (`registry.contract::<KeyValueStoreContract>()`,
+/// or `contract_class::<KeyValueStoreContract, KeyValueStore>()` with the service's class as
+/// token).
+#[proc_macro]
+pub fn contract_nsh(input: TokenStream) -> TokenStream {
+    let parser = |stream: syn::parse::ParseStream| {
+        let path: syn::Path = stream.parse()?;
+        stream.parse::<syn::Token![as]>()?;
+        let marker: syn::Ident = stream.parse()?;
+        Ok((path, marker))
+    };
+    let (path, marker) = parse_macro_input!(input with parser);
+    let Some(last) = path.segments.last() else {
+        return syn::Error::new_spanned(&path, "name the trait: `crate::services::x::Trait`")
+            .into_compile_error()
+            .into();
+    };
+    let Some(krate) = path.segments.first() else {
+        unreachable!("a path has a segment");
+    };
+    let krate = &krate.ident;
+    let descriptor = syn::Ident::new(
+        &format!("__rayx_contract_descriptor_{}", last.ident),
+        last.ident.span(),
+    );
+    let app = app_path();
+    quote! {
+        ::#krate::#descriptor! {
+            [#app::__contract_nsh_expand] path = #path, marker = #marker,
+        }
+    }
+    .into()
+}
+
+/// What `contract_nsh!` expands through the core's descriptor: `path = …, marker = …, ts =
+/// "…"; <the trait as the core writes it>`.
+#[doc(hidden)]
+#[proc_macro]
+pub fn __contract_nsh_expand(input: TokenStream) -> TokenStream {
+    let parser = |stream: syn::parse::ParseStream| {
+        let mut path = None;
+        let mut marker = None;
+        let mut ts = None;
+        loop {
+            let key: syn::Ident = stream.parse()?;
+            stream.parse::<syn::Token![=]>()?;
+            match key.to_string().as_str() {
+                "path" => path = Some(stream.parse::<syn::Path>()?),
+                "marker" => marker = Some(stream.parse::<syn::Ident>()?),
+                "ts" => ts = Some(stream.parse::<syn::LitStr>()?),
+                _ => return Err(syn::Error::new(key.span(), "unknown key")),
+            }
+            if stream.peek(syn::Token![,]) {
+                stream.parse::<syn::Token![,]>()?;
+            }
+            if stream.peek(syn::Token![;]) {
+                stream.parse::<syn::Token![;]>()?;
+                break;
+            }
+        }
+        let item: syn::ItemTrait = stream.parse()?;
+        Ok((path, marker, ts, item))
+    };
+    let (path, marker, ts, item) = parse_macro_input!(input with parser);
+    let (Some(path), Some(marker)) = (path, marker) else {
+        return syn::Error::new(proc_macro2::Span::call_site(), "missing path or marker")
+            .into_compile_error()
+            .into();
+    };
+    let ts = ts.filter(|ts| !ts.value().is_empty());
+    contract::expand_mode(
+        item,
+        ts,
+        &app_path(),
+        contract::Mode::External { path, marker },
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
 }
 
 /// The path of `rayx_app_nsh` as the calling crate names it: through the `rayx` umbrella

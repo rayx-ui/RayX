@@ -8,8 +8,9 @@ The app's lifecycle, focus and visibility, a desktop's window and the system's w
 builder.add_suspension()
 ```
 
-`add_suspension` quits through the app's `dyn SuspensionHost` when one is registered (`rayx_app_nsh` registers NSH's;
-`with_suspension_host(host)` registers another).
+`add_suspension()` (from `rayx_services_suspension`; `builder.addSuspension()` in TS) registers RayX's implementation
+as the app's `dyn SuspensionService`: it follows NSH's app state from its startup on and quits through NSH. An app may
+register its own `dyn SuspensionService` instead.
 
 ## What it holds
 
@@ -24,18 +25,18 @@ A `SuspensionSnapshot`:
 ## Use
 
 ```rust
-let suspension = services.required_service::<SuspensionService>()?;
-let state = suspension.current();
-let changes = suspension.subscribe_changed(|change| pause_when_hidden(change));
-let events = suspension.subscribe_events(|event| match event.kind {
+let suspension = services.required_service::<dyn SuspensionService>()?;
+let state = suspension.suspension().get();
+let changes = suspension.suspension().subscribe(|state| pause_when_hidden(state));
+let events = suspension.events().subscribe(|event| match event.kind {
     SuspensionEventKind::Woke => reconnect(),
     SuspensionEventKind::Destroying => save_draft(),
     _ => {}
 });
 ```
 
-- The UI layer moves it with `SuspensionEvent`s (`publish(event)`). `subscribe_events` hears every event,
-  `subscribe_changed` only changes of state.
+- Its implementation publishes `SuspensionEvent`s and the state they lead to (`SuspensionSnapshot::apply`); `events()`
+  hears every event, `suspension()` the state.
 - A change is a change of lifecycle, activation, visibility, window or wakes; an event that only moves the timestamp
   is not one.
 - `Woke`: the system woke from sleep while the app ran (a desktop). The app's state may be as it was (a laptop's lid
@@ -61,7 +62,7 @@ Linux); elsewhere the system decides when an app ends, and they do nothing.
 
 ## On NSH
 
-`rayx_app_nsh` publishes, from `use_platform_sync()` in a Rust root or `builder.start()` in a TSX app:
+RayX's implementation publishes, from its startup on, in Rust and TSX apps alike:
 
 - NSH's `lifecycle()`: NSH folds the platforms' own callbacks into one app state, so an event's reason is
   `AppStateChanged` (or the host's start);
@@ -72,7 +73,7 @@ Linux); elsewhere the system decides when an app ends, and they do nothing.
 - the app's quit from NSH's `on_app_quit`: `Destroying` (`HostStopping`), then the [storage](storage.md) writes what
   still waits for the engine, then `Destroyed` (`HostStopped`).
 
-`NshSuspensionHost` quits with NSH's `quit()` and asks before quitting with `on_quit_request`; both work from any
+`quit()` quits with NSH's `quit()` and `ask_before_quit(..)` asks with `on_quit_request`; both work from any
 thread. The [platform service](platform.md) holds the platform's state.
 
 ## TSX

@@ -191,28 +191,8 @@ fn class_token<C: ServiceClass>(
     }
 }
 
-/// RayX's service classes by their constructors (what a token that is one names).
-static RESOLVERS: LazyLock<HashMap<Constructor, ClassToken>> = LazyLock::new(|| {
-    use crate::ts::{
-        ApplicationConfigurationService, AssetService, FontService, KeyValueStore,
-        NavigationService, PlatformInfoService, SuspensionService,
-    };
-    fn entry<C: ServiceClass>() -> (Constructor, ClassToken) {
-        (Constructor::of::<C>(), class_token::<C>(None))
-    }
-    HashMap::from([
-        entry::<crate::ts::I18nService>(),
-        entry::<NavigationService>(),
-        entry::<KeyValueStore>(),
-        entry::<ApplicationConfigurationService>(),
-        entry::<AssetService>(),
-        entry::<FontService>(),
-        entry::<PlatformInfoService>(),
-        entry::<SuspensionService>(),
-    ])
-});
-
-/// The service classes sets registered ([`register_class`]), beside RayX's own.
+/// The service classes sets registered ([`ServiceClassRegistryExt::service_class`],
+/// [`ContractRegistryExt::contract_class`](crate::ts::ContractRegistryExt::contract_class)).
 static REGISTERED: LazyLock<RwLock<HashMap<Constructor, ClassToken>>> =
     LazyLock::new(RwLock::default);
 
@@ -229,13 +209,27 @@ pub(crate) fn register_class<C: ServiceClass>(
 
 /// The class token of the class `class`.
 fn class_of(class: &Constructor) -> Option<ClassToken> {
-    RESOLVERS.get(class).copied().or_else(|| {
-        REGISTERED
-            .read()
-            .unwrap_or_else(PoisonError::into_inner)
-            .get(class)
-            .copied()
-    })
+    REGISTERED
+        .read()
+        .unwrap_or_else(PoisonError::into_inner)
+        .get(class)
+        .copied()
+}
+
+/// Service classes in an app's set: `registry.service_class::<WeatherService>()` adds the
+/// class and makes it its Rust service's token, which `getService` and `getRequiredService`
+/// resolve to the one object the provider gives for the service. What a service crate's set
+/// registers for each of its services' classes.
+pub trait ServiceClassRegistryExt {
+    /// Adds the service class `C` and its resolver.
+    fn service_class<C: ServiceClass>(&mut self) -> &mut Self;
+}
+
+impl ServiceClassRegistryExt for nsh_core::element::Registry {
+    fn service_class<C: ServiceClass>(&mut self) -> &mut Self {
+        register_class::<C>(None);
+        self.class::<C>()
+    }
 }
 
 /// `C`'s service resolved in `this`, as the one object of `C` this provider gives for it.

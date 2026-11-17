@@ -33,13 +33,13 @@ fn remove(id: u64) {
 
 /// The listeners an object registered: stopped when it goes.
 #[derive(Default)]
-pub(crate) struct Listeners(Vec<u64>);
+pub struct Listeners(Vec<u64>);
 
 impl Listeners {
     /// Keeps `listener` and subscribes it with `subscribe`, which gets the function the service
     /// calls (it posts to `listener` on the engine's thread) and gives the service's
     /// subscription, dropped when the listener stops. The [`Stop`] stops this listener alone.
-    pub(crate) fn listen<A, S>(
+    pub fn listen<A, S>(
         &mut self,
         listener: Callback<A>,
         subscribe: impl FnOnce(Box<dyn Fn(A) + Send + Sync>) -> Result<S, String>,

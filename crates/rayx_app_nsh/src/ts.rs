@@ -17,13 +17,13 @@
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
 //!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
 //! - The services' classes: [`I18nService`], [`NavigationService`] (with
-//!   [`NavigationRegion`]s), [`KeyValueStore`], [`ApplicationConfigurationService`],
-//!   [`AssetService`], [`FontService`], [`PlatformInfoService`] and [`SuspensionService`].
+//!   [`NavigationRegion`]s), [`KeyValueStore`] and [`ApplicationConfigurationService`]; the
+//!   service crates (`rayx_services_*`) add theirs (`AssetService`, `FontService`,
+//!   `PlatformInfoService`, `SuspensionService`) with their sets.
 //!
 //! # Options classes
 //!
-//! [`I18nOptions`], [`NavigationOptions`], [`AssetOptions`], [`FontOptions`] (with
-//! [`FontAliasOptions`]), [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
+//! [`I18nOptions`], [`NavigationOptions`], [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
 //! `configureAppConfiguration`: what a builder method's callback gets, valid during the call.
 //!
 //! The structs live beside their services (`services/<name>/`, `di/`, `app/`, `configuration/`)
@@ -37,6 +37,7 @@ pub use crate::app::builder_ts::RayXAppBuilder;
 pub use crate::app::ready_ts::ReadyContext;
 pub use crate::configuration::configuration_builder_ts::ConfigurationBuilder;
 pub use crate::configuration::options_ts::{OptionsBuilder, OptionsToken};
+pub use crate::configuration::options_ts::{push, record};
 #[doc(hidden)]
 pub use crate::di::contract_ts::__private;
 pub use crate::di::contract_ts::{
@@ -44,7 +45,7 @@ pub use crate::di::contract_ts::{
     contract_token,
 };
 pub use crate::di::provider_ts::{
-    Resolved, ServiceClass, ServiceKeyArg, ServiceProvider, ServiceToken,
+    Resolved, ServiceClass, ServiceClassRegistryExt, ServiceKeyArg, ServiceProvider, ServiceToken,
 };
 pub use crate::di::startup_ts::{
     AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
@@ -52,21 +53,17 @@ pub use crate::di::startup_ts::{
 };
 pub use crate::services::application_configuration::application_configuration_ts::ApplicationConfigurationService;
 pub use crate::services::application_configuration::options_ts::ApplicationConfigurationOptions;
-pub use crate::services::assets::assets_ts::AssetService;
-pub use crate::services::assets::options_ts::AssetOptions;
-pub use crate::services::fonts::fonts_ts::FontService;
-pub use crate::services::fonts::options_ts::{FontAliasOptions, FontOptions};
 pub use crate::services::i18n::i18n_ts::{
     DateFormat, DateLength, I18nService, NumberFormat, NumberKind, TimeDetail,
 };
 pub use crate::services::i18n::options_ts::I18nOptions;
 pub use crate::services::input_map::options_ts::InputMapOptions;
+pub use crate::services::json;
+pub use crate::services::listeners_ts::Listeners;
 pub use crate::services::navigation::navigation_ts::NavigationService;
 pub use crate::services::navigation::options_ts::{NavigationOptions, RouteOptions};
 pub use crate::services::navigation::region_ts::NavigationRegion;
-pub use crate::services::platform::platform_ts::PlatformInfoService;
 pub use crate::services::storage::storage_ts::KeyValueStore;
-pub use crate::services::suspension::suspension_ts::SuspensionService;
 
 /// What names a service of type `T` in TS: its class (a RayX service's, whose constructor is
 /// private, so it is taken through its `prototype`), or a [`ServiceToken`].
@@ -110,17 +107,10 @@ pub fn register(registry: &mut Registry) {
         .class::<ApplicationConfigurationOptions>()
         .class::<I18nOptions>()
         .class::<NavigationOptions>()
-        .class::<AssetOptions>()
-        .class::<FontOptions>()
-        .class::<FontAliasOptions>()
         .class::<InputMapOptions>()
-        .class::<I18nService>()
-        .class::<NavigationService>()
+        .service_class::<I18nService>()
+        .service_class::<NavigationService>()
         .class::<NavigationRegion>()
-        .class::<KeyValueStore>()
-        .class::<ApplicationConfigurationService>()
-        .class::<AssetService>()
-        .class::<FontService>()
-        .class::<PlatformInfoService>()
-        .class::<SuspensionService>();
+        .service_class::<KeyValueStore>()
+        .service_class::<ApplicationConfigurationService>();
 }

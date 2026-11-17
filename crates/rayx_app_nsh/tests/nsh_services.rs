@@ -1,6 +1,5 @@
-//! RayX's services on NSH, headless: the bundled `appsettings.json` as configuration, assets
-//! read and fonts registered through NSH, and the platform and suspension services kept
-//! current from NSH's environment.
+//! RayX's host on NSH, headless: the bundled `appsettings.json` as configuration (a missing
+//! file fails startup unless optional). The service crates' groups cover their services on NSH.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -17,13 +16,7 @@ use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, Assets, EngineConfig, LocalEngine, MountSink};
 use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfigurationService,
-    assets::AssetService,
-    fonts::FontService,
-    platform::{FormFactor, PlatformInfoService},
-    suspension::SuspensionService,
-};
+use rayx_app_nsh::rayx_runtime::services::application_configuration::ApplicationConfigurationService;
 use rayx_app_nsh::{
     AppSettingsAppBuilderExt, AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _,
     app_services, app_state,
@@ -33,8 +26,6 @@ thread_local! {
     /// The surface's root provider once the app is ready, for the test to read.
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
 }
-
-const PACIFICO: &[u8] = include_bytes!("fixtures/Pacifico-Regular.woff2");
 
 struct ChannelSink(Sender<MountBatch>);
 
@@ -52,19 +43,10 @@ impl Assets for AppAssets {
         match uri {
             "asset:/@app/appsettings.json" => Ok(br#"{
                 "RayX": {
-                    "Application": { "name": "Bundled", "tooltips": { "showDelayMs": 120 } },
-                    "Services": { "Fonts": { "defaultAlias": "script", "aliases": [
-                        { "alias": "script", "family": "Pacifico" }
-                    ] } }
+                    "Application": { "name": "Bundled", "tooltips": { "showDelayMs": 120 } }
                 }
             }"#
             .to_vec()),
-            "asset:/@app/assets.toml" => Ok(br#"
-files = ["fonts/Pacifico-Regular.woff2", "data/weather.json"]
-"#
-            .to_vec()),
-            "asset:/@app/fonts/Pacifico-Regular.woff2" => Ok(PACIFICO.to_vec()),
-            "asset:/@app/data/weather.json" => Ok(br#"{ "temperature": 21.5 }"#.to_vec()),
             _ => Err(format!("{uri} is not bundled")),
         }
     }
@@ -93,30 +75,23 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     builder
         .add_app_settings("app")
         .add_application_configuration(|_| {})
-        .add_assets(|options| {
-            options.package("app");
-        })
-        .add_fonts(|_| {})
-        .add_suspension()
 }
 
-/// A Rust root: starts the app, keeps the platform services current, and shows what the
-/// services hold once it is ready.
+/// A Rust root: starts the app and shows the configured name once it is ready.
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
-    rayx_app_nsh::use_platform_sync();
-    let temperature = signal(String::new());
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             let services = app_services().unwrap();
             ROOT.with_borrow_mut(|root| *root = Some(services.clone()));
-            let assets = services.required_service::<AssetService>().unwrap();
-            spawn(async move {
-                let value: serde_json::Value = assets.load_json("data/weather.json").await.unwrap();
-                temperature.set(value["temperature"].to_string());
-            });
-            text(move || format!("ready {}", temperature.get())).into_element()
+            let name = services
+                .required_service::<ApplicationConfigurationService>()
+                .unwrap()
+                .options()
+                .name
+                .clone();
+            text(format!("ready {name}")).into_element()
         }
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
         _ => text("starting").into_element(),
@@ -175,20 +150,20 @@ fn missing_settings_fail_startup_unless_optional() {
     );
     drop(engine);
     let (mut engine, rx) = start(MISSING_OPTIONAL);
-    let shown = pump_until(&mut engine, &rx, "ready 21.5");
+    let shown = pump_until(&mut engine, &rx, "ready Bundled");
     assert!(
-        shown.iter().any(|text| text == "ready 21.5"),
+        shown.iter().any(|text| text == "ready Bundled"),
         "shown: {shown:?}"
     );
 }
 
 #[test]
-fn services_run_on_nsh() {
+fn the_bundled_settings_are_the_configuration() {
     let _serial = serial();
     let (mut engine, rx) = start(BUNDLED);
-    let shown = pump_until(&mut engine, &rx, "ready 21.5");
+    let shown = pump_until(&mut engine, &rx, "ready Bundled");
     assert!(
-        shown.iter().any(|text| text == "ready 21.5"),
+        shown.iter().any(|text| text == "ready Bundled"),
         "shown: {shown:?}"
     );
 
@@ -202,27 +177,4 @@ fn services_run_on_nsh() {
         .unwrap();
     assert_eq!(configuration.options().name, "Bundled");
     assert_eq!(configuration.options().tooltips.show_delay_ms, 120);
-
-    // The font asset's family, read as NSH reads it (NSH registers the fonts the app ships).
-    let fonts = services.required_service::<FontService>().unwrap();
-    assert_eq!(fonts.registered_fonts()[0].family, "Pacifico");
-    assert_eq!(fonts.font_family("script"), "Pacifico");
-    assert!(fonts.diagnostics().is_empty(), "{:?}", fonts.diagnostics());
-
-    // The platform service has NSH's environment; the suspension service the app's start.
-    let platform = services
-        .required_service::<PlatformInfoService>()
-        .unwrap()
-        .current();
-    assert_eq!(
-        (platform.viewport.width, platform.viewport.height),
-        (390.0, 844.0)
-    );
-    assert_ne!(platform.form_factor, FormFactor::Unknown);
-    assert!(!platform.locale.languages.is_empty());
-    let suspension = services
-        .required_service::<SuspensionService>()
-        .unwrap()
-        .current();
-    assert!(suspension.is_running());
 }

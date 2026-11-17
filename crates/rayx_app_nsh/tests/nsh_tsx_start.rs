@@ -1,8 +1,8 @@
 //! `await builder.start()` through NSH's engine, headless: it resolves with the root
 //! `ServiceProvider` once every startup service initialized, rejects with the startup error's
 //! message (a failing service, a timeout, an option validated on start, a ready hook), resolves a
-//! second start on the surface with the same root, keeps the platform and suspension services
-//! current from NSH afterwards, and each surface builds its own provider.
+//! second start on the surface with the same root, and each surface builds its own provider.
+//! (The platform and suspension crates' groups cover their services kept current from NSH.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -13,7 +13,6 @@ use std::time::Duration;
 
 use futures::FutureExt as _;
 use futures::future::{LocalBoxFuture, pending};
-use nsh_core::geometry::Size;
 use nsh_core::prelude::*;
 use rayx_app_nsh::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
@@ -159,16 +158,16 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const builder = Probe.addCatalog(new RayXAppBuilder(), "ok");
+    const builder = Probe.addCatalog(new RayXAppBuilder().addHostFakes(), "ok");
     // Two starts at once, of two builders: one startup, one root.
     const [services, also] = await Promise.all([
       builder.start(),
-      Probe.addCatalog(new RayXAppBuilder(), "ok").start(),
+      Probe.addCatalog(new RayXAppBuilder().addHostFakes(), "ok").start(),
     ]);
     lines.push(`${Probe.initialized(services)} ${services === also}`);
     // Started: the same builder, or another, resolves with the same root.
     lines.push(String((await builder.start()) === services));
-    lines.push(String((await new RayXAppBuilder().start()) === services));
+    lines.push(String((await new RayXAppBuilder().addHostFakes().start()) === services));
     lines.push(String(Probe.session(services) === Probe.session(also)));
     // The builder's other methods throw after `start()`.
     lines.push(thrown(() => builder.addStorage()));
@@ -197,7 +196,7 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const builder = new RayXAppBuilder();
+    const builder = new RayXAppBuilder().addHostFakes();
     const ready = builder.start();
     // The same turn: the builder was taken by the call, so nothing more reaches the startup.
     lines.push(thrown(() => builder.addI18n((options) => { options.defaultLanguage("hr"); })));
@@ -224,7 +223,7 @@ const FAILS: &str = r#"import { mount, signal, Text } from "nsh";
 import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
-Probe.addCatalog(new RayXAppBuilder(), "@STARTUP@").start().then(
+Probe.addCatalog(new RayXAppBuilder().addHostFakes(), "@STARTUP@").start().then(
   () => shown.set("done started"),
   (error) => shown.set(`done rejected ${error.message}`),
 );
@@ -251,7 +250,7 @@ const MISSING_SETTINGS: &str = r#"import { mount, signal, Text } from "nsh";
 import { RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
-new RayXAppBuilder().addAppSettings("app").start().then(
+new RayXAppBuilder().addHostFakes().addAppSettings("app").start().then(
   () => shown.set("done started"),
   (error) => shown.set(`done rejected ${error.message}`),
 );
@@ -265,48 +264,11 @@ fn start_rejects_when_the_configuration_does_not_load() {
     assert!(shown.contains("appsettings.json"), "{shown}");
 }
 
-const PLATFORM: &str = r#"import { mount, signal, Text } from "nsh";
-import { PlatformInfoService, RayXAppBuilder, SuspensionService } from "test/app";
-
-const shown = signal("waiting");
-setTimeout(async () => {
-  try {
-    const services = await new RayXAppBuilder().addPlatform().addSuspension().start();
-    const platform = services.getRequiredService(PlatformInfoService);
-    const suspension = services.getRequiredService(SuspensionService);
-    platform.onChange((snapshot) => {
-      if (snapshot.viewport.width === 800) {
-        shown.set(`resized ${snapshot.viewport.width}x${snapshot.viewport.height}`);
-      }
-    });
-    // Listeners and the platform's sync run on later turns.
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const width = platform.current().viewport.width;
-    const synced = suspension.lifecycle().last_reason === null ? "not synced" : "synced";
-    shown.set(`ready ${width} ${synced}`);
-  } catch (error) {
-    shown.set(`ready threw ${error}`);
-  }
-}, 0);
-
-mount(() => <Text>{shown()}</Text>);
-"#;
-
-#[test]
-fn start_keeps_the_platform_and_suspension_services_current_from_nsh() {
-    let app = headless::start(set(), PLATFORM, None);
-    assert_eq!(app.shown("ready"), "ready 390 synced");
-    app.engine()
-        .control()
-        .resize(Size::new(px(800.0), px(600.0)));
-    assert_eq!(app.shown("resized"), "resized 800x600");
-}
-
 const SESSION: &str = r#"import { mount, signal, Text } from "nsh";
 import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
-Probe.addCatalog(new RayXAppBuilder(), "ok").start().then(
+Probe.addCatalog(new RayXAppBuilder().addHostFakes(), "ok").start().then(
   (services) => shown.set(`done ${Probe.session(services)}`),
   (error) => shown.set(`done rejected ${error.message}`),
 );

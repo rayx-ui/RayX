@@ -21,7 +21,7 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .configureAppConfiguration((c) => {
         c.addValue({ Feed: { pageSize: 25, retry: { limit: 3 } } });
       })
@@ -72,7 +72,7 @@ import { OptionsToken, RayXAppBuilder } from "test/app";
 const Feed = new OptionsToken("Feed", { pageSize: 0 });
 let configured = 0;
 const shown = signal("waiting");
-new RayXAppBuilder()
+new RayXAppBuilder().addHostFakes()
   .addOptions(Feed, (options) => options
     .configure((value) => { configured++; return value; })
     .validate((value) => value.pageSize > 0, "pageSize must be positive")

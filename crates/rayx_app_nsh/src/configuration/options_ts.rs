@@ -378,7 +378,7 @@ pub(crate) fn resolve(
 /// Calls `configure` (when there is one) with a new recording options object and gives what it
 /// recorded; the object is disposed after the call. A callback that throws fails with its
 /// message.
-pub(crate) fn record<C, S>(
+pub fn record<C, S>(
     options: C,
     configure: Option<Callback<Instance<C>>>,
     steps: impl FnOnce(&mut C) -> Vec<S>,
@@ -402,7 +402,7 @@ where
 }
 
 /// Records `step` on `this` and gives it back, for chaining.
-pub(crate) fn push<C: nsh_core::element::Class>(
+pub fn push<C: nsh_core::element::Class>(
     this: Instance<C>,
     step: impl FnOnce(&mut C),
 ) -> Instance<C> {

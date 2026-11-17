@@ -69,7 +69,8 @@ impl RayXAppBuilder {
     }
 
     /// The builder with `extension` applied: an extension of the builder (`fn add_weather(builder:
-    /// RayXAppBuilder) -> RayXAppBuilder`) in the chain, as TS's `builder.apply(addWeather)`.
+    /// RayXAppBuilder) -> RayXAppBuilder`) in the chain, as TS's `builder.apply(f)` applies a TS
+    /// function of the builder.
     pub fn apply(self, extension: impl FnOnce(Self) -> Self) -> Self {
         extension(self)
     }

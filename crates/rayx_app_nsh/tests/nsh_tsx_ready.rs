@@ -50,12 +50,12 @@ impl Probe {
 
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
-        set.module::<Probe>().module::<add_rust_hook>();
+        set.module::<Probe>().class_extension::<add_rust_hook>();
     })
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { addRustHook, I18nService, Probe, RayXAppBuilder } from "test/app";
+import { I18nService, Probe, RayXAppBuilder } from "test/app";
 
 class Warmup {
   isInitialized() { return false; }
@@ -68,9 +68,9 @@ setTimeout(async () => {
   const contexts = [];
   let asked;
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .onReady(async (context) => { contexts.push(context.services); Probe.log("first"); })
-      .apply(addRustHook)
+      .addRustHook()
       .addStartupSingleton(Warmup, () => new Warmup())
       .onReady(() => Probe.log("second"))
       .onReadyWhen((s) => s.getService(I18nService) !== null, () => Probe.log("no i18n"))
@@ -97,13 +97,13 @@ fn ts_and_rust_ready_hooks_run_in_the_order_added_once_started() {
 }
 
 const FAILS: &str = r#"import { mount, signal, Text } from "nsh";
-import { addRustHook, Probe, RayXAppBuilder } from "test/app";
+import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
-new RayXAppBuilder()
+new RayXAppBuilder().addHostFakes()
   .onReady(() => Probe.log("before"))
   .onReady(@HOOK@)
-  .apply(addRustHook)
+  .addRustHook()
   .start()
   .then(
     () => shown.set("done started"),

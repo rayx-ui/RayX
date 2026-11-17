@@ -123,7 +123,7 @@ struct Shared {
 }
 
 /// The app's [`KeyValueStore`] on NSH: values in NSH's storage under [`STORAGE_PREFIX`],
-/// persistent wherever NSH keeps the app's storage. `add_nsh_services` registers it, so on NSH
+/// persistent wherever NSH keeps the app's storage. the app's start registers it, so on NSH
 /// `add_storage()` keeps it and the app's data outlives the process.
 #[derive(Clone)]
 pub struct NshKeyValueStore {

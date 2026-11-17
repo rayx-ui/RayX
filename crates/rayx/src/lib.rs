@@ -48,9 +48,9 @@ pub use dxn_i18n as i18n;
 pub use dxn_intl as intl;
 
 /// Exports a Rust extension of the app builder to TS (`#[rayx::app_extension] fn
-/// add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` is TS's `addWeather`, applied with
-/// `builder.apply(addWeather)`); register it in the [`native_module`] function's body
-/// (`registry.module::<add_weather>()`).
+/// add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` is TS's builder method
+/// `builder.addWeather()`); register it in the [`native_module`] function's body
+/// (`registry.class_extension::<add_weather>()`).
 pub use rayx_app_nsh::app_extension;
 
 /// Makes a Rust trait implementable from TS while Rust resolves it as `Arc<dyn Trait>`; register
@@ -71,7 +71,7 @@ pub use rayx_app_nsh::contract;
 ///
 /// #[rayx::native_module("my-app")]
 /// fn native(registry: &mut Registry) {
-///     registry.register::<Glyph>().module::<add_weather>();
+///     registry.register::<Glyph>().class_extension::<add_weather>();
 /// }
 /// ```
 ///
@@ -97,11 +97,10 @@ pub mod prelude {
     pub use rayx_app_nsh::ts::ContractRegistryExt;
     pub use rayx_app_nsh::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app_nsh::{
-        AppError, AppSettingsAppBuilderExt, AppState, NshServicesAppBuilderExt, Observable,
-        ReactiveCommand, ScreenScope, StartAppBuilderExt, UiCommand, app_services, app_state,
-        install, navigation_region, navigation_view, services, use_command, use_event_stream,
-        use_list, use_platform_sync, use_reactive, use_screen_scope, use_state_cell, use_stream,
-        use_two_way, use_view_model,
+        AppError, AppSettingsAppBuilderExt, AppState, Observable, ReactiveCommand, ScreenScope,
+        StartAppBuilderExt, UiCommand, app_services, app_state, install, navigation_region,
+        navigation_view, services, use_command, use_event_stream, use_list, use_reactive,
+        use_screen_scope, use_state_cell, use_stream, use_two_way, use_view_model,
     };
     pub use rayx_app_nsh::{DevLayer, DevTools, dev_layer};
     pub use rayx_runtime::services::i18n::{Args, I18nService};

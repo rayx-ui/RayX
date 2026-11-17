@@ -10,7 +10,7 @@ use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
 use rayx_app_nsh::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
-use rayx_app_nsh::rayx_runtime::services::platform::{PlatformAppBuilderExt, PlatformInfoService};
+use rayx_app_nsh::rayx_runtime::services::platform::PlatformInfoService;
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
 };
@@ -29,14 +29,13 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
     service
         .add_resource("hr", None, r#"{ "hello": "Bok" }"#)
         .unwrap();
-    builder.add_platform().with_i18n_service(service)
+    builder.with_i18n_service(service)
 }
 
 /// Starts the app and shows NSH's locale once it is ready.
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
-    rayx_app_nsh::use_platform_sync();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             ROOT.with_borrow_mut(|root| *root = Some(app_services().unwrap()));
@@ -98,8 +97,8 @@ fn the_apps_language_choice_reaches_nsh_and_lets_go_of_it() {
     assert_eq!(i18n.chosen_language().as_deref(), Some("hr"));
 
     // Following the platform again lets NSH follow the device again.
-    let platform = root.required_service::<PlatformInfoService>().unwrap();
-    i18n.follow_platform_again(&platform.current().locale);
+    let platform = root.required_service::<dyn PlatformInfoService>().unwrap();
+    i18n.follow_platform_again(&platform.platform().get().locale);
     pump_until(&mut engine, &rx, "nsh en-US");
     assert_eq!(i18n.t("hello"), "Hello");
 }

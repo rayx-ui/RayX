@@ -161,7 +161,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addSingletonAs(ThemeService, () => new MyTheme())
       .start();
     // Rust reaches the TS implementation as `dyn Theme`.
@@ -204,7 +204,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   try {
     // A startup form under the class, too.
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addStartupSingletonAs(ThemeService, () => new MyTheme())
       .start();
     const theme = services.getRequiredService(ThemeService);
@@ -231,7 +231,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await Probe.addRustTheme(new RayXAppBuilder()).start();
+    const services = await Probe.addRustTheme(new RayXAppBuilder().addHostFakes()).start();
     lines.push(await Probe.fromRust(services, "lunar"));
     lines.push(services.getRequiredService(ThemeService).current);
   } catch (error) {
@@ -285,7 +285,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .@ADD@(ThemeService, () => new MyTheme())
       .start();
     const scope = services.createScope();

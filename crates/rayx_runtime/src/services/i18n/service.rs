@@ -239,13 +239,22 @@ impl I18nService {
     ///
     /// A message several packages have comes from the package listed first in the asset
     /// options (the app's own), so an app overrides the translations of the libraries it uses.
-    pub async fn load_assets(&self, assets: &AssetService) -> Result<(), I18nServiceError> {
+    pub async fn load_assets(
+        &self,
+        assets: &Arc<dyn AssetService>,
+    ) -> Result<(), I18nServiceError> {
         let mut resources = assets
             .query(&AssetQuery::kind(AssetKind::Locale))
             .unwrap_or_default();
         let packages = assets
-            .catalog()
-            .map(|catalog| catalog.packages().to_vec())
+            .loaded_catalog()
+            .ok()
+            .and_then(|catalog| {
+                catalog
+                    .as_ref()
+                    .as_ref()
+                    .map(|catalog| catalog.packages().to_vec())
+            })
             .unwrap_or_default();
         let rank = |package: &str| {
             packages
@@ -271,7 +280,7 @@ impl I18nService {
             };
             let language_tag = resource.locale.as_deref().unwrap_or(language_tag);
             let logical_path = resource.logical_path();
-            let loaded = match assets.load_text(&logical_path).await {
+            let loaded = match assets.load_text(logical_path.clone()).await {
                 Ok(json) => self.add_resource(language_tag, namespace, &json),
                 Err(error) => Err(I18nServiceError::Resource {
                     path: logical_path,
@@ -386,15 +395,21 @@ impl I18nService {
 
     /// Follows `platform`'s locale changes (with [`I18nOptions::follow_platform`]), starting
     /// from its current snapshot.
-    pub fn follow(&self, platform: &PlatformInfoService) {
+    pub fn follow(&self, platform: &dyn PlatformInfoService) {
         if !self.options.follow_platform {
             return;
         }
-        self.apply_platform(&platform.current().locale);
+        let state = platform.platform();
+        let mut last = state.get().locale.clone();
+        self.apply_platform(&last);
         let service = self.clone();
-        let subscription = platform.subscribe(move |event| {
-            if event.previous.locale != event.current.locale {
-                service.apply_platform(&event.current.locale);
+        let last = Arc::new(Mutex::new(Some(std::mem::take(&mut last))));
+        let subscription = state.subscribe(move |snapshot| {
+            let mut seen = last.lock().unwrap_or_else(PoisonError::into_inner);
+            if seen.as_ref() != Some(&snapshot.locale) {
+                *seen = Some(snapshot.locale.clone());
+                drop(seen);
+                service.apply_platform(&snapshot.locale);
             }
         });
         *self.platform.lock().unwrap_or_else(PoisonError::into_inner) = Some(subscription);
@@ -449,7 +464,7 @@ impl AsyncInitializable for I18nService {
             if service.options.auto_load_assets {
                 let assets = context
                     .services()
-                    .service::<AssetService>()
+                    .service::<dyn AssetService>()
                     .ok_or(I18nServiceError::MissingAssetService)
                     .map_err(|error| StartupServiceError::new(error.to_string()))?;
                 service
@@ -457,8 +472,8 @@ impl AsyncInitializable for I18nService {
                     .await
                     .map_err(|error| StartupServiceError::new(error.to_string()))?;
             }
-            if let Some(platform) = context.services().service::<PlatformInfoService>() {
-                service.follow(&platform);
+            if let Some(platform) = context.services().service::<dyn PlatformInfoService>() {
+                service.follow(platform.as_ref());
             }
             service.initialization.mark_initialized();
             Ok(())
@@ -474,7 +489,7 @@ impl StartupInitializable for I18nService {
 
     fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
         if self.options.auto_load_assets {
-            vec![StartupServiceType::of::<AssetService>()]
+            vec![StartupServiceType::of::<dyn AssetService>()]
         } else {
             Vec::new()
         }

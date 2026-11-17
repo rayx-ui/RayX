@@ -54,7 +54,7 @@ type ConfigurationListener = dyn Fn(&ApplicationConfigurationSnapshot) + Send + 
 /// motion, programmatic scrolling.
 #[derive(Clone, AppService)]
 pub struct ApplicationConfigurationService {
-    platform: PlatformInfoService,
+    platform: Arc<dyn PlatformInfoService>,
     snapshot: Arc<Mutex<ApplicationConfigurationSnapshot>>,
     listeners: Listeners<ConfigurationListener>,
 }
@@ -63,7 +63,7 @@ impl ApplicationConfigurationService {
     /// A service over `options`, reading the system's settings from `platform`.
     pub fn new(
         options: ApplicationConfiguration,
-        platform: PlatformInfoService,
+        platform: Arc<dyn PlatformInfoService>,
     ) -> Result<Self, ApplicationConfigurationError> {
         options
             .validate()
@@ -140,7 +140,7 @@ impl ApplicationConfigurationService {
     /// (a component's own).
     pub fn effective_motion(&self, local_request: Option<MotionPolicy>) -> EffectiveMotion {
         EffectiveMotion {
-            platform_reduced: self.platform.current().reduced_motion,
+            platform_reduced: self.platform.platform().get().reduced_motion,
             app_reduced: self.snapshot().options.motion.policy == MotionPolicy::Reduced,
             local_reduced: local_request == Some(MotionPolicy::Reduced),
         }

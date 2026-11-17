@@ -4,6 +4,8 @@
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
 
+mod headless;
+
 use std::cell::RefCell;
 use std::sync::{Mutex, MutexGuard};
 use std::time::Duration;
@@ -50,7 +52,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 /// The root region as a stack of pages, and the `panel` region as its current route.
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             ROOT.with_borrow_mut(|root| *root = Some(app_services().unwrap()));
@@ -162,7 +164,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addNavigation((options) => {
         options.addRoute("/").addRoute("/projects/{id}").addRoute("/settings");
       })
@@ -208,6 +210,7 @@ fn tsx_navigates_a_region_and_hears_its_pages() {
     let _serial = serial();
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
+    set.class_extension::<headless::HostFakes>();
     let dir = std::env::temp_dir().join(format!("rayx-app-regions-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");

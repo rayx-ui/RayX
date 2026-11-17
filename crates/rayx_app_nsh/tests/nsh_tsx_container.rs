@@ -114,7 +114,7 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addI18n()
       .addSingleton(Clock, () => new Clock())
       .addScoped(Page, (s) => ({
@@ -154,7 +154,7 @@ setTimeout(async () => {
     lines.push(await Probe.outsideACall(services, Lazy));
     lines.push(await Probe.outsideACall(services, Clock));
     // A factory that throws, and a RayX class as a token.
-    lines.push(thrown(() => new RayXAppBuilder().addSingleton(I18nService, () => ({}))));
+    lines.push(thrown(() => new RayXAppBuilder().addHostFakes().addSingleton(I18nService, () => ({}))));
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -191,7 +191,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
-  const services = await new RayXAppBuilder()
+  const services = await new RayXAppBuilder().addHostFakes()
     .addSingleton(Broken, () => { throw new Error("no clock"); })
     .start();
   lines.push(thrown(() => services.getRequiredService(Broken)));

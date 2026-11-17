@@ -74,21 +74,28 @@ provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.
 **Written in TS too.** An app's own services may be TS classes in the same container, and a Rust trait marked
 `#[rayx::contract]` lets Rust call a TS implementation ([TSX](tsx.md#services-written-in-ts)).
 
-**Platform-independent.** `rayx_runtime` has no NSH dependency and builds for `wasm32-unknown-unknown`. What a service
-needs from the platform is a trait (`AssetReader`, `FontRegistrar`, `KeyValueStore`,
-`NavigationLocationSynchronizer`) that `rayx_app_nsh` implements on NSH, so the services stay testable with `cargo test`.
+**Contracts in the core, implementations in crates.** A service's trait and data types live in `rayx_app::services`
+(NSH-free, building for `wasm32-unknown-unknown`), and RayX's implementation in a crate of its own: the platform,
+suspension, asset and font services are `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets` and
+`rayx_services_fonts`, each registering itself as `dyn Trait` (`add_platform()`, `add_suspension()`, `add_assets(..)`,
+`add_fonts(..)`, and `builder.addPlatform()` and the others in TS, once the crate's set is registered). A service that
+needs another resolves it by trait, so an app's own implementation, in Rust or TS, replaces RayX's anywhere;
+`rayx_app::testing` has a fake of each trait. `rayx_runtime` still holds the services not yet moved.
 
 ## On NSH
 
 `rayx_app_nsh` gives the services what they need from NSH:
 
-- Every surface's builder starts with `NshAssetReader` (reads `asset:/` URLs with `fetch`), `NshFontRegistrar`
-  (registers fonts with `register_font`) and `NshKeyValueStore` (persists values in NSH's storage).
+- The app's start requires the platform, suspension, asset and font services: a missing one fails the start before
+  anything is made, naming each one missing and how to add it. Nothing is registered for the app: `RayXAppBuilder::new()`
+  and `new RayXAppBuilder()` are empty.
+- The app's start registers `NshKeyValueStore` (persists values in NSH's storage) and NSH's location where the app
+  registered none.
 - `add_app_settings(package)` adds the package's bundled `appsettings.json` as a configuration source, loaded
   asynchronously when the app starts.
-- `use_platform_sync()`, in a Rust root component, keeps the [platform](services/platform.md) and
-  [suspension](services/suspension.md) services current from NSH once the app is ready. A TSX app has no root
-  component, so `builder.start()` does it.
+- The [platform](services/platform.md) and [suspension](services/suspension.md) services keep themselves current from
+  NSH from their startup on, in Rust and TSX apps alike; the [asset](services/assets.md) and [font](services/fonts.md)
+  services read and register through NSH from any thread.
 
 ## Writing a service
 
@@ -132,4 +139,4 @@ impl<T> WeatherAppBuilderExt for T where T: AppBuilder {}
 
 An app then calls `builder.add_weather(|options| options.refresh_minutes = 15)`. To reach TS, an app exports such a
 function as an [app extension](tsx.md#app-extensions) (`#[rayx::app_extension]`, a function of the builder alone),
-which TS applies with `builder.apply(addWeather)`.
+which TS calls as a builder method, `builder.addWeather()`.

@@ -19,7 +19,7 @@ setTimeout(async () => {
   const lines = [];
   const options = (f) => { try { return JSON.stringify(f().value); } catch (e) { return e.message; } };
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       // A later `configureOptions` makes the value invalid.
       .addOptions(Later, (o) => o.validate((v) => v.pageSize > 0, "pageSize must be positive"))
       .configureOptions(Later, (v) => ({ ...v, pageSize: 0 }))
@@ -60,7 +60,7 @@ import { OptionsToken, RayXAppBuilder } from "test/app";
 
 const Feed = new OptionsToken("Feed", { pageSize: 10 });
 const shown = signal("waiting");
-new RayXAppBuilder()
+new RayXAppBuilder().addHostFakes()
   CHAIN
   .start()
   .then(

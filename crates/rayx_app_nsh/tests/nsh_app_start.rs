@@ -70,7 +70,7 @@ impl StartupInitializable for Catalog {}
 fn app(fail: bool) -> RayXAppBuilder {
     let id = NEXT.fetch_add(1, Ordering::SeqCst);
     MADE.with_borrow_mut(|made| made.push(id));
-    RayXAppBuilder::new()
+    ::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())
         .add_singleton(Session { id })
         .add_startup_singleton(Catalog {
             fail,
@@ -349,7 +349,7 @@ fn a_rust_root_s_storage_is_nsh_s_store_whatever_the_order() {
         let shown = signal(String::from("starting"));
         spawn(async move {
             // `add_storage()` before NSH's services are added (at the start): NSH's store still.
-            let root = RayXAppBuilder::new()
+            let root = ::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())
                 .add_storage()
                 .start_async()
                 .await

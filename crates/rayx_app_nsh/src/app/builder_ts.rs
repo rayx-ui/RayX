@@ -8,22 +8,18 @@ use rayx_app::{
     ConfigurationAppBuilderExt as _, RayXAppBuilder as AppBuilder, ServiceAppBuilderExt as _,
 };
 use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
-use rayx_runtime::services::assets::AssetAppBuilderExt as _;
-use rayx_runtime::services::fonts::FontAppBuilderExt as _;
 use rayx_runtime::services::history::HistoryAppBuilderExt as _;
 use rayx_runtime::services::i18n::I18nAppBuilderExt as _;
 use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
 use rayx_runtime::services::navigation::NavigationAppBuilderExt as _;
 use rayx_runtime::services::operations::OperationsAppBuilderExt as _;
-use rayx_runtime::services::platform::PlatformAppBuilderExt as _;
 use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 use rayx_runtime::services::storage::StorageAppBuilderExt as _;
-use rayx_runtime::services::suspension::SuspensionAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
 use crate::ts::{
-    ApplicationConfigurationOptions, AssetOptions, ConfigurationBuilder, FontOptions, I18nOptions,
-    InputMapOptions, NavigationOptions,
+    ApplicationConfigurationOptions, ConfigurationBuilder, I18nOptions, InputMapOptions,
+    NavigationOptions,
 };
 use std::collections::HashMap;
 
@@ -34,7 +30,7 @@ use crate::app::ready_ts as ready;
 use crate::configuration::options_ts::{self as app_options, OptionsBuilder, OptionsToken};
 use crate::di::container_ts::{self as container, Factory, TsService};
 use crate::di::provider_ts::{ServiceKeyArg, ServiceProvider};
-use crate::{AppError, AppSettingsAppBuilderExt as _, NshServicesAppBuilderExt as _};
+use crate::{AppError, AppSettingsAppBuilderExt as _};
 use rayx_app::AppBuilder as _;
 use rayx_app::di::{ServiceLifetime, StartupServiceType};
 
@@ -51,7 +47,7 @@ use rayx_app::di::{ServiceLifetime, StartupServiceType};
 /// ```
 ///
 /// Each method registers what the Rust method of its name does, with the same implied services
-/// (`addHistory` adds operations, `addI18n` and `addFonts` add assets, `addInputMap` adds
+/// (`addHistory` adds operations, `addInputMap` adds
 /// storage). A method taking a callback calls it at once with an options object whose methods
 /// are Rust's; what it sets applies after the options bound from configuration, and a callback
 /// that throws makes the method throw. After `start()` the other methods throw.
@@ -76,12 +72,13 @@ impl Default for RayXAppBuilder {
 
 #[class]
 impl RayXAppBuilder {
-    /// A builder for the app on this surface, starting with NSH's services (reading the app's
-    /// files and fonts, its persistent key-value store, its address, its quitting).
+    /// An empty builder for the app on this surface. Its start requires the platform,
+    /// suspension, asset and font services (`addPlatform()`, `addSuspension()`, `addAssets()`,
+    /// `addFonts()` from their crates' sets, or the app's own).
     pub fn new() -> Self {
         crate::devtools::register();
         Self {
-            builder: Some(AppBuilder::new().add_nsh_services()),
+            builder: Some(AppBuilder::new()),
             options: HashMap::new(),
         }
     }
@@ -179,39 +176,6 @@ impl RayXAppBuilder {
         })
     }
 
-    /// Registers the app's asset service; `configure` adds its packages
-    /// (`options.package("my-app")`) after configuration's options.
-    pub fn add_assets(
-        this: Instance<Self>,
-        #[args(options)] configure: Option<Callback<Instance<AssetOptions>>>,
-    ) -> Result<Instance<Self>, String> {
-        let packages = record(AssetOptions::new(), configure, AssetOptions::take)?;
-        chain_err(this, |builder| {
-            builder.add_assets(move |options| {
-                for package in &packages {
-                    AssetOptions::apply(package, options);
-                }
-            })
-        })
-    }
-
-    /// Registers the app's font service (and the asset service whose fonts it registers);
-    /// `configure` sets its aliases (`options.alias("script", (alias) => alias.family("Pacifico"))`)
-    /// after configuration's options.
-    pub fn add_fonts(
-        this: Instance<Self>,
-        #[args(options)] configure: Option<Callback<Instance<FontOptions>>>,
-    ) -> Result<Instance<Self>, String> {
-        let steps = record(FontOptions::new(), configure, FontOptions::take)?;
-        chain_err(this, |builder| {
-            builder.add_fonts(move |options| {
-                for step in &steps {
-                    step.apply(options);
-                }
-            })
-        })
-    }
-
     /// Registers the app's input map (and the key-value store it keeps the user's bindings in);
     /// `configure` adds the app's bindings (`options.bindKey("Editor", "ctrl-s", "save")`) after
     /// configuration's options.
@@ -232,18 +196,6 @@ impl RayXAppBuilder {
     /// Registers the app's selection service.
     pub fn add_selection(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
         chain(this, |builder| builder.add_selection())
-    }
-
-    /// Registers the app's platform service (the device and the user's settings), kept current
-    /// from NSH once the app started.
-    pub fn add_platform(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_platform())
-    }
-
-    /// Registers the app's suspension service (its lifecycle and quitting), kept current from
-    /// NSH once the app started.
-    pub fn add_suspension(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_suspension())
     }
 
     /// Registers the app's configuration service (`RayX:Application`: its layout direction,
@@ -555,8 +507,11 @@ impl RayXAppBuilder {
             this.with_mut(|this| this.builder.take())
         };
         Later::new(async move {
-            let root = crate::app::surface::start_app_with(builder).await?;
-            crate::services::platform::sync::keep_platform_current();
+            let root = crate::app::surface::start_app_with(
+                builder,
+                crate::app::surface::StartLanguage::Ts,
+            )
+            .await?;
             crate::devtools::app_ready(Some(&sys));
             Ok::<_, AppError>(crate::di::provider_ts::root_of(&sys, root))
         })
@@ -577,8 +532,19 @@ impl RayXAppBuilder {
 }
 
 impl RayXAppBuilder {
-    /// `builder` with the Rust app extension `extension` applied: what the TS function
-    /// `#[app_extension]` exports does.
+    /// `builder` with `extend` applied to its Rust builder, for chaining: what a service crate's
+    /// TS builder method (a class extension of `RayXAppBuilder`) does with its Rust
+    /// registration, as the builder's own methods do. Fails, for TS to throw, once the builder
+    /// started.
+    pub fn extend_with(
+        builder: Instance<Self>,
+        extend: impl FnOnce(AppBuilder) -> AppBuilder,
+    ) -> Result<Instance<Self>, String> {
+        chain_err(builder, extend)
+    }
+
+    /// `builder` with the Rust app extension `extension` applied: what the TS builder method
+    /// `#[app_extension]` makes does.
     pub fn extended(
         builder: Instance<Self>,
         extension: fn(AppBuilder) -> AppBuilder,

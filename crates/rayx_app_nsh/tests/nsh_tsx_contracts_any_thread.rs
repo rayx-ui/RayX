@@ -263,7 +263,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addSingletonAs(weatherSourceToken(), () => new OpenMeteo())
       .start();
     // A command from another thread: its result, and what TS threw.
@@ -362,7 +362,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addScopedAs(weatherSourceToken(), () => new Local())
       .start();
     const scope = services.createScope();
@@ -398,7 +398,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addTransientAs(weatherSourceToken(), () => new Fresh())
       .start();
     // Each resolve is a new adapter; TS makes its object when it is first called, on the engine

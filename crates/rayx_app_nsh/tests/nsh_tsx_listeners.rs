@@ -1,7 +1,7 @@
 //! Listeners of RayX's TS service classes through NSH's engine, headless: a provider gives every
-//! consumer the same object of a service, so each `onChange` (`onLifecycle`, `askBeforeQuit`)
-//! returns a function that stops that listener alone; another consumer's keeps hearing, and a
-//! stopped `askBeforeQuit` no longer keeps a quit request from quitting.
+//! consumer the same object of a service, so each `onChange` returns a function that stops that
+//! listener alone; another consumer's keeps hearing. (The platform's and suspension's classes
+//! have this group in their crates.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -9,10 +9,6 @@ mod headless;
 
 use nsh_core::prelude::*;
 use rayx_app_nsh::rayx_runtime::services::i18n::I18nService;
-use rayx_app_nsh::rayx_runtime::services::platform::PlatformInfoService;
-use rayx_app_nsh::rayx_runtime::services::suspension::{
-    SuspensionEvent, SuspensionEventKind, SuspensionEventReason, SuspensionService,
-};
 use rayx_app_nsh::ts::ServiceProvider;
 
 /// What the test changes and reads of the services from Rust.
@@ -32,48 +28,11 @@ impl Probe {
         }
         Ok(())
     }
-
-    /// Sets the platform's viewport width to `width`.
-    pub(crate) fn resize(services: Instance<ServiceProvider>, width: f64) -> Result<(), String> {
-        let platform = services
-            .with(|services| {
-                services
-                    .services()
-                    .required_service::<PlatformInfoService>()
-            })
-            .map_err(|error| error.to_string())?;
-        let mut snapshot = platform.current();
-        snapshot.viewport.width = width as f32;
-        platform.update(snapshot);
-        Ok(())
-    }
-
-    /// Publishes a wake from sleep.
-    pub(crate) fn wake(services: Instance<ServiceProvider>) -> Result<(), String> {
-        suspension(&services)?.publish(SuspensionEvent::new(
-            SuspensionEventKind::Woke,
-            SuspensionEventReason::SystemWoke,
-        ));
-        Ok(())
-    }
-
-    /// Whether a quit request comes to the app instead of quitting it.
-    pub(crate) fn asks_before_quit(services: Instance<ServiceProvider>) -> Result<bool, String> {
-        Ok(suspension(&services)?.asks_before_quit())
-    }
-}
-
-fn suspension(
-    services: &Instance<ServiceProvider>,
-) -> Result<std::sync::Arc<SuspensionService>, String> {
-    services
-        .with(|services| services.services().required_service::<SuspensionService>())
-        .map_err(|error| error.to_string())
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  I18nService, NavigationService, PlatformInfoService, Probe, RayXAppBuilder, SuspensionService,
+  I18nService, NavigationService, Probe, RayXAppBuilder,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -81,11 +40,9 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addNavigation((options) => { options.addRoute("/").addRoute("/a").addRoute("/b"); })
       .addI18n((options) => { options.autoLoadAssets(false).followPlatform(false); })
-      .addPlatform()
-      .addSuspension()
       .start();
 
     // Two consumers, one object: each stops its own listener.
@@ -127,46 +84,6 @@ setTimeout(async () => {
     await tick();
     lines.push(`locales ${locales.first} / ${locales.second}`);
 
-    const platform = services.getRequiredService(PlatformInfoService);
-    const widths = { first: [], second: [] };
-    const stopWidth = platform.onChange((snapshot) => widths.first.push(snapshot.viewport.width));
-    platform.onChange((snapshot) => widths.second.push(snapshot.viewport.width));
-    Probe.resize(services, 500);
-    await tick();
-    stopWidth();
-    Probe.resize(services, 600);
-    await tick();
-    lines.push(`widths ${widths.first} / ${widths.second}`);
-
-    const suspension = services.getRequiredService(SuspensionService);
-    const wakes = { first: 0, second: 0 };
-    const isWake = (event) => event.kind === "Woke";
-    const stopWake = suspension.onLifecycle((event) => { if (isWake(event)) wakes.first++; });
-    suspension.onLifecycle((event) => { if (isWake(event)) wakes.second++; });
-    Probe.wake(services);
-    await tick();
-    stopWake();
-    Probe.wake(services);
-    await tick();
-    lines.push(`wakes ${wakes.first} / ${wakes.second}`);
-
-    // A stopped `askBeforeQuit` no longer keeps a quit request from quitting.
-    const asks = [Probe.asksBeforeQuit(services)];
-    const stopAsking = suspension.askBeforeQuit(() => {});
-    const stopAlsoAsking = services.getRequiredService(SuspensionService).askBeforeQuit(() => {});
-    asks.push(Probe.asksBeforeQuit(services));
-    stopAsking();
-    asks.push(Probe.asksBeforeQuit(services));
-    stopAlsoAsking();
-    asks.push(Probe.asksBeforeQuit(services));
-    lines.push(`asks ${asks}`);
-
-    // Disposing the object stops what it still holds.
-    suspension.askBeforeQuit(() => {});
-    const before = Probe.asksBeforeQuit(services);
-    suspension.dispose();
-    lines.push(`disposed ${before} ${Probe.asksBeforeQuit(services)}`);
-    lines.push(String(services.getRequiredService(SuspensionService) !== suspension));
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -183,8 +100,7 @@ fn each_consumer_stops_its_own_listener_of_a_shared_service_object() {
     });
     assert_eq!(
         headless::run(set, TSX),
-        "done true|function|routes /a / /a,/b|pages 1 / 2|locales hr / hr,en\
-         |widths 500 / 500,600|wakes 1 / 2|asks false,true,true,false|disposed true false|true"
+        "done true|function|routes /a / /a,/b|pages 1 / 2|locales hr / hr,en"
     );
 }
 
@@ -195,10 +111,7 @@ fn listener_members_are_declared_to_return_their_stop_function() {
         "  onChange(listener: (event: unknown) => void): () => void;",
         "  onChange(listener: (locale: string) => void): () => void;",
         "  onChange(listener: (pages: unknown) => void): () => void;",
-        "  onChange(listener: (snapshot: unknown) => void): () => void;",
         "  onChange(listener: (settings: unknown) => void): () => void;",
-        "  onLifecycle(listener: (event: unknown) => void): () => void;",
-        "  askBeforeQuit(listener: (value: unknown) => void): () => void;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

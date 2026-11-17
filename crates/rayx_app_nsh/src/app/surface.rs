@@ -4,7 +4,6 @@ use std::{fmt, future::Future, rc::Rc, time::Duration};
 
 use futures::future::{FutureExt, LocalBoxFuture, Shared};
 
-use crate::NshServicesAppBuilderExt as _;
 use dxn_reactive::ReactiveError;
 use nsh_core::prelude::*;
 use rayx_app::AppBuilder as _;
@@ -213,7 +212,7 @@ pub fn app_services() -> Result<ServiceProvider, AppError> {
 }
 
 /// Starts the app on this surface with `builder`: builds the root provider (NSH's services added
-/// where the app registered none, [`NshServicesAppBuilderExt::add_nsh_services`]) and
+/// where the app registered none: its key-value store and location) and
 /// initializes every startup service in dependency order (a layer's services concurrently),
 /// each within its timeout ([`AsyncInitializable::initialization_timeout`], else the builder's
 /// default). The root is installed, and [`app_state`] becomes `Ready`, only once all of them
@@ -229,9 +228,9 @@ pub fn app_services() -> Result<ServiceProvider, AppError> {
 /// Run it in an NSH task (`spawn`, or a class's `async` member): it waits on NSH's timers.
 ///
 /// [`AsyncInitializable::initialization_timeout`]: rayx_app::di::AsyncInitializable::initialization_timeout
-/// [`NshServicesAppBuilderExt::add_nsh_services`]: crate::NshServicesAppBuilderExt::add_nsh_services
 pub(crate) async fn start_app_with(
     builder: Option<RayXAppBuilder>,
+    language: StartLanguage,
 ) -> Result<ServiceProvider, AppError> {
     crate::devtools::register();
     let slot = global::<SurfaceApp>();
@@ -245,7 +244,7 @@ pub(crate) async fn start_app_with(
         Err(None) => {
             let builder = builder.ok_or(AppError::BuilderStarted)?;
             let startup: Startup = async move {
-                let started = initialize(builder).await;
+                let started = initialize(builder, language).await;
                 global::<SurfaceApp>().set(match &started {
                     Ok(root) => SurfaceApp {
                         state: AppState::Ready,
@@ -293,25 +292,99 @@ impl StartAppBuilderExt for RayXAppBuilder {
         // The task runs on its own (dropping its handle does not cancel it); it ends with the
         // current owner, as every task does.
         drop(spawn(async move {
-            if start_app_with(Some(self)).await.is_ok() {
+            if start_app_with(Some(self), StartLanguage::Rust)
+                .await
+                .is_ok()
+            {
                 crate::devtools::app_ready(None);
             }
         }));
     }
 
     fn start_async(self) -> impl Future<Output = Result<ServiceProvider, AppError>> {
-        start_app_with(Some(self))
+        start_app_with(Some(self), StartLanguage::Rust)
     }
 }
 
-async fn initialize(builder: RayXAppBuilder) -> Result<ServiceProvider, AppError> {
+/// The language the app was composed in, for the hints of the services it is missing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum StartLanguage {
+    Rust,
+    Ts,
+}
+
+/// A required service: declares it on the builder's services with a hint, and its hints in Rust
+/// and in TS.
+type Required = (
+    fn(&mut ServiceProvider, &'static str),
+    &'static str,
+    &'static str,
+);
+
+/// The services the host needs, with how to register each in Rust and in TS.
+const REQUIRED: [Required; 4] = [
+    (
+        |services, hint| {
+            services.require::<dyn rayx_app::services::platform::PlatformInfoService>(hint);
+        },
+        "add_platform() from rayx_services_platform, or register your own \
+         dyn PlatformInfoService",
+        "builder.addPlatform() from rayx_services_platform's set, or register your own \
+         PlatformInfoServiceContract under PlatformInfoService",
+    ),
+    (
+        |services, hint| {
+            services.require::<dyn rayx_app::services::suspension::SuspensionService>(hint);
+        },
+        "add_suspension() from rayx_services_suspension, or register your own \
+         dyn SuspensionService",
+        "builder.addSuspension() from rayx_services_suspension's set, or register your own \
+         SuspensionServiceContract under SuspensionService",
+    ),
+    (
+        |services, hint| {
+            services.require::<dyn rayx_app::services::assets::AssetService>(hint);
+        },
+        "add_assets(..) from rayx_services_assets, or register your own dyn AssetService",
+        "builder.addAssets(..) from rayx_services_assets' set, or register your own \
+         AssetServiceContract under AssetService",
+    ),
+    (
+        |services, hint| {
+            services.require::<dyn rayx_app::services::fonts::FontService>(hint);
+        },
+        "add_fonts(..) from rayx_services_fonts, or register your own dyn FontService",
+        "builder.addFonts(..) from rayx_services_fonts' set, or register your own \
+         FontServiceContract under FontService",
+    ),
+];
+
+/// Declares the services the host needs on `builder`, each with its hint in `language`.
+fn require_host_services(builder: &mut RayXAppBuilder, language: StartLanguage) {
+    let services = builder.services_mut();
+    for (require, rust, ts) in REQUIRED {
+        require(
+            services,
+            match language {
+                StartLanguage::Rust => rust,
+                StartLanguage::Ts => ts,
+            },
+        );
+    }
+}
+
+async fn initialize(
+    builder: RayXAppBuilder,
+    language: StartLanguage,
+) -> Result<ServiceProvider, AppError> {
     crate::binding::start_dispatcher();
-    let mut builder = builder.add_nsh_services();
+    let mut builder = builder;
+    crate::services::add_nsh_storage_and_location(builder.services_mut());
+    require_host_services(&mut builder, language);
     if let Some(runner) = crate::binding::EngineRunner::current() {
         builder.services_mut().replace_service(runner);
     }
     let root = builder.build_async().await?;
-    crate::services::platform::sync::seed_platform(&root);
     let registry = root.startup_registry().clone();
     registry
         .initialize_with_timer(

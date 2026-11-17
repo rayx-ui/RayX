@@ -26,7 +26,7 @@ and nothing else. The function's own body adds the app's exports:
 fn native(registry: &mut Registry) {
     registry
         .register::<Chart>()                     // a component
-        .module::<add_weather>()                 // an app extension
+        .class_extension::<add_weather>()        // an app extension
         .contract::<dyn WeatherSource>()         // a contract
         .class::<DevTools>()
         .register::<DevLayer>();                 // RayX's dev tools
@@ -79,8 +79,8 @@ const i18n = services.getRequiredService(I18nService);
 - Options callbacks (`addI18n((options) => …)`) take the Rust options' methods in camelCase, and apply after the
   configuration binds, as in Rust.
 - `defaultInitializationTimeout(ms)` and every TS timeout are in milliseconds.
-- A TSX app has no root component, so `start()` also keeps the platform and suspension services current from NSH, as
-  `use_platform_sync()` does in a Rust root.
+- `start()` requires the platform, suspension, asset and font services (`addPlatform()`, `addSuspension()`,
+  `addAssets()`, `addFonts()` from their crates' sets, or the app's own) and rejects naming each one missing.
 
 See [Startup](startup.md).
 
@@ -242,17 +242,18 @@ pub fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[rayx::native_module("my-app")]
 fn native(registry: &mut Registry) {
-    registry.module::<add_weather>();
+    registry.class_extension::<add_weather>();
 }
 ```
 
 ```tsx
-import { addWeather, RayXAppBuilder } from "my-app";
+import { RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder().apply(addWeather).start();
+const services = await new RayXAppBuilder().addStorage().addWeather().start();
 ```
 
-`apply` takes a TS function of the builder too, and runs each in chain order.
+The method runs the Rust function on the builder and returns the builder, and throws once the builder started.
+`apply` takes a TS function of the builder, and runs it in chain order.
 
 ## View models
 

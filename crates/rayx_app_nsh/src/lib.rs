@@ -38,15 +38,13 @@
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
 //!   [`ReactiveCommand`]); a change from any thread reaches the UI on the engine's thread.
 //!
-//! - **RayX's services on NSH.** Every surface's builder starts with NSH's [`NshAssetReader`]
-//!   and [`NshFontRegistrar`] (reading the app's files with `fetch` of their `asset:/` URLs,
-//!   registering fonts with `register_font`), which `rayx_runtime`'s asset and font services
-//!   use, [`NshKeyValueStore`], the app's persistent key-value store in NSH's storage, and
-//!   [`NshSuspensionHost`], which quits the app and asks before quitting for the suspension
-//!   service; [`AppSettingsAppBuilderExt::add_app_settings`] adds the app's bundled
-//!   `appsettings.json` as a configuration source ([`AppSettingsSource`]); and
-//!   [`use_platform_sync`], in the root component, keeps the platform and suspension services
-//!   current from NSH's environment and app state, the system's wakes and the app's quitting.
+//! - **RayX's services on NSH.** The service crates (`rayx_services_*`) implement RayX's
+//!   services on NSH, each keeping itself current from its startup on; the app's start
+//!   requires the platform, suspension, asset and font services (`add_platform()`,
+//!   `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, or the app's own implementations)
+//!   and fails naming each one missing. Here are [`NshKeyValueStore`], the app's persistent
+//!   key-value store in NSH's storage, and [`AppSettingsAppBuilderExt::add_app_settings`], which
+//!   adds the app's bundled `appsettings.json` as a configuration source ([`AppSettingsSource`]).
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
 //!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
 //!   following the language; [`checked::tr!`](checked::tr) checks the call against the app's
@@ -54,10 +52,9 @@
 //!   (`services.getRequiredService(I18nService).t("id", { n: 3 })`) and their changes.
 //! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
 //!   and is its own token (`I18nService`, `NavigationService`, `KeyValueStore`,
-//!   `ApplicationConfigurationService`, `AssetService`, `FontService`, `PlatformInfoService`,
-//!   `SuspensionService`), and its `onChange` hears the service's changes. A TSX app has no root
-//!   component, so its `builder.start()` keeps the platform and suspension services current
-//!   itself, as [`use_platform_sync`] does in a Rust root.
+//!   `ApplicationConfigurationService` here; `AssetService`, `FontService`,
+//!   `PlatformInfoService` and `SuspensionService` in their crates' sets), and its `onChange`
+//!   hears the service's changes.
 //! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
 //!   Clock())` and every other lifetime, startup and `As` form, keyed by a TS class or a
 //!   [`ts::ServiceToken`], with the TS startup interfaces `AsyncInitializable` and
@@ -65,8 +62,10 @@
 //!   `configureOptions`, `getOptions`). They are made and resolved on the engine's thread only.
 //!   Rust calls a TS service only through a contract: a trait marked `#[contract]`, resolved as
 //!   `Arc<dyn Trait>` ([`ts::ContractError`] off the engine thread).
-//! - **Extensions.** `#[app_extension]` exports a Rust builder extension to TS (`add_weather` is
-//!   `addWeather`, applied with `builder.apply(addWeather)`); `#[rayx::native_module("spec")]`,
+//! - **Extensions.** `#[app_extension]` exports a Rust builder extension to TS as a builder
+//!   method (`add_weather` is `builder.addWeather()`), and a service crate adds its TS builder
+//!   method the same way, a class extension of [`ts::RayXAppBuilder`] acting on it through
+//!   [`ts::RayXAppBuilder::extend_with`] and [`ts::record`]; `#[rayx::native_module("spec")]`,
 //!   in the umbrella, makes an app's UI set with [`ts::register`]'s classes and RayX's
 //!   components.
 //!
@@ -90,10 +89,18 @@ pub mod di;
 pub mod services;
 pub mod ts;
 
+/// The headless app harness RayX's and service crates' tests use (feature `testing`): a TSX app
+/// on NSH's engine with a UI set of RayX's TS classes and the test's own ([`testing::set`]), its
+/// declarations ([`testing::declarations`]) and the text it shows ([`testing::run`]).
+#[cfg(feature = "testing")]
+pub mod testing;
+
+#[doc(hidden)]
+pub use rayx_app_macros::__contract_nsh_expand;
 /// The umbrella's `#[rayx::native_module("spec")]`, which names `rayx`: use it through `rayx`.
 #[doc(hidden)]
 pub use rayx_app_macros::native_module;
-pub use rayx_app_macros::{app_extension, contract};
+pub use rayx_app_macros::{app_extension, contract, contract_nsh};
 pub use ts::register;
 
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
@@ -117,16 +124,9 @@ pub use devtools::{
 };
 pub use di::screen::{ScreenScope, services, use_screen_scope, use_view_model};
 pub use rayx_runtime;
-#[doc(inline)]
-pub use services::NshServicesAppBuilderExt;
-pub use services::assets::reader::NshAssetReader;
-pub use services::fonts::registrar::NshFontRegistrar;
 #[doc(hidden)]
 pub use services::i18n::translate::__private;
 pub use services::i18n::translate::{checked, translate};
 pub use services::navigation::location::{NshLocationSynchronizer, location_of_address};
 pub use services::navigation::region::{navigation_region, navigation_view};
-pub use services::platform::snapshot::platform_snapshot;
-pub use services::platform::sync::use_platform_sync;
 pub use services::storage::store::{NshKeyValueStore, STORAGE_PREFIX};
-pub use services::suspension::host::NshSuspensionHost;

@@ -7,35 +7,53 @@ use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
 use rayx_app::RayXAppBuilder;
+use rayx_app::ServiceProvider;
 use rayx_app::di::StartupInitializationContext;
-use rayx_runtime::services::assets::{AssetReader, MemoryAssetReader};
+use rayx_app::services::assets::{AssetCatalog, AssetService};
+use rayx_app::services::platform::{PlatformInfoService, PlatformSnapshot};
+use rayx_app::testing::{FakeAssets, FakePlatform};
 use rayx_runtime::services::i18n::*;
-use rayx_runtime::services::platform::{PlatformAppBuilderExt as _, PlatformInfoService};
 use serde_json::json;
 
-fn reader() -> MemoryAssetReader {
-    MemoryAssetReader::new()
-        .with(
-            "asset:/@app/assets.toml",
-            "files = [\"locales/en.json\", \"locales/de/translation.json\", \"locales/de/checkout.json\", \"locales/hr.json\"]"
-                .as_bytes(),
+/// The app's assets: its manifest's locale files.
+fn assets() -> Arc<dyn AssetService> {
+    let mut catalog = AssetCatalog::builder();
+    catalog
+        .add_manifest_text(
+            "app",
+            "files = [\"locales/en.json\", \"locales/de/translation.json\", \"locales/de/checkout.json\", \"locales/hr.json\"]",
         )
-        .with(
-            "asset:/@app/locales/en.json",
+        .unwrap();
+    FakeAssets::new(catalog.build())
+        .file(
+            "@app/locales/en.json",
             r#"{
                 "hello": "Hello, {$name}!",
                 "cart": ".input {$n :number}\n.match $n\none {{One item}}\n* {{{$n} items}}",
                 "only_en": "English only"
-            }"#
-            .as_bytes(),
+            }"#,
         )
-        .with("asset:/@app/locales/de/translation.json", r#"{ "hello": "Hallo, {$name}!" }"#.as_bytes())
-        .with("asset:/@app/locales/de/checkout.json", r#"{ "title": "Kasse" }"#.as_bytes())
-        .with(
-            "asset:/@app/locales/hr.json",
-            r#"{ "cart": ".input {$n :number}\n.match $n\none {{{$n} artikl}}\nfew {{{$n} artikla}}\n* {{{$n} artikala}}" }"#
-                .as_bytes(),
-        )
+        .file("@app/locales/de/translation.json", r#"{ "hello": "Hallo, {$name}!" }"#)
+        .file("@app/locales/de/checkout.json", r#"{ "title": "Kasse" }"#)
+        .file(
+            "@app/locales/hr.json",
+            r#"{ "cart": ".input {$n :number}\n.match $n\none {{{$n} artikl}}\nfew {{{$n} artikla}}\n* {{{$n} artikala}}" }"#,
+        ) as Arc<dyn AssetService>
+}
+
+/// Changes the fake platform's snapshot with `change` and publishes it.
+fn modify(platform: &FakePlatform, change: impl FnOnce(&mut PlatformSnapshot)) {
+    let mut snapshot = (*platform.platform().get()).clone();
+    change(&mut snapshot);
+    platform.publish(snapshot);
+}
+
+/// Registers a fake platform as the app's `dyn PlatformInfoService` (and as itself, for the
+/// test to change).
+fn add_fake_platform(services: &mut ServiceProvider) {
+    let platform = FakePlatform::new(PlatformSnapshot::default());
+    services.add_singleton_as::<FakePlatform>(Arc::clone(&platform));
+    services.add_singleton_as::<dyn PlatformInfoService>(platform as Arc<dyn PlatformInfoService>);
 }
 
 fn start(
@@ -44,14 +62,11 @@ fn start(
 ) -> rayx_app::ServiceProvider {
     let mut builder = RayXAppBuilder::new().add_i18n(configure);
     if platform {
-        builder = builder.add_platform();
+        add_fake_platform(&mut builder.services);
     }
-    builder.configuration.add_value(json!({
-        "RayX": { "Services": { "Assets": { "packages": ["app"] } } }
-    }));
     builder
         .services
-        .add_singleton_as::<dyn AssetReader>(Arc::new(reader()) as Arc<dyn AssetReader>);
+        .add_singleton_as::<dyn AssetService>(assets());
     let services = builder.build().unwrap();
     services.validate_options_on_start().unwrap();
     block_on(
@@ -101,13 +116,13 @@ fn plurals_follow_the_language() {
 fn follows_the_platforms_languages_and_clock_until_the_app_picks() {
     let services = start(|_| {}, true);
     let i18n = services.required_service::<I18nService>().unwrap();
-    let platform = services.required_service::<PlatformInfoService>().unwrap();
+    let platform = services.required_service::<FakePlatform>().unwrap();
     let changes = Arc::new(Mutex::new(Vec::new()));
     let seen = Arc::clone(&changes);
     let _subscription =
         i18n.subscribe(move |event| seen.lock().unwrap().push(event.locale.to_string()));
 
-    platform.modify(|snapshot| {
+    modify(&platform, |snapshot| {
         snapshot.locale.languages = vec!["fr-FR".into(), "de-AT".into()];
         snapshot.locale.hour_cycle = "h23".into();
     });
@@ -126,9 +141,11 @@ fn follows_the_platforms_languages_and_clock_until_the_app_picks() {
     assert_eq!(changes.lock().unwrap().last().unwrap(), "de-AT-u-hc-h23");
 
     i18n.set_language("hr").unwrap();
-    platform.modify(|snapshot| snapshot.locale.languages = vec!["en-GB".into()]);
+    modify(&platform, |snapshot| {
+        snapshot.locale.languages = vec!["en-GB".into()]
+    });
     assert_eq!(i18n.language(), "hr");
-    i18n.follow_platform_again(&platform.current().locale);
+    i18n.follow_platform_again(&platform.platform().get().locale);
     assert_eq!(i18n.locale().to_string(), "en-GB-u-hc-h23");
 }
 
@@ -155,7 +172,7 @@ fn numbers_and_dates_format_for_the_locale() {
 fn instants_show_in_the_user_s_time_zone() {
     let services = start(|_| {}, true);
     let i18n = services.required_service::<I18nService>().unwrap();
-    let platform = services.required_service::<PlatformInfoService>().unwrap();
+    let platform = services.required_service::<FakePlatform>().unwrap();
     assert_eq!(i18n.time_zone(), "UTC", "before the platform says");
     let heard = Arc::new(Mutex::new(0));
     let count = Arc::clone(&heard);
@@ -165,7 +182,9 @@ fn instants_show_in_the_user_s_time_zone() {
     // instants change with it.
     i18n.set_language("hr").unwrap();
     let before = *heard.lock().unwrap();
-    platform.modify(|snapshot| snapshot.locale.time_zone = "Europe/Zagreb".into());
+    modify(&platform, |snapshot| {
+        snapshot.locale.time_zone = "Europe/Zagreb".into()
+    });
     assert_eq!(i18n.time_zone(), "Europe/Zagreb");
     assert_eq!(*heard.lock().unwrap(), before + 1);
     let local = i18n.local_time("2026-11-02T09:30:00.000Z").unwrap();

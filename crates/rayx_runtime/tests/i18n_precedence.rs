@@ -9,39 +9,32 @@ use std::sync::Arc;
 use futures::executor::block_on;
 use rayx_app::RayXAppBuilder;
 use rayx_app::di::StartupInitializationContext;
-use rayx_runtime::services::assets::{AssetReader, MemoryAssetReader};
+use rayx_app::services::assets::{AssetCatalog, AssetService};
+use rayx_app::testing::FakeAssets;
 use rayx_runtime::services::i18n::*;
-use serde_json::json;
 
-/// The app's package `app` and a library `widgets`, both translating `ok` (`app` sorts first).
-fn reader() -> MemoryAssetReader {
-    MemoryAssetReader::new()
-        .with(
-            "asset:/@app/assets.toml",
-            r#"files = ["locales/en.json"]"#.as_bytes(),
-        )
-        .with(
-            "asset:/@app/locales/en.json",
-            r#"{ "ok": "Got it" }"#.as_bytes(),
-        )
-        .with(
-            "asset:/@widgets/assets.toml",
-            r#"files = ["locales/en.json"]"#.as_bytes(),
-        )
-        .with(
-            "asset:/@widgets/locales/en.json",
-            r#"{ "ok": "OK", "cancel": "Cancel" }"#.as_bytes(),
-        )
+/// The app's package `app` and a library `widgets`, both translating `ok` (`app` sorts first),
+/// listed in `packages`' order.
+fn assets(packages: &[&str]) -> Arc<dyn AssetService> {
+    let mut catalog = AssetCatalog::builder();
+    for package in packages {
+        catalog
+            .add_manifest_text(package, r#"files = ["locales/en.json"]"#)
+            .unwrap();
+    }
+    FakeAssets::new(catalog.build())
+        .file("@app/locales/en.json", r#"{ "ok": "Got it" }"#)
+        .file(
+            "@widgets/locales/en.json",
+            r#"{ "ok": "OK", "cancel": "Cancel" }"#,
+        ) as Arc<dyn AssetService>
 }
 
 fn start(packages: &[&str]) -> rayx_app::ServiceProvider {
     let mut builder = RayXAppBuilder::new().add_i18n(|_| {});
-    builder.configuration.add_value(json!({
-        "RayX": { "Services": { "Assets": { "packages": packages } } }
-    }));
     builder
         .services
-        .add_singleton_as::<dyn AssetReader>(Arc::new(reader()) as Arc<dyn AssetReader>);
+        .add_singleton_as::<dyn AssetService>(assets(packages));
     let services = builder.build().unwrap();
     services.validate_options_on_start().unwrap();
     block_on(

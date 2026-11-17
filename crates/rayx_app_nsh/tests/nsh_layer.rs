@@ -6,6 +6,8 @@
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
 
+mod headless;
+
 use std::{
     cell::RefCell,
     sync::{
@@ -314,7 +316,7 @@ struct PageProps {
 /// stack; the second closes when the test says so.
 #[component]
 fn Pages() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     let routes = signal(vec![0_u32, 1]);
     let close = CLOSE.with(|c| c.borrow_mut().take());
     spawn(async move {
@@ -537,9 +539,9 @@ thread_local! {
 /// A component that starts the app (as a Rust root's child would).
 #[component]
 fn Starter(props: StarterProps) -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     if props.twice {
-        build_app(RayXAppBuilder::new()).start();
+        build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     }
     let name = props.name;
     text(move || format!("{name} {:?}", app_state()))
@@ -695,7 +697,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const before = Probe.dropped();
-  const app = await Probe.addApp(new RayXAppBuilder()).start();
+  const app = await Probe.addApp(new RayXAppBuilder().addHostFakes()).start();
   lines.push(Probe.started());
   const screen = app.createScope();
   const inner = screen.createScope();
@@ -738,6 +740,7 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 fn run_tsx(tsx: &str) -> String {
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
+    set.class_extension::<headless::HostFakes>();
     set.module::<Probe>();
     let dir = std::env::temp_dir().join(format!("rayx-app-tsx-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
@@ -784,7 +787,7 @@ const TSX_FAILING: &str = r#"import { mount, signal, Text } from "nsh";
 import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
-Probe.addApp(new RayXAppBuilder()).start().then(
+Probe.addApp(new RayXAppBuilder().addHostFakes()).start().then(
   () => shown.set("done loaded"),
   (e) => shown.set(`done rejected ${e.message}`),
 );

@@ -47,6 +47,13 @@ pub mod di;
 pub mod options;
 pub mod published;
 pub mod services;
+pub mod testing;
+
+/// What `#[contract]`'s code names in the core.
+#[doc(hidden)]
+pub mod __private {
+    pub use futures::future::BoxFuture;
+}
 
 pub use change::ChangeSubscription;
 pub use configuration::{Configuration, ConfigurationBuilder, ConfigurationError};

@@ -6,15 +6,17 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use rayx_app::services::platform::{PlatformInfoService, PlatformSnapshot};
+use rayx_app::testing::FakePlatform;
 use rayx_app::{Configuration, RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::application_configuration::*;
-use rayx_runtime::services::platform::PlatformInfoService;
 use serde_json::json;
 
 fn build(
     configure: impl Fn(&mut ApplicationConfiguration) + Send + Sync + 'static,
 ) -> ServiceProvider {
     let mut builder = RayXAppBuilder::new().add_application_configuration(configure);
+    add_fake_platform(&mut builder.services);
     builder.configuration.add_value(json!({
         "RayX": { "Application": {
             "name": "Notes",
@@ -26,6 +28,21 @@ fn build(
     let services = builder.build().unwrap();
     services.validate_options_on_start().unwrap();
     services
+}
+
+/// Changes the fake platform's snapshot with `change` and publishes it.
+fn modify(platform: &FakePlatform, change: impl FnOnce(&mut PlatformSnapshot)) {
+    let mut snapshot = (*platform.platform().get()).clone();
+    change(&mut snapshot);
+    platform.publish(snapshot);
+}
+
+/// Registers a fake platform as the app's `dyn PlatformInfoService` (and as itself, for the
+/// test to change).
+fn add_fake_platform(services: &mut ServiceProvider) {
+    let platform = FakePlatform::new(PlatformSnapshot::default());
+    services.add_singleton_as::<FakePlatform>(Arc::clone(&platform));
+    services.add_singleton_as::<dyn PlatformInfoService>(platform as Arc<dyn PlatformInfoService>);
 }
 
 #[test]
@@ -43,10 +60,10 @@ fn settings_bind_from_the_section_then_code() {
 
 #[test]
 fn invalid_settings_fail_on_start() {
-    let services = RayXAppBuilder::new()
-        .add_application_configuration(|options| options.notifications.auto_hide_ms = 0)
-        .build()
-        .unwrap();
+    let mut builder = RayXAppBuilder::new()
+        .add_application_configuration(|options| options.notifications.auto_hide_ms = 0);
+    add_fake_platform(&mut builder.services);
+    let services = builder.build().unwrap();
     assert!(services.validate_options_on_start().is_err());
 }
 
@@ -102,7 +119,7 @@ fn motion_is_reduced_by_the_system_the_app_or_the_caller() {
     let configuration = services
         .required_service::<ApplicationConfigurationService>()
         .unwrap();
-    let platform = services.required_service::<PlatformInfoService>().unwrap();
+    let platform = services.required_service::<FakePlatform>().unwrap();
 
     assert!(!configuration.effective_motion(None).is_reduced());
     assert_eq!(
@@ -128,7 +145,7 @@ fn motion_is_reduced_by_the_system_the_app_or_the_caller() {
             .is_err()
     );
 
-    platform.modify(|snapshot| snapshot.reduced_motion = true);
+    modify(&platform, |snapshot| snapshot.reduced_motion = true);
     let motion = configuration.effective_motion(None);
     assert!(motion.is_reduced() && motion.platform_reduced && !motion.app_reduced);
     assert_eq!(

@@ -5,6 +5,8 @@
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
 
+mod headless;
+
 use std::sync::OnceLock;
 use std::time::Duration;
 
@@ -176,7 +178,7 @@ import { CounterVm, RayXAppBuilder } from "test/app";
 const shown = signal("waiting");
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 setTimeout(async () => {
-  await new RayXAppBuilder().start();
+  await new RayXAppBuilder().addHostFakes().start();
   const vm = new CounterVm();
   const count = vm.count;
   const seen = [];
@@ -213,6 +215,7 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 fn a_tsx_class_exposes_the_view_model_as_observables() {
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
+    set.class_extension::<headless::HostFakes>();
     set.class::<CounterVm>()
         .class::<Observable>()
         .class::<ReactiveCommand>();

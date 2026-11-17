@@ -244,13 +244,21 @@ struct StartupRegistryFactory {
 /// [`StartupInitializable::startup_service_type`], else its registration key.
 struct KeyedStartupService {
     key: StartupServiceType,
+    /// What it was registered as (its key unless it names its own).
+    registered_as: StartupServiceType,
     service: StartupService,
 }
 
 impl KeyedStartupService {
     fn new(service: StartupService, registered_as: StartupServiceType) -> Arc<Self> {
-        let key = service.startup_service_type().unwrap_or(registered_as);
-        Arc::new(Self { key, service })
+        let key = service
+            .startup_service_type()
+            .unwrap_or_else(|| registered_as.clone());
+        Arc::new(Self {
+            key,
+            registered_as,
+            service,
+        })
     }
 }
 
@@ -638,7 +646,17 @@ impl StartupRegistry {
         let services = self
             .resolved_services(&context, timer.as_ref(), default_timeout)
             .await?;
-        for layer in Self::runtime_initialization_layers_for(&services)? {
+        // A dependency no startup service is keyed by is met by a service registered under its
+        // key that is no startup service (an app's own implementation of a trait): never by a
+        // startup service registered under it with a key of its own.
+        let provider = context.services().clone();
+        let registered = |dependency: &StartupServiceType| {
+            provider.contains_key(&dependency.key)
+                && !services
+                    .iter()
+                    .any(|service| service.registered_as == *dependency)
+        };
+        for layer in Self::runtime_initialization_layers_for(&services, registered)? {
             let results = join_all(layer.into_iter().map(|service| {
                 let context = context.clone();
                 let deadline = timer.as_ref().map(|timer| {
@@ -692,26 +710,37 @@ impl StartupRegistry {
     pub fn initialization_layers(
         &self,
     ) -> Result<Vec<Vec<StartupService>>, StartupInitializationError> {
-        Ok(Self::runtime_initialization_layers_for(&self.services)?
-            .into_iter()
-            .map(|layer| layer.iter().map(Self::erased).collect())
-            .collect())
+        Ok(
+            Self::runtime_initialization_layers_for(&self.services, |_| false)?
+                .into_iter()
+                .map(|layer| layer.iter().map(Self::erased).collect())
+                .collect(),
+        )
     }
 
+    /// The runtime layers: a dependency no startup service matches is met when `registered`
+    /// says a service of its key is registered (one that does not initialize, such as an app's
+    /// own implementation of a trait a startup service depends on).
     fn runtime_initialization_layers_for(
         services: &[Arc<KeyedStartupService>],
+        registered: impl Fn(&StartupServiceType) -> bool,
     ) -> Result<Vec<Vec<Arc<KeyedStartupService>>>, StartupInitializationError> {
-        Self::initialization_layers_for(services, StartupInitializationPhase::Runtime, |service| {
-            service.initialization_depends_on()
-        })
+        Self::initialization_layers_for(
+            services,
+            StartupInitializationPhase::Runtime,
+            |service| service.initialization_depends_on(),
+            registered,
+        )
     }
 
     fn initialization_layers_for(
         services: &[Arc<KeyedStartupService>],
         phase: StartupInitializationPhase,
         dependencies_for: impl Fn(&KeyedStartupService) -> Vec<StartupServiceType>,
+        registered: impl Fn(&StartupServiceType) -> bool,
     ) -> Result<Vec<Vec<Arc<KeyedStartupService>>>, StartupInitializationError> {
-        let dependency_matches = Self::dependency_matches(services, phase, dependencies_for)?;
+        let dependency_matches =
+            Self::dependency_matches(services, phase, dependencies_for, registered)?;
         let mut initialized = HashSet::new();
         let mut remaining = (0..services.len()).collect::<Vec<_>>();
         let mut layers = Vec::new();
@@ -759,6 +788,7 @@ impl StartupRegistry {
         services: &[Arc<KeyedStartupService>],
         phase: StartupInitializationPhase,
         dependencies_for: impl Fn(&KeyedStartupService) -> Vec<StartupServiceType>,
+        registered: impl Fn(&StartupServiceType) -> bool,
     ) -> Result<Vec<Vec<usize>>, StartupInitializationError> {
         let mut dependency_matches = Vec::with_capacity(services.len());
         for service in services {
@@ -770,7 +800,7 @@ impl StartupRegistry {
                     .filter_map(|(index, candidate)| (candidate.key == dependency).then_some(index))
                     .collect::<Vec<_>>();
 
-                if matches.is_empty() {
+                if matches.is_empty() && !registered(&dependency) {
                     return Err(StartupInitializationError::MissingDependency {
                         phase,
                         service: service.key.clone(),

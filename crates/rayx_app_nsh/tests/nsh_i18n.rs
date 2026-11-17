@@ -4,6 +4,8 @@
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
 
+mod headless;
+
 use std::time::Duration;
 
 use crossbeam_channel::{Receiver, Sender};
@@ -65,7 +67,7 @@ import { I18nService, Probe, RayXAppBuilder } from "test/app";
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
-  const services = await Probe.addApp(new RayXAppBuilder()).start();
+  const services = await Probe.addApp(new RayXAppBuilder().addHostFakes()).start();
   const i18n = services.getRequiredService(I18nService);
   lines.push(i18n.t("hello", { name: "Ana" }));
   lines.push(i18n.t("cart", { n: 1 }));
@@ -117,6 +119,7 @@ fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
 fn nsh_i18n_gives_tsx_messages_and_language_changes() {
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
+    set.class_extension::<headless::HostFakes>();
     set.module::<Probe>();
     let dir = std::env::temp_dir().join(format!("rayx-app-i18n-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();

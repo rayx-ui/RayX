@@ -42,6 +42,19 @@ pub(crate) fn expand(item: ItemTrait, app: &TokenStream) -> syn::Result<TokenStr
     expand_named(item, None, app)
 }
 
+/// Where a contract is expanded.
+pub(crate) enum Mode {
+    /// In an app's crate (or the host): the trait and its NSH side, `Contract` implemented for
+    /// `dyn Trait`. `app` is the host's path.
+    App,
+    /// In the core (`rayx_app`, no NSH): the trait, and a hidden exported descriptor macro a
+    /// service crate expands its NSH side from (`contract_nsh!`). `app` is the core's path.
+    Core,
+    /// A service crate's `contract_nsh!(path::Trait as Marker)`: the NSH side of a trait defined
+    /// elsewhere (the core), its values crossing as JSON, `Contract` implemented for the marker.
+    External { path: syn::Path, marker: Ident },
+}
+
 /// `#[contract(ts = "…")]`: the contract with its TS interface named `ts` (the trait's name when
 /// `None`).
 pub(crate) fn expand_named(
@@ -49,6 +62,17 @@ pub(crate) fn expand_named(
     ts: Option<syn::LitStr>,
     app: &TokenStream,
 ) -> syn::Result<TokenStream> {
+    expand_mode(item, ts, app, Mode::App)
+}
+
+/// The contract `item` expanded in `mode`.
+pub(crate) fn expand_mode(
+    item: ItemTrait,
+    ts: Option<syn::LitStr>,
+    app: &TokenStream,
+    mode: Mode,
+) -> syn::Result<TokenStream> {
+    let json = matches!(mode, Mode::External { .. });
     if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
         return Err(syn::Error::new(
             item.generics.span(),
@@ -105,6 +129,12 @@ pub(crate) fn expand_named(
     let token_fn = Ident::new(&format!("{}_token", snake(&ts_name)), Span::call_site());
     let nsh = quote!(#app::__private::nsh_core);
     let private = quote!(#app::ts::__private);
+    // The boxed future a command returns: the core's re-export in the core, the host's
+    // elsewhere.
+    let boxed = match mode {
+        Mode::Core => quote!(#app::__private::BoxFuture),
+        _ => quote!(#private::BoxFuture),
+    };
     let docs = docs_of(&item.attrs);
     let others: Vec<_> = item
         .attrs
@@ -126,6 +156,75 @@ pub(crate) fn expand_named(
         let types: Vec<_> = m.params.iter().map(|(_, ty)| *ty).collect();
         let output = &f.sig.output;
         match &m.kind {
+            Kind::Command if json => {
+                let ReturnType::Type(_, ret) = output else {
+                    unreachable!("checked: a command returns a Result");
+                };
+                let ok = result_ok(ret);
+                let unit =
+                    ok.is_some_and(|ok| matches!(ok, Type::Tuple(tuple) if tuple.elems.is_empty()));
+                let ts = ts_signature(f, &m.params, ok.map(ts_of).as_deref());
+                let ts_attrs = ts_attrs(f, &ts);
+                // A command answering nothing awaits JS's `void`; one answering a value takes it
+                // as JSON.
+                let (answer, to_json) = if unit {
+                    (quote!(()), quote!(.map(|()| #nsh::JsonValue::Null)))
+                } else {
+                    (quote!(#nsh::JsonValue), quote!())
+                };
+                interface.push(quote! {
+                    #(#docs)*
+                    #(#ts_attrs)*
+                    async fn #ident(&self, #(#names: #nsh::JsonValue),*)
+                        -> ::core::result::Result<#answer, ::std::string::String>;
+                });
+                public.push(quote! {
+                    #(#docs)*
+                    fn #ident<'__rayx>(&'__rayx self, #(#names: #types),*)
+                        -> #boxed<'__rayx, #ret>;
+                });
+                adapter.push(quote! {
+                    fn #ident<'__rayx>(&'__rayx self, #(#names: #types),*)
+                        -> #boxed<'__rayx, #ret>
+                    {
+                        #(let #names = #private::to_json(&#names);)*
+                        #private::call_json(
+                            ::core::clone::Clone::clone(&self.slot),
+                            #member,
+                            move |__rayx_object: ::std::rc::Rc<#stand_in>| async move {
+                                <#stand_in as #iface>::#ident(&__rayx_object, #(#names),*)
+                                    .await
+                                    #to_json
+                            },
+                        )
+                    }
+                });
+            }
+            Kind::Posted if json => {
+                let ts = ts_signature(f, &m.params, None);
+                let ts_attrs = ts_attrs(f, &ts);
+                interface.push(quote! {
+                    #(#docs)*
+                    #(#ts_attrs)*
+                    fn #ident(&self, #(#names: #nsh::JsonValue),*);
+                });
+                public.push(quote! {
+                    #(#docs)*
+                    fn #ident(&self, #(#names: #types),*);
+                });
+                adapter.push(quote! {
+                    fn #ident(&self, #(#names: #types),*) {
+                        #(let #names = #private::to_json(&#names);)*
+                        #private::post(
+                            ::core::clone::Clone::clone(&self.slot),
+                            #member,
+                            move |__rayx_object: ::std::rc::Rc<#stand_in>| {
+                                <#stand_in as #iface>::#ident(&__rayx_object, #(#names),*)
+                            },
+                        )
+                    }
+                });
+            }
             Kind::Command => {
                 // The interface keeps the method as written (its `#[ts("…")]` included).
                 interface.push(quote!(#f));
@@ -135,11 +234,11 @@ pub(crate) fn expand_named(
                 public.push(quote! {
                     #(#docs)*
                     fn #ident<'__rayx>(&'__rayx self, #(#names: #types),*)
-                        -> #private::BoxFuture<'__rayx, #ret>;
+                        -> #boxed<'__rayx, #ret>;
                 });
                 adapter.push(quote! {
                     fn #ident<'__rayx>(&'__rayx self, #(#names: #types),*)
-                        -> #private::BoxFuture<'__rayx, #ret>
+                        -> #boxed<'__rayx, #ret>
                     {
                         #private::call(
                             ::core::clone::Clone::clone(&self.slot),
@@ -339,7 +438,7 @@ pub(crate) fn expand_named(
     );
     let token_ts = format!("(): ServiceToken<{iface_name}>");
 
-    Ok(quote! {
+    let public_trait = quote! {
         #(#docs)*
         #(#others)*
         #vis trait #name: ::core::marker::Send + ::core::marker::Sync {
@@ -353,6 +452,60 @@ pub(crate) fn expand_named(
                 ::core::result::Result::Ok(())
             }
         }
+    };
+
+    if let Mode::Core = mode {
+        // What a service crate expands the NSH side from: the trait as written.
+        let descriptor = format_ident!("__rayx_contract_descriptor_{}", name);
+        let ts_value = ts.as_ref().map(syn::LitStr::value).unwrap_or_default();
+        return Ok(quote! {
+            #public_trait
+
+            #[doc(hidden)]
+            #[macro_export]
+            macro_rules! #descriptor {
+                ([$($callback:tt)*] $($args:tt)*) => {
+                    $($callback)*! { $($args)* ts = #ts_value; #item }
+                };
+            }
+        });
+    }
+
+    let (trait_ref, dyn_target, contract_target, in_module, marker_def) = match &mode {
+        Mode::External { path, marker } => {
+            let marker_doc = format!(
+                " The contract `{ts_name}` on NSH: its TS interface `{iface_name}` and the \
+                 adapter over a TS implementation. Register it in an app's set with \
+                 `registry.contract::<{marker}>()`, or with its service's class as token \
+                 (`registry.contract_class::<{marker}, Class>()`)."
+            );
+            (
+                quote!(#path),
+                quote!(dyn #path),
+                quote!(#marker),
+                quote!(super::#marker),
+                quote! {
+                    #[doc = #marker_doc]
+                    #vis struct #marker;
+                },
+            )
+        }
+        _ => (
+            quote!(super::#name),
+            quote!(dyn #name),
+            quote!(dyn #name),
+            quote!(dyn super::#name),
+            quote!(),
+        ),
+    };
+    let public_trait = match mode {
+        Mode::External { .. } => quote!(),
+        _ => public_trait,
+    };
+
+    Ok(quote! {
+        #public_trait
+        #marker_def
 
         #[doc(hidden)]
         #[allow(non_snake_case)]
@@ -381,7 +534,7 @@ pub(crate) fn expand_named(
                 pub fn #token_fn(
                     sys: #nsh::element::System,
                 ) -> #nsh::element::Instance<#app::ts::ServiceToken> {
-                    #app::ts::contract_token::<dyn super::#name>(&sys)
+                    #app::ts::contract_token::<#in_module>(&sys)
                 }
             }
 
@@ -402,7 +555,7 @@ pub(crate) fn expand_named(
 
             #linked_impl
 
-            impl super::#name for Adapter {
+            impl #trait_ref for Adapter {
                 #(#adapter)*
 
                 fn __rayx_contract_link(
@@ -413,7 +566,8 @@ pub(crate) fn expand_named(
             }
         }
 
-        impl #app::ts::Contract for dyn #name {
+        impl #app::ts::Contract for #contract_target {
+            type Dyn = #dyn_target;
             const NAME: &'static str = #ts_name;
             const INTERFACE: &'static str = #iface_name;
 
@@ -427,7 +581,7 @@ pub(crate) fn expand_named(
                 registry.interface::<#module::#stand_in>();
             }
 
-            fn adapter(source: #private::ContractSource) -> ::std::sync::Arc<Self> {
+            fn adapter(source: #private::ContractSource) -> ::std::sync::Arc<Self::Dyn> {
                 let adapter = ::std::sync::Arc::new_cyclic(|me| #module::Adapter {
                     slot: #private::ContractSlot::new(source, #ts_name, #module::#stand_in::new),
                     linked: #private::ContractLinked::default(),
@@ -437,7 +591,7 @@ pub(crate) fn expand_named(
                 adapter
             }
 
-            fn link(adapter: &Self) -> ::core::result::Result<(), ::std::string::String> {
+            fn link(adapter: &Self::Dyn) -> ::core::result::Result<(), ::std::string::String> {
                 adapter.__rayx_contract_link()
             }
         }
@@ -625,6 +779,54 @@ fn method(f: &TraitItemFn) -> syn::Result<Method<'_>> {
         },
         ts: None,
     })
+}
+
+/// The `T` of a `Result<T, E>`.
+fn result_ok(ty: &Type) -> Option<&Type> {
+    let Type::Path(path) = ty else {
+        return None;
+    };
+    let last = path.path.segments.last()?;
+    if last.ident != "Result" {
+        return None;
+    }
+    let syn::PathArguments::AngleBracketed(args) = &last.arguments else {
+        return None;
+    };
+    args.args.iter().find_map(|arg| match arg {
+        syn::GenericArgument::Type(ty) => Some(ty),
+        _ => None,
+    })
+}
+
+/// A member's TS signature from its Rust types, as NSH's `#[ts("…")]` writes it:
+/// `(city: string): Forecast`, the result left out for `void` (NSH adds the promise of an
+/// `async` member).
+fn ts_signature(f: &TraitItemFn, params: &[(&Ident, &Type)], result: Option<&str>) -> String {
+    let params: Vec<String> = params
+        .iter()
+        .map(|(name, ty)| format!("{}: {}", camel(&name.to_string()), ts_of(ty)))
+        .collect();
+    let _ = f;
+    match result {
+        Some(result) if result != "null" => format!("({}): {result}", params.join(", ")),
+        _ => format!("({})", params.join(", ")),
+    }
+}
+
+/// The member's own `#[ts("…")]` attributes when it has any, else one with `ts`.
+fn ts_attrs(f: &TraitItemFn, ts: &str) -> Vec<TokenStream> {
+    let own: Vec<TokenStream> = f
+        .attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident("ts"))
+        .map(|attr| quote!(#attr))
+        .collect();
+    if own.is_empty() {
+        vec![quote!(#[ts(#ts)])]
+    } else {
+        own
+    }
 }
 
 /// `&Wrapper<T>`'s `Wrapper<T>` and `T`, when `ty` is one.

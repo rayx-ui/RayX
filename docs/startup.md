@@ -176,5 +176,5 @@ fn Root() -> impl IntoElement {
 `start()` starts the app on the surface in a task of its own; a second start on a surface whose app started (or is
 starting) keeps that app. `app_state()` is `NotStarted`, `Starting`, `Ready` or `Failed(message)`; reading it
 subscribes, so the root shows a splash until the app is ready. `start_async()` instead gives the root provider, or the
-`AppError`, to await in an NSH task. Call `use_platform_sync()` in the root to keep the platform and suspension services
-current from NSH.
+`AppError`, to await in an NSH task. The start requires the platform, suspension, asset and font services and fails,
+before anything is made, naming each one missing.

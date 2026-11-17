@@ -273,6 +273,11 @@ impl ServiceProvider {
         self.services.contains::<T>()
     }
 
+    /// Whether anything is registered under `key`.
+    pub(crate) fn contains_key(&self, key: &ServiceKey) -> bool {
+        self.services.contains_key(key)
+    }
+
     pub fn try_add_service_factory<T>(
         &mut self,
         factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,

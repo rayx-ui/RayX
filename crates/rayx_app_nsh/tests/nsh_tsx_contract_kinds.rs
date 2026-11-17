@@ -236,7 +236,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addSingletonAs(themeToken(), () => new MyTheme())
       .start();
     const theme = services.getRequiredService(themeToken());
@@ -308,7 +308,7 @@ class Partial {
 }
 
 const shown = signal("waiting");
-new RayXAppBuilder()
+new RayXAppBuilder().addHostFakes()
   .addSingletonAs(themeToken(), () => new Partial())
   .start()
   .then(
@@ -339,7 +339,7 @@ class Wrong {
 }
 
 const shown = signal("waiting");
-new RayXAppBuilder()
+new RayXAppBuilder().addHostFakes()
   .addSingletonAs(themeToken(), () => new Wrong())
   .start()
   .then(
@@ -399,7 +399,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const scoped = await new RayXAppBuilder()
+    const scoped = await new RayXAppBuilder().addHostFakes()
       .@ADD@(themeToken(), () => new Local())
       .start();
     const scope = scoped.createScope();
@@ -444,7 +444,7 @@ class Wrong {
 }
 
 const shown = signal("waiting");
-new RayXAppBuilder()
+new RayXAppBuilder().addHostFakes()
   .addSingletonAs(themeToken(), () => new Wrong())
   .start()
   .then(
@@ -477,7 +477,7 @@ class Wrong {
 
 const shown = signal("waiting");
 setTimeout(async () => {
-  const services = await new RayXAppBuilder()
+  const services = await new RayXAppBuilder().addHostFakes()
     .addScopedAs(themeToken(), () => new Wrong())
     .start();
   shown.set(`done ${Probe.versionTwice(services.createScope())}`);
@@ -514,7 +514,7 @@ class Local {
 
 const shown = signal("waiting");
 setTimeout(async () => {
-  const services = await new RayXAppBuilder()
+  const services = await new RayXAppBuilder().addHostFakes()
     .addScopedAs(themeToken(), () => new Local())
     .start();
   for (let i = 0; i < 20; i++) {

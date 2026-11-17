@@ -1,13 +1,14 @@
 use super::{
     APPLICATION_CONFIGURATION_PATH, ApplicationConfiguration, ApplicationConfigurationService,
 };
-use crate::services::platform::{PlatformAppBuilderExt, PlatformInfoService};
+use crate::services::platform::PlatformInfoService;
 use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`ApplicationConfigurationService`] on an app builder.
 pub trait ApplicationConfigurationAppBuilderExt: AppBuilder {
-    /// Registers the app's [`ApplicationConfigurationService`] unless one is registered, with
-    /// the platform service (registered too when missing). Its [`ApplicationConfiguration`]
+    /// Registers the app's [`ApplicationConfigurationService`] unless one is registered; it
+    /// reads the system's settings from the app's `dyn PlatformInfoService`, which it requires
+    /// (`add_platform()`, from `rayx_services_platform`). Its [`ApplicationConfiguration`]
     /// binds from [`APPLICATION_CONFIGURATION_PATH`], then `configure` changes it; invalid
     /// settings fail startup. When the configuration reloads, the service takes the new
     /// settings.
@@ -15,24 +16,21 @@ pub trait ApplicationConfigurationAppBuilderExt: AppBuilder {
         self,
         configure: impl Fn(&mut ApplicationConfiguration) + Send + Sync + 'static,
     ) -> Self {
-        let mut builder = self
-            .add_platform()
-            .add_options::<ApplicationConfiguration>(|options| {
-                options
-                    .bind(APPLICATION_CONFIGURATION_PATH)
-                    .configure(configure)
-                    .validate(
-                        |options| options.validate().is_ok(),
-                        "the application configuration is invalid",
-                    )
-                    .validate_on_start();
-            });
+        let mut builder = self.add_options::<ApplicationConfiguration>(|options| {
+            options
+                .bind(APPLICATION_CONFIGURATION_PATH)
+                .configure(configure)
+                .validate(
+                    |options| options.validate().is_ok(),
+                    "the application configuration is invalid",
+                )
+                .validate_on_start();
+        });
         builder
             .services_mut()
             .try_add_service_factory::<ApplicationConfigurationService>(|services| {
                 let platform = services
-                    .required_service::<PlatformInfoService>()
-                    .map(|platform| platform.as_ref().clone())
+                    .required_service::<dyn PlatformInfoService>()
                     .unwrap_or_else(|error| {
                         panic!("the application configuration needs the platform: {error}")
                     });
@@ -52,6 +50,12 @@ pub trait ApplicationConfigurationAppBuilderExt: AppBuilder {
                     .detach();
                 service
             });
+        builder
+            .services_mut()
+            .require_for::<ApplicationConfigurationService, dyn PlatformInfoService>(
+                "add_platform() from rayx_services_platform, or register your own \
+                 dyn PlatformInfoService",
+            );
         builder
     }
 

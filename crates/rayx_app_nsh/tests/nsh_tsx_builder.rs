@@ -1,6 +1,8 @@
 //! TS `RayXAppBuilder` through NSH's engine, headless: every Rust builder method an app calls
 //! has a chaining camelCase twin that registers what the Rust method does, with the same implied
-//! services, and the set declares each with a doc comment.
+//! services, and the set declares each with a doc comment. (The service crates' methods,
+//! `addPlatform`, `addAssets` and the others, are their crates' groups'; the services the host
+//! requires come from `addHostFakes()` here.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -12,11 +14,10 @@ use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfigurationService, assets::AssetService,
-    fonts::FontService, history::HistoryService, history::HistoryStore, i18n::I18nService,
-    input_map::InputMapService, navigation::NavigationService, operations::OperationService,
-    platform::PlatformInfoService, selection::SelectionService, storage::KeyValueStore,
-    suspension::SuspensionService,
+    application_configuration::ApplicationConfigurationService, history::HistoryService,
+    history::HistoryStore, i18n::I18nService, input_map::InputMapService,
+    navigation::NavigationService, operations::OperationService, selection::SelectionService,
+    storage::KeyValueStore,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, ServiceProvider as Services};
@@ -53,19 +54,15 @@ impl Probe {
     pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
         services.with(|services| {
             let services = services.services();
-            let checks: [(&str, Resolves); 13] = [
+            let checks: [(&str, Resolves); 9] = [
                 ("KeyValueStore", resolves::<dyn KeyValueStore>),
                 ("OperationService", resolves::<OperationService>),
                 ("HistoryService", resolves::<HistoryService>),
                 ("HistoryStore", resolves::<dyn HistoryStore>),
                 ("I18nService", resolves::<I18nService>),
                 ("NavigationService", resolves::<NavigationService>),
-                ("AssetService", resolves::<AssetService>),
-                ("FontService", resolves::<FontService>),
                 ("InputMapService", resolves::<InputMapService>),
                 ("SelectionService", resolves::<SelectionService>),
-                ("PlatformInfoService", resolves::<PlatformInfoService>),
-                ("SuspensionService", resolves::<SuspensionService>),
                 (
                     "ApplicationConfigurationService",
                     resolves::<ApplicationConfigurationService>,
@@ -117,7 +114,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const builder = new RayXAppBuilder();
+    const builder = new RayXAppBuilder().addHostFakes();
     const chained = builder
       .addAppSettings("app")
       .addOptionalAppSettings("asset:/@app/appsettings.Development.json")
@@ -132,12 +129,8 @@ setTimeout(async () => {
       .addHistory()
       .addI18n()
       .addNavigation()
-      .addAssets()
-      .addFonts()
       .addInputMap()
       .addSelection()
-      .addPlatform()
-      .addSuspension()
       .addApplicationConfiguration()
       .defaultInitializationTimeout(1234);
     lines.push(String(chained === builder));
@@ -161,8 +154,7 @@ fn each_builder_method_registers_its_service() {
         shown,
         "done true\
          |KeyValueStore,OperationService,HistoryService,I18nService,NavigationService,\
-         AssetService,FontService,InputMapService,SelectionService,PlatformInfoService,\
-         SuspensionService,ApplicationConfigurationService\
+         InputMapService,SelectionService,ApplicationConfigurationService\
          |json,appsettings,3,live|1234"
     );
 }
@@ -175,7 +167,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder()
+    const services = await new RayXAppBuilder().addHostFakes()
       @CHAIN@
       .start();
     lines.push(Probe.registered(services).join(","));
@@ -201,12 +193,11 @@ fn builder_methods_add_the_services_they_imply_as_in_rust() {
             ".addPersistentHistory()",
             "KeyValueStore,OperationService,HistoryService,HistoryStore",
         ),
-        (".addI18n()", "KeyValueStore,I18nService,AssetService"),
-        (".addFonts()", "KeyValueStore,AssetService,FontService"),
+        (".addI18n()", "KeyValueStore,I18nService"),
         (".addInputMap()", "KeyValueStore,InputMapService"),
         (
             ".addApplicationConfiguration()",
-            "KeyValueStore,PlatformInfoService,ApplicationConfigurationService",
+            "KeyValueStore,ApplicationConfigurationService",
         ),
         ("", "KeyValueStore"),
     ] {
@@ -236,12 +227,8 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addPersistentHistory(): RayXAppBuilder;",
         "addI18n(configure?: ((options: I18nOptions) => void) | null): RayXAppBuilder;",
         "addNavigation(configure?: ((options: NavigationOptions) => void) | null): RayXAppBuilder;",
-        "addAssets(configure?: ((options: AssetOptions) => void) | null): RayXAppBuilder;",
-        "addFonts(configure?: ((options: FontOptions) => void) | null): RayXAppBuilder;",
         "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
         "addSelection(): RayXAppBuilder;",
-        "addPlatform(): RayXAppBuilder;",
-        "addSuspension(): RayXAppBuilder;",
         "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",
         "defaultInitializationTimeout(ms: number): RayXAppBuilder;",
         "start(): Promise<ServiceProvider>;",

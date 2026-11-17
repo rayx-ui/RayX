@@ -313,7 +313,7 @@ setTimeout(async () => {
   const lines = [];
   try {
     const services = await Probe.addReporter(
-      new RayXAppBuilder().addSingletonAs(weatherSourceToken(), () => new OpenMeteo()),
+      new RayXAppBuilder().addHostFakes().addSingletonAs(weatherSourceToken(), () => new OpenMeteo()),
     ).start();
     // Made by `start()`, before the Rust startup service that depends on it, which calls it.
     lines.push(Probe.logged());
@@ -368,7 +368,7 @@ class Slow {
 }
 
 const shown = signal("waiting");
-Probe.addReporter(new RayXAppBuilder().addStartupSingletonAs(weatherSourceToken(), () => new Slow()))
+Probe.addReporter(new RayXAppBuilder().addHostFakes().addStartupSingletonAs(weatherSourceToken(), () => new Slow()))
   .start()
   .then(
     () => shown.set(`done ${Probe.logged()}`),
@@ -415,7 +415,7 @@ setTimeout(async () => {
   const lines = [];
   try {
     const services = await Probe.addInjected(
-      new RayXAppBuilder().@ADD@(weatherSourceToken(), () => new OpenMeteo()),
+      new RayXAppBuilder().addHostFakes().@ADD@(weatherSourceToken(), () => new OpenMeteo()),
     ).start();
     lines.push(Probe.logged());
     // Later Rust calls reach JS: through the adapter the factory got, and a fresh resolve.
@@ -465,7 +465,7 @@ class OpenMeteo {
 }
 
 const shown = signal("waiting");
-Probe.addReporter(new RayXAppBuilder().addStartupSingletonAs(weatherSourceToken(), () => new OpenMeteo()))
+Probe.addReporter(new RayXAppBuilder().addHostFakes().addStartupSingletonAs(weatherSourceToken(), () => new OpenMeteo()))
   .start()
   .then(
     () => shown.set(`done ${asked} ${Probe.logged()}`),
@@ -495,7 +495,7 @@ setTimeout(async () => {
   const lines = [];
   try {
     const services = await Probe.addCapturing(
-      new RayXAppBuilder().addScopedAs(weatherSourceToken(), () => new OpenMeteo()),
+      new RayXAppBuilder().addHostFakes().addScopedAs(weatherSourceToken(), () => new OpenMeteo()),
     ).start();
     // Resolved by Rust from the root before the root scope's object was made: its first call
     // makes it (between JS's turns).

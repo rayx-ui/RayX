@@ -39,7 +39,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     effect(move || {
         if app_state() == AppState::Ready
             && let Some(options) = ASK.lock().unwrap().take()

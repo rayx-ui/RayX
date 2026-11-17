@@ -35,7 +35,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     dynamic(move || match app_state() {
         AppState::Ready => text("ready").into_element(),
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),

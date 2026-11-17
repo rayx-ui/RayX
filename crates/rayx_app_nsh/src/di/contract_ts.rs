@@ -89,8 +89,12 @@ impl From<ContractError> for String {
 }
 
 /// A Rust trait TS implements: what `#[contract]` implements for `dyn Trait`.
-pub trait Contract: Send + Sync + 'static {
-    /// The trait's name, which is its TS interface's.
+pub trait Contract: 'static {
+    /// The trait object Rust resolves (`dyn WeatherSource`): `Self` for a contract of the app's
+    /// crate, the core's trait for a marker `contract_nsh!` makes.
+    type Dyn: ?Sized + Send + Sync + 'static;
+
+    /// The trait's name.
     const NAME: &'static str;
 
     /// Its TS interface's name (`#[contract(ts = "…")]`, else the trait's).
@@ -106,12 +110,12 @@ pub trait Contract: Send + Sync + 'static {
 
     /// The adapter over the TS implementation `source` gives.
     #[doc(hidden)]
-    fn adapter(source: __private::ContractSource) -> Arc<Self>;
+    fn adapter(source: __private::ContractSource) -> Arc<Self::Dyn>;
 
     /// Links what `adapter` publishes and its constants once (nothing for a Rust
     /// implementation): what `start()` does when it made a TS implementation.
     #[doc(hidden)]
-    fn link(adapter: &Self) -> Result<(), String>;
+    fn link(adapter: &Self::Dyn) -> Result<(), String>;
 }
 
 /// Contracts in an app's set: `registry.contract::<dyn WeatherSource>()` in
@@ -131,7 +135,7 @@ pub trait ContractRegistryExt {
     fn contract_class<C, K>(&mut self) -> &mut Self
     where
         C: ?Sized + Contract,
-        K: ServiceClass<Service = C>;
+        K: ServiceClass<Service = C::Dyn>;
 }
 
 impl ContractRegistryExt for Registry {
@@ -143,7 +147,7 @@ impl ContractRegistryExt for Registry {
     fn contract_class<C, K>(&mut self) -> &mut Self
     where
         C: ?Sized + Contract,
-        K: ServiceClass<Service = C>,
+        K: ServiceClass<Service = C::Dyn>,
     {
         C::register_interface(self);
         crate::di::provider_ts::register_class::<K>(Some(ContractDef::of::<C>()));
@@ -169,11 +173,11 @@ pub(crate) struct ContractDef {
 impl ContractDef {
     pub(crate) fn of<C: ?Sized + Contract>() -> Self {
         Self {
-            startup: StartupServiceType::of::<C>,
+            startup: StartupServiceType::of::<C::Dyn>,
             add: add_adapter::<C>,
             made: |provider| {
                 provider
-                    .service::<C>()
+                    .service::<C::Dyn>()
                     .map_or(Ok(()), |adapter| C::link(&adapter))
             },
         }
@@ -224,12 +228,12 @@ fn add_adapter<C: ?Sized + Contract>(
     };
     let factory = move |services: &rayx_app::ServiceProvider| C::adapter(source(services));
     match lifetime {
-        ServiceLifetime::Singleton => provider.replace_service_factory_as::<C>(factory),
+        ServiceLifetime::Singleton => provider.replace_service_factory_as::<C::Dyn>(factory),
         ServiceLifetime::Scoped => {
-            provider.add_scoped_as::<C>(factory);
+            provider.add_scoped_as::<C::Dyn>(factory);
         }
         ServiceLifetime::Transient => {
-            provider.add_transient_as::<C>(factory);
+            provider.add_transient_as::<C::Dyn>(factory);
         }
     }
 }
@@ -742,6 +746,61 @@ pub mod __private {
     }
 
     pub use futures::future::BoxFuture;
+
+    /// A value of a core contract's member as JSON (`null` when it does not serialize).
+    pub fn to_json<T: serde::Serialize + ?Sized>(value: &T) -> JsonValue {
+        serde_json::to_value(value).unwrap_or(JsonValue::Null)
+    }
+
+    /// [`call`] for a core contract's command, whose values cross as JSON: the result converted
+    /// to `T`, and every failure (what TS threw, a result that does not convert, the engine
+    /// gone) as the core's `ContractFailure`, which the service's error type converts from.
+    pub fn call_json<S, F, Fut, T, E>(
+        slot: ContractSlot<S>,
+        member: &'static str,
+        call: F,
+    ) -> BoxFuture<'static, Result<T, E>>
+    where
+        S: 'static,
+        F: FnOnce(Rc<S>) -> Fut + Send + 'static,
+        Fut: Future<Output = Result<JsonValue, String>> + 'static,
+        T: serde::de::DeserializeOwned + Send + 'static,
+        E: From<rayx_app::services::ContractFailure> + Send + 'static,
+    {
+        let contract = slot.contract();
+        let failure = move |message: String| rayx_app::services::ContractFailure {
+            contract,
+            member,
+            message,
+        };
+        let answered = super::__private::call::<S, _, _, JsonValue, Failed>(slot, move |object| {
+            let answer = call(object);
+            async move { answer.await.map_err(Failed::Threw) }
+        });
+        Box::pin(async move {
+            match answered.await {
+                Ok(value) => serde_json::from_value(value).map_err(|error| {
+                    E::from(failure(format!("its result does not convert: {error}")))
+                }),
+                Err(Failed::Threw(message)) => Err(E::from(failure(message))),
+                Err(Failed::Contract(error)) => Err(E::from(failure(error.to_string()))),
+            }
+        })
+    }
+
+    /// Why a JSON call failed, before it is the service's error.
+    pub enum Failed {
+        /// What TS threw.
+        Threw(String),
+        /// The call did not reach TS.
+        Contract(ContractError),
+    }
+
+    impl From<ContractError> for Failed {
+        fn from(error: ContractError) -> Self {
+            Self::Contract(error)
+        }
+    }
 
     /// Runs `call` (a call of the TS implementation, made on the engine thread) as a task of the
     /// engine and gives a `Send` future of its result.

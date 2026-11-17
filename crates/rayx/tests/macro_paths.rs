@@ -65,7 +65,7 @@ fn add_greeting(builder: RayXAppBuilder) -> RayXAppBuilder {
 fn native(registry: &mut Registry) {
     registry
         .contract::<dyn Forecasts>()
-        .module::<add_greeting>();
+        .class_extension::<add_greeting>();
 }
 
 fn is_app_service<T: AppService + ?Sized>() {}
@@ -95,6 +95,12 @@ fn the_contract_extension_and_set_name_the_host_through_the_umbrella() {
             .iter()
             .map(|m| format!("module {}", m.name)),
     );
+    names.extend(set.class_extensions().iter().flat_map(|extension| {
+        extension
+            .members
+            .iter()
+            .map(|member| format!("method {}.{}", extension.class.name, member.name))
+    }));
     names.extend(
         set.interface_defs()
             .iter()
@@ -109,7 +115,7 @@ fn the_contract_extension_and_set_name_the_host_through_the_umbrella() {
         "class RayXAppBuilder",
         "interface Forecasts",
         "module ForecastsToken",
-        "module add_greeting",
+        "method RayXAppBuilder.addGreeting",
     ] {
         assert!(names.contains(expected), "{expected} missing: {names:?}");
     }

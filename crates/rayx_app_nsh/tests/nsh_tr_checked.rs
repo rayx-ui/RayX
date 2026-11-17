@@ -48,7 +48,7 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
 
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(RayXAppBuilder::new()).start();
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
     let name = "Ana";
     let count = 1200;
     text(move || {

@@ -130,7 +130,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder().start();
+    const services = await new RayXAppBuilder().addHostFakes().start();
     lines.push(await Probe.elsewhere(services));
     lines.push(await Probe.elsewhere(services));
     lines.push(`queued ${Probe.queued(services)}`);

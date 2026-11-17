@@ -13,6 +13,9 @@ builder
     })
 ```
 
+RayX's implementation is `rayx_services_assets`'s (`builder.addAssets(..)` in TS, once its set is registered),
+registered as the app's `dyn AssetService`; the app's start requires one, RayX's or the app's own.
+
 `add_asset_files(files)` (in `rayx_app_nsh`; `add_bundled_assets(uris)` for any list of `asset:/@<package>/<path>` URLs)
 adds a crate's files to the catalog, so the crate needs no manifest listing them. Packages it adds come after the
 asset options' packages, in the order their files are added.
@@ -51,7 +54,7 @@ tags = ["brand"]
 ## Use
 
 ```rust
-let assets = services.required_service::<AssetService>()?;
+let assets = services.required_service::<dyn AssetService>()?;
 let url = assets.uri("images/logo.png")?;                // asset:/@my-app/images/logo.png
 let sharp = assets.uri_for_scale("images/logo.png", 2.0)?;
 let text = assets.load_text("notes/welcome.md").await?;
@@ -59,8 +62,9 @@ let text = assets.load_text("notes/welcome.md").await?;
 
 - `AssetService`, a startup service, reads the manifests into an `AssetCatalog`; `descriptor` and `query` answer
   questions about it, with kinds and MIME types from file names.
-- `load_bytes`, `load_text` and `load_json` read through the platform's `AssetReader` and keep what they read within
-  the byte budget. `MemoryAssetReader` holds files in memory, for tests.
+- `load_bytes`, `load_text` and `load_json` read the files with NSH's `fetch` of their `asset:/` URLs, from any thread
+  (through the surface's engine runner), and keep what they read within the byte budget. `rayx_app::testing::FakeAssets`
+  serves a catalog and files from memory, for tests.
 
 ## On NSH
 

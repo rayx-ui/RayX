@@ -167,7 +167,7 @@ setTimeout(async () => {
     return log.includes(a) && log.includes(b) && log.indexOf(a) < log.indexOf(b);
   };
   try {
-    const builder = new RayXAppBuilder()
+    const builder = new RayXAppBuilder().addHostFakes()
       .addStartupSingleton(Cache, () => new Cache())
       .addStartupSingleton(Skipped, () => new Skipped())
       .addStartupSingletonAs(Warmer, () => new Warm())
@@ -229,7 +229,7 @@ class Idle {
 }
 
 const shown = signal("waiting");
-const builder = new RayXAppBuilder();
+const builder = new RayXAppBuilder().addHostFakes();
 @REGISTER@
 builder.start().then(
   () => shown.set("done started"),

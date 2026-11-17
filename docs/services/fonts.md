@@ -17,7 +17,11 @@ builder.add_fonts(|options| {
 })
 ```
 
-`add_fonts` registers the [asset service](assets.md) too. `FontService` is a startup service that initializes after it.
+RayX's implementation is `rayx_services_fonts`'s (`builder.addFonts(..)` in TS, once its set is registered),
+registered as the app's `dyn FontService`; the app's start requires one, RayX's or the app's own.
+
+`add_fonts` requires an [asset service](assets.md) (`add_assets(..)`, or the app's own `dyn AssetService`) and
+registers none: building without one fails naming it. RayX's font service initializes after the asset service.
 
 ## Configure
 
@@ -34,14 +38,14 @@ fallbacks, the default alias and automatic registration of font assets, all vali
 ## Use
 
 ```rust
-let fonts = services.required_service::<FontService>()?;
+let fonts = services.required_service::<dyn FontService>()?;
 let family = fonts.font_family("body"); // "Inter, Noto Color Emoji"
 let name = fonts.register_font(bytes).await?;
 ```
 
-- At startup the service takes the asset catalog's font files (`ttf`, `otf`, `woff`, `woff2`) through the
-  `FontRegistrar` trait (`register_asset`: registered, unless the platform registered the app's fonts already, and
-  their family read); `register_font(data)` registers others while the app runs.
+- At startup the service takes the asset catalog's font files (`ttf`, `otf`, `woff`, `woff2`) from the app's
+  `dyn AssetService` (which it requires) and reads their families (NSH registered the fonts the app ships before the
+  first frame); `register_font(data)` registers others with NSH while the app runs, from any thread.
 - An alias resolves to its family, its load fallback (another alias or a family) when that family did not load, and
   its glyph fallbacks, as one family list for NSH's `font_family` / `fontFamily`.
 

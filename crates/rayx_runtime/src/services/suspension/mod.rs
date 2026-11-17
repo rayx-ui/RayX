@@ -1,15 +1,4 @@
-//! Suspension: the app's lifecycle (started, shutting down), activation (focus) and visibility
-//! (foreground, background), a desktop's window and the system's wakes from sleep, from the
-//! events the UI layer publishes, for work that pauses in the background or must be saved as the
-//! app quits; and quitting the app, asked first while the app wants to be.
+//! Suspension's abstraction and data, from the core (`rayx_app::services::suspension`); RayX's
+//! implementation is `rayx_services_suspension`'s.
 
-mod app_ext;
-mod model;
-mod service;
-
-pub use app_ext::SuspensionAppBuilderExt;
-pub use model::{
-    SuspensionActivationState, SuspensionEvent, SuspensionEventKind, SuspensionEventReason,
-    SuspensionLifecycleState, SuspensionSnapshot, SuspensionVisibilityState, WindowActivity,
-};
-pub use service::{NoopSuspensionHost, SuspensionChangedEvent, SuspensionHost, SuspensionService};
+pub use rayx_app::services::suspension::*;

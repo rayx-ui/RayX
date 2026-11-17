@@ -25,6 +25,19 @@ rayx_runtime.workspace = true
 url.workspace = true
 nsh-core.workspace = true
 dxn_reactive.workspace = true
+# The `testing` harness.
+nsh-engine = { workspace = true, features = ["js"], optional = true }
+nsh-bundler = { workspace = true, optional = true }
+crossbeam-channel = { workspace = true, optional = true }
+
+[features]
+# `rayx_app_nsh::testing`: the headless app harness service crates' tests use.
+testing = [
+    "dep:nsh-engine",
+    "dep:nsh-bundler",
+    "dep:crossbeam-channel",
+    "nsh-core/declarations",
+]
 
 # The dev tools' agent dials its hub with the WebSocket client NSH compiles, on a thread of its
 # own (`src/devtools/link.rs`); only a dev build uses it.
@@ -52,3 +65,8 @@ tungstenite = "0.28"
 # in `assets/locales/`, the default).
 [package.metadata.dxn_i18n]
 messages = "tests/fixtures/locales"
+
+# Through `rayx_app_nsh::testing`, as a service crate's tests do.
+[[test]]
+name = "nsh_service_crate_hooks"
+required-features = ["testing"]

@@ -14,6 +14,7 @@ const ROOT: &[&str] = &[
     "lib.rs",
     "ts.rs",
     "binding.rs",
+    "testing.rs",
     "app/mod.rs",
     "app/surface.rs",
     "app/builder_ts.rs",

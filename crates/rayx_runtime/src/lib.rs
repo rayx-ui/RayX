@@ -16,15 +16,11 @@ pub mod services;
 /// The services' builder extensions: `use rayx_runtime::prelude::*;` to register them.
 pub mod prelude {
     pub use crate::services::application_configuration::ApplicationConfigurationAppBuilderExt;
-    pub use crate::services::assets::AssetAppBuilderExt;
-    pub use crate::services::fonts::FontAppBuilderExt;
     pub use crate::services::history::HistoryAppBuilderExt;
     pub use crate::services::i18n::I18nAppBuilderExt;
     pub use crate::services::input_map::InputMapAppBuilderExt;
     pub use crate::services::navigation::NavigationAppBuilderExt;
     pub use crate::services::operations::OperationsAppBuilderExt;
-    pub use crate::services::platform::PlatformAppBuilderExt;
     pub use crate::services::selection::SelectionAppBuilderExt;
     pub use crate::services::storage::StorageAppBuilderExt;
-    pub use crate::services::suspension::SuspensionAppBuilderExt;
 }
