@@ -19,7 +19,7 @@ use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use futures::FutureExt as _;
 use futures::future::{BoxFuture, LocalBoxFuture};
-use nsh_core::prelude::try_global;
+use nsh_core::prelude::runtime_entered;
 use nsh_core::storage::Storage;
 use rayx_app::ChangeSubscription;
 use rayx_app::di::{
@@ -77,13 +77,9 @@ pub(crate) trait Backend: Send + Sync {
 /// NSH's storage of the surface the engine runs.
 struct NshStorage;
 
-/// A type for `try_global` to probe the reactive runtime with.
-#[derive(Default)]
-struct Probe;
-
 impl Backend for NshStorage {
     fn reachable(&self) -> bool {
-        try_global::<Probe>().is_some()
+        runtime_entered()
     }
 
     fn keys(&self) -> Vec<String> {

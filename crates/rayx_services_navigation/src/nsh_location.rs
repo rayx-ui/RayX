@@ -33,8 +33,8 @@ use std::sync::{Arc, Mutex};
 use futures::StreamExt as _;
 use futures::channel::mpsc::{UnboundedSender, unbounded};
 use nsh_core::prelude::{
-    Owner, app_url, effect, next_app_url_change, next_url_scheme_open, set_app_url_with, signal,
-    spawn, try_global, untracked,
+    Owner, app_url, effect, next_app_url_change, next_url_scheme_open, runtime_entered,
+    set_app_url_with, signal, spawn, untracked,
 };
 use nsh_core::url_scheme::HistoryBehavior;
 use rayx_app::services::navigation::{NavigationError, NavigationHistoryMode, Result};
@@ -69,14 +69,6 @@ struct Shared {
     settled: AtomicBool,
     /// Whether the tasks and the effect run.
     started: AtomicBool,
-}
-
-/// A type for `try_global` to probe the reactive runtime with.
-#[derive(Default)]
-struct Probe;
-
-fn reachable() -> bool {
-    try_global::<Probe>().is_some()
 }
 
 /// The navigation's location in the app's address `address` (see the module), for a navigation
@@ -118,7 +110,7 @@ impl NshLocationSynchronizer {
     /// that waits. A location NSH refuses (too long, with whitespace, of another origin than the
     /// page's) is the error.
     pub(crate) fn flush(&self) -> Result<()> {
-        if !reachable() || !self.shared.settled.load(Ordering::SeqCst) {
+        if !runtime_entered() || !self.shared.settled.load(Ordering::SeqCst) {
             return Ok(());
         }
         let Some((location, history)) = self
@@ -274,7 +266,7 @@ impl NavigationLocationSynchronizer for NshLocationSynchronizer {
     /// starts at its default route and moves there once the app is ready. Asked on the engine
     /// thread, it starts the synchronizer.
     fn location(&self) -> Option<String> {
-        if reachable() {
+        if runtime_entered() {
             self.start();
         }
         None
@@ -299,7 +291,7 @@ impl NavigationLocationSynchronizer for NshLocationSynchronizer {
             };
             *pending = Some((location.to_owned(), history));
         }
-        if reachable() {
+        if runtime_entered() {
             self.start();
         }
         self.wake();
