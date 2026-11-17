@@ -39,6 +39,7 @@ changelog_include = [
     "rayx-cli",
     "rayx_components",
     "rayx_devtools_protocol",
+    "rayx_services_assets",
     "rayx_services_platform",
     "rayx_services_suspension",
 ]
@@ -84,6 +85,17 @@ changelog_update = false
 name = "rayx_components"
 version_group = "rayx"
 # RayX's component library and theme, like `rayx_app_macros`.
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_assets"
+version_group = "rayx"
+# RayX's asset service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_assets-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
