@@ -39,10 +39,10 @@
 //! - **Translations** are `rayx_services_i18n`'s: its i18n service, `tr!` in a Rust component
 //!   and the `I18nService` class in TSX.
 //! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
-//!   and is its own token (`ApplicationConfigurationService` here; `AssetService`,
-//!   `FontService`, `I18nService`, `KeyValueStore`, `NavigationService`, `PlatformInfoService`
-//!   and `SuspensionService` in their crates' sets), and its `onChange` hears the service's
-//!   changes.
+//!   and is its own token (`ApplicationConfigurationService`, `AssetService`, `FontService`,
+//!   `I18nService`, `InputMapService`, `KeyValueStore`, `NavigationService`,
+//!   `PlatformInfoService` and `SuspensionService`, in their crates' sets), and its `onChange`
+//!   hears the service's changes.
 //! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
 //!   Clock())` and every other lifetime, startup and `As` form, keyed by a TS class or a
 //!   [`ts::ServiceToken`], with the TS startup interfaces `AsyncInitializable` and

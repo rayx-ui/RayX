@@ -1,6 +1,6 @@
-//! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root: the
-//! `ApplicationConfigurationService` class reaches its service. (The service crates' classes
-//! have their groups in their crates.)
+//! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root,
+//! bundled and compiled to bytecode: a service's class (the tests' own `GreetingService`)
+//! reaches its service. (The service crates' classes have their groups in their crates.)
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -36,18 +36,19 @@ impl EngineAssets for AppAssets {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { ApplicationConfigurationService, RayXAppBuilder } from "test/app";
+import { GreetingService, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
     const services = await new RayXAppBuilder().addHostFakes()
-      .addApplicationConfiguration()
+      .addGreeting()
       .start();
 
-    const configuration = services.getRequiredService(ApplicationConfigurationService);
-    lines.push(`${configuration.layoutDirection()} ${typeof configuration.current()}`);
+    const greeting = services.getRequiredService(GreetingService);
+    greeting.set("hi");
+    lines.push(`${greeting.current()} ${typeof greeting.onChange}`);
 
   } catch (error) {
     lines.push(`threw ${error}`);
@@ -80,6 +81,7 @@ fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
     set.class_extension::<headless::HostFakes>();
+    headless::greeting::register(&mut set);
     let dir = std::env::temp_dir().join(format!("rayx-app-tsx-services-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let entry = dir.join("App.tsx");
@@ -108,5 +110,5 @@ fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let _engine = Engine::start(config, || ApproxTextEngine, ChannelSink(tx)).unwrap();
     let last = shown(&rx, "done");
     let _ = std::fs::remove_dir_all(&dir);
-    assert_eq!(last, "done ltr object");
+    assert_eq!(last, "done hi function");
 }

@@ -5009,6 +5009,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayx_services_application_configuration"
+version = "0.11.0"
+dependencies = [
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde_json",
+]
+
+[[package]]
 name = "rayx_services_assets"
 version = "0.11.0"
 dependencies = [

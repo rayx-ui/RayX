@@ -11,6 +11,10 @@ use futures::future::BoxFuture;
 
 use crate::published::{EventStream, StateCell};
 use crate::services::app::AppBuilder;
+use crate::services::application_configuration::{
+    ApplicationConfiguration, ApplicationConfigurationError, ApplicationConfigurationService,
+    ApplicationConfigurationSnapshot,
+};
 use crate::services::assets::{AssetCatalog, AssetError, AssetService};
 use crate::services::fonts::{FontService, FontServiceError, FontState, RegisteredFontFace};
 use crate::services::history::{
@@ -1221,6 +1225,62 @@ impl InputMapService for FakeInputMap {
                 });
                 candidate
             })
+        };
+        futures::future::ready(result).boxed()
+    }
+}
+
+/// An application configuration publishing the snapshot the test gives it
+/// ([`FakeApplicationConfiguration::new`]); `replace_options` takes valid settings as RayX's does
+/// (refusing a changed name or description) and publishes them at the next revision.
+pub struct FakeApplicationConfiguration {
+    configuration: StateCell<ApplicationConfigurationSnapshot>,
+}
+
+impl FakeApplicationConfiguration {
+    /// A configuration at `snapshot`.
+    pub fn new(snapshot: ApplicationConfigurationSnapshot) -> Arc<Self> {
+        Arc::new(Self {
+            configuration: StateCell::new(snapshot),
+        })
+    }
+
+    /// Publishes `snapshot`, as a change of the settings or the platform would.
+    pub fn publish(&self, snapshot: ApplicationConfigurationSnapshot) {
+        self.configuration.publish(snapshot);
+    }
+}
+
+impl ApplicationConfigurationService for FakeApplicationConfiguration {
+    fn configuration(&self) -> &StateCell<ApplicationConfigurationSnapshot> {
+        &self.configuration
+    }
+
+    fn replace_options(
+        &self,
+        options: ApplicationConfiguration,
+    ) -> BoxFuture<'_, Result<bool, ApplicationConfigurationError>> {
+        let snapshot = self.configuration.get();
+        let result = if let Err(reason) = options.validate() {
+            Err(ApplicationConfigurationError::InvalidOptions(reason))
+        } else if snapshot.options.name != options.name {
+            Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
+                "name",
+            ))
+        } else if snapshot.options.description != options.description {
+            Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
+                "description",
+            ))
+        } else if snapshot.options == options {
+            Ok(false)
+        } else {
+            self.configuration
+                .publish(ApplicationConfigurationSnapshot {
+                    options,
+                    revision: snapshot.revision + 1,
+                    ..(*snapshot).clone()
+                });
+            Ok(true)
         };
         futures::future::ready(result).boxed()
     }

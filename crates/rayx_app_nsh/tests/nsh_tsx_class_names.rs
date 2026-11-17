@@ -1,6 +1,7 @@
-//! The TS classes of RayX's services carry the Rust services' names, with the members the old
-//! classes had and no static `of`; the old entry and scope classes and the old names are gone
-//! from the set and its declarations. (The service crates' classes, `AssetService`,
+//! A service's TS class registered with `service_class` (the tests' own `GreetingService`) is made
+//! by the provider only, with its members and no static `of`; the old entry and scope classes,
+//! the old names and the services' classes the host had are gone from its set and its
+//! declarations. (The service crates' classes, `ApplicationConfigurationService`, `AssetService`,
 //! `I18nService`, `NavigationService` and the others, are in their crates' sets.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
@@ -18,17 +19,9 @@ fn class<'a>(ts: &'a str, name: &str) -> &'a str {
 
 #[test]
 fn the_service_classes_carry_the_rust_services_names_and_their_members() {
-    let set = headless::set(|_| {});
+    let set = headless::set(headless::greeting::register);
     let ts = headless::declarations(&set);
-    for (name, members) in [(
-        "ApplicationConfigurationService",
-        &[
-            "current(",
-            "layoutDirection(",
-            "reducedMotion(",
-            "onChange(",
-        ][..],
-    )] {
+    for (name, members) in [("GreetingService", &["current(", "set(", "onChange("][..])] {
         let declared = class(&ts, name);
         // Made by the provider only: its own token, never `new`ed or `of(app)`.
         assert!(
@@ -60,18 +53,16 @@ fn the_old_api_is_gone_from_the_set() {
         "class Assets ",
         "class Fonts ",
         "class Platform ",
+        "class ApplicationConfigurationService ",
+        "class ApplicationConfigurationOptions ",
+        "class InputMapOptions ",
         "static of(",
         "load(",
     ] {
         assert!(!ts.contains(old), "`{old}` is still declared:\n{ts}");
     }
     let names: Vec<&str> = set.class_specs().iter().map(|class| class.name).collect();
-    for name in [
-        "RayXAppBuilder",
-        "ServiceProvider",
-        "ServiceToken",
-        "ApplicationConfigurationService",
-    ] {
+    for name in ["RayXAppBuilder", "ServiceProvider", "ServiceToken"] {
         assert!(names.contains(&name), "{name} is not in the set: {names:?}");
     }
 }

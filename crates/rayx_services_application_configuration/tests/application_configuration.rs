@@ -1,15 +1,18 @@
-//! The application configuration service: binding, validation, reloads, effective motion and
-//! programmatic scrolling.
+//! RayX's application configuration: binding, validation, reloads, effective motion (following
+//! the platform's setting) and programmatic scrolling, and registration (the later of
+//! `add_application_configuration` and the app's own service wins).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use futures::executor::block_on;
+use rayx_app::services::application_configuration::*;
 use rayx_app::services::platform::{PlatformInfoService, PlatformSnapshot};
-use rayx_app::testing::FakePlatform;
-use rayx_app::{Configuration, RayXAppBuilder, ServiceProvider};
-use rayx_runtime::services::application_configuration::*;
+use rayx_app::testing::{FakeApplicationConfiguration, FakePlatform};
+use rayx_app::{AppBuilder as _, Configuration, RayXAppBuilder, ServiceProvider};
+use rayx_services_application_configuration::ApplicationConfigurationAppBuilderExt as _;
 use serde_json::json;
 
 fn build(
@@ -49,7 +52,7 @@ fn add_fake_platform(services: &mut ServiceProvider) {
 fn settings_bind_from_the_section_then_code() {
     let services = build(|options| options.layout.direction = LayoutDirection::Rtl);
     let configuration = services
-        .required_service::<ApplicationConfigurationService>()
+        .required_service::<dyn ApplicationConfigurationService>()
         .unwrap();
     let options = configuration.options();
     assert_eq!(options.name, "Notes");
@@ -71,12 +74,13 @@ fn invalid_settings_fail_on_start() {
 fn the_service_follows_configuration_reloads_but_not_its_name() {
     let services = build(|_| {});
     let configuration = services
-        .required_service::<ApplicationConfigurationService>()
+        .required_service::<dyn ApplicationConfigurationService>()
         .unwrap();
     let heard = Arc::new(Mutex::new(Vec::new()));
     let sink = Arc::clone(&heard);
-    let _subscription =
-        configuration.subscribe(move |snapshot| sink.lock().unwrap().push(snapshot.revision));
+    let _subscription = configuration
+        .configuration()
+        .subscribe(move |snapshot| sink.lock().unwrap().push(snapshot.revision));
     let root = services.required_service::<Configuration>().unwrap();
 
     root.set("RayX:Application:Motion:Policy", "Reduced");
@@ -92,24 +96,28 @@ fn the_service_follows_configuration_reloads_but_not_its_name() {
 fn startup_only_settings_are_refused_at_run_time() {
     let services = build(|_| {});
     let configuration = services
-        .required_service::<ApplicationConfigurationService>()
+        .required_service::<dyn ApplicationConfigurationService>()
         .unwrap();
     let mut options = configuration.options();
     options.description = "changed".into();
     assert_eq!(
-        configuration.replace_options(options),
+        block_on(configuration.replace_options(options)),
         Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
             "description"
         ))
     );
     let mut options = configuration.options();
     options.scrolling.smooth_duration_ms = 0;
-    assert!(configuration.replace_options(options).is_err());
-    assert!(
-        !configuration
-            .replace_options(configuration.options())
-            .unwrap()
+    assert!(block_on(configuration.replace_options(options)).is_err());
+    assert!(!block_on(configuration.replace_options(configuration.options())).unwrap());
+    let mut options = configuration.options();
+    options.hover_cards.open_delay_ms = 100;
+    assert!(block_on(configuration.replace_options(options)).unwrap());
+    assert_eq!(
+        configuration.snapshot().options.hover_cards.open_delay_ms,
+        100
     );
+    assert_eq!(configuration.snapshot().revision, 1);
 }
 
 #[test]
@@ -117,7 +125,7 @@ fn motion_is_reduced_by_the_system_the_app_or_the_caller() {
     let services =
         build(|options| options.scrolling.programmatic = ProgrammaticScrollBehavior::Smooth);
     let configuration = services
-        .required_service::<ApplicationConfigurationService>()
+        .required_service::<dyn ApplicationConfigurationService>()
         .unwrap();
     let platform = services.required_service::<FakePlatform>().unwrap();
 
@@ -154,4 +162,84 @@ fn motion_is_reduced_by_the_system_the_app_or_the_caller() {
             .unwrap(),
         ScrollBehavior::Instant
     );
+}
+
+#[test]
+fn the_snapshot_follows_the_platform_s_motion_setting() {
+    let services = build(|_| {});
+    let configuration = services
+        .required_service::<dyn ApplicationConfigurationService>()
+        .unwrap();
+    let platform = services.required_service::<FakePlatform>().unwrap();
+    let heard = Arc::new(Mutex::new(Vec::new()));
+    let sink = Arc::clone(&heard);
+    let _subscription = configuration.configuration().subscribe(move |snapshot| {
+        sink.lock()
+            .unwrap()
+            .push((snapshot.platform_reduced_motion, snapshot.revision))
+    });
+
+    modify(&platform, |snapshot| snapshot.reduced_motion = true);
+    // Another change of the platform is no change of the snapshot.
+    modify(&platform, |snapshot| {
+        snapshot.color_scheme = rayx_app::services::platform::ColorScheme::Dark
+    });
+    modify(&platform, |snapshot| snapshot.reduced_motion = false);
+    assert_eq!(*heard.lock().unwrap(), vec![(true, 1), (false, 2)]);
+    assert!(!configuration.snapshot().platform_reduced_motion);
+}
+
+#[test]
+fn without_a_platform_the_build_names_what_to_add() {
+    let Err(error) = RayXAppBuilder::new()
+        .add_application_configuration(|_| {})
+        .build()
+    else {
+        panic!("the build fails");
+    };
+    let error = error.to_string();
+    assert!(error.contains("ApplicationConfigurationService"), "{error}");
+    assert!(error.contains("PlatformInfoService"), "{error}");
+    assert!(error.contains("add_platform()"), "{error}");
+    assert!(error.contains("rayx_services_platform"), "{error}");
+    // Nor does it register one.
+    let mut builder = RayXAppBuilder::new().add_application_configuration(|_| {});
+    assert!(
+        !builder
+            .services_mut()
+            .contains_service::<dyn PlatformInfoService>()
+    );
+}
+
+#[test]
+fn the_later_registration_of_a_configuration_wins() {
+    let own: Arc<dyn ApplicationConfigurationService> =
+        FakeApplicationConfiguration::new(ApplicationConfigurationSnapshot::default());
+
+    // `add_application_configuration` replaces one the app registered before it.
+    let mut builder = RayXAppBuilder::new();
+    builder
+        .services_mut()
+        .replace_service::<dyn ApplicationConfigurationService>(Arc::clone(&own));
+    let mut builder =
+        builder.add_application_configuration(|options| options.name = "Notes".into());
+    add_fake_platform(&mut builder.services);
+    let services = builder.build().unwrap();
+    let configuration = services
+        .required_service::<dyn ApplicationConfigurationService>()
+        .unwrap();
+    assert!(!Arc::ptr_eq(&configuration, &own));
+    assert_eq!(configuration.options().name, "Notes");
+
+    // One the app registers after it replaces RayX's.
+    let mut builder = RayXAppBuilder::new().add_application_configuration(|_| {});
+    add_fake_platform(&mut builder.services);
+    builder
+        .services_mut()
+        .replace_service::<dyn ApplicationConfigurationService>(Arc::clone(&own));
+    let services = builder.build().unwrap();
+    let configuration = services
+        .required_service::<dyn ApplicationConfigurationService>()
+        .unwrap();
+    assert!(Arc::ptr_eq(&configuration, &own));
 }

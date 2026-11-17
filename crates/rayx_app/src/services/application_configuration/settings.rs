@@ -1,8 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-/// The configuration section [`ApplicationConfiguration`] binds from.
-pub const APPLICATION_CONFIGURATION_PATH: &str = "RayX:Application";
-
 /// The app's own settings: its name, and the behaviour its UI components share (motion,
 /// programmatic scrolling, tooltip and hover-card timing, notifications, layout direction).
 /// Keys a section has that are not here are ignored, as in .NET.

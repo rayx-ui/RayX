@@ -147,7 +147,7 @@ impl Probe {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, ClockService, Probe, RayXAppBuilder, ServiceToken,
+  ClockService, GreetingService, Probe, RayXAppBuilder, ServiceToken,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -155,13 +155,13 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addApplicationConfiguration()).start();
+    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addGreeting()).start();
 
     // A class is its own token; a singleton is one object.
-    const configuration = services.getRequiredService(ApplicationConfigurationService);
-    lines.push(`${configuration instanceof ApplicationConfigurationService} ${configuration === services.getRequiredService(ApplicationConfigurationService)}`);
-    lines.push(String(services.getService(ApplicationConfigurationService) === services.getRequiredService(ApplicationConfigurationService)));
-    lines.push(typeof configuration.current().name);
+    const greeting = services.getRequiredService(GreetingService);
+    lines.push(`${greeting instanceof GreetingService} ${greeting === services.getRequiredService(GreetingService)}`);
+    lines.push(String(services.getService(GreetingService) === services.getRequiredService(GreetingService)));
+    lines.push(typeof greeting.current());
 
     // Nothing registered: `null`, or an error naming the token.
     lines.push(String(services.getService(ClockService)));
@@ -182,7 +182,7 @@ setTimeout(async () => {
     lines.push(String(page === Probe.page(scope) && Probe.active()));
     lines.push(String(page !== Probe.page(inner)));
     lines.push(String(Probe.sameSession(services, scope) && Probe.sameSession(scope, inner)));
-    lines.push(String(scope.getRequiredService(ApplicationConfigurationService) instanceof ApplicationConfigurationService));
+    lines.push(String(scope.getRequiredService(GreetingService) instanceof GreetingService));
     inner.dispose();
     lines.push(`${Probe.dropped() - before} ${Probe.active()}`);
     Probe.page(scope);
@@ -190,7 +190,7 @@ setTimeout(async () => {
     lines.push(String(Probe.active()));
     Probe.release();
     lines.push(String(Probe.dropped() - before));
-    lines.push(thrown(() => scope.getService(ApplicationConfigurationService)).includes("disposed") ? "disposed" : "used");
+    lines.push(thrown(() => scope.getService(GreetingService)).includes("disposed") ? "disposed" : "used");
     lines.push(thrown(() => scope.createScope()).includes("disposed") ? "disposed" : "used");
   } catch (error) {
     lines.push(`threw ${error}`);
@@ -205,6 +205,7 @@ mount(() => <Text>{shown()}</Text>);
 fn the_provider_resolves_by_class_and_token_with_scopes_disposed() {
     let set = headless::set(|set| {
         set.module::<Probe>().service_class::<ClockService>();
+        headless::greeting::register(set);
     });
     assert_eq!(
         headless::run(set, TSX),

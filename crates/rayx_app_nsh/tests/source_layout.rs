@@ -1,8 +1,8 @@
 //! The host's source layout: `src/` holds exactly the files of the expected tree, grouped by
-//! topic (`app/`, `di/`, `configuration/`, `devtools/`) with a folder per service under
-//! `services/`, and no `ts/` folder: the TS classes live beside what they wrap, in files ending
-//! in `_ts.rs`, and `ts.rs` re-exports them. The check names every file or folder that is
-//! missing or extra.
+//! topic (`app/`, `di/`, `configuration/`, `devtools/`), with only what service crates build on
+//! under `services/` (each service's NSH side is its crate's), and no `ts/` folder: the TS
+//! classes live beside what they wrap, in files ending in `_ts.rs`, and `ts.rs` re-exports them.
+//! The check names every file or folder that is missing or extra.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -37,14 +37,9 @@ const ROOT: &[&str] = &[
     "devtools/tree.rs",
 ];
 
-/// `services/`: what the services share, and a folder per service with an NSH side.
-const SERVICES: &[&str] = &[
-    "services/mod.rs",
-    "services/listeners_ts.rs",
-    "services/application_configuration/mod.rs",
-    "services/application_configuration/application_configuration_ts.rs",
-    "services/application_configuration/options_ts.rs",
-];
+/// `services/`: what the service crates build on (the core's services re-exported, `json` and the
+/// listeners helper); no service has a folder here.
+const SERVICES: &[&str] = &["services/mod.rs", "services/listeners_ts.rs"];
 
 /// Every file under `dir`, relative to `base`, with `/` separators. Hidden entries (a name
 /// starting with `.`: Finder's `.DS_Store`, an editor's swap file) are not the layout's and are

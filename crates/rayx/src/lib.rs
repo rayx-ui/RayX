@@ -3,8 +3,6 @@
 //!
 //! - [`app`] ([`rayx_app`]): the core: dependency injection, configuration, .NET's options model
 //!   and the [`RayXAppBuilder`](app::RayXAppBuilder), without NSH; service crates depend on it.
-//! - [`runtime`] ([`rayx_runtime`]): the app services not yet in crates of their own
-//!   (configuration), without NSH.
 //! - [`navigation`] ([`rayx_services_navigation`]): RayX's navigation service (routes, regions
 //!   as NSH navigation stacks, the app's location as NSH's app address); its builder extension
 //!   and `navigation_region`/`navigation_view` are in the prelude.
@@ -105,7 +103,6 @@ pub use rayx_services_i18n::checked;
 /// arguments, and `tr!`.
 pub mod prelude {
     pub use rayx_app::prelude::*;
-    pub use rayx_runtime::prelude::*;
 
     pub use rayx_app::services::i18n::{I18nService, MessageFormatter};
     /// The registry a [`native_module`](crate::native_module) function adds the app's exports to.

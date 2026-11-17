@@ -14,23 +14,23 @@
 //! - [`ServiceProvider`]: what `start()` resolves with: `getService`, `getRequiredService`,
 //!   `createScope` and `dispose`. A RayX service's class is its own token, and a
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
-//!   `ServiceKey<T>`, so `getRequiredService(ApplicationConfigurationService)` is an
-//!   `ApplicationConfigurationService` in TS.
-//! - The services' classes: [`ApplicationConfigurationService`]; the service crates
-//!   (`rayx_services_*`) add theirs (`AssetService`, `FontService`, `I18nService`,
-//!   `KeyValueStore`, `NavigationService` with `NavigationRegion`, `OperationService` with
-//!   `OperationTarget`, `HistoryService`, `PlatformInfoService`, `SelectionService`,
-//!   `SuspensionService`) with their sets.
+//!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
+//! - The services' classes: the service crates (`rayx_services_*`) add theirs
+//!   (`ApplicationConfigurationService`, `AssetService`, `FontService`, `HistoryService`,
+//!   `I18nService`, `InputMapService`, `KeyValueStore`, `NavigationService` with
+//!   `NavigationRegion`, `OperationService` with `OperationTarget`, `PlatformInfoService`,
+//!   `SelectionService`, `SuspensionService`) with their sets, through [`ServiceClass`] and
+//!   [`ContractRegistryExt`].
 //!
 //! # Options classes
 //!
-//! [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
-//! `configureAppConfiguration`: what a builder method's callback gets, valid during the call.
+//! The [`ConfigurationBuilder`] of `configureAppConfiguration`: what a builder method's callback
+//! gets, valid during the call (a service crate's options classes, `I18nOptions` and the others,
+//! come with its set).
 //!
-//! The structs live beside their services (`services/<name>/`, `di/`, `app/`, `configuration/`)
-//! and are re-exported here, not at the crate root, so their names (`NavigationService`) are the Rust
-//! services' without clashing with [`rayx_runtime`]'s types. [`register`] adds them all to a UI
-//! set.
+//! The structs live beside what they wrap (`di/`, `app/`, `configuration/`, `services/`) and are
+//! re-exported here, not at the crate root, so their names do not clash with [`rayx_runtime`]'s
+//! types. [`register`] adds them all to a UI set.
 
 use nsh_core::element::{Registry, TsAlias};
 
@@ -52,8 +52,6 @@ pub use crate::di::startup_ts::{
     AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
     StartupInitializationContext, StartupInitializationState,
 };
-pub use crate::services::application_configuration::application_configuration_ts::ApplicationConfigurationService;
-pub use crate::services::application_configuration::options_ts::ApplicationConfigurationOptions;
 pub use crate::services::json;
 pub use crate::services::listeners_ts::Listeners;
 
@@ -95,7 +93,5 @@ pub fn register(registry: &mut Registry) {
         .class::<ReadyContext>()
         .class::<OptionsToken>()
         .class::<OptionsBuilder>()
-        .class::<ConfigurationBuilder>()
-        .class::<ApplicationConfigurationOptions>()
-        .service_class::<ApplicationConfigurationService>();
+        .class::<ConfigurationBuilder>();
 }

@@ -147,6 +147,7 @@ impl Probe {
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
         set.module::<Probe>();
+        headless::greeting::register(set);
     })
 }
 
@@ -189,7 +190,7 @@ fn start_resolves_with_the_root_once_and_for_every_later_start() {
 }
 
 const SAME_TURN: &str = r#"import { mount, signal, Text } from "nsh";
-import { ApplicationConfigurationService, RayXAppBuilder } from "test/app";
+import { GreetingService, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
@@ -199,9 +200,9 @@ setTimeout(async () => {
     const builder = new RayXAppBuilder().addHostFakes();
     const ready = builder.start();
     // The same turn: the builder was taken by the call, so nothing more reaches the startup.
-    lines.push(thrown(() => builder.addApplicationConfiguration()));
+    lines.push(thrown(() => builder.addGreeting()));
     const services = await ready;
-    lines.push(String(services.getService(ApplicationConfigurationService)));
+    lines.push(String(services.getService(GreetingService)));
   } catch (error) {
     lines.push(`threw ${error}`);
   }

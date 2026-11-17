@@ -2,9 +2,8 @@
 
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
-use rayx_runtime::services::application_configuration::ApplicationConfiguration;
-
-use crate::configuration::options_ts::push;
+use rayx_app::services::application_configuration::ApplicationConfiguration;
+use rayx_app_nsh::ts::push;
 
 /// The app's configuration settings (`addApplicationConfiguration`), as Rust's configure
 /// closure sets `ApplicationConfiguration`: `name` and `description`, and `merge` for the rest

@@ -165,20 +165,19 @@ fn an_extension_is_plain_rust_too() {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { ApplicationConfigurationService, Probe, RayXAppBuilder } from "test/app";
+import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    // Extensions run in chain order: the later registration wins.
+    // Extensions run in chain order, `apply`'d ones too: the later registration wins.
     const builder = new RayXAppBuilder().addHostFakes().addRainy().defaultInitializationTimeout(1000).addSunny();
-    lines.push(String(builder.apply((b) => b.addApplicationConfiguration()) === builder));
+    lines.push(String(builder.apply((b) => b.addRainy()) === builder));
     lines.push(thrown(() => builder.apply(() => { throw new Error("no weather"); })));
     const services = await builder.start();
     lines.push(Probe.forecast(services));
-    lines.push(String(services.getRequiredService(ApplicationConfigurationService) instanceof ApplicationConfigurationService));
     lines.push(thrown(() => builder.addRainy()).includes("started already") ? "started" : "open");
   } catch (error) {
     lines.push(`threw ${error}`);
@@ -193,6 +192,6 @@ mount(() => <Text>{shown()}</Text>);
 fn an_extension_applied_from_ts_registers_its_service_in_chain_order() {
     assert_eq!(
         headless::run(registry(), TSX),
-        "done true|no weather|sunny|true|started"
+        "done true|no weather|rainy|started"
     );
 }

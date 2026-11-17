@@ -81,7 +81,7 @@ impl Probe {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { ApplicationConfigurationService, Probe, RayXAppBuilder, ServiceToken, Tracker } from "test/app";
+import { GreetingService, Probe, RayXAppBuilder, ServiceToken, Tracker } from "test/app";
 
 class Clock { now() { return 42; } }
 class Page {}
@@ -101,7 +101,7 @@ function scoped(services) {
     page === scope.getRequiredService(Page) && page !== other.getRequiredService(Page),
     page.services === scope,
     page.clock === services.getRequiredService(Clock),
-    page.navigation instanceof ApplicationConfigurationService,
+    page.greeting instanceof GreetingService,
     services.getRequiredService(Clock) === scope.getRequiredService(Clock)
       && scope.getRequiredService(Clock) === other.getRequiredService(Clock),
   ].join(" ");
@@ -115,13 +115,13 @@ setTimeout(async () => {
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
     const services = await new RayXAppBuilder().addHostFakes()
-      .addApplicationConfiguration()
+      .addGreeting()
       .addSingleton(Clock, () => new Clock())
       .addScoped(Page, (s) => ({
         id: ++pages,
         tracker: new Tracker(),
         clock: s.getRequiredService(Clock),
-        navigation: s.getRequiredService(ApplicationConfigurationService),
+        greeting: s.getRequiredService(GreetingService),
         services: s,
       }))
       .addTransient(Stamp, () => ({ n: ++stamps }))
@@ -154,7 +154,7 @@ setTimeout(async () => {
     lines.push(await Probe.outsideACall(services, Lazy));
     lines.push(await Probe.outsideACall(services, Clock));
     // A factory that throws, and a RayX class as a token.
-    lines.push(thrown(() => new RayXAppBuilder().addHostFakes().addSingleton(ApplicationConfigurationService, () => ({}))));
+    lines.push(thrown(() => new RayXAppBuilder().addHostFakes().addSingleton(GreetingService, () => ({}))));
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -168,6 +168,7 @@ mount(() => <Text>{shown()}</Text>);
 fn ts_services_live_in_the_container_with_rusts_lifetimes() {
     let set = headless::set(|set| {
         set.module::<Probe>().class::<Tracker>();
+        headless::greeting::register(set);
     });
     assert_eq!(
         headless::run(set, TSX),
@@ -178,7 +179,7 @@ fn ts_services_live_in_the_container_with_rusts_lifetimes() {
          |service `Clock` is thread-bound and resolves on its own thread only\
          |service `Lazy` is thread-bound and resolves on its own thread only\
          |resolved|resolved\
-         |ApplicationConfigurationService is a RayX service's class: register a TS service under a TS class or a \
+         |GreetingService is a RayX service's class: register a TS service under a TS class or a \
          ServiceToken"
     );
 }

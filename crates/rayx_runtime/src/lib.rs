@@ -14,6 +14,4 @@
 pub mod services;
 
 /// The services' builder extensions: `use rayx_runtime::prelude::*;` to register them.
-pub mod prelude {
-    pub use crate::services::application_configuration::ApplicationConfigurationAppBuilderExt;
-}
+pub mod prelude {}

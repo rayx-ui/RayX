@@ -5,3 +5,5 @@
 #![allow(dead_code)]
 
 include!("../../src/testing.rs");
+
+pub mod greeting;

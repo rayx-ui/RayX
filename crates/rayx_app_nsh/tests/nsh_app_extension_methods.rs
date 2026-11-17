@@ -39,11 +39,12 @@ impl Probe {
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
         set.module::<Probe>().class_extension::<add_weather>();
+        headless::greeting::register(set);
     })
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { ApplicationConfigurationService, Probe, RayXAppBuilder } from "test/app";
+import { GreetingService, Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
@@ -54,9 +55,9 @@ setTimeout(async () => {
     // Chained with RayX's own methods: the method returns the builder itself.
     const builder = new RayXAppBuilder().addHostFakes().defaultInitializationTimeout(1000);
     lines.push(String(builder.addWeather() === builder));
-    const services = await builder.addApplicationConfiguration().start();
+    const services = await builder.addGreeting().start();
     lines.push(Probe.forecast(services));
-    lines.push(String(services.getRequiredService(ApplicationConfigurationService) instanceof ApplicationConfigurationService));
+    lines.push(String(services.getRequiredService(GreetingService) instanceof GreetingService));
     // After `start()`, it throws.
     lines.push(thrown(() => builder.addWeather()).includes("started") ? "started" : "open");
   } catch (error) {

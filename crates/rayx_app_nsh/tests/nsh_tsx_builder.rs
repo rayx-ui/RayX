@@ -15,9 +15,7 @@ use std::sync::Arc;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
-use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfigurationService, storage::KeyValueStore,
-};
+use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, RayXAppBuilder, ServiceProvider as Services};
 
@@ -65,13 +63,7 @@ impl Probe {
     pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
         services.with(|services| {
             let services = services.services();
-            let checks: [(&str, Resolves); 2] = [
-                ("KeyValueStore", resolves::<dyn KeyValueStore>),
-                (
-                    "ApplicationConfigurationService",
-                    resolves::<ApplicationConfigurationService>,
-                ),
-            ];
+            let checks: [(&str, Resolves); 1] = [("KeyValueStore", resolves::<dyn KeyValueStore>)];
             checks
                 .into_iter()
                 .filter(|(_, resolves)| resolves(services))
@@ -129,7 +121,6 @@ setTimeout(async () => {
           .addValue({ Feed: { Mode: "live" } });
       })
       .addFakeStorage()
-      .addApplicationConfiguration()
       .defaultInitializationTimeout(1234);
     lines.push(String(chained === builder));
     const services = await builder.start();
@@ -151,8 +142,7 @@ fn each_builder_method_registers_its_service() {
     assert_eq!(
         shown,
         "done true\
-         |KeyValueStore,\
-         ApplicationConfigurationService\
+         |KeyValueStore\
          |json,appsettings,3,live|1234"
     );
 }
@@ -181,10 +171,7 @@ mount(() => <Text>{shown()}</Text>);
 #[test]
 fn builder_methods_add_the_services_they_imply_as_in_rust() {
     // No method registers a key-value store: those kept in one require it.
-    for (chain, registered) in [(
-        ".addApplicationConfiguration()",
-        "ApplicationConfigurationService",
-    )] {
+    for (chain, registered) in [("", "")] {
         let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
         assert_eq!(shown, format!("done {registered}"), "{chain}");
     }
@@ -205,7 +192,6 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addAppSettings(package: string): RayXAppBuilder;",
         "addOptionalAppSettings(uri: string): RayXAppBuilder;",
         "configureAppConfiguration(configure: (configuration: ConfigurationBuilder) => void): RayXAppBuilder;",
-        "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",
         "defaultInitializationTimeout(ms: number): RayXAppBuilder;",
         "start(): Promise<ServiceProvider>;",
     ] {

@@ -7,10 +7,9 @@ use nsh_core::prelude::*;
 use rayx_app::{
     ConfigurationAppBuilderExt as _, RayXAppBuilder as AppBuilder, ServiceAppBuilderExt as _,
 };
-use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
-use crate::ts::{ApplicationConfigurationOptions, ConfigurationBuilder};
+use crate::ts::ConfigurationBuilder;
 use std::collections::HashMap;
 
 use nsh_core::JsonValue;
@@ -105,27 +104,6 @@ impl RayXAppBuilder {
             builder.configure_app_configuration(|configuration| {
                 for step in steps {
                     step.apply(configuration);
-                }
-            })
-        })
-    }
-
-    /// Registers the app's configuration service (`RayX:Application`: its layout direction,
-    /// motion and other settings) and the platform service it reads; `configure` sets its
-    /// settings (`options.name("My App")`) after configuration's.
-    pub fn add_application_configuration(
-        this: Instance<Self>,
-        #[args(options)] configure: Option<Callback<Instance<ApplicationConfigurationOptions>>>,
-    ) -> Result<Instance<Self>, String> {
-        let steps = record(
-            ApplicationConfigurationOptions::new(),
-            configure,
-            ApplicationConfigurationOptions::take,
-        )?;
-        chain_err(this, |builder| {
-            builder.add_application_configuration(move |settings| {
-                for step in &steps {
-                    step.apply(settings);
                 }
             })
         })

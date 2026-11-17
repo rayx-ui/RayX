@@ -51,11 +51,12 @@ impl Probe {
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
         set.module::<Probe>().class_extension::<add_rust_hook>();
+        headless::greeting::register(set);
     })
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { ApplicationConfigurationService, Probe, RayXAppBuilder } from "test/app";
+import { GreetingService, Probe, RayXAppBuilder } from "test/app";
 
 class Warmup {
   isInitialized() { return false; }
@@ -73,7 +74,7 @@ setTimeout(async () => {
       .addRustHook()
       .addStartupSingleton(Warmup, () => new Warmup())
       .onReady(() => Probe.log("second"))
-      .onReadyWhen((s) => s.getService(ApplicationConfigurationService) !== null, () => Probe.log("no configuration"))
+      .onReadyWhen((s) => s.getService(GreetingService) !== null, () => Probe.log("no greeting"))
       .onReadyWhen((s) => { asked = s; return true; }, async () => Probe.log("when"))
       .start();
     lines.push(Probe.logged());

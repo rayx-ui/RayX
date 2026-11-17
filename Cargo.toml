@@ -4,6 +4,7 @@ members = [
     "crates/rayx",
     "crates/rayx_app_nsh",
     "crates/rayx_app",
+    "crates/rayx_services_application_configuration",
     "crates/rayx_runtime",
     "crates/rayx_services_assets",
     "crates/rayx_services_fonts",
@@ -39,6 +40,7 @@ rayx_app_nsh = { path = "crates/rayx_app_nsh" }
 rayx_app_macros = { path = "crates/rayx_app_macros" }
 rayx_components = { path = "crates/rayx_components" }
 rayx_devtools_protocol = { path = "crates/rayx_devtools_protocol" }
+rayx_services_application_configuration = { path = "crates/rayx_services_application_configuration" }
 rayx_services_assets = { path = "crates/rayx_services_assets" }
 rayx_services_fonts = { path = "crates/rayx_services_fonts" }
 rayx_services_history = { path = "crates/rayx_services_history" }

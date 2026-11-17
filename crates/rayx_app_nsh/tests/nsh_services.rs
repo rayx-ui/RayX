@@ -15,11 +15,9 @@ use std::{
 use crossbeam_channel::{Receiver, Sender};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, Assets, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::application_configuration::ApplicationConfigurationService;
 use rayx_app_nsh::{
-    AppSettingsAppBuilderExt, AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _,
-    app_services, app_state,
+    AppSettingsAppBuilderExt, AppState, Configuration, RayXAppBuilder, ServiceProvider,
+    StartAppBuilderExt as _, app_services, app_state,
 };
 
 thread_local! {
@@ -72,9 +70,16 @@ fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
         }
         _ => builder,
     };
-    builder
-        .add_app_settings("app")
-        .add_application_configuration(|_| {})
+    builder.add_app_settings("app")
+}
+
+/// The configuration's value at `path` in `services`.
+fn setting(services: &ServiceProvider, path: &str) -> nsh_core::JsonValue {
+    services
+        .required_service::<Configuration>()
+        .unwrap()
+        .value(path)
+        .unwrap_or_default()
 }
 
 /// A Rust root: starts the app and shows the configured name once it is ready.
@@ -85,13 +90,8 @@ fn Root() -> impl IntoElement {
         AppState::Ready => {
             let services = app_services().unwrap();
             ROOT.with_borrow_mut(|root| *root = Some(services.clone()));
-            let name = services
-                .required_service::<ApplicationConfigurationService>()
-                .unwrap()
-                .options()
-                .name
-                .clone();
-            text(format!("ready {name}")).into_element()
+            let name = setting(&services, "RayX:Application:name");
+            text(format!("ready {}", name.as_str().unwrap_or_default())).into_element()
         }
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
         _ => text("starting").into_element(),
@@ -172,9 +172,9 @@ fn the_bundled_settings_are_the_configuration() {
         .expect("the app started");
 
     // The bundled appsettings.json is the configuration.
-    let configuration = services
-        .required_service::<ApplicationConfigurationService>()
-        .unwrap();
-    assert_eq!(configuration.options().name, "Bundled");
-    assert_eq!(configuration.options().tooltips.show_delay_ms, 120);
+    assert_eq!(setting(&services, "RayX:Application:name"), "Bundled");
+    assert_eq!(
+        setting(&services, "RayX:Application:tooltips:showDelayMs"),
+        120
+    );
 }

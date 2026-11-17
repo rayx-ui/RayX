@@ -127,7 +127,8 @@ listener.
 | `NavigationService` | `dyn NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)); in `rayx_services_navigation`'s set |
 | `SelectionService` | `dyn SelectionService` | The active selection area: `state()`, `activeArea()`, `status()`, `onChange`, and, as promises, `activate`, `publishStatus`, `deactivate`, `clear` ([Selection](services/selection.md#tsx)); in `rayx_services_selection`'s set |
 | `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)); in `rayx_services_storage`'s set |
-| `ApplicationConfigurationService` | `ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()` |
+| `ApplicationConfigurationService` | `dyn ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()`, `replaceOptions(settings)` (a promise) ([Application configuration](services/application-configuration.md#tsx)); in `rayx_services_application_configuration`'s set |
+| `InputMapService` | `dyn InputMapService` | Bindings: `resolve(contexts, binding)`, `bindingsFor(action)`, `current()`, `revision()`, and, as promises, `applyUserDocument(expectedRevision, document)`, `load()` ([Input map](services/input-map.md#use)); in `rayx_services_input_map`'s set |
 | `AssetService` | `AssetService` | Asset URLs: `url(path)`, `urlForScale(path, scale)` |
 | `FontService` | `FontService` | Font aliases: `family(alias)`, `aliases()` |
 | `PlatformInfoService` | `PlatformInfoService` | The device: `current()`, `onChange` ([Platform](services/platform.md#tsx)) |
