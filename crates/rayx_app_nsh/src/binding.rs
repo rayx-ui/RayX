@@ -13,7 +13,7 @@
 
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, PoisonError};
 use std::thread::ThreadId;
 
 use dxn_reactive::collections::ObservableList;
@@ -82,7 +82,8 @@ impl std::error::Error for EngineGone {}
 ///
 /// One per surface, in its root provider (`services.required_service::<EngineRunner>()`);
 /// `Send + Sync + Clone`. On the engine thread [`run`](Self::run) starts the work at once (a
-/// task where NSH's runtime is entered, the call's op inside a synchronous call from JS); on any
+/// task where NSH's runtime is entered, the call's op inside a synchronous call from JS; queued
+/// where Rust code JS runs outside a call, a stop function say, can start no task); on any
 /// other thread it queues it for the engine, which drains the queue in a task of its own (NSH
 /// wakes the engine for it). Once the engine stops, queued and later work resolves
 /// `Err(EngineGone)`. Nothing ever blocks the engine thread waiting for itself.
@@ -133,22 +134,45 @@ impl EngineRunner {
         T: Send + 'static,
     {
         let (send, receive) = futures::channel::oneshot::channel();
-        if self.is_engine_thread() {
+        if self.is_engine_thread() && runtime_entered() {
             // Where NSH's runtime is entered (a task, a component) the work is made now and
-            // spawned; inside a synchronous call from JS it is started as the call's op (made
-            // when the core takes it). Never through the queue.
-            let started = if runtime_entered() {
-                let work = make();
-                start_task(async move {
-                    let _ = send.send(work.await);
-                })
-            } else {
-                start_task(async move {
-                    let _ = send.send(make().await);
-                })
-            };
-            if started.is_err() {
+            // spawned. Never through the queue.
+            let work = make();
+            if start_task(async move {
+                let _ = send.send(work.await);
+            })
+            .is_err()
+            {
                 return Box::pin(futures::future::ready(Err(EngineGone)));
+            }
+        } else if self.is_engine_thread() {
+            // Inside a synchronous call from JS it is started as the call's op (made when the
+            // core takes it); where no task can start (Rust code JS runs outside a call: a
+            // stop function, a finalizer) it is queued, as from another thread.
+            let pending = Arc::new(Mutex::new(Some((make, send))));
+            let taken = Arc::clone(&pending);
+            let started = start_task(async move {
+                let pending = taken.lock().unwrap_or_else(PoisonError::into_inner).take();
+                if let Some((make, send)) = pending {
+                    let _ = send.send(make().await);
+                }
+            });
+            if started.is_err() {
+                let job = move || {
+                    let pending = pending
+                        .lock()
+                        .unwrap_or_else(PoisonError::into_inner)
+                        .take();
+                    if let Some((make, send)) = pending {
+                        let work = make();
+                        let _ = start_task(async move {
+                            let _ = send.send(work.await);
+                        });
+                    }
+                };
+                if self.queue(Box::new(job)).is_err() {
+                    return Box::pin(futures::future::ready(Err(EngineGone)));
+                }
             }
         } else {
             let job = move || {
@@ -165,8 +189,9 @@ impl EngineRunner {
     }
 
     /// Runs `job` on the engine thread: at once there where NSH's runtime is entered, as an op
-    /// of the call inside a synchronous call from JS, queued for the engine from another thread;
-    /// `Err(EngineGone)` once the engine stopped.
+    /// of the call inside a synchronous call from JS, queued for the engine from another thread
+    /// (and from Rust code JS runs outside a call, which can start no task); `Err(EngineGone)`
+    /// once the engine stopped.
     pub fn post(&self, job: impl FnOnce() + Send + 'static) -> Result<(), EngineGone> {
         if !self.is_engine_thread() {
             return self.queue(Box::new(job));
@@ -175,7 +200,27 @@ impl EngineRunner {
             job();
             return Ok(());
         }
-        start_task(async move { job() }).map_err(|_| EngineGone)
+        // The call's op inside a synchronous call from JS; queued where no task can start
+        // (Rust code JS runs outside a call: a stop function, a finalizer).
+        let pending = Arc::new(Mutex::new(Some(job)));
+        let taken = Arc::clone(&pending);
+        let started = start_task(async move {
+            if let Some(job) = taken.lock().unwrap_or_else(PoisonError::into_inner).take() {
+                job();
+            }
+        });
+        if started.is_ok() {
+            return Ok(());
+        }
+        self.queue(Box::new(move || {
+            if let Some(job) = pending
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .take()
+            {
+                job();
+            }
+        }))
     }
 
     /// Queues `job` for the engine.
