@@ -1,7 +1,8 @@
-//! The suspension service's quitting and wakes: an app asks before it quits while it listens
-//! for quit requests (`on_quit_request`), a `QuitRequested` reaches that listener and changes
-//! nothing else, `quit()` reaches the implementation, and a `Woke` counts the system's wakes as a
-//! change.
+//! The suspension service's quitting and wakes, on RayX's service: an app asks before it quits
+//! while it listens for quit requests (`on_quit_request`), a `QuitRequested` reaches that
+//! listener and changes nothing else, `quit()` is taken without an engine (NSH's quit is
+//! `nsh_quit_and_wake`'s), and a `Woke` counts the system's wakes as a change, published once
+//! each.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -11,8 +12,8 @@ use std::sync::{Arc, Mutex};
 use futures::FutureExt as _;
 use rayx_app::RayXAppBuilder;
 use rayx_app::services::suspension::*;
-use rayx_app::testing::FakeSuspension;
 use rayx_services_suspension::SuspensionAppBuilderExt as _;
+use rayx_services_suspension::testing::FedSuspension;
 
 fn quit_requested() -> SuspensionEvent {
     SuspensionEvent::new(
@@ -23,8 +24,8 @@ fn quit_requested() -> SuspensionEvent {
 
 #[test]
 fn the_app_asks_before_it_quits_while_it_listens_and_quits_through_its_service() {
-    let fake = FakeSuspension::new();
-    let suspension: Arc<dyn SuspensionService> = Arc::clone(&fake) as Arc<dyn SuspensionService>;
+    let fed = FedSuspension::new();
+    let suspension = fed.service();
     assert!(!suspension.suspension().get().asks_before_quit);
 
     let requests = Arc::new(AtomicUsize::new(0));
@@ -35,27 +36,27 @@ fn the_app_asks_before_it_quits_while_it_listens_and_quits_through_its_service()
     assert!(suspension.suspension().get().asks_before_quit);
 
     // Other events do not reach the listener.
-    fake.emit(SuspensionEvent::new(
+    fed.emit(SuspensionEvent::new(
         SuspensionEventKind::Woke,
         SuspensionEventReason::SystemWoke,
     ));
     assert_eq!(requests.load(Ordering::SeqCst), 0);
 
     let before = *suspension.suspension().get();
-    fake.emit(quit_requested());
-    assert!(
-        before.same_state(&suspension.suspension().get()),
-        "a request changes nothing until the app quits"
+    fed.emit(quit_requested());
+    assert_eq!(
+        before,
+        *suspension.suspension().get(),
+        "a request changes nothing until the app quits: nothing is published"
     );
     assert_eq!(requests.load(Ordering::SeqCst), 1);
 
     suspension.quit().now_or_never().unwrap().unwrap();
-    assert_eq!(fake.quits(), 1);
 
     // Once the listener goes, the app no longer asks and hears no request.
     drop(asking);
     assert!(!suspension.suspension().get().asks_before_quit);
-    fake.emit(quit_requested());
+    fed.emit(quit_requested());
     assert_eq!(requests.load(Ordering::SeqCst), 1);
 }
 
@@ -75,14 +76,15 @@ fn rayx_suspension_asks_while_a_listener_listens_without_an_engine() {
 
 #[test]
 fn a_wake_is_counted_and_heard_as_a_change() {
-    let suspension = FakeSuspension::new();
+    let fed = FedSuspension::new();
+    let suspension = fed.service();
     let changes = Arc::new(Mutex::new(Vec::new()));
     let heard = Arc::clone(&changes);
     let _subscription = suspension
         .suspension()
         .subscribe(move |snapshot| heard.lock().unwrap().push(snapshot.wakes));
     for _ in 0..2 {
-        suspension.emit(SuspensionEvent::new(
+        fed.emit(SuspensionEvent::new(
             SuspensionEventKind::Woke,
             SuspensionEventReason::SystemWoke,
         ));

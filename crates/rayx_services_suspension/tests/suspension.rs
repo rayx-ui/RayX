@@ -1,5 +1,6 @@
-//! The suspension service: lifecycle, activation and visibility from events, its state and
-//! event subscribers, and `add_suspension()`'s one service per root.
+//! The suspension service: lifecycle, activation and visibility from events, RayX's service
+//! publishing its state only when it changed and every event to its subscribers, and
+//! `add_suspension()`'s one service per root.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -8,8 +9,8 @@ use std::sync::{Arc, Mutex};
 use futures::FutureExt as _;
 use rayx_app::RayXAppBuilder;
 use rayx_app::services::suspension::*;
-use rayx_app::testing::FakeSuspension;
 use rayx_services_suspension::SuspensionAppBuilderExt as _;
+use rayx_services_suspension::testing::FedSuspension;
 
 fn event(kind: SuspensionEventKind) -> SuspensionEvent {
     SuspensionEvent::new(kind, SuspensionEventReason::AppStateChanged).at(42)
@@ -40,8 +41,9 @@ fn events_move_lifecycle_activation_and_visibility() {
 }
 
 #[test]
-fn event_subscribers_hear_every_event_and_state_subscribers_every_state() {
-    let suspension = FakeSuspension::new();
+fn event_subscribers_hear_every_event_and_state_subscribers_only_changes() {
+    let fed = FedSuspension::new();
+    let suspension = fed.service();
     assert_eq!(
         *suspension.suspension().get(),
         SuspensionSnapshot::default()
@@ -55,29 +57,45 @@ fn event_subscribers_hear_every_event_and_state_subscribers_every_state() {
         .subscribe(move |_| *event_sink.lock().unwrap() += 1);
     let _states = suspension
         .suspension()
-        .subscribe(move |snapshot| state_sink.lock().unwrap().push(**snapshot));
+        .subscribe(move |snapshot| state_sink.lock().unwrap().push(snapshot.activation));
 
-    for kind in [
-        SuspensionEventKind::Activated,
-        SuspensionEventKind::Activated,
-        SuspensionEventKind::Deactivated,
+    for (kind, at) in [
+        (SuspensionEventKind::Activated, 1),
+        (SuspensionEventKind::Activated, 2),
+        (SuspensionEventKind::Deactivated, 3),
     ] {
-        suspension.emit(event(kind));
+        fed.emit(event(kind).at(at));
     }
     assert_eq!(*events.lock().unwrap(), 3);
-    let states = states.lock().unwrap();
-    let activations: Vec<_> = states.iter().map(|state| state.activation).collect();
+    // The same event again, later, is no change of state: nothing is published.
     assert_eq!(
-        activations,
+        *states.lock().unwrap(),
         [
-            SuspensionActivationState::Active,
             SuspensionActivationState::Active,
             SuspensionActivationState::Inactive,
         ]
     );
-    // The same event again is the same state; another one is a change.
-    assert!(states[0].same_state(&states[1]));
-    assert!(!states[1].same_state(&states[2]));
+    let current = suspension.suspension().get();
+    assert_eq!(current.activation, SuspensionActivationState::Inactive);
+    assert_eq!(current.updated_at_unix_millis, Some(3));
+}
+
+#[test]
+fn asking_as_the_app_already_asks_publishes_nothing() {
+    let suspension = FedSuspension::new().service();
+    let states = Arc::new(Mutex::new(Vec::new()));
+    let sink = Arc::clone(&states);
+    let _states = suspension
+        .suspension()
+        .subscribe(move |snapshot| sink.lock().unwrap().push(snapshot.asks_before_quit));
+    for ask in [true, true, false, false] {
+        suspension
+            .ask_before_quit(ask)
+            .now_or_never()
+            .unwrap()
+            .unwrap();
+    }
+    assert_eq!(*states.lock().unwrap(), [true, false]);
 }
 
 #[test]

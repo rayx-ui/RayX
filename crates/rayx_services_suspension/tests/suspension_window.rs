@@ -1,12 +1,13 @@
 //! A desktop's window in the suspension service: `WindowChanged` events set the snapshot's
-//! window, a change of it is a change of state, and the same window again is not.
+//! window, a change of it is a change of state, and the same window again is not (RayX's service
+//! publishes nothing for it).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use std::sync::{Arc, Mutex};
 
 use rayx_app::services::suspension::*;
-use rayx_app::testing::FakeSuspension;
+use rayx_services_suspension::testing::FedSuspension;
 
 fn focused(focused: bool) -> WindowActivity {
     WindowActivity {
@@ -47,19 +48,24 @@ fn window_changes_are_changes_of_state() {
 }
 
 #[test]
-fn state_subscribers_hear_the_window() {
-    let suspension = FakeSuspension::new();
+fn state_subscribers_hear_each_change_of_the_window_once() {
+    let fed = FedSuspension::new();
+    let suspension = fed.service();
     let windows = Arc::new(Mutex::new(Vec::new()));
     let heard = Arc::clone(&windows);
     let _subscription = suspension
         .suspension()
         .subscribe(move |snapshot| heard.lock().unwrap().push(snapshot.window));
-    for focus in [true, false] {
-        suspension.emit(SuspensionEvent::window_changed(
-            focused(focus),
-            SuspensionEventReason::WindowStateChanged,
-        ));
+    for (focus, at) in [(true, 1), (true, 2), (false, 3)] {
+        fed.emit(
+            SuspensionEvent::window_changed(
+                focused(focus),
+                SuspensionEventReason::WindowStateChanged,
+            )
+            .at(at),
+        );
     }
+    // The same window again publishes nothing.
     assert_eq!(
         *windows.lock().unwrap(),
         [Some(focused(true)), Some(focused(false))]

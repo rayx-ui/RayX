@@ -65,8 +65,8 @@ impl NshSuspension {
         })
     }
 
-    /// Applies `event`: the state is published when it changed, and every subscriber hears the
-    /// event.
+    /// Applies `event`: the state is published when it changed (an event that only moves the
+    /// timestamp or the reason is no change), and every subscriber hears the event.
     pub(crate) fn publish(&self, event: SuspensionEvent) {
         self.change(|state| state.apply(&event));
         self.events.publish(event);
@@ -83,9 +83,9 @@ impl NshSuspension {
         self.publish_state();
     }
 
-    /// Publishes the state now, unless it is the one published: a change made while it is
-    /// published (on another thread, or by a subscriber) is published right after, by whoever
-    /// is publishing.
+    /// Publishes the state now, unless the published one is the same state
+    /// ([`SuspensionSnapshot::same_state`]): a change made while it is published (on another
+    /// thread, or by a subscriber) is published right after, by whoever is publishing.
     fn publish_state(&self) {
         self.stale.store(true, Ordering::SeqCst);
         loop {
@@ -96,7 +96,7 @@ impl NshSuspension {
             };
             self.stale.store(false, Ordering::SeqCst);
             let state = *self.state.lock().unwrap_or_else(PoisonError::into_inner);
-            if *self.suspension.get() != state {
+            if !self.suspension.get().same_state(&state) {
                 self.suspension.publish(state);
             }
             drop(publishing);
