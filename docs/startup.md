@@ -138,7 +138,7 @@ in the order they were added; one that throws or rejects fails `start()` with it
 builder.onReady(async (context) => {
   const store = context.services.getRequiredService(KeyValueStore);
   const language = await store.getJson("settings", "language");
-  if (typeof language === "string") context.services.getRequiredService(I18nService).setLanguage(language);
+  if (typeof language === "string") await context.services.getRequiredService(I18nService).setLanguage(language);
 });
 ```
 
