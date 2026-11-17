@@ -7,13 +7,12 @@
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
-use rayx_app::RayXAppBuilder;
-use rayx_app::ServiceProvider;
-use rayx_app::di::StartupInitializationContext;
+use rayx_app::di::{ServiceValidationProblem, StartupInitializationContext};
 use rayx_app::services::assets::{AssetCatalog, AssetService};
 use rayx_app::services::i18n::{I18nService, I18nServiceError, MessageFormatter};
 use rayx_app::services::platform::{PlatformInfoService, PlatformSnapshot, TextDirection};
 use rayx_app::testing::{FakeAssets, FakePlatform, add_host_fakes};
+use rayx_app::{AppBuildError, RayXAppBuilder, ServiceProvider, ServiceValidationError};
 use rayx_services_i18n::{Args, I18nAppBuilderExt as _, I18nOptions};
 use serde_json::json;
 
@@ -285,4 +284,27 @@ fn invalid_language_options_fail_startup() {
     });
     let services = add_host_fakes(builder).build().unwrap();
     assert!(services.validate_options_on_start().is_err());
+}
+
+#[test]
+fn building_without_an_asset_or_platform_service_fails_with_their_hints() {
+    let builder = RayXAppBuilder::new().add_i18n(|_| {});
+    let Err(AppBuildError::Services(ServiceValidationError { problems })) = builder.build() else {
+        panic!("built without an asset or a platform service");
+    };
+    for (service, hint) in [
+        ("AssetService", "add_assets(..)"),
+        ("PlatformInfoService", "add_platform()"),
+    ] {
+        assert!(
+            problems.iter().any(|problem| matches!(
+                problem,
+                ServiceValidationProblem::Missing { needed, by, hint: told }
+                    if needed.contains(service)
+                        && by.as_deref().is_some_and(|by| by.contains("I18nService"))
+                        && told.contains(hint)
+            )),
+            "no {service} hint in {problems:?}"
+        );
+    }
 }
