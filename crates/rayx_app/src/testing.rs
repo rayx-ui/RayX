@@ -90,6 +90,11 @@ impl<T: Clone + PartialEq + Send + Sync + 'static> FakeState<T> {
         result
     }
 
+    /// What `read` makes of the value under the lock: the latest change, published or not.
+    fn read<R>(&self, read: impl FnOnce(&T) -> R) -> R {
+        read(&lock(&self.value))
+    }
+
     /// Replaces the value with `value` and publishes it.
     fn set(&self, value: T) {
         self.change(|current| *current = value);
@@ -1033,9 +1038,11 @@ impl OperationService for FakeOperations {
 
 /// A history whose scopes' depths the test sets ([`FakeHistory::set_depths`]): undo and redo
 /// move one entry between a scope's stacks (replaying nothing), clearing and bounding a scope
-/// change its depths, each publishing its state and event as RayX's history does; it records
-/// the bindings it is asked. For testing what consumes the history (an undo button) without
-/// RayX's.
+/// change its depths, each publishing its state and event as RayX's history does (a step with
+/// nothing to undo or redo, or of a scope it does not know, changes and publishes nothing;
+/// clearing a scope makes it, at its next revision; bounding one makes it, at its next revision
+/// when entries go); it records the bindings it is asked. For testing what consumes the history
+/// (an undo button) without RayX's.
 #[derive(Default)]
 pub struct FakeHistory {
     history: FakeState<HistoryState>,
@@ -1050,9 +1057,11 @@ impl FakeHistory {
 
     /// Sets the depths of `scope` (a step of the user's elsewhere), publishing them.
     pub fn set_depths(&self, scope: &HistoryScopeId, undo: usize, redo: usize) {
-        self.change(scope, |state| {
+        self.change(scope, true, |state| {
+            let changed = (state.undo_depth, state.redo_depth) != (undo, redo);
             state.undo_depth = undo;
             state.redo_depth = redo;
+            changed
         });
     }
 
@@ -1061,24 +1070,31 @@ impl FakeHistory {
         lock(&self.bindings).clone()
     }
 
-    /// Changes `scope`'s state with `change`, then publishes the state; what `change`
-    /// returns.
-    fn change<R>(
+    /// Changes `scope`'s state with `change` (made first when `make`, else left alone when the
+    /// fake does not know it), at its next revision when `change` says it changed its stacks,
+    /// then publishes the state if it changed; whether its stacks changed.
+    fn change(
         &self,
         scope: &HistoryScopeId,
-        change: impl FnOnce(&mut HistoryScopeState) -> R,
-    ) -> R {
+        make: bool,
+        change: impl FnOnce(&mut HistoryScopeState) -> bool,
+    ) -> bool {
         self.history.change(|state| {
+            if !make && !state.scopes.contains_key(scope) {
+                return false;
+            }
             let entry = state.scopes.entry(scope.clone()).or_default();
-            let result = change(entry);
-            entry.revision += 1;
-            result
+            let changed = change(entry);
+            if changed {
+                entry.revision += 1;
+            }
+            changed
         })
     }
 
     /// Moves one entry of `scope` from one stack to the other; whether there was one.
     fn step(&self, scope: HistoryScopeId, undo: bool) -> bool {
-        let stepped = self.change(&scope, |state| {
+        let stepped = self.change(&scope, false, |state| {
             let (from, to) = if undo {
                 (&mut state.undo_depth, &mut state.redo_depth)
             } else {
@@ -1130,9 +1146,11 @@ impl HistoryService for FakeHistory {
     }
 
     fn clear_scope(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<(), HistoryError>> {
-        self.change(&scope_id, |state| {
+        // RayX's history clears at the scope's next revision, empty or not.
+        self.change(&scope_id, true, |state| {
             state.undo_depth = 0;
             state.redo_depth = 0;
+            true
         });
         self.events.publish(HistoryEvent::ScopeCleared(scope_id));
         ready(Ok(()))
@@ -1146,12 +1164,13 @@ impl HistoryService for FakeHistory {
         if limit == 0 {
             return ready(Err(HistoryError::InvalidEntryLimit));
         }
-        self.change(&scope_id, |state| {
+        self.change(&scope_id, true, |state| {
             state.entry_limit = Some(limit);
             let excess = (state.undo_depth + state.redo_depth).saturating_sub(limit);
             let undo_excess = excess.min(state.undo_depth);
             state.undo_depth -= undo_excess;
             state.redo_depth -= excess - undo_excess;
+            excess != 0
         });
         self.events
             .publish(HistoryEvent::AvailabilityChanged(scope_id));
@@ -1313,7 +1332,9 @@ impl InputMapService for FakeInputMap {
 
     fn load(&self) -> BoxFuture<'_, Result<InputMapDocument, InputMapApplyError>> {
         *lock(&self.loads) += 1;
-        futures::future::ready(Ok(self.input_map.cell().get().user.clone())).boxed()
+        // The state under the lock: an application that returned is loaded even before its
+        // publish lands.
+        futures::future::ready(Ok(self.input_map.read(|state| state.user.clone()))).boxed()
     }
 
     fn apply_user_document(
@@ -1463,8 +1484,9 @@ impl FakeI18n {
         lock(&self.calls).clone()
     }
 
-    /// Records `call`, then changes the state with `change` under the next version, unless it
-    /// fails.
+    /// Records `call`, then changes the state with `change`, under the next version when it
+    /// changed it (what it changed before failing included, as RayX's keeps the messages that
+    /// parsed); what `change` answered.
     fn answer(
         &self,
         call: I18nCall,
@@ -1473,12 +1495,12 @@ impl FakeI18n {
         lock(&self.calls).push(call);
         let result = self.i18n.change(|state| {
             let mut changed = state.clone();
-            change(&mut changed)?;
+            let result = change(&mut changed);
             if changed != *state {
                 changed.version = state.version + 1;
                 *state = changed;
             }
-            Ok(())
+            result
         });
         ready(result)
     }

@@ -349,10 +349,11 @@ fn history_publishes_the_depths_and_records_bindings() {
     fake.set_depths(&scope, 1, 0);
     assert!(history.can_undo(&scope));
     assert!(block_on(history.undo(scope.clone())).unwrap());
+    // Nothing left to undo: nothing changes, nothing is published.
     assert!(!block_on(history.undo(scope.clone())).unwrap());
     assert!(history.can_redo(&scope));
     assert_eq!(*undone.lock().unwrap(), 1);
-    assert_eq!(seen.lock().unwrap().len(), 3);
+    assert_eq!(seen.lock().unwrap().len(), 2);
     let target = OperationTargetId::new("doc").unwrap();
     block_on(history.bind_target_scope(target.clone(), scope.clone())).unwrap();
     assert_eq!(fake.bindings(), [(target, scope)]);
@@ -469,4 +470,78 @@ fn changes_from_many_threads_are_all_published() {
     let state = i18n.i18n().get();
     assert_eq!(state.messages[0].messages.len(), 200);
     assert_eq!(state.version, 200);
+}
+
+#[test]
+fn history_publishes_only_real_changes() {
+    let fake = FakeHistory::new();
+    let history = resolved::<dyn HistoryService>(Arc::clone(&fake) as _);
+    let (seen, _subscription) = published(history.history());
+    let unknown = HistoryScopeId::new("unknown").unwrap();
+    // Steps of a scope it does not know, or with nothing to step, change nothing.
+    assert!(!block_on(history.undo(unknown.clone())).unwrap());
+    assert!(!block_on(history.redo(unknown.clone())).unwrap());
+    assert!(history.history().get().scopes.is_empty());
+    let scope = HistoryScopeId::new("editor").unwrap();
+    fake.set_depths(&scope, 1, 0);
+    fake.set_depths(&scope, 1, 0);
+    assert!(!block_on(history.redo(scope.clone())).unwrap());
+    assert_eq!(seen.lock().unwrap().len(), 1);
+    // Bounding with nothing over the limit sets the limit, at the same revision.
+    let revision = history.history().get().scopes[&scope].revision;
+    block_on(history.set_scope_entry_limit(scope.clone(), 5)).unwrap();
+    block_on(history.set_scope_entry_limit(scope.clone(), 5)).unwrap();
+    assert_eq!(history.history().get().scopes[&scope].revision, revision);
+    assert_eq!(seen.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn i18n_keeps_the_messages_that_parse_when_others_fail() {
+    let fake = FakeI18n::in_language("en");
+    let i18n = resolved::<dyn I18nService>(Arc::clone(&fake) as _);
+    let failed = block_on(i18n.add_resource(
+        "en".into(),
+        None,
+        r#"{ "good": "Hello", "bad": "{{ $unclosed" }"#.into(),
+    ));
+    assert!(
+        matches!(failed, Err(I18nServiceError::Resource { .. })),
+        "{failed:?}"
+    );
+    let state = i18n.i18n().get();
+    assert_eq!(state.messages[0].messages["good"], "Hello");
+    assert!(!state.messages[0].messages.contains_key("bad"));
+    assert_eq!(state.version, 1);
+}
+
+#[test]
+fn the_input_map_loads_the_latest_application_before_its_publish_lands() {
+    let fake = FakeInputMap::new(InputMapState::default());
+    let input_map: Arc<dyn InputMapService> = Arc::clone(&fake) as _;
+    let inner = Arc::clone(&input_map);
+    let loaded = Arc::new(Mutex::new(None));
+    let sink = Arc::clone(&loaded);
+    let second = InputMapDocument::new(
+        InputMapSource::User,
+        1,
+        vec![InputMapEntry::keyboard("", "cmd-p", "app::print", None)],
+    );
+    // Inside the first application's publish, a second one returns before its own publish
+    // lands (the first is still publishing): a load then answers the second.
+    let _subscription = input_map.input_map().subscribe(move |state| {
+        if state.revision == 1 {
+            let applied = block_on(inner.apply_user_document(1, second.clone())).unwrap();
+            let load = block_on(inner.load()).unwrap();
+            *sink.lock().unwrap() = Some((applied, load));
+        }
+    });
+    let first = InputMapDocument::new(
+        InputMapSource::User,
+        0,
+        vec![InputMapEntry::keyboard("", "cmd-k", "app::search", None)],
+    );
+    block_on(input_map.apply_user_document(0, first)).unwrap();
+    let (applied, load) = loaded.lock().unwrap().clone().unwrap();
+    assert_eq!(load, applied);
+    assert_eq!(input_map.revision(), 2);
 }
