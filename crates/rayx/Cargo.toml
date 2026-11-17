@@ -69,4 +69,24 @@ nsh-bundler.workspace = true
 nsh-js.workspace = true
 crossbeam-channel.workspace = true
 futures = { workspace = true, features = ["executor"] }
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+
+# An app's own implementations used by RayX's services, its host and its TS classes: every
+# service feature on.
+[[test]]
+name = "service_replacement"
+required-features = [
+    "application_configuration",
+    "assets",
+    "fonts",
+    "history",
+    "i18n",
+    "input_map",
+    "navigation",
+    "operations",
+    "platform",
+    "selection",
+    "storage",
+    "suspension",
+]
