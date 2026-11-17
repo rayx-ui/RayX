@@ -1,34 +1,34 @@
 # The NSH this app is built with: rayx's default pin when the app was created
-# (nshx-0.5.0-5 at ce14525). Cargo.lock records its commit, which is the app's nsh pin;
+# (nshx-0.5.0-6 at ddac227). Cargo.lock records its commit, which is the app's nsh pin;
 # move every line together to change it. It patches RayX's NSH crates and those of
 # the hosts and runners nsh generates for the app, which a build that does not use
 # them names in a warning.
 
 [patch.crates-io]
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-gpui-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-ios-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-ios-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-linux-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-linux-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-macos-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-macos-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-android = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-gpui = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-ios = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-linux = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-macos = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-tizen = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-tui = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-web = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-platform-windows = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-testing = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-tui-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-windows-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
-nsh-windows-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-5" }
+nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-gpui-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-ios-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-ios-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-linux-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-linux-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-macos-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-macos-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-android = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-gpui = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-ios = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-linux = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-macos = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-tizen = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-tui = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-web = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-platform-windows = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-testing = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-tui-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-windows-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-windows-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }

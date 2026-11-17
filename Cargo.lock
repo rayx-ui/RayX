@@ -3290,7 +3290,7 @@ dependencies = [
 [[package]]
 name = "nsh-base"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "chrono",
  "html5ever",
@@ -3314,7 +3314,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "anyhow",
  "dunce",
@@ -3340,7 +3340,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "cap-std",
  "crc32fast",
@@ -3373,7 +3373,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "crossbeam-channel",
  "env_filter",
@@ -3394,7 +3394,7 @@ dependencies = [
 [[package]]
 name = "nsh-i18n"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "rust-i18n-support",
  "serde_json",
@@ -3403,7 +3403,7 @@ dependencies = [
 [[package]]
 name = "nsh-js"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -3426,7 +3426,7 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "imagesize 0.15.0",
  "proc-macro-crate",
@@ -3441,7 +3441,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -3456,7 +3456,7 @@ dependencies = [
 [[package]]
 name = "nsh-updater"
 version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",

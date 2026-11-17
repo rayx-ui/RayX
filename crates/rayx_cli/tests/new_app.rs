@@ -24,9 +24,9 @@ use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::project::pins::DEFAULTS;
 use rayx_cli::setup::FakeMachine;
 
-const ID: &str = "ce14525bc457";
+const ID: &str = "ddac2279bbf6";
 const FORK_SOURCE: &str =
-    "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-5#ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7";
+    "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b";
 
 fn new_args(argv: &[&str]) -> NewArgs {
     let mut full = vec!["rayx", "new"];
@@ -56,7 +56,7 @@ fn with_default(home: &Workspace) -> PathBuf {
             id: ID.into(),
             kind: Kind::Distribution,
             url: "u".into(),
-            reference: Some("nshx-0.5.0-5".into()),
+            reference: Some("nshx-0.5.0-6".into()),
             commit: Some(DEFAULTS.nsh.commit.into()),
             nsh: "0.2.0".into(),
             cli: "nsh/bin/nsh".into(),
@@ -79,7 +79,7 @@ fn machine(home: &Workspace) -> FakeMachine {
 fn runner(refuse: bool) -> Runner {
     Runner::record().responder(move |spec| {
         if spec.args == ["--version"] {
-            return Some(Outcome::success().with_stdout("nsh 0.5.0 (ce14525)\n"));
+            return Some(Outcome::success().with_stdout("nsh 0.5.0 (ddac227)\n"));
         }
         if spec.args.first().is_some_and(|a| a == "init") {
             if refuse {
@@ -185,7 +185,7 @@ fn a_mixed_app_is_made_by_the_default_pins_nsh_init_and_pinned_through_its_lock(
     let patched: Vec<&str> = config
         .lines()
         .filter(|l| {
-            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-5\" }")
+            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-6\" }")
         })
         .collect();
     assert_eq!(
@@ -234,7 +234,7 @@ fn a_rust_app_gets_the_same_patches_and_lock() {
     );
     assert!(
         config.contains(
-            "\nnsh-platform-macos = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-5\" }\n"
+            "\nnsh-platform-macos = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-6\" }\n"
         ),
         "{config}"
     );
@@ -294,7 +294,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     let mac = run(&["hello"], &work.root, &home, Os::MacOs, false);
     assert!(
         mac.out.contains(&format!(
-            "Created hello, a RayX app on rayx v{}, pinned to nsh nshx-0.5.0-5 (ce14525). Next:",
+            "Created hello, a RayX app on rayx v{}, pinned to nsh nshx-0.5.0-6 (ddac227). Next:",
             env!("CARGO_PKG_VERSION")
         )),
         "{}",
@@ -310,7 +310,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     );
     assert!(
         nsh.out
-            .contains("Created hello, pinned to nsh nshx-0.5.0-5 (ce14525). Next:"),
+            .contains("Created hello, pinned to nsh nshx-0.5.0-6 (ddac227). Next:"),
         "{}",
         nsh.out
     );
@@ -353,7 +353,7 @@ fn a_missing_default_pin_is_installed_first() {
     assert!(created.result.is_err());
     let first = created.runner.lines().first().cloned().unwrap_or_default();
     assert!(
-        first.contains("releases/download/nshx-0.5.0-5/nsh-macos-arm64.tar.gz.sha256"),
+        first.contains("releases/download/nshx-0.5.0-6/nsh-macos-arm64.tar.gz.sha256"),
         "{first}"
     );
     assert!(
@@ -517,13 +517,13 @@ fn the_files_rayx_writes_name_the_default_pin() {
         "{config}"
     );
     assert!(config.contains("[patch.crates-io]\n"), "{config}");
-    assert!(config.contains("nshx-0.5.0-5 at ce14525"), "{config}");
+    assert!(config.contains("nshx-0.5.0-6 at ddac227"), "{config}");
     let table = rayx_toml(&DEFAULTS.nsh);
     for line in [
         "[nsh]",
         "git = \"https://github.com/dXnSix/nsh\"",
-        "tag = \"nshx-0.5.0-5\"",
-        "commit = \"ce14525bc457e7352dd1f1a9ba3829bc0f3b4dc7\"",
+        "tag = \"nshx-0.5.0-6\"",
+        "commit = \"ddac2279bbf639589886651a5f676e57a8c5215b\"",
     ] {
         assert!(table.contains(line), "{table}");
     }

@@ -23,10 +23,11 @@ Context for any change to `Cargo.toml` dependencies or the NSH pin.
 `[workspace.dependencies]` in `Cargo.toml` takes dXn.Reactive, dXn.I18n and dXn.Intl by
 release tag, and the workspace's own crates by path (`rayx` among them, for the gallery's
 crate); NSH crates come from crates.io names patched to the fork `github.com/dXnSix/nsh` at an
-integration tag `nshx-*` in `[patch.crates-io]`, today `nshx-0.5.0-5` (commit `ce14525bc`:
+integration tag `nshx-*` in `[patch.crates-io]`, today `nshx-0.5.0-6` (commit `ddac2279b`:
 `JsHandle`, `Constructor`, `#[interface]`, typed `#[ts("…")]` signatures and theme documents
-since `nshx-0.5.0-4`; `-5` adds asking whether a kept JS value can be called now, #269, and
-upstream NSH up to `a4f08d746`).
+since `nshx-0.5.0-4`; `-5` adds asking whether a kept JS value can be called now, #269; `-6` adds
+class extensions, methods a crate adds to another crate's `#[class]`, #273, and upstream NSH up to
+`afdeb025d`).
 The CLI's built-in default nsh is the same tag (`crates/rayx_cli/src/project/pins.rs`, checked by
 `tests/nsh_pin_rayx.rs`), and so is the gallery's `.cargo/config.toml`; the three move together.
 
