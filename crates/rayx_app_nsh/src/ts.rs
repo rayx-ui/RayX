@@ -24,7 +24,7 @@
 //!
 //! # Options classes
 //!
-//! [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
+//! [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
 //! `configureAppConfiguration`: what a builder method's callback gets, valid during the call.
 //!
 //! The structs live beside their services (`services/<name>/`, `di/`, `app/`, `configuration/`)
@@ -54,7 +54,6 @@ pub use crate::di::startup_ts::{
 };
 pub use crate::services::application_configuration::application_configuration_ts::ApplicationConfigurationService;
 pub use crate::services::application_configuration::options_ts::ApplicationConfigurationOptions;
-pub use crate::services::input_map::options_ts::InputMapOptions;
 pub use crate::services::json;
 pub use crate::services::listeners_ts::Listeners;
 
@@ -98,6 +97,5 @@ pub fn register(registry: &mut Registry) {
         .class::<OptionsBuilder>()
         .class::<ConfigurationBuilder>()
         .class::<ApplicationConfigurationOptions>()
-        .class::<InputMapOptions>()
         .service_class::<ApplicationConfigurationService>();
 }

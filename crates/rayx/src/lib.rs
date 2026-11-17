@@ -3,8 +3,8 @@
 //!
 //! - [`app`] ([`rayx_app`]): the core: dependency injection, configuration, .NET's options model
 //!   and the [`RayXAppBuilder`](app::RayXAppBuilder), without NSH; service crates depend on it.
-//! - [`runtime`] ([`rayx_runtime`]): the app services not yet in crates of their own (input
-//!   maps, selection, configuration), without NSH.
+//! - [`runtime`] ([`rayx_runtime`]): the app services not yet in crates of their own
+//!   (configuration), without NSH.
 //! - [`navigation`] ([`rayx_services_navigation`]): RayX's navigation service (routes, regions
 //!   as NSH navigation stacks, the app's location as NSH's app address); its builder extension
 //!   and `navigation_region`/`navigation_view` are in the prelude.

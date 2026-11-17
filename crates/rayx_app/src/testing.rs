@@ -16,6 +16,10 @@ use crate::services::fonts::{FontService, FontServiceError, FontState, Registere
 use crate::services::history::{
     HistoryError, HistoryEvent, HistoryScopeId, HistoryScopeState, HistoryService, HistoryState,
 };
+use crate::services::input_map::{
+    InputMapApplyError, InputMapDocument, InputMapError, InputMapService, InputMapSource,
+    InputMapState,
+};
 use crate::services::navigation::{
     LocationChangedEvent, NavigationDirection, NavigationError, NavigationEvent,
     NavigationHistoryMode, NavigationJournal, NavigationLifecycleData, NavigationRegion,
@@ -1157,5 +1161,67 @@ impl SelectionService for FakeSelection {
             None,
             SelectionStatus::default(),
         )
+    }
+}
+
+/// An input map publishing the documents the test gives it ([`FakeInputMap::new`]); `load`
+/// answers the user's document as it is, and `apply_user_document` replaces it in memory, as
+/// RayX's does (the revision checked, the candidate validated and given the next revision).
+pub struct FakeInputMap {
+    input_map: StateCell<InputMapState>,
+    applied: Mutex<Vec<InputMapDocument>>,
+}
+
+impl FakeInputMap {
+    /// An input map at `state`.
+    pub fn new(state: InputMapState) -> Arc<Self> {
+        Arc::new(Self {
+            input_map: StateCell::new(state),
+            applied: Mutex::default(),
+        })
+    }
+
+    /// The user's documents applied so far, in order.
+    pub fn applied(&self) -> Vec<InputMapDocument> {
+        lock(&self.applied).clone()
+    }
+}
+
+impl InputMapService for FakeInputMap {
+    fn input_map(&self) -> &StateCell<InputMapState> {
+        &self.input_map
+    }
+
+    fn load(&self) -> BoxFuture<'_, Result<InputMapDocument, InputMapApplyError>> {
+        futures::future::ready(Ok(self.input_map.get().user.clone())).boxed()
+    }
+
+    fn apply_user_document(
+        &self,
+        expected_revision: u64,
+        mut candidate: InputMapDocument,
+    ) -> BoxFuture<'_, Result<InputMapDocument, InputMapApplyError>> {
+        let mut applied = lock(&self.applied);
+        let state = self.input_map.get();
+        let result = if candidate.source != InputMapSource::User {
+            Err(InputMapError::UserDocumentRequired.into())
+        } else if state.revision != expected_revision {
+            Err(InputMapApplyError::RevisionConflict {
+                expected: expected_revision,
+                actual: state.revision,
+            })
+        } else {
+            candidate.revision = expected_revision + 1;
+            candidate.validate().map_err(Into::into).map(|()| {
+                applied.push(candidate.clone());
+                self.input_map.publish(InputMapState {
+                    user: candidate.clone(),
+                    revision: candidate.revision,
+                    ..(*state).clone()
+                });
+                candidate
+            })
+        };
+        futures::future::ready(result).boxed()
     }
 }

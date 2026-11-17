@@ -8,6 +8,7 @@ pub mod assets;
 pub mod fonts;
 pub mod history;
 pub mod i18n;
+pub mod input_map;
 pub mod navigation;
 pub mod operations;
 pub mod platform;

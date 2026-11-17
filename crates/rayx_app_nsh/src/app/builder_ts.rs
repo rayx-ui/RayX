@@ -8,10 +8,9 @@ use rayx_app::{
     ConfigurationAppBuilderExt as _, RayXAppBuilder as AppBuilder, ServiceAppBuilderExt as _,
 };
 use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
-use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
-use crate::ts::{ApplicationConfigurationOptions, ConfigurationBuilder, InputMapOptions};
+use crate::ts::{ApplicationConfigurationOptions, ConfigurationBuilder};
 use std::collections::HashMap;
 
 use nsh_core::JsonValue;
@@ -106,23 +105,6 @@ impl RayXAppBuilder {
             builder.configure_app_configuration(|configuration| {
                 for step in steps {
                     step.apply(configuration);
-                }
-            })
-        })
-    }
-
-    /// Registers the app's input map (it keeps the user's bindings in the app's key-value store:
-    /// `addStorage`); `configure` adds the app's bindings (`options.bindKey("Editor", "ctrl-s", "save")`) after
-    /// configuration's options.
-    pub fn add_input_map(
-        this: Instance<Self>,
-        #[args(options)] configure: Option<Callback<Instance<InputMapOptions>>>,
-    ) -> Result<Instance<Self>, String> {
-        let bindings = record(InputMapOptions::new(), configure, InputMapOptions::take)?;
-        chain_err(this, |builder| {
-            builder.add_input_map(move |options| {
-                for binding in &bindings {
-                    InputMapOptions::apply(binding, options);
                 }
             })
         })

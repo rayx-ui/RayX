@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use super::{InputMapDocument, InputMapEntry, InputMapSource};
+use rayx_app::services::input_map::{InputMapDocument, InputMapEntry, InputMapSource};
 
 /// The configuration section [`InputMapOptions`] bind from.
 pub const INPUT_MAP_OPTIONS_SECTION: &str = "RayX:Services:InputMap";
 
-/// The framework's and the application's bindings (the user's are stored, not configured).
+/// RayX's input map's options: the framework's and the application's bindings (the user's are
+/// stored, not configured).
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct InputMapOptions {
     /// The bindings a UI library brings.
@@ -28,7 +29,7 @@ impl InputMapOptions {
         self
     }
 
-    pub(super) fn documents(&self) -> (InputMapDocument, InputMapDocument) {
+    pub(crate) fn documents(&self) -> (InputMapDocument, InputMapDocument) {
         (
             InputMapDocument::new(InputMapSource::Framework, 0, self.framework.clone()),
             InputMapDocument::new(InputMapSource::Application, 0, self.application.clone()),

@@ -196,6 +196,7 @@ const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
     "rayx_services_fonts",
     "rayx_services_history",
     "rayx_services_i18n",
+    "rayx_services_input_map",
     "rayx_services_navigation",
     "rayx_services_operations",
     "rayx_services_platform",

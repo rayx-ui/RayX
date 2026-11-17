@@ -1,7 +1,6 @@
-//! The services kept in the app's key-value store require one and register none: the input map
-//! fails the build without a `dyn KeyValueStore`, naming how to add one, and starts over the
-//! app's own store (no startup service), after it. (Persistent history's are its crate's
-//! `history_persistence` group's.)
+//! RayX's input map keeps the user's document in the app's key-value store, which it requires
+//! and never registers: it fails the build without a `dyn KeyValueStore`, naming how to add one,
+//! and starts over the app's own store (no startup service), after it.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -9,13 +8,13 @@ use std::sync::Arc;
 
 use futures::executor::block_on;
 use rayx_app::di::StartupInitializationContext;
+use rayx_app::services::input_map::{InputMapDocument, InputMapService, InputMapSource};
+use rayx_app::services::storage::KeyValueStore;
 use rayx_app::testing::FakeKeyValueStore;
 use rayx_app::{AppBuilder as _, RayXAppBuilder};
-use rayx_runtime::services::input_map::{
-    INPUT_MAP_STORAGE_BUCKET, InputMapAppBuilderExt as _, InputMapDocument, InputMapService,
-    InputMapSource,
+use rayx_services_input_map::{
+    INPUT_MAP_STORAGE_BUCKET, INPUT_MAP_USER_DOCUMENT_KEY, InputMapAppBuilderExt as _,
 };
-use rayx_runtime::services::storage::KeyValueStore;
 
 #[test]
 fn without_a_store_the_build_names_what_to_add() {
@@ -30,7 +29,7 @@ fn without_a_store_the_build_names_what_to_add() {
 }
 
 #[test]
-fn neither_registers_a_store() {
+fn it_registers_no_store() {
     let mut builder = RayXAppBuilder::new().add_input_map(|_| {});
     assert!(
         !builder
@@ -40,11 +39,11 @@ fn neither_registers_a_store() {
 }
 
 #[test]
-fn over_the_app_s_own_store_they_start() {
+fn over_the_app_s_own_store_it_starts() {
     let store = FakeKeyValueStore::new();
     block_on(store.set(
         INPUT_MAP_STORAGE_BUCKET.into(),
-        "user-document".into(),
+        INPUT_MAP_USER_DOCUMENT_KEY.into(),
         serde_json::to_vec(&InputMapDocument::new(InputMapSource::User, 3, Vec::new())).unwrap(),
     ))
     .unwrap();
@@ -59,6 +58,6 @@ fn over_the_app_s_own_store_they_start() {
             .initialize(StartupInitializationContext::new(services.clone())),
     )
     .unwrap();
-    let input_map = services.required_service::<InputMapService>().unwrap();
+    let input_map = services.required_service::<dyn InputMapService>().unwrap();
     assert_eq!(input_map.revision(), 3, "read from the app's store");
 }

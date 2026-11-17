@@ -16,13 +16,12 @@ use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfigurationService, input_map::InputMapService,
-    storage::KeyValueStore,
+    application_configuration::ApplicationConfigurationService, storage::KeyValueStore,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, RayXAppBuilder, ServiceProvider as Services};
 
-/// Registers a key-value store in memory, which the input map and persistent history need.
+/// Registers a key-value store in memory, which persistent history needs.
 #[rayx_app_nsh::app_extension]
 fn add_fake_storage(mut builder: RayXAppBuilder) -> RayXAppBuilder {
     use rayx_app_nsh::AppBuilder as _;
@@ -66,9 +65,8 @@ impl Probe {
     pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
         services.with(|services| {
             let services = services.services();
-            let checks: [(&str, Resolves); 3] = [
+            let checks: [(&str, Resolves); 2] = [
                 ("KeyValueStore", resolves::<dyn KeyValueStore>),
-                ("InputMapService", resolves::<InputMapService>),
                 (
                     "ApplicationConfigurationService",
                     resolves::<ApplicationConfigurationService>,
@@ -131,7 +129,6 @@ setTimeout(async () => {
           .addValue({ Feed: { Mode: "live" } });
       })
       .addFakeStorage()
-      .addInputMap()
       .addApplicationConfiguration()
       .defaultInitializationTimeout(1234);
     lines.push(String(chained === builder));
@@ -155,7 +152,7 @@ fn each_builder_method_registers_its_service() {
         shown,
         "done true\
          |KeyValueStore,\
-         InputMapService,ApplicationConfigurationService\
+         ApplicationConfigurationService\
          |json,appsettings,3,live|1234"
     );
 }
@@ -184,23 +181,13 @@ mount(() => <Text>{shown()}</Text>);
 #[test]
 fn builder_methods_add_the_services_they_imply_as_in_rust() {
     // No method registers a key-value store: those kept in one require it.
-    for (chain, registered) in [
-        (
-            ".addFakeStorage().addInputMap()",
-            "KeyValueStore,InputMapService",
-        ),
-        (
-            ".addApplicationConfiguration()",
-            "ApplicationConfigurationService",
-        ),
-    ] {
+    for (chain, registered) in [(
+        ".addApplicationConfiguration()",
+        "ApplicationConfigurationService",
+    )] {
         let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
         assert_eq!(shown, format!("done {registered}"), "{chain}");
     }
-    let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", ".addInputMap()"));
-    assert!(shown.starts_with("done threw"), "{shown}");
-    assert!(shown.contains("KeyValueStore"), "{shown}");
-    assert!(shown.contains("addStorage"), "{shown}");
 }
 
 #[test]
@@ -218,7 +205,6 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addAppSettings(package: string): RayXAppBuilder;",
         "addOptionalAppSettings(uri: string): RayXAppBuilder;",
         "configureAppConfiguration(configure: (configuration: ConfigurationBuilder) => void): RayXAppBuilder;",
-        "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
         "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",
         "defaultInitializationTimeout(ms: number): RayXAppBuilder;",
         "start(): Promise<ServiceProvider>;",

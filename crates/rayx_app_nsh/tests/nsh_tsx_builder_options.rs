@@ -13,23 +13,8 @@ use std::sync::Arc;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
-use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
-use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfiguration, input_map::InputMapOptions,
-};
+use rayx_app_nsh::rayx_runtime::services::application_configuration::ApplicationConfiguration;
 use rayx_app_nsh::ts::ServiceProvider;
-
-/// Registers a key-value store in memory, which the input map needs.
-#[rayx_app_nsh::app_extension]
-fn add_fake_storage(mut builder: rayx_app_nsh::RayXAppBuilder) -> rayx_app_nsh::RayXAppBuilder {
-    use rayx_app_nsh::AppBuilder as _;
-    builder
-        .services_mut()
-        .add_singleton_as::<dyn KeyValueStore>(
-            rayx_app::testing::FakeKeyValueStore::new() as Arc<dyn KeyValueStore>
-        );
-    builder
-}
 
 /// The app's files: its settings and an asset catalog.
 struct AppFiles;
@@ -71,7 +56,6 @@ impl Probe {
         name: String,
     ) -> Result<JsonValue, String> {
         match name.as_str() {
-            "inputMap" => options::<InputMapOptions>(&services),
             "application" => options::<ApplicationConfiguration>(&services),
             other => Err(format!("no options {other}")),
         }
@@ -80,7 +64,7 @@ impl Probe {
 
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
-        set.module::<Probe>().class_extension::<add_fake_storage>();
+        set.module::<Probe>();
     })
 }
 
@@ -93,17 +77,13 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder().addHostFakes().addFakeStorage()
+    const services = await new RayXAppBuilder().addHostFakes()
       .addAppSettings("app")
-      .addInputMap((options) => { options.bindKey("Editor", "ctrl-s", "save"); })
       .addApplicationConfiguration((options) => {
         options.name("From TS").merge({ notifications: { maxItems: 7 } });
       })
       .start();
 
-
-    const bindings = Probe.options(services, "inputMap").application;
-    lines.push(bindings.map((entry) => `${entry.context}:${entry.action}`).join(","));
 
     const application = Probe.options(services, "application");
     lines.push(`${application.name} ${application.description} ${application.notifications.max_items}`);
@@ -121,11 +101,10 @@ mount(() => <Text>{shown()}</Text>);
 fn options_set_in_ts_apply_after_configuration_and_reach_their_services() {
     let shown = headless::run_with_assets(set(), TSX, Arc::new(AppFiles));
     let parts: Vec<&str> = shown.split('|').collect();
-    assert_eq!(parts[0], "done Editor:save", "{shown}");
     // Set by the callback over the file's; left alone, the file's.
-    assert_eq!(parts[1], "From TS kept 7", "{shown}");
-    assert_eq!(parts[2], "From TS", "{shown}");
-    assert_eq!(parts.len(), 3, "{shown}");
+    assert_eq!(parts[0], "done From TS kept 7", "{shown}");
+    assert_eq!(parts[1], "From TS", "{shown}");
+    assert_eq!(parts.len(), 2, "{shown}");
 }
 
 const THROWING: &str = r#"import { mount, signal, Text } from "nsh";
@@ -135,15 +114,15 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
-  const builder = new RayXAppBuilder().addHostFakes().addFakeStorage();
+  const builder = new RayXAppBuilder().addHostFakes();
   lines.push(thrown(() => builder.configureAppConfiguration(() => { throw new Error("no sources"); })));
   lines.push(thrown(() => builder.addApplicationConfiguration((options) => {
     options.merge({ notifications: { maxItems: "many" } });
   })).startsWith("merge: ") ? "merge refused" : "merge kept");
   // An options object is valid during its callback only.
   let kept;
-  builder.addInputMap((options) => { kept = options; });
-  lines.push(thrown(() => kept.bindKey("Editor", "ctrl-q", "quit")).includes("disposed") ? "disposed" : "kept");
+  builder.configureAppConfiguration((configuration) => { kept = configuration; });
+  lines.push(thrown(() => kept.addValue({ Feed: { Label: "late" } })).includes("disposed") ? "disposed" : "kept");
   // The builder still works after a callback threw.
   try {
     await builder.defaultInitializationTimeout(1000).start();
@@ -169,8 +148,6 @@ fn a_throwing_callback_makes_its_builder_call_throw_with_its_message() {
 fn the_options_classes_are_declared_with_rust_s_methods() {
     let ts = headless::declarations(&set());
     for declared in [
-        "export declare class InputMapOptions {",
-        "  bindKey(context: string, sequence: string, action: string): InputMapOptions;",
         "export declare class ConfigurationBuilder {",
         "export declare class ApplicationConfigurationOptions {",
         "  merge(settings: unknown): ApplicationConfigurationOptions;",

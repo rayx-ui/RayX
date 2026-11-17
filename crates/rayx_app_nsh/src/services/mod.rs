@@ -13,7 +13,6 @@
 pub use rayx_app::services::*;
 
 pub(crate) mod application_configuration;
-pub(crate) mod input_map;
 pub(crate) mod listeners_ts;
 
 use nsh_core::JsonValue;

@@ -1,6 +1,6 @@
 [package]
 name = "rayx_runtime"
-description = "RayX's NSH-free app services not yet in crates of their own: input maps, selection and app configuration."
+description = "RayX's NSH-free app services not yet in crates of their own: app configuration."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

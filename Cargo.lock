@@ -5070,6 +5070,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayx_services_input_map"
+version = "0.11.0"
+dependencies = [
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rayx_services_navigation"
 version = "0.11.0"
 dependencies = [

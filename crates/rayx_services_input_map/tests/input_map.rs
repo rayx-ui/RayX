@@ -1,17 +1,19 @@
-//! The input map service: documents, layered resolution, the user's stored document and
-//! registration.
+//! RayX's input map: documents, layered resolution, the user's stored document and
+//! registration (the later of `add_input_map` and the app's own `dyn InputMapService` wins).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
-use rayx_app::AppBuilder as _;
-use rayx_app::RayXAppBuilder;
 use rayx_app::di::StartupInitializationContext;
-use rayx_app::testing::FakeKeyValueStore;
-use rayx_runtime::services::input_map::*;
-use rayx_runtime::services::storage::KeyValueStore;
+use rayx_app::services::input_map::*;
+use rayx_app::services::storage::KeyValueStore;
+use rayx_app::testing::{FakeInputMap, FakeKeyValueStore};
+use rayx_app::{AppBuilder as _, RayXAppBuilder, ServiceProvider};
+use rayx_services_input_map::{
+    INPUT_MAP_STORAGE_BUCKET, InputMapAppBuilderExt as _, InputMapOptions,
+};
 use serde_json::json;
 
 /// `builder` with a key-value store, which the input map requires.
@@ -26,28 +28,42 @@ fn key(sequence: &str) -> InputBinding {
     InputBinding::Keyboard(sequence.into())
 }
 
-fn service(store: Arc<dyn KeyValueStore>) -> InputMapService {
-    let framework = InputMapDocument::new(
-        InputMapSource::Framework,
-        0,
-        vec![
+/// Starts an app over `store` with RayX's input map, its options set by `configure`.
+fn start(
+    store: Arc<dyn KeyValueStore>,
+    configure: impl Fn(&mut InputMapOptions) + Send + Sync + 'static,
+) -> ServiceProvider {
+    let mut builder = RayXAppBuilder::new();
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn KeyValueStore>(store);
+    let services = builder.add_input_map(configure).build().unwrap();
+    services.validate_options_on_start().unwrap();
+    block_on(
+        services
+            .startup_registry()
+            .initialize(StartupInitializationContext::new(services.clone())),
+    )
+    .unwrap();
+    services
+}
+
+/// RayX's input map over `store`, started, with the framework's and the application's bindings.
+fn service(store: Arc<dyn KeyValueStore>) -> Arc<dyn InputMapService> {
+    start(store, |options| {
+        options.framework = vec![
             InputMapEntry::keyboard("", "cmd-z", "edit::undo", None),
             InputMapEntry::keyboard("editor", "cmd-d", "editor::duplicate", None),
-        ],
-    );
-    let application = InputMapDocument::new(
-        InputMapSource::Application,
-        0,
-        vec![InputMapEntry::keyboard(
+        ];
+        options.application = vec![InputMapEntry::keyboard(
             "editor",
             "cmd-d",
             "editor::select_next",
             None,
-        )],
-    );
-    let service = InputMapService::new(store, framework, application).unwrap();
-    block_on(service.load()).unwrap();
-    service
+        )];
+    })
+    .required_service::<dyn InputMapService>()
+    .unwrap()
 }
 
 #[test]
@@ -116,8 +132,9 @@ fn the_users_document_rebinds_unbinds_and_is_stored() {
     let service = service(Arc::clone(&store));
     let heard = Arc::new(Mutex::new(Vec::new()));
     let sink = Arc::clone(&heard);
-    let _subscription =
-        service.subscribe(move |document| sink.lock().unwrap().push(document.revision));
+    let _subscription = service
+        .input_map()
+        .subscribe(move |state| sink.lock().unwrap().push(state.user.revision));
 
     let applied = block_on(service.apply_user_document(
         0,
@@ -200,7 +217,7 @@ fn add_input_map_binds_configuration_and_code_and_loads_on_start() {
             .initialize(StartupInitializationContext::new(services.clone())),
     )
     .unwrap();
-    let input_map = services.required_service::<InputMapService>().unwrap();
+    let input_map = services.required_service::<dyn InputMapService>().unwrap();
     assert_eq!(
         input_map
             .resolve(&["editor"], &key("cmd-s"))
@@ -225,4 +242,48 @@ fn duplicate_configured_bindings_fail_on_start() {
         .build()
         .unwrap();
     assert!(services.validate_options_on_start().is_err());
+}
+
+/// Initializes `services`' startup services.
+fn initialize(services: &ServiceProvider) {
+    block_on(
+        services
+            .startup_registry()
+            .initialize(StartupInitializationContext::new(services.clone())),
+    )
+    .unwrap();
+}
+
+#[test]
+fn the_later_registration_of_an_input_map_wins() {
+    let own: Arc<dyn InputMapService> = FakeInputMap::new(InputMapState::default());
+
+    // `add_input_map` replaces an input map the app registered before it.
+    let mut builder = with_store(RayXAppBuilder::new());
+    builder
+        .services_mut()
+        .replace_service::<dyn InputMapService>(Arc::clone(&own));
+    let services = builder
+        .add_input_map(|options| {
+            options.bind_key("", "cmd-s", "file::save");
+        })
+        .build()
+        .unwrap();
+    initialize(&services);
+    let input_map = services.required_service::<dyn InputMapService>().unwrap();
+    assert!(!Arc::ptr_eq(&input_map, &own));
+    assert_eq!(
+        input_map.resolve(&[], &key("cmd-s")).unwrap().action,
+        "file::save"
+    );
+
+    // One the app registers after it replaces RayX's, whose startup goes with it.
+    let mut builder = with_store(RayXAppBuilder::new()).add_input_map(|_| {});
+    builder
+        .services_mut()
+        .replace_service::<dyn InputMapService>(Arc::clone(&own));
+    let services = builder.build().unwrap();
+    initialize(&services);
+    let input_map = services.required_service::<dyn InputMapService>().unwrap();
+    assert!(Arc::ptr_eq(&input_map, &own));
 }

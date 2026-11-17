@@ -1,9 +1,9 @@
 //! The input map's options for TSX (`addInputMap`).
 
 use nsh_core::prelude::*;
-use rayx_runtime::services::input_map::InputMapOptions as InputMap;
+use rayx_app_nsh::ts::push;
 
-use crate::configuration::options_ts::push;
+use crate::options::InputMapOptions as InputMap;
 
 /// The input map's options (`addInputMap`), as Rust's `InputMapOptions` sets them: `bindKey`
 /// adds a binding and returns the object, so calls chain.

@@ -7,9 +7,12 @@
 use std::sync::Arc;
 
 use futures::executor::block_on;
+use rayx_app::di::StartupInitializationContext;
+use rayx_app::services::input_map::*;
+use rayx_app::services::storage::KeyValueStore;
 use rayx_app::testing::FakeKeyValueStore;
-use rayx_runtime::services::input_map::*;
-use rayx_runtime::services::storage::KeyValueStore;
+use rayx_app::{AppBuilder as _, RayXAppBuilder};
+use rayx_services_input_map::InputMapAppBuilderExt as _;
 
 fn key(sequence: &str) -> InputBinding {
     InputBinding::Keyboard(sequence.into())
@@ -53,20 +56,28 @@ fn key_sequences_normalize_to_one_spelling() {
 
 #[test]
 fn bindings_resolve_whatever_their_spelling() {
-    let framework = InputMapDocument::new(
-        InputMapSource::Framework,
-        0,
-        vec![InputMapEntry::keyboard(
-            "",
-            "cmd-shift-p",
-            "app::palette",
-            None,
-        )],
-    );
-    let application = InputMapDocument::new(InputMapSource::Application, 0, Vec::new());
-    let store: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
-    let service = InputMapService::new(store, framework, application).unwrap();
-    block_on(service.load()).unwrap();
+    let mut builder = RayXAppBuilder::new();
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn KeyValueStore>(FakeKeyValueStore::new() as Arc<dyn KeyValueStore>);
+    let services = builder
+        .add_input_map(|options| {
+            options.framework = vec![InputMapEntry::keyboard(
+                "",
+                "cmd-shift-p",
+                "app::palette",
+                None,
+            )];
+        })
+        .build()
+        .unwrap();
+    block_on(
+        services
+            .startup_registry()
+            .initialize(StartupInitializationContext::new(services.clone())),
+    )
+    .unwrap();
+    let service = services.required_service::<dyn InputMapService>().unwrap();
 
     let resolved = service.resolve(&["editor"], &key("shift-cmd-P")).unwrap();
     assert_eq!(resolved.action, "app::palette");

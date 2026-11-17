@@ -44,8 +44,6 @@ const SERVICES: &[&str] = &[
     "services/application_configuration/mod.rs",
     "services/application_configuration/application_configuration_ts.rs",
     "services/application_configuration/options_ts.rs",
-    "services/input_map/mod.rs",
-    "services/input_map/options_ts.rs",
 ];
 
 /// Every file under `dir`, relative to `base`, with `/` separators. Hidden entries (a name
