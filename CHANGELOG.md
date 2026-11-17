@@ -7,6 +7,20 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.11.1] - 2026-11-17
+
+### Features
+- *(nsh)* Pin NSH to nshx-0.5.0-6
+  - Migration: apps: patch every NSH crate in [patch.crates-io] to `nshx-0.5.0-6` and move rayx and rayx_core to this release's tag.
+- *(nsh)* Pin NSH to nshx-0.5.0-5
+  - Migration: apps: patch every NSH crate in [patch.crates-io] to `nshx-0.5.0-5` and move rayx and rayx_core to this release's tag.
+
+### Fixes
+- *(tsx)* Validate TS options after every configure step
+
+### Tests
+- *(app)* Write the dev tools switch probe's rayx_app path with forward slashes
+
 ## [0.11.0] - 2026-11-16
 
 ### Features
