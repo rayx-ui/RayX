@@ -84,7 +84,8 @@ impl OptionsBuilder {
     }
 
     /// Configures the value: `configure` gets it and returns it configured (it may change the
-    /// one it gets and return it). Runs after the binding, in the order added.
+    /// one it gets and return it). Runs after the binding, in the order added, and before every
+    /// validation.
     #[ts("(configure: (value: T) => T): this")]
     pub fn configure(
         this: Instance<Self>,
@@ -94,8 +95,9 @@ impl OptionsBuilder {
         this
     }
 
-    /// Validates the configured value: when `validate` gives `false`, resolving the options
-    /// throws with `message` (every failing validation's message).
+    /// Validates the configured value: it runs after every configure step, however late it was
+    /// added (a later `configureOptions` too). When `validate` gives `false`, resolving the
+    /// options throws with `message` (every failing validation's message).
     #[ts("(validate: (value: T) => boolean, message: string): this")]
     pub fn validate(
         this: Instance<Self>,
@@ -232,7 +234,7 @@ fn add_on_start(provider: &mut Provider, shared: SharedOptions, options: &TsOpti
             let options = shared.get().map_err(|error| failed(error.to_string()))?;
             let configuration = services.service::<Configuration>();
             let mut value = options.bound(configuration.as_deref()).map_err(failed)?;
-            let steps = options.steps.borrow().clone();
+            let steps = options.run_order();
             let mut failures = Vec::new();
             for step in steps {
                 match step {
@@ -287,10 +289,24 @@ impl TsOptions {
         Ok(value)
     }
 
+    /// The configure and validate steps in the order they run, as Rust's options pipeline runs
+    /// them: every configure step in the order added, then every validation, so each validation
+    /// sees the configured value. The binds come before both ([`Self::bound`]).
+    fn run_order(&self) -> Vec<Step> {
+        let (validations, configures): (Vec<Step>, Vec<Step>) = self
+            .steps
+            .borrow()
+            .iter()
+            .filter(|step| !matches!(step, Step::Bind(_)))
+            .cloned()
+            .partition(|step| matches!(step, Step::Validate(..)));
+        configures.into_iter().chain(validations).collect()
+    }
+
     /// The options made now, on the spot: inside a call from JS.
     fn made(&self, configuration: Option<&Configuration>) -> Result<JsonValue, String> {
         let mut value = self.bound(configuration)?;
-        let steps = self.steps.borrow().clone();
+        let steps = self.run_order();
         let mut failures = Vec::new();
         for step in steps {
             match step {
