@@ -1205,7 +1205,6 @@ impl InputMapService for FakeInputMap {
         expected_revision: u64,
         mut candidate: InputMapDocument,
     ) -> BoxFuture<'_, Result<InputMapDocument, InputMapApplyError>> {
-        let mut applied = lock(&self.applied);
         let state = self.input_map.get();
         let result = if candidate.source != InputMapSource::User {
             Err(InputMapError::UserDocumentRequired.into())
@@ -1216,16 +1215,17 @@ impl InputMapService for FakeInputMap {
             })
         } else {
             candidate.revision = expected_revision + 1;
-            candidate.validate().map_err(Into::into).map(|()| {
-                applied.push(candidate.clone());
-                self.input_map.publish(InputMapState {
-                    user: candidate.clone(),
-                    revision: candidate.revision,
-                    ..(*state).clone()
-                });
-                candidate
-            })
+            candidate.validate().map_err(Into::into).map(|()| candidate)
         };
+        if let Ok(candidate) = &result {
+            lock(&self.applied).push(candidate.clone());
+            // Published outside the lock: a subscriber may call the fake.
+            self.input_map.publish(InputMapState {
+                user: candidate.clone(),
+                revision: candidate.revision,
+                ..(*state).clone()
+            });
+        }
         futures::future::ready(result).boxed()
     }
 }
