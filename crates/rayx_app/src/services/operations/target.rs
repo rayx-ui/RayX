@@ -101,16 +101,41 @@ static NEXT_HANDLE: AtomicU64 = AtomicU64::new(1);
 /// `rayx_services_operations`), never a closure.
 ///
 /// It crosses to TS as `{ "handle": n }`: serializing it keeps the handler under `n` until the
-/// handle is taken back (deserialized, or `OperationTarget.of(handle)` in TS), once.
+/// handle is taken back (deserialized, or `OperationTarget.of(handle)` in TS), once, or until
+/// this handle and its clones are dropped, whichever comes first. A contract's TS adapter keeps
+/// its arguments until the call answers, so a handler TS never took (its `registerTarget`
+/// threw, the engine is gone) is released with the call.
 #[derive(Clone)]
 pub struct OperationTargetHandle {
     target: Arc<dyn OperationTarget>,
+    crossings: Arc<Crossings>,
+}
+
+/// The numbers a handle (and its clones) crossed as, released from [`HANDLES`] when the last of
+/// them is dropped (a number taken already is gone from there).
+#[derive(Default)]
+struct Crossings(Mutex<Vec<u64>>);
+
+impl Drop for Crossings {
+    fn drop(&mut self) {
+        let numbers = std::mem::take(self.0.get_mut().unwrap_or_else(PoisonError::into_inner));
+        if numbers.is_empty() {
+            return;
+        }
+        let mut handles = HANDLES.lock().unwrap_or_else(PoisonError::into_inner);
+        for number in numbers {
+            handles.remove(&number);
+        }
+    }
 }
 
 impl OperationTargetHandle {
     /// The handle of `target`.
     pub fn new(target: Arc<dyn OperationTarget>) -> Self {
-        Self { target }
+        Self {
+            target,
+            crossings: Arc::default(),
+        }
     }
 
     /// The handle of `handler`, a handler of `T`'s operations for `target_id`.
@@ -140,7 +165,8 @@ impl OperationTargetHandle {
         self.target.apply(record, origin)
     }
 
-    /// The handle that crossed as `number`, taken (a handle is taken once).
+    /// The handle that crossed as `number`, taken (a handle is taken once, while the handle
+    /// that crossed lives).
     pub fn take(number: u64) -> Option<Self> {
         HANDLES
             .lock()
@@ -170,6 +196,11 @@ impl Serialize for OperationTargetHandle {
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .insert(number, Arc::clone(&self.target));
+        self.crossings
+            .0
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .push(number);
         HandleJson { handle: number }.serialize(serializer)
     }
 }

@@ -187,8 +187,12 @@ pub(crate) fn expand_mode(
                     fn #ident<'__rayx>(&'__rayx self, #(#names: #types),*)
                         -> #boxed<'__rayx, #ret>
                     {
-                        #(let #names = #private::to_json(&#names);)*
-                        #private::call_json(
+                        let __rayx_json = (#(#private::to_json(&#names),)*);
+                        // The arguments live until the call answers: what crossed as a handle
+                        // (an operation target's) and TS did not take is released then.
+                        let __rayx_arguments = (#(#names,)*);
+                        let (#(#names,)*) = __rayx_json;
+                        let __rayx_answer = #private::call_json(
                             ::core::clone::Clone::clone(&self.slot),
                             #member,
                             move |__rayx_object: ::std::rc::Rc<#stand_in>| async move {
@@ -196,7 +200,12 @@ pub(crate) fn expand_mode(
                                     .await
                                     #to_json
                             },
-                        )
+                        );
+                        ::std::boxed::Box::pin(async move {
+                            let __rayx_answer = __rayx_answer.await;
+                            ::core::mem::drop(__rayx_arguments);
+                            __rayx_answer
+                        })
                     }
                 });
             }
