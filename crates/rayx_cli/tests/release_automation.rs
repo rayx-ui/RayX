@@ -193,6 +193,7 @@ fn release_plz_names_every_package_as_it_is() {
 const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
     "rayx_app_nsh",
     "rayx_services_assets",
+    "rayx_services_fonts",
     "rayx_services_platform",
     "rayx_services_suspension",
 ];
