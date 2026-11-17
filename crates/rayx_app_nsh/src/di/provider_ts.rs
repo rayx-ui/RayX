@@ -9,7 +9,7 @@
 use std::any::{Any, TypeId};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::{Arc, LazyLock};
+use std::sync::{Arc, LazyLock, PoisonError, RwLock};
 
 use dxn_reactive::{ActivatableViewModel, ActivationToken};
 use nsh_core::element::{
@@ -138,7 +138,7 @@ fn resolve(
     if let Some(resolve) = token
         .handle
         .constructor()
-        .and_then(|class| RESOLVERS.get(&class))
+        .and_then(|class| class_of(&class))
     {
         return (resolve.resolve)(this, required);
     }
@@ -157,8 +157,14 @@ fn resolve(
 
 // --- RayX's service classes --------------------------------------------------------------
 
-/// A RayX service's TS class: its object wraps the Rust service.
-pub(crate) trait ServiceClass: Class {
+/// A RayX service's TS class: its object wraps the Rust service, and the class is the
+/// service's token in TS (`services.getRequiredService(I18nService)`).
+///
+/// A set registers its classes (a contract's class through
+/// [`ContractRegistryExt::contract_class`](crate::ts::ContractRegistryExt::contract_class)); the
+/// provider then resolves the class to the one object it gives for the Rust service registered
+/// as [`Service`](Self::Service).
+pub trait ServiceClass: Class {
     /// The Rust service.
     type Service: ?Sized + Send + Sync + 'static;
     /// The class's value for `service`.
@@ -166,10 +172,23 @@ pub(crate) trait ServiceClass: Class {
 }
 
 /// A RayX service class as a token: how it resolves its Rust service in a provider (and gives
-/// its object), and the Rust service's startup key.
+/// its object), the Rust service's startup key, and the contract TS implements under it, when
+/// it is a contract's class.
+#[derive(Clone, Copy)]
 struct ClassToken {
     resolve: fn(&Instance<ServiceProvider>, bool) -> Result<Resolved, String>,
     startup: fn() -> StartupServiceType,
+    contract: Option<crate::di::contract_ts::ContractDef>,
+}
+
+fn class_token<C: ServiceClass>(
+    contract: Option<crate::di::contract_ts::ContractDef>,
+) -> ClassToken {
+    ClassToken {
+        resolve: resolve_class::<C>,
+        startup: StartupServiceType::of::<C::Service>,
+        contract,
+    }
 }
 
 /// RayX's service classes by their constructors (what a token that is one names).
@@ -179,13 +198,7 @@ static RESOLVERS: LazyLock<HashMap<Constructor, ClassToken>> = LazyLock::new(|| 
         NavigationService, PlatformInfoService, SuspensionService,
     };
     fn entry<C: ServiceClass>() -> (Constructor, ClassToken) {
-        (
-            Constructor::of::<C>(),
-            ClassToken {
-                resolve: resolve_class::<C>,
-                startup: StartupServiceType::of::<C::Service>,
-            },
-        )
+        (Constructor::of::<C>(), class_token::<C>(None))
     }
     HashMap::from([
         entry::<crate::ts::I18nService>(),
@@ -198,6 +211,32 @@ static RESOLVERS: LazyLock<HashMap<Constructor, ClassToken>> = LazyLock::new(|| 
         entry::<SuspensionService>(),
     ])
 });
+
+/// The service classes sets registered ([`register_class`]), beside RayX's own.
+static REGISTERED: LazyLock<RwLock<HashMap<Constructor, ClassToken>>> =
+    LazyLock::new(RwLock::default);
+
+/// Registers `C` as a service class: the provider resolves it to its Rust service, and, with
+/// `contract`, TS registrations under it implement that contract.
+pub(crate) fn register_class<C: ServiceClass>(
+    contract: Option<crate::di::contract_ts::ContractDef>,
+) {
+    REGISTERED
+        .write()
+        .unwrap_or_else(PoisonError::into_inner)
+        .insert(Constructor::of::<C>(), class_token::<C>(contract));
+}
+
+/// The class token of the class `class`.
+fn class_of(class: &Constructor) -> Option<ClassToken> {
+    RESOLVERS.get(class).copied().or_else(|| {
+        REGISTERED
+            .read()
+            .unwrap_or_else(PoisonError::into_inner)
+            .get(class)
+            .copied()
+    })
+}
 
 /// `C`'s service resolved in `this`, as the one object of `C` this provider gives for it.
 fn resolve_class<C: ServiceClass>(
@@ -382,9 +421,11 @@ impl ServiceKeyArg {
     /// Whether the token is a RayX service's class (`I18nService`), which names that Rust
     /// service.
     pub(crate) fn is_rayx_service(&self) -> bool {
-        self.handle
-            .constructor()
-            .is_some_and(|class| RESOLVERS.contains_key(&class))
+        self.contract.is_none()
+            && self
+                .handle
+                .constructor()
+                .is_some_and(|class| class_of(&class).is_some())
     }
 
     /// The runtime key the token names in the VM `sys` is of, made the first time: what a TS
@@ -406,11 +447,7 @@ impl ServiceKeyArg {
         if let Some(contract) = self.contract {
             return (contract.startup)();
         }
-        match self
-            .handle
-            .constructor()
-            .and_then(|class| RESOLVERS.get(&class))
-        {
+        match self.handle.constructor().and_then(|class| class_of(&class)) {
             Some(class) => (class.startup)(),
             None => StartupServiceType::runtime(&self.key_or_insert(sys)),
         }
@@ -437,7 +474,13 @@ impl JsValue for ServiceKeyArg {
         let token = <Instance<ServiceToken> as Arg>::from_js(value).ok();
         let contract = token
             .as_ref()
-            .and_then(|token| token.with(|token| token.contract));
+            .and_then(|token| token.with(|token| token.contract))
+            .or_else(|| {
+                handle
+                    .constructor()
+                    .and_then(|class| class_of(&class))
+                    .and_then(|class| class.contract)
+            });
         let name = match (handle.constructor(), token) {
             (Some(class), _) => class.def().name.to_owned(),
             (None, Some(token)) => token.with(|token| match token.contract {

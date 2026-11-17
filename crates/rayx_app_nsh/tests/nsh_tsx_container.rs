@@ -150,7 +150,7 @@ setTimeout(async () => {
     // Rust off the engine thread, made or not.
     lines.push(Probe.wrongThread(services, Clock));
     lines.push(Probe.wrongThread(services, Lazy));
-    // Rust outside a call from JS: a service not made yet does not resolve.
+    // Rust outside a call from JS (in a task, between JS's turns): a service not made yet is made.
     lines.push(await Probe.outsideACall(services, Lazy));
     lines.push(await Probe.outsideACall(services, Clock));
     // A factory that throws, and a RayX class as a token.
@@ -177,10 +177,7 @@ fn ts_services_live_in_the_container_with_rusts_lifetimes() {
          |hello|null\
          |service `Clock` is thread-bound and resolves on its own thread only\
          |service `Lazy` is thread-bound and resolves on its own thread only\
-         |service `Lazy` could not be resolved: it is a TS service that is not made yet: TS \
-         services are made in a call from JS (a TS `getService`), and startup and contract \
-         services by `start()`\
-         |resolved\
+         |resolved|resolved\
          |I18nService is a RayX service's class: register a TS service under a TS class or a \
          ServiceToken"
     );

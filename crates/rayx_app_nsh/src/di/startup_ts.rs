@@ -150,7 +150,7 @@ pub(crate) fn add(
     provider: &mut rayx_app::ServiceProvider,
     service: SharedTsService,
     registered_as: StartupServiceType,
-    made: Option<fn(&rayx_app::ServiceProvider)>,
+    made: Option<crate::di::contract_ts::MakeAdapter>,
 ) {
     let key = registered_as.clone();
     provider.add_startup_resolved_async(registered_as, move |context| {
@@ -168,7 +168,7 @@ pub(crate) fn add(
                 .await
                 .map_err(failed)?;
             if let Some(made) = made {
-                made(&root);
+                made(&root).map_err(failed)?;
             }
             let adapter =
                 JsStartupService::read(object, &registration, key.clone(), made.is_some())

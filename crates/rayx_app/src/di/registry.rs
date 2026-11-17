@@ -5,7 +5,7 @@ use std::any::type_name;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::{Arc, Mutex, Weak};
+use std::sync::{Arc, Mutex, PoisonError, Weak};
 
 /// A factory as the registry keeps it: typed factories never fail, runtime-keyed ones may.
 type ServiceFactory =
@@ -90,6 +90,28 @@ impl ServiceRegistry {
         T: ?Sized + Send + Sync + 'static,
     {
         self.contains_key(&ServiceKey::of::<T>())
+    }
+
+    /// The lifetime of what is registered under `key`: its registration's, else a singleton for
+    /// an instance in the singletons' cache (`add_singleton`), a scoped one for one in the
+    /// scope's; `None` when nothing is.
+    pub fn lifetime_of(&self, key: &ServiceKey) -> Option<ServiceLifetime> {
+        if let Some(descriptor) = self.descriptors.get(key) {
+            return Some(descriptor.lifetime);
+        }
+        if self
+            .singletons
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .contains_key(key)
+        {
+            return Some(ServiceLifetime::Singleton);
+        }
+        self.scoped
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .contains_key(key)
+            .then_some(ServiceLifetime::Scoped)
     }
 
     /// Whether anything is registered (or cached) under `key`.

@@ -1,7 +1,8 @@
 //! dXn.Reactive view models on NSH: their signals, streams, lists and commands as NSH signals in
 //! Rust components ([`use_reactive`], [`use_stream`], [`use_two_way`], [`use_list`],
 //! [`use_command`]), and as observable properties of TSX classes ([`Observable`],
-//! [`ReactiveCommand`]).
+//! [`ReactiveCommand`]); and the values services publish ([`StateCell`], [`EventStream`]) as an
+//! NSH signal and a listener in Rust components ([`use_state_cell`], [`use_event_stream`]).
 //!
 //! A view model notifies on the thread that changed it; NSH signals and TSX functions live on the
 //! engine's thread. A Rust binding hands each value to a task on the engine's thread, which
@@ -24,6 +25,7 @@ use futures::StreamExt as _;
 use futures::channel::mpsc::{UnboundedSender, unbounded};
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
+use rayx_app::{ChangeSubscription, EventStream, StateCell};
 use serde::Serialize;
 
 /// What runs on the engine's thread for a change made on another thread.
@@ -59,6 +61,137 @@ pub(crate) fn start_dispatcher() {
 #[cfg(rayx_devtools)]
 pub(crate) fn dispatcher() -> Option<UnboundedSender<Job>> {
     DISPATCHER.with_borrow(Clone::clone)
+}
+
+/// The surface's engine went: what a call through an [`EngineRunner`] gives once the engine
+/// stopped (with the call queued or not).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct EngineGone;
+
+impl std::fmt::Display for EngineGone {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("the surface's engine is gone")
+    }
+}
+
+impl std::error::Error for EngineGone {}
+
+/// Runs work on the surface's engine thread from any thread: what a Rust implementation of a
+/// service calls NSH's engine-thread APIs through (fetching `asset:/` files, `register_font`,
+/// NSH's storage, `quit`), and what a contract's adapter calls its TS implementation through.
+///
+/// One per surface, in its root provider (`services.required_service::<EngineRunner>()`);
+/// `Send + Sync + Clone`. On the engine thread [`run`](Self::run) starts the work at once (a
+/// task where NSH's runtime is entered, the call's op inside a synchronous call from JS); on any
+/// other thread it queues it for the engine, which drains the queue in a task of its own (NSH
+/// wakes the engine for it). Once the engine stops, queued and later work resolves
+/// `Err(EngineGone)`. Nothing ever blocks the engine thread waiting for itself.
+#[derive(Clone)]
+pub struct EngineRunner {
+    jobs: UnboundedSender<Job>,
+    engine: ThreadId,
+    /// How many jobs went through the queue.
+    queued: Arc<std::sync::atomic::AtomicU64>,
+}
+
+impl std::fmt::Debug for EngineRunner {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EngineRunner")
+            .field("engine", &self.engine)
+            .field("running", &!self.jobs.is_closed())
+            .finish()
+    }
+}
+
+impl EngineRunner {
+    /// The runner of the surface whose engine thread this is, once its dispatcher started
+    /// (the app's start starts it).
+    pub(crate) fn current() -> Option<Self> {
+        DISPATCHER.with_borrow(|dispatcher| {
+            dispatcher.as_ref().map(|jobs| Self {
+                jobs: jobs.clone(),
+                engine: std::thread::current().id(),
+                queued: Arc::default(),
+            })
+        })
+    }
+
+    /// Whether this thread is the surface's engine thread.
+    pub fn is_engine_thread(&self) -> bool {
+        std::thread::current().id() == self.engine
+    }
+
+    /// Runs `make` on the engine thread and the future it makes as an engine task; resolves
+    /// with its result, from any thread, or `Err(EngineGone)` once the engine stopped.
+    pub fn run<F, Fut, T>(
+        &self,
+        make: F,
+    ) -> futures::future::BoxFuture<'static, Result<T, EngineGone>>
+    where
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = T> + 'static,
+        T: Send + 'static,
+    {
+        let (send, receive) = futures::channel::oneshot::channel();
+        if self.is_engine_thread() {
+            // Where NSH's runtime is entered (a task, a component) the work is made now and
+            // spawned; inside a synchronous call from JS it is started as the call's op (made
+            // when the core takes it). Never through the queue.
+            let started = if runtime_entered() {
+                let work = make();
+                start_task(async move {
+                    let _ = send.send(work.await);
+                })
+            } else {
+                start_task(async move {
+                    let _ = send.send(make().await);
+                })
+            };
+            if started.is_err() {
+                return Box::pin(futures::future::ready(Err(EngineGone)));
+            }
+        } else {
+            let job = move || {
+                let work = make();
+                let _ = start_task(async move {
+                    let _ = send.send(work.await);
+                });
+            };
+            if self.queue(Box::new(job)).is_err() {
+                return Box::pin(futures::future::ready(Err(EngineGone)));
+            }
+        }
+        Box::pin(async move { receive.await.map_err(|_| EngineGone) })
+    }
+
+    /// Runs `job` on the engine thread: at once there where NSH's runtime is entered, as an op
+    /// of the call inside a synchronous call from JS, queued for the engine from another thread;
+    /// `Err(EngineGone)` once the engine stopped.
+    pub fn post(&self, job: impl FnOnce() + Send + 'static) -> Result<(), EngineGone> {
+        if !self.is_engine_thread() {
+            return self.queue(Box::new(job));
+        }
+        if runtime_entered() {
+            job();
+            return Ok(());
+        }
+        start_task(async move { job() }).map_err(|_| EngineGone)
+    }
+
+    /// Queues `job` for the engine.
+    fn queue(&self, job: Job) -> Result<(), EngineGone> {
+        self.jobs.unbounded_send(job).map_err(|_| EngineGone)?;
+        self.queued
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Ok(())
+    }
+
+    /// How many jobs this surface's runner queued for the engine (work from other threads):
+    /// for tests that check the engine thread's work skipped the queue.
+    #[doc(hidden)]
+    pub fn queued(&self) -> u64 {
+        self.queued.load(std::sync::atomic::Ordering::Relaxed)
+    }
 }
 
 /// Keeps `subscription` until the current owner (the component) cleans up.
@@ -141,6 +274,52 @@ where
         }
     }));
     Ok(target.read_only())
+}
+
+/// `cell`, a service's published state, as an NSH signal: its value now and every value published
+/// later, from any thread, set on the engine's thread, until the component's cleanup. Call it in a
+/// component's body.
+pub fn use_state_cell<T>(cell: &StateCell<T>) -> ReadSignal<Arc<T>>
+where
+    T: PartialEq + Send + Sync + 'static,
+{
+    // Subscribed before the value is read, so no publish falls between; each change only wakes
+    // the task, which reads the cell's value then, so the signal always settles on the latest.
+    let (send, mut changed) = unbounded::<()>();
+    keep_change(cell.subscribe(move |_| {
+        let _ = send.unbounded_send(());
+    }));
+    let target = signal(cell.get());
+    let source = cell.clone();
+    drop(spawn(async move {
+        while changed.next().await.is_some() {
+            target.set(source.get());
+        }
+    }));
+    target.read_only()
+}
+
+/// Calls `listener` on the engine's thread with each event `stream` publishes from now on, from
+/// any thread, until the component's cleanup. Call it in a component's body.
+pub fn use_event_stream<E>(stream: &EventStream<E>, listener: impl Fn(E) + 'static)
+where
+    E: Clone + Send + Sync + 'static,
+{
+    let (send, mut events) = unbounded::<E>();
+    keep_change(stream.subscribe(move |event| {
+        let _ = send.unbounded_send(event.clone());
+    }));
+    drop(spawn(async move {
+        while let Some(event) = events.next().await {
+            listener(event);
+        }
+    }));
+}
+
+/// Keeps `subscription` until the current owner (the component) cleans up.
+fn keep_change(subscription: ChangeSubscription) {
+    let kept = RefCell::new(Some(subscription));
+    cleanup(move || drop(kept.take()));
 }
 
 /// A view model's command for a Rust component: whether it can execute and whether it is

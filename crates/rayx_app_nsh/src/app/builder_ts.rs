@@ -284,6 +284,7 @@ impl RayXAppBuilder {
     /// interface): `factory` makes it with the resolving `ServiceProvider` on its first resolve,
     /// and every scope of the root resolves that one object. It may resolve Rust services and
     /// other TS services.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_singleton(
         this: Instance<Self>,
@@ -303,6 +304,7 @@ impl RayXAppBuilder {
 
     /// [`addSingleton`](Self::add_singleton) for an implementation registered under an
     /// interface's token (`addSingletonAs(Clock, () => new SystemClock())`).
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_singleton_as(
         this: Instance<Self>,
@@ -323,6 +325,7 @@ impl RayXAppBuilder {
     /// Registers a scoped service written in TS under `token`: one object per scope (the root
     /// is a scope too), made by `factory` with that scope's `ServiceProvider` and released when
     /// the scope is disposed.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_scoped(
         this: Instance<Self>,
@@ -335,6 +338,7 @@ impl RayXAppBuilder {
 
     /// [`addScoped`](Self::add_scoped) for an implementation registered under an interface's
     /// token.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_scoped_as(
         this: Instance<Self>,
@@ -347,6 +351,7 @@ impl RayXAppBuilder {
 
     /// Registers a transient service written in TS under `token`: `factory` makes a new object
     /// on every resolve.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_transient(
         this: Instance<Self>,
@@ -366,6 +371,7 @@ impl RayXAppBuilder {
 
     /// [`addTransient`](Self::add_transient) for an implementation registered under an
     /// interface's token.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_transient_as(
         this: Instance<Self>,
@@ -387,6 +393,7 @@ impl RayXAppBuilder {
     /// in `start()`, which awaits its `initialize` (an `AsyncInitializable` or
     /// `StartupInitializable`) in dependency order with Rust's startup services, within its
     /// timeout; it is keyed by `token` unless its `startupServiceType()` names another.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_startup_singleton(
         this: Instance<Self>,
@@ -399,6 +406,7 @@ impl RayXAppBuilder {
 
     /// [`addStartupSingleton`](Self::add_startup_singleton) for an implementation registered under an
     /// interface's token.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_startup_singleton_as(
         this: Instance<Self>,
@@ -413,6 +421,7 @@ impl RayXAppBuilder {
     /// in `start()`, which awaits its `initialize` (an `AsyncInitializable` or
     /// `StartupInitializable`) in dependency order with Rust's startup services, within its
     /// timeout; it is keyed by `token` unless its `startupServiceType()` names another.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_startup_scoped(
         this: Instance<Self>,
@@ -425,6 +434,7 @@ impl RayXAppBuilder {
 
     /// [`addStartupScoped`](Self::add_startup_scoped) for an implementation registered under an
     /// interface's token.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_startup_scoped_as(
         this: Instance<Self>,
@@ -439,6 +449,7 @@ impl RayXAppBuilder {
     /// in `start()`, which awaits its `initialize` (an `AsyncInitializable` or
     /// `StartupInitializable`) in dependency order with Rust's startup services, within its
     /// timeout; it is keyed by `token` unless its `startupServiceType()` names another.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_startup_transient(
         this: Instance<Self>,
@@ -451,6 +462,7 @@ impl RayXAppBuilder {
 
     /// [`addStartupTransient`](Self::add_startup_transient) for an implementation registered under an
     /// interface's token.
+    #[ts("<T>(token: ContractClass<T>, factory: (services: ServiceProvider) => T): this")]
     #[ts("<T>(token: ServiceKey<T>, factory: (services: ServiceProvider) => T): this")]
     pub fn add_startup_transient_as(
         this: Instance<Self>,

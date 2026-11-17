@@ -40,9 +40,12 @@ pub use crate::configuration::options_ts::{OptionsBuilder, OptionsToken};
 #[doc(hidden)]
 pub use crate::di::contract_ts::__private;
 pub use crate::di::contract_ts::{
-    Contract, ContractError, ContractRegistryExt, Exception, contract_token,
+    Contract, ContractError, ContractEvents, ContractRegistryExt, ContractState, Exception,
+    contract_token,
 };
-pub use crate::di::provider_ts::{Resolved, ServiceKeyArg, ServiceProvider, ServiceToken};
+pub use crate::di::provider_ts::{
+    Resolved, ServiceClass, ServiceKeyArg, ServiceProvider, ServiceToken,
+};
 pub use crate::di::startup_ts::{
     AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
     StartupInitializationContext, StartupInitializationState,
@@ -73,6 +76,15 @@ pub const SERVICE_KEY: TsAlias = TsAlias {
     doc: "What names a service of type `T`: its class (`I18nService`), or a `ServiceToken<T>`.",
 };
 
+/// A contract's class ([`ContractRegistryExt::contract_class`]), by the interface `T` its
+/// registrations implement: what the builder's registrations take before [`SERVICE_KEY`], so
+/// their factories are typed by the interface.
+pub const CONTRACT_CLASS: TsAlias = TsAlias {
+    name: "ContractClass<T>",
+    ts: "{ readonly prototype: { readonly contract: T | null } }",
+    doc: "A contract's class, which TS registers implementations of the contract `T` under.",
+};
+
 /// Adds RayX's TS classes to `registry` (an app's UI set): the builder, the provider and its
 /// tokens (with the `ServiceKey<T>` alias), the TS options' `OptionsToken` and
 /// `OptionsBuilder`, the startup interfaces (`AsyncInitializable`,
@@ -81,9 +93,12 @@ pub fn register(registry: &mut Registry) {
     crate::devtools::register();
     registry
         .ts_alias(SERVICE_KEY)
+        .ts_alias(CONTRACT_CLASS)
         .class::<RayXAppBuilder>()
         .class::<ServiceProvider>()
         .class::<ServiceToken>()
+        .class::<ContractState>()
+        .class::<ContractEvents>()
         .interface::<JsAsyncInitializable>()
         .interface::<JsStartupInitializable>()
         .class::<StartupInitializationState>()

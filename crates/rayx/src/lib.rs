@@ -99,8 +99,9 @@ pub mod prelude {
     pub use rayx_app_nsh::{
         AppError, AppSettingsAppBuilderExt, AppState, NshServicesAppBuilderExt, Observable,
         ReactiveCommand, ScreenScope, StartAppBuilderExt, UiCommand, app_services, app_state,
-        install, navigation_region, navigation_view, services, use_command, use_list,
-        use_platform_sync, use_reactive, use_screen_scope, use_stream, use_two_way, use_view_model,
+        install, navigation_region, navigation_view, services, use_command, use_event_stream,
+        use_list, use_platform_sync, use_reactive, use_screen_scope, use_state_cell, use_stream,
+        use_two_way, use_view_model,
     };
     pub use rayx_app_nsh::{DevLayer, DevTools, dev_layer};
     pub use rayx_runtime::services::i18n::{Args, I18nService};

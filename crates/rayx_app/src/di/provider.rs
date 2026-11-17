@@ -8,6 +8,7 @@ use super::registry::{
     ServiceLifetime, ServiceRegistry, ServiceResolutionError, WeakServiceRegistry,
 };
 use super::thread_bound::LocalService;
+use super::validation::{Requirement, Requirements, ServiceValidationError};
 use crate::options::OptionsRegistrations;
 use std::any::type_name;
 use std::borrow::Cow;
@@ -78,6 +79,7 @@ pub struct ServiceProvider {
     options: OptionsRegistrations,
     services: ServiceRegistry,
     startup: StartupRegistry,
+    requirements: Requirements,
 }
 
 impl ServiceProvider {
@@ -86,6 +88,7 @@ impl ServiceProvider {
             options: OptionsRegistrations::default(),
             services: ServiceRegistry::default(),
             startup: StartupRegistry::default(),
+            requirements: Requirements::default(),
         }
     }
 
@@ -101,6 +104,7 @@ impl ServiceProvider {
             options: self.options.clone(),
             services: self.services.downgrade(),
             startup: self.startup.clone(),
+            requirements: self.requirements.clone(),
         }
     }
 
@@ -108,6 +112,63 @@ impl ServiceProvider {
     /// not another scope of the same root.
     pub fn same_scope(&self, other: &ServiceProvider) -> bool {
         self.services.same_scope(&other.services)
+    }
+
+    /// Requires `T` (a `dyn Trait`, or any service type): [`validate`](Self::validate), which
+    /// `RayXAppBuilder::build` runs first, fails when nothing is registered as `T`; `hint` says
+    /// how to register it (`"add_platform() from rayx_services_platform, or register your own
+    /// dyn PlatformInfoService"`). What the app or its host needs.
+    pub fn require<T>(&mut self, hint: impl Into<Cow<'static, str>>) -> &mut Self
+    where
+        T: ?Sized + 'static,
+    {
+        self.requirements.push(Requirement {
+            needs: ServiceKey::of::<T>(),
+            needs_name: Cow::Borrowed(type_name::<T>()),
+            by: None,
+            hint: hint.into(),
+        });
+        self
+    }
+
+    /// Declares that the registration of `S` depends on `T`: [`validate`](Self::validate) fails
+    /// when nothing is registered as `T`, naming `S` and `hint`, and when `S` is a singleton and
+    /// `T` scoped. What a registration that resolves another service declares, in place of
+    /// registering it.
+    pub fn require_for<S, T>(&mut self, hint: impl Into<Cow<'static, str>>) -> &mut Self
+    where
+        S: ?Sized + 'static,
+        T: ?Sized + 'static,
+    {
+        self.requirements.push(Requirement {
+            needs: ServiceKey::of::<T>(),
+            needs_name: Cow::Borrowed(type_name::<T>()),
+            by: Some((ServiceKey::of::<S>(), Cow::Borrowed(type_name::<S>()))),
+            hint: hint.into(),
+        });
+        self
+    }
+
+    /// Checks every requirement ([`require`](Self::require), [`require_for`](Self::require_for))
+    /// against what is registered, without making anything: every missing service, and every
+    /// singleton depending on a scoped service, in one error.
+    pub fn validate(&self) -> Result<(), ServiceValidationError> {
+        self.validate_with(&[])
+    }
+
+    /// [`validate`](Self::validate), counting the singletons `present` (what is registered once
+    /// the checks passed, such as the app's `Configuration`) as registered.
+    pub(crate) fn validate_with(
+        &self,
+        present: &[ServiceKey],
+    ) -> Result<(), ServiceValidationError> {
+        super::validation::validate(&self.requirements.all(), &|key| {
+            if present.contains(key) {
+                Some(ServiceLifetime::Singleton)
+            } else {
+                self.services.lifetime_of(key)
+            }
+        })
     }
 
     pub(crate) fn options_registrations(&self) -> &OptionsRegistrations {
@@ -851,6 +912,7 @@ impl ServiceProvider {
             options: self.options.clone(),
             services: self.services.create_scope(),
             startup: self.startup.clone(),
+            requirements: self.requirements.clone(),
         }
     }
 }
@@ -861,6 +923,7 @@ pub struct WeakServiceProvider {
     options: OptionsRegistrations,
     services: WeakServiceRegistry,
     startup: StartupRegistry,
+    requirements: Requirements,
 }
 
 impl WeakServiceProvider {
@@ -870,6 +933,7 @@ impl WeakServiceProvider {
             options: self.options.clone(),
             services: self.services.upgrade()?,
             startup: self.startup.clone(),
+            requirements: self.requirements.clone(),
         })
     }
 }

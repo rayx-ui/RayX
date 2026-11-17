@@ -7,6 +7,8 @@
 //! - [`configuration`]: sources merged into one [`Configuration`], read by path.
 //! - [`options`]: typed options made by a pipeline (bind, configure, post-configure, validate),
 //!   read once, per scope or as they change.
+//! - [`published`]: [`StateCell`] and [`EventStream`], the state and events a service's
+//!   implementation publishes, read and followed from any thread.
 //! - [`services::app`]: [`RayXAppBuilder`] and the [`AppBuilder`] traits service crates extend.
 //!
 //! Porting from RayX changes `use` paths, plus `RayXService` -> [`AppService`]:
@@ -43,17 +45,20 @@ pub mod change;
 pub mod configuration;
 pub mod di;
 pub mod options;
+pub mod published;
 pub mod services;
 
 pub use change::ChangeSubscription;
 pub use configuration::{Configuration, ConfigurationBuilder, ConfigurationError};
 pub use di::{
-    AppService, ServiceLifetime, ServiceProvider, ServiceResolutionError, StartupRegistry,
+    AppService, ServiceLifetime, ServiceProvider, ServiceResolutionError, ServiceValidationError,
+    StartupRegistry,
 };
 pub use options::{Options, OptionsBuilder, OptionsError, OptionsMonitor, OptionsSnapshot};
+pub use published::{EventStream, StateCell};
 pub use services::app::{
-    AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ReadyAppBuilderExt, ReadyContext,
-    ReadyError, ReadyHooks, ReadyResult, ServiceAppBuilderExt,
+    AppBuildError, AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ReadyAppBuilderExt,
+    ReadyContext, ReadyError, ReadyHooks, ReadyResult, ServiceAppBuilderExt,
 };
 
 pub mod prelude {
@@ -72,12 +77,14 @@ pub mod prelude {
         StartupServiceFuture, StartupServiceType, default_provider,
         release_orphaned_thread_bound_services,
     };
+    pub use crate::di::{ServiceValidationError, ServiceValidationProblem};
     pub use crate::options::{
         Options, OptionsBuilder, OptionsError, OptionsMonitor, OptionsSnapshot,
     };
+    pub use crate::published::{EventStream, StateCell};
     pub use crate::services::app::{
-        AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ReadyAppBuilderExt, ReadyContext,
-        ReadyError, ReadyHooks, ReadyResult, ServiceAppBuilderExt,
+        AppBuildError, AppBuilder, ConfigurationAppBuilderExt, RayXAppBuilder, ReadyAppBuilderExt,
+        ReadyContext, ReadyError, ReadyHooks, ReadyResult, ServiceAppBuilderExt,
     };
 }
 

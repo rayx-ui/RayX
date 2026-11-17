@@ -1,7 +1,7 @@
 //! `#[contract]`: a Rust trait TS implements, through NSH's engine, headless. Rust resolves the
 //! TS implementation as `Arc<dyn Trait>` and awaits its results and errors; a method returning
-//! nothing runs on the spot in a call from JS and is posted in order otherwise; off the engine
-//! thread a call fails with `ContractError::WrongThread`; Rust startup services depending on
+//! nothing runs on the spot in a call from JS and is posted in order otherwise; a call from
+//! another thread reaches it too (`nsh_tsx_contracts_any_thread`); Rust startup services depending on
 //! the contract initialize after the TS implementation; the set declares the interface and the
 //! token function.
 
@@ -265,18 +265,18 @@ impl Probe {
     }
 
     /// What a call off the engine thread gives.
-    pub(crate) fn off_thread(services: Instance<ServiceProvider>) -> String {
+    pub(crate) async fn off_thread(services: Instance<ServiceProvider>) -> String {
         let provider = services.with(|services| services.services().clone());
+        let (send, receive) = futures::channel::oneshot::channel();
         std::thread::spawn(move || {
             let source = provider.required_service::<dyn WeatherSource>().unwrap();
-            match source.forecast("Split".into()).now_or_never() {
-                Some(Ok(forecast)) => forecast,
-                Some(Err(error)) => format!("{error:?}"),
-                None => "pending".to_owned(),
-            }
-        })
-        .join()
-        .unwrap()
+            let answer = match futures::executor::block_on(source.forecast("Split".into())) {
+                Ok(forecast) => forecast,
+                Err(error) => format!("{error:?}"),
+            };
+            let _ = send.send(answer);
+        });
+        receive.await.unwrap_or_else(|_| "no answer".into())
     }
 
     /// What ran, in order.
@@ -330,7 +330,7 @@ setTimeout(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     lines.push(Probe.logged().split(", ").slice(-3).join(", "));
     // Off the engine thread.
-    lines.push(Probe.offThread(services));
+    lines.push(await Probe.offThread(services));
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -350,7 +350,7 @@ fn rust_calls_a_ts_implementation_through_the_contract() {
          |true|true\
          |note one, noted now\
          |posted, note two, note three\
-         |Contract(WrongThread { contract: \"WeatherSource\" })"
+         |sunny in Split"
     );
 }
 
@@ -497,9 +497,10 @@ setTimeout(async () => {
     const services = await Probe.addCapturing(
       new RayXAppBuilder().addScopedAs(weatherSourceToken(), () => new OpenMeteo()),
     ).start();
-    // Resolved by Rust from the root before the root scope's object was made: not made yet.
+    // Resolved by Rust from the root before the root scope's object was made: its first call
+    // makes it (between JS's turns).
     lines.push(await Probe.injectedForecast("Pula"));
-    // Made by a TS resolve in the root scope: the adapter Rust kept reaches it now.
+    // TS resolves the same object in the root scope, and the adapter keeps reaching it.
     lines.push(String(services.getRequiredService(weatherSourceToken()) instanceof OpenMeteo));
     lines.push(await Probe.injectedForecast("Pula"));
   } catch (error) {
@@ -513,11 +514,8 @@ mount(() => <Text>{shown()}</Text>);
 
 #[test]
 fn a_scoped_adapter_resolved_before_its_object_was_made_reaches_it_once_made() {
-    let shown = headless::run(set(), CAPTURED);
-    assert!(
-        shown.starts_with("done Contract(Unavailable { contract: \"WeatherSource\""),
-        "{shown}"
+    assert_eq!(
+        headless::run(set(), CAPTURED),
+        "done hail in Pula|true|hail in Pula"
     );
-    assert!(shown.contains("not made yet"), "{shown}");
-    assert!(shown.ends_with("|true|hail in Pula"), "{shown}");
 }

@@ -99,16 +99,16 @@ pub use ts::register;
 pub use dxn_reactive::{ActivatableViewModel, ActivationToken, ViewModelActivator};
 pub use rayx_app::{
     AppBuilder, AppService, ChangeSubscription, Configuration, ConfigurationAppBuilderExt,
-    ConfigurationBuilder, ConfigurationError, Options, OptionsBuilder, OptionsError,
+    ConfigurationBuilder, ConfigurationError, EventStream, Options, OptionsBuilder, OptionsError,
     OptionsMonitor, OptionsSnapshot, RayXAppBuilder, ReadyAppBuilderExt, ReadyContext, ReadyError,
     ReadyHooks, ReadyResult, ServiceAppBuilderExt, ServiceLifetime, ServiceProvider,
-    ServiceResolutionError, StartupRegistry, options, prelude,
+    ServiceResolutionError, StartupRegistry, StateCell, options, prelude,
 };
 
 pub use app::surface::{AppError, AppState, StartAppBuilderExt, app_services, app_state, install};
 pub use binding::{
-    Observable, ReactiveCommand, UiCommand, use_command, use_list, use_reactive, use_stream,
-    use_two_way,
+    EngineGone, EngineRunner, Observable, ReactiveCommand, UiCommand, use_command,
+    use_event_stream, use_list, use_reactive, use_state_cell, use_stream, use_two_way,
 };
 pub use configuration::settings::{APP_SETTINGS_FILE, AppSettingsAppBuilderExt, AppSettingsSource};
 pub use devtools::{

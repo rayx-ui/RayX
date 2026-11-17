@@ -205,7 +205,8 @@ new RayXAppBuilder().addSingletonAs(weatherSourceToken(), () => new OpenMeteo())
 - An `async fn` returns `Result<T, E>`, where `E: From<ContractError> + From<Exception>` (`String` is one): what TS
   throws arrives as the `Exception`. A method returning nothing runs on the spot inside a call from JS and is posted, in
   order, otherwise.
-- Calls reach TS on the engine thread only: off it, a method fails with `ContractError::WrongThread`.
+- Calls reach TS from any thread: off the engine thread they go through the surface's queue (`EngineRunner`), and
+  once the engine stopped they fail with `ContractError::EngineGone`.
 - A contract has no generics, associated items, supertraits or default bodies; its values cross to JS (`String`,
   numbers, `#[derive(JsObject)]` structs).
 

@@ -47,29 +47,51 @@ pub fn app_extension(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// Its methods are `async fn .. -> Result<T, E>` (awaited in JS's next turn; `E:
-/// From<ContractError> + From<Exception>`, `String` among them) or `fn ..(&self, ..)` returning
-/// nothing (run on the spot inside a call from JS, posted in order otherwise), with values that
-/// cross to JS (`String`, numbers, `#[derive(JsObject)]` structs); a contract has no generics,
-/// associated items, supertraits or default bodies. The trait gains `Send + Sync` and each
-/// `async fn` becomes a method returning a `LocalBoxFuture`, as `async-trait(?Send)` writes it.
+/// Its members are of five kinds:
 ///
-/// TS gets the interface `WeatherSource` and the token function `weatherSourceToken()`, which
-/// the app adds to its set (`registry.contract::<dyn WeatherSource>()`, with
-/// `rayx::app_nsh::ts::ContractRegistryExt`); `builder.addSingletonAs(weatherSourceToken(), () =>
-/// new OpenMeteo())` (and the scoped, transient and startup forms) registers a TS
-/// implementation, which Rust resolves as `Arc<dyn WeatherSource>` on the engine thread (off it,
-/// a method fails with `ContractError::WrongThread`).
+/// - **commands**, `async fn m(&self, ..) -> Result<T, E>` (`E: From<ContractError> +
+///   From<Exception>`, `String` among them), which become methods returning a `Send`
+///   `BoxFuture`, and posted commands, `fn m(&self, ..)` returning nothing;
+/// - **published state**, `#[state] fn m(&self) -> &StateCell<T>`, and **published events**,
+///   `#[events] fn m(&self) -> &EventStream<E>`, which Rust reads and follows from any thread;
+/// - **constants**, `#[constant] fn m(&self) -> T`, read once.
+///
+/// RayX links a TS implementation's state, events and constants once: a singleton's in
+/// `start()`, a scoped or transient one's when it is resolved on the engine thread, or on its
+/// first read when it was resolved on another thread, which then waits for the engine. So a
+/// factory that runs off the engine thread (under the container's lock of the service it makes)
+/// must not read a TS contract's state, events or constants: resolve the contract there and
+/// read it afterwards, or the engine thread resolving that service at the same moment waits
+/// for it.
+///
+/// `#[state(ts = "…")]` (and `#[events]`, `#[constant]`) writes the value's TS type where the
+/// Rust type does not say it. Values cross as JS values (commands: `String`, numbers,
+/// `#[derive(JsObject)]` structs) or as JSON (state, events, constants: `serde` types). A
+/// contract has no generics, associated items, supertraits or default bodies; the trait gains
+/// `Send + Sync`.
+///
+/// TS gets the interface `WeatherSource` (`#[contract(ts = "WeatherSourceContract")]` names it)
+/// and the token function `weatherSourceToken()`, which the app adds to its set
+/// (`registry.contract::<dyn WeatherSource>()`, with `rayx::app_nsh::ts::ContractRegistryExt`;
+/// `registry.contract_class::<dyn T, C>()` makes a RayX class the token instead);
+/// `builder.addSingletonAs(weatherSourceToken(), () => new OpenMeteo())` (and the scoped,
+/// transient and startup forms) registers a TS implementation, which Rust resolves as
+/// `Arc<dyn WeatherSource>` and calls from any thread: a call off the engine thread goes through
+/// the surface's queue, and once the engine stopped it fails with `ContractError::EngineGone`.
 #[proc_macro_attribute]
 pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let attr = proc_macro2::TokenStream::from(attr);
-    if !attr.is_empty() {
-        return syn::Error::new_spanned(attr, "`#[contract]` takes no arguments")
-            .into_compile_error()
-            .into();
-    }
+    let mut ts = None;
+    let parser = syn::meta::parser(|meta| {
+        if meta.path.is_ident("ts") {
+            ts = Some(meta.value()?.parse::<syn::LitStr>()?);
+            Ok(())
+        } else {
+            Err(meta.error("`#[contract]` takes `ts = \"…\"` (its TS interface's name) only"))
+        }
+    });
+    parse_macro_input!(attr with parser);
     let item = parse_macro_input!(item as syn::ItemTrait);
-    contract::expand(item, &app_path())
+    contract::expand_named(item, ts, &app_path())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

@@ -121,12 +121,13 @@ fn resolver(
         if let Some(made) = MADE.with_borrow_mut(|made| made.remove(&service.id)) {
             return Ok(keep(made));
         }
-        if !service.factory.can_call_now() {
+        if !service.factory.can_run_now() {
             NOT_MADE.set(true);
             return Err(ServiceResolutionError::failed(
                 name(),
-                "it is a TS service that is not made yet: TS services are made in a call from JS \
-                 (a TS `getService`), and startup and contract services by `start()`",
+                "it is a TS service that is not made yet: TS services are made where JS runs on \
+                 the spot (in a call from JS, or on the engine thread between JS's turns), and \
+                 startup and contract services by `start()`",
             ));
         }
         let services = provider_for(&service.sys, provider);
@@ -199,7 +200,7 @@ pub(crate) fn make_on_start(
     provider: &mut rayx_app::ServiceProvider,
     service: SharedTsService,
     key: rayx_app::di::StartupServiceType,
-    made: fn(&rayx_app::ServiceProvider),
+    made: crate::di::contract_ts::MakeAdapter,
 ) {
     use futures::FutureExt as _;
     provider.add_startup_resolved_async(key.clone(), move |context| {
@@ -214,7 +215,7 @@ pub(crate) fn make_on_start(
             };
             let registration = service.get().map_err(|error| failed(error.to_string()))?;
             make(&root, &registration).await.map_err(failed)?;
-            made(&root);
+            made(&root).map_err(failed)?;
             Ok(Arc::new(Made) as rayx_app::di::StartupService)
         }
         .boxed_local() as rayx_app::di::StartupServiceFuture

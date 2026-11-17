@@ -7,6 +7,8 @@ use futures::future::{FutureExt, LocalBoxFuture, Shared};
 use crate::NshServicesAppBuilderExt as _;
 use dxn_reactive::ReactiveError;
 use nsh_core::prelude::*;
+use rayx_app::AppBuilder as _;
+use rayx_app::{AppBuildError, ServiceValidationError};
 use rayx_app::{
     ConfigurationError, RayXAppBuilder, ReadyError, ReadyHooks, ServiceProvider,
     ServiceResolutionError,
@@ -59,6 +61,9 @@ pub enum AppError {
     BuilderStarted,
     /// The app is starting on this surface; wait for [`app_state`] to change.
     Starting,
+    /// The app's registrations are not complete: a service the app, its host or a registration
+    /// requires is missing, or a singleton depends on a scoped service. Nothing was made.
+    Services(ServiceValidationError),
     /// The app's configuration did not load.
     Configuration(ConfigurationError),
     /// Options validated on start failed, a startup service failed or timed out, or startup
@@ -86,6 +91,7 @@ impl fmt::Display for AppError {
                 f.write_str("the RayXAppBuilder has started already: make a new one")
             }
             Self::Starting => f.write_str("the app is still starting on this surface"),
+            Self::Services(error) => error.fmt(f),
             Self::Configuration(error) => {
                 write!(f, "the app's configuration did not load: {error}")
             }
@@ -99,6 +105,21 @@ impl fmt::Display for AppError {
 }
 
 impl std::error::Error for AppError {}
+
+impl From<ServiceValidationError> for AppError {
+    fn from(error: ServiceValidationError) -> Self {
+        Self::Services(error)
+    }
+}
+
+impl From<AppBuildError> for AppError {
+    fn from(error: AppBuildError) -> Self {
+        match error {
+            AppBuildError::Services(error) => Self::Services(error),
+            AppBuildError::Configuration(error) => Self::Configuration(error),
+        }
+    }
+}
 
 impl From<ConfigurationError> for AppError {
     fn from(error: ConfigurationError) -> Self {
@@ -285,7 +306,11 @@ impl StartAppBuilderExt for RayXAppBuilder {
 
 async fn initialize(builder: RayXAppBuilder) -> Result<ServiceProvider, AppError> {
     crate::binding::start_dispatcher();
-    let root = builder.add_nsh_services().build_async().await?;
+    let mut builder = builder.add_nsh_services();
+    if let Some(runner) = crate::binding::EngineRunner::current() {
+        builder.services_mut().replace_service(runner);
+    }
+    let root = builder.build_async().await?;
     crate::services::platform::sync::seed_platform(&root);
     let registry = root.startup_registry().clone();
     registry

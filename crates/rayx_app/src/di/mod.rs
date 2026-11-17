@@ -7,6 +7,7 @@ mod ready;
 mod registry;
 mod service;
 mod thread_bound;
+mod validation;
 
 pub use key::{ErasedService, RuntimeKey, ServiceKey};
 pub use rayx_app_macros::AppService;
@@ -24,3 +25,4 @@ pub use provider::{
     IntoServiceArc, IntoSingletonService, ServiceProvider, WeakServiceProvider, default_provider,
 };
 pub use registry::{ServiceLifetime, ServiceRegistry, ServiceResolutionError};
+pub use validation::{ServiceValidationError, ServiceValidationProblem};

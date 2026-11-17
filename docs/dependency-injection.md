@@ -99,15 +99,17 @@ stays usable from every thread.
 A thread-bound value is never dropped on another thread: released elsewhere, it is dropped on its own thread at that
 thread's next thread-bound resolve, or by `release_orphaned_thread_bound_services()`.
 
-TS services are thread-bound to the engine thread: they are made and resolved there only. One is made in a call from
-JS (a TS `getService`); startup and contract services are made by `start()`. Rust resolving a TS service off the
-engine thread fails with `WrongThread`; resolving one that is not made yet, outside a call from JS, fails too.
+TS services are thread-bound to the engine thread: they are made and resolved there only. One is made where JS runs
+on the spot: in a call from JS (a TS `getService`), or on the engine thread between JS's turns (a Rust task or
+factory); startup and contract services are made by `start()`. Rust resolving a TS service off the engine thread
+fails with `WrongThread` (a contract's adapter reaches it through the engine instead).
 
 ## Contracts
 
 Rust uses a TS service only through a contract: a Rust trait marked `#[rayx::contract]`, which TS implements and Rust
-resolves as `Arc<dyn Trait>`, like any trait-object service. Its `async fn`s are awaited in JS's next turn, and a call
-off the engine thread fails with `ContractError::WrongThread`:
+resolves as `Arc<dyn Trait>`, like any trait-object service. Its `async fn`s are awaited in JS's next turn, from any
+thread (a call off the engine thread goes through the surface's queue, and fails with `ContractError::EngineGone` once
+the engine stopped):
 
 ```rust
 let source = services.required_service::<dyn WeatherSource>()?;
