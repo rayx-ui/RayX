@@ -1,26 +1,24 @@
 //! Navigation regions on NSH, headless: a region as an NSH navigation stack whose pages follow
 //! its journal, a region as its current route alone, and `NavigationRegion` for TSX (`navigationService.region(name)`).
 
-// Loading the compiled TSX app takes `Bundle::bytecode`.
-#![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
-
-mod headless;
+#![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use std::cell::RefCell;
 use std::sync::{Mutex, MutexGuard};
 use std::time::Duration;
 
 use crossbeam_channel::{Receiver, Sender};
-use nsh_core::element::{Registry, screen};
+use futures::executor::block_on;
+use nsh_core::element::screen;
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
-use nsh_engine::{App, Bundle, Engine, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::navigation::{
-    NavigationArgs, NavigationService, RouteDefinition,
-};
+use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
+use rayx_app::services::navigation::{NavigationArgs, NavigationService};
+use rayx_app_nsh::testing;
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
-    navigation_region, navigation_view,
+};
+use rayx_services_navigation::{
+    NavigationAppBuilderExt as _, RouteDefinition, navigation_region, navigation_view,
 };
 
 thread_local! {
@@ -119,12 +117,12 @@ fn a_region_s_pages_follow_its_journal() {
     let services = ROOT
         .with_borrow(|root| root.clone())
         .expect("the app started");
-    let navigation = services.required_service::<NavigationService>().unwrap();
-    // A push adds a page over the first; the panel shows its route.
-    navigation.navigate_to("/projects/1").unwrap();
-    navigation
-        .navigate_in_region("panel", NavigationArgs::new("/settings"))
+    let navigation = services
+        .required_service::<dyn NavigationService>()
         .unwrap();
+    // A push adds a page over the first; the panel shows its route.
+    block_on(navigation.navigate_to("/projects/1")).unwrap();
+    block_on(navigation.navigate_in_region("panel", NavigationArgs::new("/settings"))).unwrap();
     shown.clear();
     pump(&mut engine, &rx, &mut shown, |shown| {
         shown.iter().any(|text| text == "page /projects/1")
@@ -140,8 +138,8 @@ fn a_region_s_pages_follow_its_journal() {
     );
 
     // Back pops it, and closing the panel empties it.
-    navigation.back().unwrap();
-    navigation.close_region("panel").unwrap();
+    block_on(navigation.back("root".into())).unwrap();
+    block_on(navigation.close_region("panel".into())).unwrap();
     shown.clear();
     pump(&mut engine, &rx, &mut shown, |shown| {
         shown.iter().any(|text| text == "panel closed")
@@ -150,10 +148,7 @@ fn a_region_s_pages_follow_its_journal() {
         shown.iter().any(|text| text == "panel closed"),
         "shown: {shown:?}"
     );
-    assert_eq!(
-        navigation.journal("root").unwrap().unwrap().current_index(),
-        Some(0)
-    );
+    assert_eq!(navigation.journal("root").unwrap().current_index(), Some(0));
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
@@ -189,61 +184,12 @@ setTimeout(async () => {
 mount(() => <Text>{shown()}</Text>);
 "#;
 
-fn shown(rx: &Receiver<MountBatch>, prefix: &str) -> String {
-    let deadline = std::time::Instant::now() + Duration::from_secs(10);
-    let mut last = String::new();
-    while let Ok(batch) = rx.recv_deadline(deadline) {
-        for item in &batch.items {
-            if let MountItem::Text { text, .. } = item {
-                last = text.text.clone();
-            }
-        }
-        if last.starts_with(prefix) {
-            break;
-        }
-    }
-    last
-}
-
 #[test]
 fn tsx_navigates_a_region_and_hears_its_pages() {
     let _serial = serial();
-    let mut set = Registry::ui_set("test/app");
-    rayx_app_nsh::ts::register(&mut set);
-    set.class_extension::<headless::HostFakes>();
-    let dir = std::env::temp_dir().join(format!("rayx-app-regions-{}", std::process::id()));
-    std::fs::create_dir_all(&dir).unwrap();
-    let entry = dir.join("App.tsx");
-    std::fs::write(&entry, TSX).unwrap();
-    let ui_sets = vec![set];
-    let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
-        entry,
-        minify: false,
-        development: false,
-        app: nsh_bundler::AppInfo::default(),
-        split: false,
-        ui_sets: ui_sets.iter().map(Into::into).collect(),
-        asset_root_from: None,
-    })
-    .unwrap();
-    let described: Vec<_> = ui_sets.iter().map(Into::into).collect();
-    let bytecode = nsh_js::compile_bytecode_with(&bundle.code, false, &described).unwrap();
-    let (tx, rx) = crossbeam_channel::unbounded();
-    // SAFETY: compiled just now by this runtime.
-    let app = App::Js(unsafe { Bundle::bytecode(bytecode) });
-    let _engine = Engine::start(
-        EngineConfig {
-            ui_sets,
-            ..EngineConfig::new(app)
-        },
-        || ApproxTextEngine,
-        ChannelSink(tx),
-    )
-    .unwrap();
-    let last = shown(&rx, "done");
-    let _ = std::fs::remove_dir_all(&dir);
+    let set = testing::set(rayx_services_navigation::register);
     assert_eq!(
-        last,
+        testing::run(set, TSX),
         "done Success|/settings>/projects/2|/settings|true 0|heard /settings|/settings>/projects/2|/settings|"
     );
 }

@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use super::{NavigationHistoryMode, Route};
+use super::{NavigationHistoryMode, Route, RoutingData};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+/// A region's journal: its entries and the current one, at most `max_entries` of them (the
+/// oldest go first).
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct NavigationJournal {
     entries: Vec<Route>,
     current_index: Option<usize>,
@@ -115,6 +117,20 @@ impl NavigationJournal {
         self.entries.iter()
     }
 
+    /// The entries up to the current one, bottom to top, with their indexes: the pages of a
+    /// navigation stack showing the journal.
+    pub fn pages(&self) -> Vec<(usize, Route)> {
+        let Some(current) = self.current_index else {
+            return Vec::new();
+        };
+        self.entries
+            .iter()
+            .take(current + 1)
+            .cloned()
+            .enumerate()
+            .collect()
+    }
+
     pub fn clear(&mut self) {
         self.entries.clear();
         self.current_index = None;
@@ -155,11 +171,12 @@ impl Default for NavigationJournal {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+/// A named region of the navigation: its own journal and current route.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct NavigationRegion {
     pub name: String,
     pub journal: NavigationJournal,
-    pub current: Option<super::RoutingData>,
+    pub current: Option<RoutingData>,
 }
 
 impl NavigationRegion {

@@ -1,7 +1,7 @@
 //! The TS classes of RayX's services carry the Rust services' names, with the members the old
 //! classes had and no static `of`; the old entry and scope classes and the old names are gone
-//! from the set and its declarations. (The service crates' classes, `AssetService` and the
-//! others, are in their crates' sets.)
+//! from the set and its declarations. (The service crates' classes, `AssetService`,
+//! `NavigationService` and the others, are in their crates' sets.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -35,29 +35,6 @@ fn the_service_classes_carry_the_rust_services_names_and_their_members() {
                 "setLanguage(",
                 "onChange(",
             ][..],
-        ),
-        (
-            "NavigationService",
-            &[
-                "navigate(",
-                "back(",
-                "forward(",
-                "current(",
-                "region(name: string): NavigationRegion;",
-                "onChange(",
-            ],
-        ),
-        (
-            "NavigationRegion",
-            &[
-                "navigate(",
-                "back(",
-                "forward(",
-                "goTo(",
-                "close(",
-                "pages(",
-                "onChange(",
-            ],
         ),
         (
             "ApplicationConfigurationService",
@@ -111,8 +88,6 @@ fn the_old_api_is_gone_from_the_set() {
         "ServiceProvider",
         "ServiceToken",
         "I18nService",
-        "NavigationService",
-        "NavigationRegion",
         "ApplicationConfigurationService",
     ] {
         assert!(names.contains(&name), "{name} is not in the set: {names:?}");

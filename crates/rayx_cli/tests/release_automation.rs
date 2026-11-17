@@ -194,6 +194,7 @@ const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
     "rayx_app_nsh",
     "rayx_services_assets",
     "rayx_services_fonts",
+    "rayx_services_navigation",
     "rayx_services_platform",
     "rayx_services_storage",
     "rayx_services_suspension",

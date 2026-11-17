@@ -1,9 +1,10 @@
 //! TS `RayXAppBuilder` through NSH's engine, headless: every Rust builder method an app calls
 //! has a chaining camelCase twin that registers what the Rust method does, with the same implied
 //! services, and the set declares each with a doc comment. (The service crates' methods,
-//! `addPlatform`, `addAssets`, `addStorage` and the others, are their crates' groups'; the
-//! services the host requires come from `addHostFakes()` here, and a key-value store from the
-//! test's `addFakeStorage()`.)
+//! `addPlatform`, `addAssets`, `addStorage`, `addNavigation` and the others, are their crates'
+//! groups'; the services the host requires come from `addHostFakes()` here, a key-value store
+//! from the test's `addFakeStorage()`, and the navigation `addSelection()` follows from
+//! `addTestNavigation()`, a fake.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -73,7 +74,7 @@ impl Probe {
                 ("HistoryService", resolves::<HistoryService>),
                 ("HistoryStore", resolves::<dyn HistoryStore>),
                 ("I18nService", resolves::<I18nService>),
-                ("NavigationService", resolves::<NavigationService>),
+                ("NavigationService", resolves::<dyn NavigationService>),
                 ("InputMapService", resolves::<InputMapService>),
                 ("SelectionService", resolves::<SelectionService>),
                 (
@@ -114,9 +115,33 @@ impl Probe {
     }
 }
 
+/// `builder.addTestNavigation()`: a fake as the app's `dyn NavigationService`, which
+/// `addSelection()` follows.
+struct TestNavigation;
+
+#[class_extension(rayx_app_nsh::ts::RayXAppBuilder)]
+impl TestNavigation {
+    /// Registers a fake navigation service.
+    pub fn add_test_navigation(
+        this: Instance<rayx_app_nsh::ts::RayXAppBuilder>,
+    ) -> Result<Instance<rayx_app_nsh::ts::RayXAppBuilder>, String> {
+        rayx_app_nsh::ts::RayXAppBuilder::extend_with(this, |mut builder| {
+            use rayx_app_nsh::AppBuilder as _;
+            builder
+                .services_mut()
+                .replace_service::<dyn NavigationService>(
+                    rayx_app::testing::FakeNavigation::new() as Arc<dyn NavigationService>
+                );
+            builder
+        })
+    }
+}
+
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
-        set.module::<Probe>().class_extension::<add_fake_storage>();
+        set.module::<Probe>()
+            .class_extension::<add_fake_storage>()
+            .class_extension::<TestNavigation>();
     })
 }
 
@@ -141,7 +166,7 @@ setTimeout(async () => {
       .addOperations()
       .addHistory()
       .addI18n()
-      .addNavigation()
+      .addTestNavigation()
       .addInputMap()
       .addSelection()
       .addApplicationConfiguration()
@@ -242,7 +267,6 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addHistory(): RayXAppBuilder;",
         "addPersistentHistory(): RayXAppBuilder;",
         "addI18n(configure?: ((options: I18nOptions) => void) | null): RayXAppBuilder;",
-        "addNavigation(configure?: ((options: NavigationOptions) => void) | null): RayXAppBuilder;",
         "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
         "addSelection(): RayXAppBuilder;",
         "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",

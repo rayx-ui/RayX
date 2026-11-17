@@ -1,5 +1,5 @@
 use super::{SelectionAreaId, SelectionStatus};
-use crate::services::navigation::{NavigationService, NavigationSubscription};
+use crate::services::navigation::NavigationService;
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
 use rayx_app::ChangeSubscription;
@@ -21,24 +21,21 @@ type SelectionListener = dyn Fn(Option<SelectionAreaId>, SelectionStatus) + Send
 pub struct SelectionService {
     shared: Arc<SelectionServiceState>,
     /// `None` for a service made without a navigation to follow: its startup fails.
-    _navigation_subscription: Option<Arc<NavigationSubscription>>,
+    _navigation_subscription: Option<Arc<ChangeSubscription>>,
     initialization: StartupInitializationState,
 }
 
 impl SelectionService {
-    pub fn new(navigation: NavigationService) -> Self {
+    /// A service cleared on every route change of `navigation`.
+    pub fn new(navigation: &(dyn NavigationService + 'static)) -> Self {
         let shared = Arc::new(SelectionServiceState::default());
         let shared_on_navigation = shared.clone();
-        let subscription = navigation
-            .subscribe_route_changed(move |_| {
-                shared_on_navigation
-                    .navigation_revision
-                    .fetch_add(1, Ordering::AcqRel);
-                shared_on_navigation.publish(None, SelectionStatus::default());
-            })
-            .unwrap_or_else(|error| {
-                panic!("SelectionService could not subscribe to navigation: {error}")
-            });
+        let subscription = navigation.on_route_changed(move |_| {
+            shared_on_navigation
+                .navigation_revision
+                .fetch_add(1, Ordering::AcqRel);
+            shared_on_navigation.publish(None, SelectionStatus::default());
+        });
 
         Self {
             shared,
@@ -127,7 +124,8 @@ impl AsyncInitializable for SelectionService {
         async move {
             if service._navigation_subscription.is_none() {
                 return Err(
-                    "SelectionService needs a NavigationService: register one with add_navigation"
+                    "SelectionService needs a dyn NavigationService: register one with \
+                     add_navigation(..) from rayx_services_navigation, or your own"
                         .into(),
                 );
             }

@@ -1,6 +1,6 @@
 # Navigation
 
-The navigation service (`add_navigation(..)`) keeps a journal per region: the main region follows the app's URL, and
+The navigation service (`add_navigation(..)` from `rayx_services_navigation`) keeps a journal per region: the main region follows the app's URL, and
 any number of named regions (a side panel, tabs, a dialog) navigate on their own. The URL region's route is the
 location's path; the other regions' routes are in its query (`/projects/12?panel=%2Fsettings`). The service itself,
 its routes and options are in [the navigation service](services/navigation.md).
@@ -24,14 +24,15 @@ stack, such as tabs or a side panel.
 let panel = navigation_view("panel", |route| side_panel(route))?;
 ```
 
-Both are called in a component's body, under the app's services.
+Both are `rayx_services_navigation`'s (in `rayx::prelude`), called in a component's body, under the app's services:
+they follow whichever `dyn NavigationService` the app registered.
 
 ## The location on NSH
 
 On NSH the navigation's location is NSH's app address (`app_url`, `set_app_url_with`; TS's `UrlScheme.url()` and
 `setUrl`): the web shows it in the address bar and keeps it in the browser's history, and the native platforms keep it
-for the app, starting at the link that opened it. `rayx_app_nsh` registers `NshLocationSynchronizer` for it, so nothing
-is to set up:
+for the app, starting at the link that opened it. RayX's navigation service (`add_navigation(..)`) keeps it, so
+nothing is to set up:
 
 - **Startup** goes to the default route, then, once the app is ready, to NSH's address at start (the page's address,
   a deep link), which NSH answers only once the engine runs. Nothing is shown before that, so the address stays.
@@ -47,7 +48,7 @@ is to set up:
   desktops, Tizen) once it is ready, and a link that opens it while it runs (NSH's `next_url_scheme_open`), as do the
   web's links into a running app (the browser's forward to a page the app no longer has, an earlier page load's
   entry). The app claims its schemes in `nsh.json`'s `schemes`; NSH drops the links of other schemes.
-- The synchronizer is the one listener NSH allows for moves and for links, so with it on the app hears them through
+- The navigation is the one listener NSH allows for moves and for links, so with it on the app hears them through
   the navigation rather than TS's `UrlScheme.on("change")` and `UrlScheme.on("open")`.
 
 The address is a URL and the location the part after its origin (`https://example.com/app/projects/1` is
@@ -60,7 +61,8 @@ NSH's address and its moves out of the navigation, startup included.
 ## From TSX
 
 `NavigationService`, resolved from the provider `start()` gives, drives the URL region: `navigate(uri)`, `back()`,
-`forward()`, `current()` and `onChange`; in Rust, `services.required_service::<NavigationService>()`.
+`forward()`, `current()` and `onChange`; in Rust, `services.required_service::<dyn NavigationService>()`. Its classes
+come with the navigation's set (`rayx_services_navigation::register(registry)`).
 
 `navigation.region("panel")` drives a named region (made when missing), as `navigation_region("panel")` shows one in
 a Rust component:

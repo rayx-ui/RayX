@@ -22,7 +22,6 @@ rayx_app.workspace = true
 rayx_app_macros.workspace = true
 rayx_devtools_protocol.workspace = true
 rayx_runtime.workspace = true
-url.workspace = true
 nsh-core.workspace = true
 dxn_reactive.workspace = true
 # The `testing` harness.

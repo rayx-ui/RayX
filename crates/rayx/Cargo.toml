@@ -17,6 +17,7 @@ rayx_runtime.workspace = true
 rayx_app_nsh.workspace = true
 rayx_components.workspace = true
 rayx_devtools_protocol.workspace = true
+rayx_services_navigation.workspace = true
 dxn_i18n.workspace = true
 dxn_intl.workspace = true
 

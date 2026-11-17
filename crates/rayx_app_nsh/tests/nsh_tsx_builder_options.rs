@@ -2,6 +2,7 @@
 //! object has Rust's methods in camelCase, what it sets applies after the options bound from
 //! `appsettings.json` (a value it sets overrides the file's, one it leaves alone keeps it), each
 //! options class reaches its service, and a callback that throws makes its builder call throw.
+//! (The service crates' options have this group in their crates.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -15,7 +16,7 @@ use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app_nsh::rayx_runtime::services::{
     application_configuration::ApplicationConfiguration, i18n::I18nOptions,
-    input_map::InputMapOptions, navigation::NavigationOptions,
+    input_map::InputMapOptions,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 
@@ -73,7 +74,6 @@ impl Probe {
     ) -> Result<JsonValue, String> {
         match name.as_str() {
             "i18n" => options::<I18nOptions>(&services),
-            "navigation" => options::<NavigationOptions>(&services),
             "inputMap" => options::<InputMapOptions>(&services),
             "application" => options::<ApplicationConfiguration>(&services),
             other => Err(format!("no options {other}")),
@@ -89,7 +89,7 @@ fn set() -> nsh_core::element::Registry {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, I18nService, NavigationService, Probe, RayXAppBuilder,
+  ApplicationConfigurationService, I18nService, Probe, RayXAppBuilder,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -102,9 +102,6 @@ setTimeout(async () => {
         options.defaultLanguage("hr").fallbackLanguage("en").autoLoadAssets(false);
         options.followPlatform(false).missingMessage("empty");
       })
-      .addNavigation((options) => {
-        options.addRoute("/").addRoute("/projects/{id}", { component: "Project", prewarm: true });
-      })
       .addInputMap((options) => { options.bindKey("Editor", "ctrl-s", "save"); })
       .addApplicationConfiguration((options) => {
         options.name("From TS").merge({ notifications: { maxItems: 7 } });
@@ -116,10 +113,6 @@ setTimeout(async () => {
     lines.push(`${i18n.default_language} ${i18n.fallback_languages} ${i18n.auto_load_assets} ${i18n.follow_platform} ${i18n.missing_message}`);
     lines.push(`${i18n.resources_path} ${i18n.bidi_isolation}`);
     lines.push(services.getRequiredService(I18nService).locale());
-
-    const routes = Probe.options(services, "navigation").routes;
-    lines.push(routes.map((route) => `${route.pattern}:${route.component}:${route.prewarm}`).join(","));
-    lines.push(services.getRequiredService(NavigationService).navigate("/projects/12").status);
 
     const bindings = Probe.options(services, "inputMap").application;
     lines.push(bindings.map((entry) => `${entry.context}:${entry.action}`).join(","));
@@ -143,16 +136,11 @@ fn options_set_in_ts_apply_after_configuration_and_reach_their_services() {
     assert_eq!(parts[0], "done hr en false false empty", "{shown}");
     assert_eq!(parts[1], "translations true", "{shown}");
     assert_eq!(parts[2], "hr", "{shown}");
-    assert_eq!(
-        parts[3], "/:null:false,/projects/{id}:Project:true",
-        "{shown}"
-    );
-    assert_eq!(parts[4], "Success", "{shown}");
-    assert_eq!(parts[5], "Editor:save", "{shown}");
+    assert_eq!(parts[3], "Editor:save", "{shown}");
     // Set by the callback over the file's; left alone, the file's.
-    assert_eq!(parts[6], "From TS kept 7", "{shown}");
-    assert_eq!(parts[7], "From TS", "{shown}");
-    assert_eq!(parts.len(), 8, "{shown}");
+    assert_eq!(parts[4], "From TS kept 7", "{shown}");
+    assert_eq!(parts[5], "From TS", "{shown}");
+    assert_eq!(parts.len(), 6, "{shown}");
 }
 
 const THROWING: &str = r#"import { mount, signal, Text } from "nsh";
@@ -162,9 +150,8 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
-  const builder = new RayXAppBuilder().addHostFakes();
+  const builder = new RayXAppBuilder().addHostFakes().addFakeStorage();
   lines.push(thrown(() => builder.addI18n(() => { throw new Error("no languages"); })));
-  lines.push(thrown(() => builder.addNavigation(() => { throw new Error("no routes"); })));
   lines.push(thrown(() => builder.configureAppConfiguration(() => { throw new Error("no sources"); })));
   lines.push(thrown(() => builder.addI18n((options) => { options.missingMessage("loud"); })));
   lines.push(thrown(() => builder.addApplicationConfiguration((options) => {
@@ -172,8 +159,8 @@ setTimeout(async () => {
   })).startsWith("merge: ") ? "merge refused" : "merge kept");
   // An options object is valid during its callback only.
   let kept;
-  builder.addNavigation((options) => { kept = options; });
-  lines.push(thrown(() => kept.addRoute("/late")).includes("disposed") ? "disposed" : "kept");
+  builder.addInputMap((options) => { kept = options; });
+  lines.push(thrown(() => kept.bindKey("Editor", "ctrl-q", "quit")).includes("disposed") ? "disposed" : "kept");
   // The builder still works after a callback threw.
   try {
     await builder.addOperations().start();
@@ -191,7 +178,7 @@ mount(() => <Text>{shown()}</Text>);
 fn a_throwing_callback_makes_its_builder_call_throw_with_its_message() {
     assert_eq!(
         headless::run(set(), THROWING),
-        "done no languages|no routes|no sources\
+        "done no languages|no sources\
          |missingMessage takes \"id\" or \"empty\", not \"loud\"|merge refused|disposed|started"
     );
 }
@@ -204,8 +191,6 @@ fn the_options_classes_are_declared_with_rust_s_methods() {
         "  defaultLanguage(language: string): I18nOptions;",
         "  fallbackLanguage(language: string): I18nOptions;",
         "  missingMessage(policy: string): I18nOptions;",
-        "export declare class NavigationOptions {",
-        "  addRoute(pattern: string, options?: RouteOptions | null): NavigationOptions;",
         "export declare class InputMapOptions {",
         "  bindKey(context: string, sequence: string, action: string): InputMapOptions;",
         "export declare class ConfigurationBuilder {",

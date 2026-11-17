@@ -9,8 +9,9 @@ selected content.
 builder.add_navigation(|_| {}).add_selection()
 ```
 
-The selection follows the [navigation service](navigation.md), registered before or after it; startup fails without
-one.
+The selection follows the app's `dyn NavigationService` ([navigation](navigation.md): `add_navigation(..)` from
+`rayx_services_navigation`, or the app's own), registered before or after it, and clears on every route change;
+startup fails without one.
 
 ## Use
 

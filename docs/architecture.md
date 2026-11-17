@@ -6,8 +6,9 @@ depends on `rayx_app` alone.
 | Crate | What it holds | NSH |
 | --- | --- | --- |
 | `rayx_app` | Dependency injection (singleton, scoped and transient services, scopes, async startup), configuration sources, .NET's options model and the `RayXAppBuilder` | no |
-| `rayx_runtime` | The app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets, fonts, translations | no |
-| `rayx_app_nsh` | The NSH layer: the app's start on each surface, a root provider per surface, a scope per screen, view-model activation and binding, navigation regions, the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts and the services' classes), and the NSH side of the services | yes |
+| `rayx_runtime` | The app services not yet in crates of their own: storage, operations and history, selection, input maps, app configuration, translations | no |
+| `rayx_services_<name>` | RayX's implementation of one core service contract each, on NSH: `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_navigation` (with its regions as NSH navigation stacks) | yes |
+| `rayx_app_nsh` | The NSH layer: the app's start on each surface, a root provider per surface, a scope per screen, view-model activation and binding, the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts and the services' classes), and the NSH side of the services | yes |
 | `rayx_components` | The component library: the design system's tokens as an NSH theme document (`theme.json`, generated from the Figma export) read through typed keys, its modes as the document's modifiers, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
 | `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_app`, `rayx_app_nsh` and `rayx`; `#[app_extension]` and `#[contract]`, re-exported by `rayx_app_nsh` and `rayx`; `#[native_module]`, used as `#[rayx::native_module]` | no |

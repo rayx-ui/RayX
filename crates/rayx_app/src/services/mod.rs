@@ -6,6 +6,7 @@
 pub mod app;
 pub mod assets;
 pub mod fonts;
+pub mod navigation;
 pub mod platform;
 pub mod storage;
 pub mod suspension;

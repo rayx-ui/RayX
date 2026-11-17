@@ -6,10 +6,9 @@ use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
 use rayx_app::di::{StartupInitializationContext, StartupInitializationError};
-use rayx_app::{RayXAppBuilder, ServiceProvider};
-use rayx_runtime::services::navigation::{
-    NavigationAppBuilderExt, NavigationService, RouteDefinition,
-};
+use rayx_app::services::navigation::NavigationService;
+use rayx_app::testing::FakeNavigation;
+use rayx_app::{AppBuilder as _, RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::selection::{
     SelectionAppBuilderExt, SelectionAreaId, SelectionService, SelectionStatus,
 };
@@ -23,21 +22,25 @@ fn selected(characters: usize) -> SelectionStatus {
     }
 }
 
-fn services() -> (NavigationService, SelectionService) {
-    let services = RayXAppBuilder::new()
-        .add_navigation(|options| {
-            options.add_route(RouteDefinition::new("/a"));
-            options.add_route(RouteDefinition::new("/b"));
-        })
+/// `builder` with a fake navigation as its `dyn NavigationService`.
+fn with_navigation(mut builder: RayXAppBuilder) -> RayXAppBuilder {
+    builder
+        .services_mut()
+        .replace_service::<dyn NavigationService>(
+            FakeNavigation::new() as Arc<dyn NavigationService>
+        );
+    builder
+}
+
+fn services() -> (Arc<dyn NavigationService>, SelectionService) {
+    let services = with_navigation(RayXAppBuilder::new())
         .add_selection()
         .build()
         .unwrap();
     (
         services
-            .required_service::<NavigationService>()
-            .unwrap()
-            .as_ref()
-            .clone(),
+            .required_service::<dyn NavigationService>()
+            .unwrap(),
         services
             .required_service::<SelectionService>()
             .unwrap()
@@ -91,7 +94,7 @@ fn navigation_clears_the_selection() {
     let (navigation, selection) = services();
     selection.activate(SelectionAreaId::from_raw(1), selected(5));
     let revision = selection.navigation_revision();
-    navigation.navigate_to("/b").unwrap();
+    block_on(navigation.navigate_to("/b")).unwrap();
     assert_eq!(selection.active_area(), None);
     assert_eq!(selection.status(), SelectionStatus::default());
     assert_eq!(selection.navigation_revision(), revision + 1);
@@ -110,23 +113,16 @@ fn start(builder: RayXAppBuilder) -> Result<ServiceProvider, StartupInitializati
 
 #[test]
 fn the_selection_chains_and_follows_a_navigation_registered_after_it() {
-    let services = start(
-        RayXAppBuilder::new()
-            .add_selection()
-            .add_navigation(|options| {
-                options.default_route = "/a".to_string();
-                options.add_route(RouteDefinition::new("/a"));
-                options.add_route(RouteDefinition::new("/b"));
-            }),
-    )
-    .unwrap();
+    let services = start(with_navigation(RayXAppBuilder::new().add_selection())).unwrap();
     let selection = services.required_service::<SelectionService>().unwrap();
     selection.activate(SelectionAreaId::from_raw(1), selected(5));
-    services
-        .required_service::<NavigationService>()
-        .unwrap()
-        .navigate_to("/b")
-        .unwrap();
+    block_on(
+        services
+            .required_service::<dyn NavigationService>()
+            .unwrap()
+            .navigate_to("/b"),
+    )
+    .unwrap();
     assert_eq!(selection.active_area(), None);
 }
 

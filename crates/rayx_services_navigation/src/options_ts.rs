@@ -1,9 +1,10 @@
 //! The navigation service's options for TSX (`addNavigation`).
 
 use nsh_core::prelude::*;
-use rayx_runtime::services::navigation::{NavigationOptions as Navigation, RouteDefinition};
+use rayx_app_nsh::ts::push;
 
-use crate::configuration::options_ts::push;
+use crate::options::NavigationOptions as Navigation;
+use crate::routes::RouteDefinition;
 
 /// How a route `NavigationOptions.addRoute` adds is shown.
 #[derive(Clone, Debug, Default, PartialEq, JsObject)]

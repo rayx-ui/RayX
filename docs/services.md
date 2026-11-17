@@ -77,10 +77,11 @@ provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.
 
 **Contracts in the core, implementations in crates.** A service's trait and data types live in `rayx_app::services`
 (NSH-free, building for `wasm32-unknown-unknown`), and RayX's implementation in a crate of its own: the platform,
-suspension, asset, font and storage services are `rayx_services_platform`, `rayx_services_suspension`,
-`rayx_services_assets`, `rayx_services_fonts` and `rayx_services_storage`, each registering itself as `dyn Trait`
-(`add_platform()`, `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, `add_storage()`, and `builder.addPlatform()`
-and the others in TS, once the crate's set is registered). A service that
+suspension, asset, font, storage and navigation services are `rayx_services_platform`,
+`rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage` and
+`rayx_services_navigation`, each registering itself as `dyn Trait` (`add_platform()`, `add_suspension()`,
+`add_assets(..)`, `add_fonts(..)`, `add_storage()`, `add_navigation(..)`, and `builder.addPlatform()` and the others in
+TS, once the crate's set is registered). A service that
 needs another resolves it by trait, so an app's own implementation, in Rust or TS, replaces RayX's anywhere;
 `rayx_app::testing` has a fake of each trait. `rayx_runtime` still holds the services not yet moved.
 

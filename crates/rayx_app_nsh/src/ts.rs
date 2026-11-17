@@ -15,14 +15,14 @@
 //!   `createScope` and `dispose`. A RayX service's class is its own token, and a
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
 //!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
-//! - The services' classes: [`I18nService`], [`NavigationService`] (with
-//!   [`NavigationRegion`]s) and [`ApplicationConfigurationService`]; the service crates
-//!   (`rayx_services_*`) add theirs (`AssetService`, `FontService`, `KeyValueStore`,
+//! - The services' classes: [`I18nService`] and [`ApplicationConfigurationService`]; the
+//!   service crates (`rayx_services_*`) add theirs (`AssetService`, `FontService`,
+//!   `KeyValueStore`, `NavigationService` with `NavigationRegion`,
 //!   `PlatformInfoService`, `SuspensionService`) with their sets.
 //!
 //! # Options classes
 //!
-//! [`I18nOptions`], [`NavigationOptions`], [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
+//! [`I18nOptions`], [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
 //! `configureAppConfiguration`: what a builder method's callback gets, valid during the call.
 //!
 //! The structs live beside their services (`services/<name>/`, `di/`, `app/`, `configuration/`)
@@ -59,9 +59,6 @@ pub use crate::services::i18n::options_ts::I18nOptions;
 pub use crate::services::input_map::options_ts::InputMapOptions;
 pub use crate::services::json;
 pub use crate::services::listeners_ts::Listeners;
-pub use crate::services::navigation::navigation_ts::NavigationService;
-pub use crate::services::navigation::options_ts::{NavigationOptions, RouteOptions};
-pub use crate::services::navigation::region_ts::NavigationRegion;
 
 /// What names a service of type `T` in TS: its class (a RayX service's, whose constructor is
 /// private, so it is taken through its `prototype`), or a [`ServiceToken`].
@@ -104,10 +101,7 @@ pub fn register(registry: &mut Registry) {
         .class::<ConfigurationBuilder>()
         .class::<ApplicationConfigurationOptions>()
         .class::<I18nOptions>()
-        .class::<NavigationOptions>()
         .class::<InputMapOptions>()
         .service_class::<I18nService>()
-        .service_class::<NavigationService>()
-        .class::<NavigationRegion>()
         .service_class::<ApplicationConfigurationService>();
 }

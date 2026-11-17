@@ -12,20 +12,19 @@ use std::sync::{Mutex, MutexGuard};
 use std::time::Duration;
 
 use crossbeam_channel::{Receiver, Sender};
+use futures::executor::block_on;
 use nsh_core::platform::{Environment, Os};
 use nsh_core::{
     ApproxTextEngine, Command, EventKind, EventPayload, MountBatch, MountItem, PayloadValue,
     ROOT_ID, prelude::*,
 };
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::location_of_address;
-use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::navigation::{
-    NavigationArgs, NavigationHistoryMode, NavigationService, RouteDefinition,
-};
+use rayx_app::services::navigation::{NavigationArgs, NavigationHistoryMode, NavigationService};
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
-    navigation_view,
+};
+use rayx_services_navigation::{
+    NavigationAppBuilderExt as _, RouteDefinition, location_of_address, navigation_view,
 };
 
 /// The page's origin and base.
@@ -149,10 +148,10 @@ impl Running {
         running
     }
 
-    fn navigation(&self) -> std::sync::Arc<NavigationService> {
+    fn navigation(&self) -> std::sync::Arc<dyn NavigationService> {
         ROOT.with_borrow(|root| root.clone())
             .expect("the app started")
-            .required_service::<NavigationService>()
+            .required_service::<dyn NavigationService>()
             .unwrap()
     }
 
@@ -212,11 +211,7 @@ impl Running {
     }
 
     fn root_index(&self) -> Option<usize> {
-        self.navigation()
-            .journal("root")
-            .unwrap()
-            .unwrap()
-            .current_index()
+        self.navigation().journal("root").unwrap().current_index()
     }
 }
 
@@ -236,10 +231,7 @@ fn a_deep_link_starts_the_navigation_there() {
     let shown = &app.started;
     assert!(shows(shown, "at /projects/1"), "shown: {shown:?}");
     assert!(shows(shown, "panel /settings"), "shown: {shown:?}");
-    assert_eq!(
-        app.navigation().location().unwrap(),
-        "/projects/1?panel=%2Fsettings"
-    );
+    assert_eq!(app.navigation().location(), "/projects/1?panel=%2Fsettings");
     // The page is there already: no address is set, not even the navigation's start.
     assert_eq!(app.heard, []);
 }
@@ -250,24 +242,21 @@ fn navigations_reach_nsh_s_app_address() {
     let mut app = Running::start("/");
     let navigation = app.navigation();
 
-    navigation.navigate_to("/projects/1").unwrap();
+    block_on(navigation.navigate_to("/projects/1")).unwrap();
     app.wait_for_address("/projects/1");
-    navigation
-        .navigate_in_region("panel", NavigationArgs::new("/settings"))
-        .unwrap();
+    block_on(navigation.navigate_in_region("panel", NavigationArgs::new("/settings"))).unwrap();
     app.wait_for_address("/projects/1?panel=%2Fsettings");
-    navigation
-        .navigate_in_region(
-            "root",
-            NavigationArgs {
-                history_mode: NavigationHistoryMode::Replace,
-                ..NavigationArgs::new("/projects/2")
-            },
-        )
-        .unwrap();
+    block_on(navigation.navigate_in_region(
+        "root",
+        NavigationArgs {
+            history_mode: NavigationHistoryMode::Replace,
+            ..NavigationArgs::new("/projects/2")
+        },
+    ))
+    .unwrap();
     app.wait_for_address("/projects/2?panel=%2Fsettings");
     // Closing a region is a navigation of the default mode, a push: back opens it again.
-    navigation.close_region("panel").unwrap();
+    block_on(navigation.close_region("panel".into())).unwrap();
     app.wait_for_address("/projects/2");
 
     assert_eq!(
@@ -286,11 +275,9 @@ fn the_navigations_of_one_turn_share_a_history_entry() {
     let _serial = serial();
     let mut app = Running::start("/");
     let navigation = app.navigation();
-    navigation.navigate_to("/projects/1").unwrap();
-    navigation.navigate_to("/settings").unwrap();
-    navigation
-        .navigate_in_region("panel", NavigationArgs::new("/projects/2"))
-        .unwrap();
+    block_on(navigation.navigate_to("/projects/1")).unwrap();
+    block_on(navigation.navigate_to("/settings")).unwrap();
+    block_on(navigation.navigate_in_region("panel", NavigationArgs::new("/projects/2"))).unwrap();
     let at = address("/settings?panel=%2Fprojects%2F2");
     let shown = app.wait_for(|shown, heard| {
         shows(shown, "panel /projects/2") && heard.last().is_some_and(|(url, _)| *url == at)
@@ -309,9 +296,9 @@ fn the_platform_s_moves_take_the_navigation_along() {
     let _serial = serial();
     let mut app = Running::start("/");
     let navigation = app.navigation();
-    navigation.navigate_to("/projects/1").unwrap();
+    block_on(navigation.navigate_to("/projects/1")).unwrap();
     app.wait_for_address("/projects/1");
-    navigation.navigate_to("/settings").unwrap();
+    block_on(navigation.navigate_to("/settings")).unwrap();
     app.wait_for_address("/settings");
     let sent = app.heard.len();
 
@@ -335,7 +322,7 @@ fn the_platform_s_moves_take_the_navigation_along() {
 
     // The platform's moves are not the app's: no address went back to the page.
     assert_eq!(app.heard.len(), sent);
-    assert_eq!(navigation.location().unwrap(), "/settings");
+    assert_eq!(navigation.location(), "/settings");
 }
 
 #[test]

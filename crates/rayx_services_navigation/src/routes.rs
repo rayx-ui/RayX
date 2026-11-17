@@ -1,38 +1,14 @@
-use super::{NavigationError, Result};
+//! RayX's routing: the routes an app declares ([`RouteDefinition`]), matched from URIs
+//! (`/projects/{id}`) by a [`RouteMap`].
+
+use std::collections::{BTreeMap, HashSet};
+
+use rayx_app::services::navigation::{
+    NavigationError, Result, Route, RouteParams, RoutingData, RoutingStatus,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::{BTreeMap, HashSet};
 use url::Url;
-
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct RouteParams(BTreeMap<String, String>);
-
-impl RouteParams {
-    pub fn new(values: impl IntoIterator<Item = (impl Into<String>, impl Into<String>)>) -> Self {
-        Self(
-            values
-                .into_iter()
-                .map(|(key, value)| (key.into(), value.into()))
-                .collect(),
-        )
-    }
-
-    pub fn get(&self, key: &str) -> Option<&str> {
-        self.0.get(key).map(String::as_str)
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = (&String, &String)> {
-        self.0.iter()
-    }
-
-    pub fn into_inner(self) -> BTreeMap<String, String> {
-        self.0
-    }
-}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct RouteDefinition {
@@ -71,7 +47,7 @@ impl RouteDescriptor {
         order: usize,
     ) -> Result<Self> {
         let base_uri = base_uri.into();
-        let route = Route::parse(&definition.pattern, &base_uri, None)?;
+        let route = parse_route(&definition.pattern, &base_uri, None)?;
         let is_catch_all = route
             .segments
             .iter()
@@ -101,62 +77,41 @@ impl RouteDescriptor {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Route {
-    pub uri: String,
-    pub base_uri: String,
-    pub path: String,
-    pub query: String,
-    pub fragment: String,
-    pub location: String,
-    pub segments: Vec<String>,
-    pub params: RouteParams,
-    pub query_params: RouteParams,
-    pub passed_parameters: Option<Value>,
-    pub component: Option<String>,
-    pub pattern: String,
-    pub prewarm: bool,
+/// `uri` as a route of the app at `base_uri`, matched to none yet.
+pub fn parse_route(
+    uri: impl AsRef<str>,
+    base_uri: impl AsRef<str>,
+    passed_parameters: Option<Value>,
+) -> Result<Route> {
+    let base_uri = sanitize_base_uri(base_uri.as_ref());
+    let uri = sanitize_uri(uri.as_ref());
+    let parts = route_parts(&uri, &base_uri)?;
+    let location = build_location(&parts.path, &parts.query, &parts.fragment);
+
+    Ok(Route {
+        uri,
+        base_uri,
+        path: parts.path.clone(),
+        query: parts.query.clone(),
+        fragment: parts.fragment.clone(),
+        location,
+        segments: split_segments(&parts.path),
+        params: RouteParams::default(),
+        query_params: parse_query_params(&parts.query),
+        passed_parameters,
+        component: None,
+        pattern: String::new(),
+        prewarm: false,
+    })
 }
 
-impl Route {
-    pub fn parse(
-        uri: impl AsRef<str>,
-        base_uri: impl AsRef<str>,
-        passed_parameters: Option<Value>,
-    ) -> Result<Self> {
-        let base_uri = sanitize_base_uri(base_uri.as_ref());
-        let uri = sanitize_uri(uri.as_ref());
-        let parts = route_parts(&uri, &base_uri)?;
-        let location = build_location(&parts.path, &parts.query, &parts.fragment);
-
-        Ok(Self {
-            uri,
-            base_uri,
-            path: parts.path.clone(),
-            query: parts.query.clone(),
-            fragment: parts.fragment.clone(),
-            location,
-            segments: split_segments(&parts.path),
-            params: RouteParams::default(),
-            query_params: parse_query_params(&parts.query),
-            passed_parameters,
-            component: None,
-            pattern: String::new(),
-            prewarm: false,
-        })
-    }
-
-    pub(crate) fn with_descriptor(
-        mut self,
-        descriptor: &RouteDescriptor,
-        params: RouteParams,
-    ) -> Self {
-        self.params = params;
-        self.component = descriptor.component.clone();
-        self.pattern = descriptor.pattern.clone();
-        self.prewarm = descriptor.prewarm;
-        self
-    }
+/// `route` matched to `descriptor`, with its `params`.
+fn with_descriptor(mut route: Route, descriptor: &RouteDescriptor, params: RouteParams) -> Route {
+    route.params = params;
+    route.component = descriptor.component.clone();
+    route.pattern = descriptor.pattern.clone();
+    route.prewarm = descriptor.prewarm;
+    route
 }
 
 #[derive(Clone, Debug)]
@@ -223,16 +178,16 @@ impl RouteMap {
         if is_external_uri(uri, &self.base_uri) {
             return Ok(RoutingData {
                 status: RoutingStatus::SkippedExternalRoute,
-                route: Route::parse(uri, &self.base_uri, passed_parameters)?,
+                route: parse_route(uri, &self.base_uri, passed_parameters)?,
             });
         }
 
-        let route = Route::parse(uri, &self.base_uri, passed_parameters)?;
+        let route = parse_route(uri, &self.base_uri, passed_parameters)?;
         for descriptor in &self.descriptors {
             if let Some(params) = descriptor.matches(&route) {
                 return Ok(RoutingData {
                     status: RoutingStatus::Success,
-                    route: route.with_descriptor(descriptor, params),
+                    route: with_descriptor(route, descriptor, params),
                 });
             }
         }
@@ -288,24 +243,6 @@ impl RouteBuilder<'_> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct RoutingData {
-    pub status: RoutingStatus,
-    pub route: Route,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum RoutingStatus {
-    None,
-    Success,
-    FailedNotFound,
-    ComponentNotFound,
-    SkippedSameRoute,
-    SkippedExternalRoute,
-    SkippedNoHistory,
-    Cancelled,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct ParsedRouteParts {
     path: String,
     query: String,
@@ -358,7 +295,7 @@ fn match_route(template_segments: &[String], path_segments: &[String]) -> Option
         }
     }
 
-    Some(RouteParams(params))
+    Some(RouteParams::new(params))
 }
 
 fn match_catch_all_route(
@@ -370,7 +307,7 @@ fn match_catch_all_route(
         if is_catch_all_parameter(template) {
             let name = route_parameter_name(template)?;
             params.insert(name.to_string(), path_segments[index..].join("/"));
-            return Some(RouteParams(params));
+            return Some(RouteParams::new(params));
         }
 
         let path = path_segments.get(index)?;
@@ -381,7 +318,7 @@ fn match_catch_all_route(
         }
     }
 
-    (template_segments.len() == path_segments.len()).then_some(RouteParams(params))
+    (template_segments.len() == path_segments.len()).then_some(RouteParams::new(params))
 }
 
 fn route_parameter_name(segment: &str) -> Option<&str> {
@@ -503,15 +440,11 @@ fn parse_query_params(query: &str) -> RouteParams {
         return RouteParams::default();
     }
 
-    RouteParams(
+    RouteParams::new(
         query
             .split('&')
             .filter(|part| !part.is_empty())
-            .map(|part| {
-                let (key, value) = split_once(part, '=');
-                (key.to_string(), value.to_string())
-            })
-            .collect(),
+            .map(|part| split_once(part, '=')),
     )
 }
 

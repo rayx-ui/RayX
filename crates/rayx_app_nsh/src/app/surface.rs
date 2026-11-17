@@ -212,7 +212,7 @@ pub fn app_services() -> Result<ServiceProvider, AppError> {
 }
 
 /// Starts the app on this surface with `builder`: builds the root provider (NSH's services added
-/// where the app registered none: its key-value store and location) and
+/// where the app registered none: its key-value store) and
 /// initializes every startup service in dependency order (a layer's services concurrently),
 /// each within its timeout ([`AsyncInitializable::initialization_timeout`], else the builder's
 /// default). The root is installed, and [`app_state`] becomes `Ready`, only once all of them
@@ -379,7 +379,6 @@ async fn initialize(
 ) -> Result<ServiceProvider, AppError> {
     crate::binding::start_dispatcher();
     let mut builder = builder;
-    crate::services::add_nsh_storage_and_location(builder.services_mut());
     require_host_services(&mut builder, language);
     if let Some(runner) = crate::binding::EngineRunner::current() {
         builder.services_mut().replace_service(runner);

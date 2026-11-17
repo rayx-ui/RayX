@@ -12,6 +12,12 @@ use crate::published::{EventStream, StateCell};
 use crate::services::app::AppBuilder;
 use crate::services::assets::{AssetCatalog, AssetError, AssetService};
 use crate::services::fonts::{FontService, FontServiceError, FontState, RegisteredFontFace};
+use crate::services::navigation::{
+    LocationChangedEvent, NavigationDirection, NavigationError, NavigationEvent,
+    NavigationHistoryMode, NavigationJournal, NavigationLifecycleData, NavigationRegion,
+    NavigationRequest, NavigationResult, NavigationService, NavigationState, Route,
+    RouteChangedEvent, RouteParams, RoutingData, RoutingStatus,
+};
 use crate::services::platform::{PlatformInfoService, PlatformSnapshot};
 use crate::services::storage::{KeyValueStore, StorageCapabilities, StorageError};
 use crate::services::suspension::{
@@ -323,6 +329,285 @@ impl KeyValueStore for FakeKeyValueStore {
         self.with(move |buckets| {
             buckets.remove(&bucket);
         })
+    }
+}
+
+/// A navigation service whose every URI is a route (`/projects/1` matches itself, with no
+/// parameters): it keeps the regions' journals as RayX's does, publishes the state and the
+/// events, and records the navigations it is asked. Its location is the root region's route;
+/// the root region, `root`, is the URL region.
+pub struct FakeNavigation {
+    navigation: StateCell<NavigationState>,
+    events: EventStream<NavigationEvent>,
+    requests: Mutex<Vec<NavigationRequest>>,
+}
+
+impl FakeNavigation {
+    pub fn new() -> Arc<Self> {
+        let mut state = NavigationState {
+            root_region: "root".to_owned(),
+            location: "/".to_owned(),
+            ..NavigationState::default()
+        };
+        state
+            .regions
+            .insert("root".to_owned(), NavigationRegion::new("root", 40));
+        Arc::new(Self {
+            navigation: StateCell::new(state),
+            events: EventStream::new(),
+            requests: Mutex::default(),
+        })
+    }
+
+    /// The navigations asked of it, in order.
+    pub fn requests(&self) -> Vec<NavigationRequest> {
+        lock(&self.requests).clone()
+    }
+
+    /// The route the fake gives `uri`: its path, query and fragment, split.
+    pub fn route(uri: &str) -> Route {
+        let (without_fragment, fragment) = uri.split_once('#').unwrap_or((uri, ""));
+        let (path, query) = without_fragment
+            .split_once('?')
+            .unwrap_or((without_fragment, ""));
+        Route {
+            uri: uri.to_owned(),
+            base_uri: "app://".to_owned(),
+            path: path.to_owned(),
+            query: query.to_owned(),
+            fragment: fragment.to_owned(),
+            location: uri.to_owned(),
+            segments: path.split('/').map(ToOwned::to_owned).collect(),
+            params: RouteParams::default(),
+            query_params: RouteParams::default(),
+            passed_parameters: None,
+            component: None,
+            pattern: path.to_owned(),
+            prewarm: false,
+        }
+    }
+
+    /// Takes `region` to `route` (recorded in its journal with `mode`), publishing the state,
+    /// then the events.
+    fn go(
+        &self,
+        region: &str,
+        route: Route,
+        mode: NavigationHistoryMode,
+        direction: NavigationDirection,
+    ) -> NavigationResult {
+        let mut state = (*self.navigation.get()).clone();
+        let entry = state
+            .regions
+            .entry(region.to_owned())
+            .or_insert_with(|| NavigationRegion::new(region, 40));
+        if direction == NavigationDirection::New
+            && entry
+                .current_route()
+                .is_some_and(|current| current.uri == route.uri)
+        {
+            return NavigationResult {
+                region: region.to_owned(),
+                direction,
+                status: RoutingStatus::SkippedSameRoute,
+                route,
+            };
+        }
+        let data = RoutingData {
+            status: RoutingStatus::Success,
+            route: route.clone(),
+        };
+        let previous = entry.current.replace(data.clone());
+        entry.journal.record(route.clone(), mode);
+        if region == state.root_region {
+            state.location = route.location.clone();
+        }
+        self.navigation.publish(state);
+        let lifecycle = NavigationLifecycleData {
+            region: region.to_owned(),
+            direction,
+            from: previous.clone(),
+            to: data.clone(),
+        };
+        if previous.is_some() {
+            self.events
+                .publish(NavigationEvent::NavigatedFrom(lifecycle.clone()));
+        }
+        self.events.publish(NavigationEvent::NavigatedTo(lifecycle));
+        self.events
+            .publish(NavigationEvent::RouteChanged(RouteChangedEvent {
+                region: region.to_owned(),
+                from: previous.map(|previous| previous.route),
+                to: route.clone(),
+            }));
+        self.events
+            .publish(NavigationEvent::LocationChanged(LocationChangedEvent {
+                region: region.to_owned(),
+                data,
+            }));
+        NavigationResult {
+            region: region.to_owned(),
+            direction,
+            status: RoutingStatus::Success,
+            route,
+        }
+    }
+
+    /// Moves `region`'s journal with `step` and goes to the entry it gives.
+    fn step(
+        &self,
+        region: &str,
+        direction: NavigationDirection,
+        step: impl FnOnce(&mut NavigationJournal) -> Option<Route>,
+    ) -> Result<NavigationResult, NavigationError> {
+        let mut state = (*self.navigation.get()).clone();
+        let Some(entry) = state.regions.get_mut(region) else {
+            return Err(NavigationError::Location(format!("no region {region}")));
+        };
+        let Some(route) = step(&mut entry.journal) else {
+            let route = entry
+                .current_route()
+                .cloned()
+                .unwrap_or_else(|| Self::route("/"));
+            return Ok(NavigationResult {
+                region: region.to_owned(),
+                direction,
+                status: RoutingStatus::SkippedNoHistory,
+                route,
+            });
+        };
+        self.navigation.publish(state);
+        Ok(self.go(region, route, NavigationHistoryMode::None, direction))
+    }
+}
+
+fn ready<T: Send + 'static>(value: T) -> BoxFuture<'static, T> {
+    futures::future::ready(value).boxed()
+}
+
+impl NavigationService for FakeNavigation {
+    fn navigation(&self) -> &StateCell<NavigationState> {
+        &self.navigation
+    }
+
+    fn events(&self) -> &EventStream<NavigationEvent> {
+        &self.events
+    }
+
+    fn root_region_name(&self) -> String {
+        "root".to_owned()
+    }
+
+    fn url_region(&self) -> String {
+        "root".to_owned()
+    }
+
+    fn default_history_mode(&self) -> NavigationHistoryMode {
+        NavigationHistoryMode::Push
+    }
+
+    fn navigate(
+        &self,
+        request: NavigationRequest,
+    ) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
+        lock(&self.requests).push(request.clone());
+        let route = Self::route(&request.args.uri);
+        ready(Ok(self.go(
+            &request.region,
+            route,
+            request.args.history_mode,
+            NavigationDirection::New,
+        )))
+    }
+
+    fn back(&self, region: String) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
+        ready(self.step(
+            &region,
+            NavigationDirection::Back,
+            NavigationJournal::try_go_back,
+        ))
+    }
+
+    fn forward(&self, region: String) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
+        ready(self.step(
+            &region,
+            NavigationDirection::Forward,
+            NavigationJournal::try_go_forward,
+        ))
+    }
+
+    fn refresh(&self, region: String) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
+        ready(self.step(&region, NavigationDirection::Refresh, |journal| {
+            journal.current().cloned()
+        }))
+    }
+
+    fn go_to_entry(
+        &self,
+        region: String,
+        index: usize,
+    ) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
+        let result = self.step(&region, NavigationDirection::Back, |journal| {
+            journal.go_to(index)
+        });
+        ready(result.and_then(|result| {
+            if result.status == RoutingStatus::SkippedNoHistory {
+                Err(NavigationError::Location(format!(
+                    "region {region} has no journal entry {index}"
+                )))
+            } else {
+                Ok(result)
+            }
+        }))
+    }
+
+    fn ensure_region(&self, region: String) -> BoxFuture<'_, Result<(), NavigationError>> {
+        if self.navigation.get().region(&region).is_none() {
+            let mut state = (*self.navigation.get()).clone();
+            state
+                .regions
+                .insert(region.clone(), NavigationRegion::new(region, 40));
+            self.navigation.publish(state);
+        }
+        ready(Ok(()))
+    }
+
+    fn close_region(&self, region: String) -> BoxFuture<'_, Result<bool, NavigationError>> {
+        let mut state = (*self.navigation.get()).clone();
+        let open = region != state.root_region
+            && state.regions.get_mut(&region).is_some_and(|entry| {
+                let open = entry.current.take().is_some();
+                entry.journal.clear();
+                open
+            });
+        if open {
+            self.navigation.publish(state);
+            self.events
+                .publish(NavigationEvent::RegionClosed { region });
+        }
+        ready(Ok(open))
+    }
+
+    fn remove_region(&self, region: String) -> BoxFuture<'_, Result<bool, NavigationError>> {
+        let mut state = (*self.navigation.get()).clone();
+        let removed = region != state.root_region && state.regions.remove(&region).is_some();
+        if removed {
+            self.navigation.publish(state);
+        }
+        ready(Ok(removed))
+    }
+
+    fn apply_location(
+        &self,
+        location: String,
+    ) -> BoxFuture<'_, Result<Vec<NavigationResult>, NavigationError>> {
+        let route = Self::route(&location);
+        ready(Ok(vec![self.go(
+            "root",
+            route,
+            NavigationHistoryMode::Push,
+            NavigationDirection::New,
+        )]))
     }
 }
 

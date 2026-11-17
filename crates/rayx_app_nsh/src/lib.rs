@@ -24,15 +24,6 @@
 //! - **Activation.** [`use_view_model`] resolves an [`ActivatableViewModel`] in the screen's scope
 //!   and activates it until the component's cleanup; [`ts::ServiceProvider::view_model`]
 //!   activates what a Rust bridge resolves for TSX until the provider is disposed.
-//! - **Navigation regions.** [`navigation_region`] shows a region of the navigation service as
-//!   an NSH navigation stack whose pages are its journal up to the current entry (a native pop
-//!   takes the journal back), [`navigation_view`] as its current route alone, and
-//!   [`ts::NavigationRegion`] gives TSX the same.
-//! - **The location.** [`NshLocationSynchronizer`] shows the navigation's location as NSH's app
-//!   address (`app_url`, `set_app_url_with`: the web's address bar and history, the link that
-//!   opened a native app), takes the navigation to the address at start once the app is ready
-//!   and follows the platform's moves of it (back, forward, a typed address) and the deep links
-//!   that open the app while it runs.
 //! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
 //!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
@@ -51,10 +42,10 @@
 //!   messages when it builds), and the [`ts::I18nService`] class gives TSX them
 //!   (`services.getRequiredService(I18nService).t("id", { n: 3 })`) and their changes.
 //! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
-//!   and is its own token (`I18nService`, `NavigationService` and
-//!   `ApplicationConfigurationService` here; `AssetService`, `FontService`, `KeyValueStore`,
-//!   `PlatformInfoService` and `SuspensionService` in their crates' sets), and its `onChange`
-//!   hears the service's changes.
+//!   and is its own token (`I18nService` and `ApplicationConfigurationService` here;
+//!   `AssetService`, `FontService`, `KeyValueStore`, `NavigationService`, `PlatformInfoService`
+//!   and `SuspensionService` in their crates' sets), and its `onChange` hears the service's
+//!   changes.
 //! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
 //!   Clock())` and every other lifetime, startup and `As` form, keyed by a TS class or a
 //!   [`ts::ServiceToken`], with the TS startup interfaces `AsyncInitializable` and
@@ -127,5 +118,3 @@ pub use rayx_runtime;
 #[doc(hidden)]
 pub use services::i18n::translate::__private;
 pub use services::i18n::translate::{checked, translate};
-pub use services::navigation::location::{NshLocationSynchronizer, location_of_address};
-pub use services::navigation::region::{navigation_region, navigation_view};

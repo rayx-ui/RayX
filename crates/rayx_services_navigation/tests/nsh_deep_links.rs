@@ -16,12 +16,11 @@ use nsh_core::{
     prelude::*,
 };
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::navigation::{NavigationService, RouteDefinition};
+use rayx_app::services::navigation::NavigationService;
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
-    navigation_view,
 };
+use rayx_services_navigation::{NavigationAppBuilderExt as _, RouteDefinition, navigation_view};
 
 /// The web page's origin, and the app's base on it (`nsh.json`'s `web.base`).
 const ORIGIN: &str = "https://app.test";
@@ -118,10 +117,10 @@ impl Running {
         running
     }
 
-    fn navigation(&self) -> std::sync::Arc<NavigationService> {
+    fn navigation(&self) -> std::sync::Arc<dyn NavigationService> {
         ROOT.with_borrow(|root| root.clone())
             .expect("the app started")
-            .required_service::<NavigationService>()
+            .required_service::<dyn NavigationService>()
             .unwrap()
     }
 
@@ -199,7 +198,7 @@ fn the_link_that_launched_a_native_app_starts_it_there_under_the_base_path() {
             app.wait_for(|shown| shown.iter().any(|text| text == "at /projects/7"));
         }
         assert_eq!(
-            app.navigation().location().unwrap(),
+            app.navigation().location(),
             "/app/projects/7?panel=%2Fsettings",
             "{os:?}"
         );
@@ -218,15 +217,15 @@ fn a_link_that_opens_a_running_native_app_takes_the_navigation_there() {
         Os::Tizen,
     ] {
         let mut app = Running::start(os, |_| {});
-        assert_eq!(app.navigation().location().unwrap(), "/app/", "{os:?}");
+        assert_eq!(app.navigation().location(), "/app/", "{os:?}");
         url_event(&app.engine, "myapp://projects/9", &[]);
         app.wait_for(|shown| shown.iter().any(|text| text == "at /projects/9"));
         assert!(app.shows("at /projects/9"), "{os:?}: {:?}", app.shown);
-        assert_eq!(app.navigation().location().unwrap(), "/app/projects/9");
+        assert_eq!(app.navigation().location(), "/app/projects/9");
         // A link of another scheme is not the app's: NSH drops it.
         url_event(&app.engine, "other://projects/1", &[]);
         app.pump_for(Duration::from_millis(200), |_| false);
-        assert_eq!(app.navigation().location().unwrap(), "/app/projects/9");
+        assert_eq!(app.navigation().location(), "/app/projects/9");
     }
 }
 
@@ -234,7 +233,7 @@ fn a_link_that_opens_a_running_native_app_takes_the_navigation_there() {
 fn a_link_the_web_hands_a_running_app_takes_the_navigation_there() {
     let _serial = serial();
     let mut app = Running::start(Os::Web, |engine| page_at_start(engine, "/app/"));
-    assert_eq!(app.navigation().location().unwrap(), "/app/");
+    assert_eq!(app.navigation().location(), "/app/");
     // The browser's forward to a page the app no longer has (or an earlier load's entry): the
     // web player hands the page's address to the app as a link.
     url_event(
@@ -245,7 +244,7 @@ fn a_link_the_web_hands_a_running_app_takes_the_navigation_there() {
     app.wait_for(|shown| shown.iter().any(|text| text == "at /projects/7"));
     assert!(app.shows("at /projects/7"), "shown: {:?}", app.shown);
     assert_eq!(
-        app.navigation().location().unwrap(),
+        app.navigation().location(),
         "/app/projects/7?panel=%2Fsettings"
     );
 }

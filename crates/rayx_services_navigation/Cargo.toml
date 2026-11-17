@@ -1,0 +1,29 @@
+[package]
+name = "rayx_services_navigation"
+description = "RayX's navigation service on NSH: routes, regions with their journals as NSH navigation stacks and the app's location as NSH's app address, for Rust and TSX."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+rayx_app.workspace = true
+rayx_app_nsh.workspace = true
+nsh-core.workspace = true
+futures = { workspace = true, features = ["std"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+rayx_app_nsh = { workspace = true, features = ["testing"] }
+nsh-core = { workspace = true, features = ["declarations"] }
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
+crossbeam-channel.workspace = true
+futures = { workspace = true, features = ["std", "executor"] }
+serde_json.workspace = true

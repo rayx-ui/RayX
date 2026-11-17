@@ -1,4 +1,7 @@
-#[derive(Debug, thiserror::Error)]
+use crate::services::ContractFailure;
+
+/// Why a navigation failed.
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 pub enum NavigationError {
     #[error("duplicate route: {0}")]
     DuplicateRoute(String),
@@ -12,6 +15,16 @@ pub enum NavigationError {
     /// not have).
     #[error("{0}")]
     Location(String),
+    /// The call failed (a TS implementation threw, the engine is gone).
+    #[error("{0}")]
+    Failed(ContractFailure),
 }
 
-pub type Result<T> = std::result::Result<T, NavigationError>;
+impl From<ContractFailure> for NavigationError {
+    fn from(failure: ContractFailure) -> Self {
+        Self::Failed(failure)
+    }
+}
+
+/// The result of a navigation call.
+pub type Result<T, E = NavigationError> = std::result::Result<T, E>;

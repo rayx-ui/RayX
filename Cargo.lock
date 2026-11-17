@@ -4879,6 +4879,7 @@ dependencies = [
  "rayx_components",
  "rayx_devtools_protocol",
  "rayx_runtime",
+ "rayx_services_navigation",
  "serde_json",
 ]
 
@@ -4967,7 +4968,6 @@ dependencies = [
  "tokio",
  "tokio-tungstenite",
  "tungstenite",
- "url",
 ]
 
 [[package]]
@@ -5003,7 +5003,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "toml 0.9.12+spec-1.1.0",
- "url",
 ]
 
 [[package]]
@@ -5033,6 +5032,21 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "rayx_services_navigation"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
+ "url",
 ]
 
 [[package]]

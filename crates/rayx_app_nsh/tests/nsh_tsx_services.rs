@@ -1,5 +1,6 @@
 //! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root: the
-//! `NavigationService` and `ApplicationConfigurationService` classes reach their services. (The service crates' classes have their groups in their crates.)
+//! `ApplicationConfigurationService` class reaches its service. (The service crates' classes
+//! have their groups in their crates.)
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -35,28 +36,15 @@ impl EngineAssets for AppAssets {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import {
-  ApplicationConfigurationService, NavigationService, RayXAppBuilder,
-} from "test/app";
+import { ApplicationConfigurationService, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
     const services = await new RayXAppBuilder().addHostFakes()
-      .addNavigation((options) => { options.addRoute("/").addRoute("/projects/{id}"); })
       .addApplicationConfiguration()
       .start();
-
-    const navigation = services.getRequiredService(NavigationService);
-    const changes = [];
-    navigation.onChange((event) => changes.push(event.to.path));
-    lines.push(navigation.navigate("/projects/12").status);
-    lines.push(navigation.current().route.path);
-    lines.push(navigation.back().route.path);
-    // Listeners are called on a later turn.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    lines.push(`changes ${changes.join(",")}`);
 
     const configuration = services.getRequiredService(ApplicationConfigurationService);
     lines.push(`${configuration.layoutDirection()} ${typeof configuration.current()}`);
@@ -120,8 +108,5 @@ fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let _engine = Engine::start(config, || ApproxTextEngine, ChannelSink(tx)).unwrap();
     let last = shown(&rx, "done");
     let _ = std::fs::remove_dir_all(&dir);
-    assert_eq!(
-        last,
-        "done Success|/projects/12|/|changes /projects/12,/|ltr object"
-    );
+    assert_eq!(last, "done ltr object");
 }

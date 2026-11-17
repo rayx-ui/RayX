@@ -125,7 +125,6 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
         "class StartupInitializationContext",
         "class ReadyContext",
         "class I18nService",
-        "class NavigationService",
         "component rayx_components::button::Button",
         "type ServiceKey<T>",
     ] {

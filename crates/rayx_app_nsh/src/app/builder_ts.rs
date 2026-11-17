@@ -11,14 +11,12 @@ use rayx_runtime::services::application_configuration::ApplicationConfigurationA
 use rayx_runtime::services::history::HistoryAppBuilderExt as _;
 use rayx_runtime::services::i18n::I18nAppBuilderExt as _;
 use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
-use rayx_runtime::services::navigation::NavigationAppBuilderExt as _;
 use rayx_runtime::services::operations::OperationsAppBuilderExt as _;
 use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
 use crate::ts::{
     ApplicationConfigurationOptions, ConfigurationBuilder, I18nOptions, InputMapOptions,
-    NavigationOptions,
 };
 use std::collections::HashMap;
 
@@ -147,22 +145,6 @@ impl RayXAppBuilder {
             builder.add_i18n(move |options| {
                 for step in &steps {
                     step.apply(options);
-                }
-            })
-        })
-    }
-
-    /// Registers the app's navigation service; `configure` adds its routes
-    /// (`options.addRoute("/projects/{id}")`) after configuration's options.
-    pub fn add_navigation(
-        this: Instance<Self>,
-        #[args(options)] configure: Option<Callback<Instance<NavigationOptions>>>,
-    ) -> Result<Instance<Self>, String> {
-        let routes = record(NavigationOptions::new(), configure, NavigationOptions::take)?;
-        chain_err(this, |builder| {
-            builder.add_navigation(move |options| {
-                for route in &routes {
-                    NavigationOptions::apply(route, options);
                 }
             })
         })

@@ -37,23 +37,20 @@ use nsh_core::prelude::{
     spawn, try_global, untracked,
 };
 use nsh_core::url_scheme::HistoryBehavior;
-use rayx_app::di::AppService;
-use rayx_runtime::services::navigation::{
-    NavigationError, NavigationHistoryMode, NavigationLocationSynchronizer, NavigationService,
-    Result,
-};
+use rayx_app::services::navigation::{NavigationError, NavigationHistoryMode, Result};
+use rayx_app_nsh::{AppState, app_services, app_state};
 
-use crate::{AppState, app_services, app_state};
+use crate::service::RayxNavigation;
+use crate::synchronizer::NavigationLocationSynchronizer;
 
 /// Shows the navigation's location as NSH's app address and follows the platform's moves of
-/// it and the links that open the app. The NSH layer registers it as the app's
-/// `dyn NavigationLocationSynchronizer`, so the navigation moves to the address the app started
-/// at (a deep link, the address bar) once the app is ready, and to every link that opens it
+/// it and the links that open the app. `add_navigation(..)` gives it to RayX's navigation
+/// service, so the navigation moves to the address the app started at (a deep link, the address bar) once the app is ready, and to every link that opens it
 /// while it runs, and shows every navigation there: a push as a new entry of the platform's
 /// history, the other modes in place of the current one. The navigation's `base_path` is
 /// `nsh.json`'s `web.base` on every platform (see the module).
-#[derive(Clone, Default, AppService)]
-pub struct NshLocationSynchronizer {
+#[derive(Clone, Default)]
+pub(crate) struct NshLocationSynchronizer {
     shared: Arc<Shared>,
 }
 
@@ -113,14 +110,14 @@ pub fn location_of_address(address: &str, base_path: &str) -> String {
 
 impl NshLocationSynchronizer {
     /// The synchronizer of the surface the engine runs it on.
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
     /// Where NSH's address is reachable and the address at start was taken: shows the location
     /// that waits. A location NSH refuses (too long, with whitespace, of another origin than the
     /// page's) is the error.
-    pub fn flush(&self) -> Result<()> {
+    pub(crate) fn flush(&self) -> Result<()> {
         if !reachable() || !self.shared.settled.load(Ordering::SeqCst) {
             return Ok(());
         }
@@ -224,7 +221,7 @@ impl NshLocationSynchronizer {
         {
             let location = location_of_address(&address, &navigation.options().base_path);
             let there = navigation.location().is_ok_and(|now| now == location)
-                || navigation.apply_location(&location).is_ok();
+                || navigation.apply_location_now(&location).is_ok();
             if there {
                 // The platform is there already: what waited from the navigation's start goes.
                 if let Ok(mut shown) = self.shared.shown.lock() {
@@ -253,7 +250,7 @@ impl NshLocationSynchronizer {
         if let Ok(mut shown) = self.shared.shown.lock() {
             *shown = Some(location.clone());
         }
-        let _ = navigation.apply_location(&location);
+        let _ = navigation.apply_location_now(&location);
     }
 
     fn wake(&self) {
@@ -266,10 +263,10 @@ impl NshLocationSynchronizer {
 }
 
 /// The ready root's navigation, if it has one.
-fn navigation() -> Option<Arc<NavigationService>> {
+fn navigation() -> Option<Arc<RayxNavigation>> {
     app_services()
         .ok()
-        .and_then(|root| root.service::<NavigationService>())
+        .and_then(|root| root.service::<RayxNavigation>())
 }
 
 impl NavigationLocationSynchronizer for NshLocationSynchronizer {

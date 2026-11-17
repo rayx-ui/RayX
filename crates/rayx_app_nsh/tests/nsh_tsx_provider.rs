@@ -124,7 +124,7 @@ impl Probe {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  I18nService, NavigationService, Probe, RayXAppBuilder, ServiceToken,
+  ApplicationConfigurationService, I18nService, Probe, RayXAppBuilder, ServiceToken,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -141,8 +141,8 @@ setTimeout(async () => {
     lines.push(typeof i18n.locale());
 
     // Nothing registered: `null`, or an error naming the token.
-    lines.push(String(services.getService(NavigationService)));
-    lines.push(thrown(() => services.getRequiredService(NavigationService)).includes("NavigationService") ? "named" : "unnamed");
+    lines.push(String(services.getService(ApplicationConfigurationService)));
+    lines.push(thrown(() => services.getRequiredService(ApplicationConfigurationService)).includes("ApplicationConfigurationService") ? "named" : "unnamed");
     class Mine {}
     lines.push(String(services.getService(Mine)));
     lines.push(thrown(() => services.getRequiredService(Mine)));

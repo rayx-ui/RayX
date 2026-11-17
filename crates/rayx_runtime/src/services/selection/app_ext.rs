@@ -1,19 +1,19 @@
 use super::SelectionService;
-use crate::services::navigation::NavigationService;
 use rayx_app::AppBuilder;
+use rayx_app::services::navigation::NavigationService;
 
 /// Registers the [`SelectionService`] on an app builder.
 pub trait SelectionAppBuilderExt: AppBuilder {
     /// Registers the app's [`SelectionService`] (a startup singleton, cleared on every route
-    /// change) unless one is registered. It follows the app's [`NavigationService`], registered
-    /// before or after it; without one, startup fails.
+    /// change) unless one is registered. It follows the app's `dyn` [`NavigationService`],
+    /// registered before or after it; without one, startup fails.
     fn add_selection(mut self) -> Self {
         self.services_mut()
-            .try_add_app_service_factory::<SelectionService>(|services| {
-                match services.service::<NavigationService>() {
-                    Some(navigation) => SelectionService::new(navigation.as_ref().clone()),
-                    None => SelectionService::without_navigation(),
-                }
+            .try_add_app_service_factory::<SelectionService>(|services| match services
+                .service::<dyn NavigationService>(
+            ) {
+                Some(navigation) => SelectionService::new(navigation.as_ref()),
+                None => SelectionService::without_navigation(),
             });
         self
     }

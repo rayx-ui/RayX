@@ -78,6 +78,8 @@ const i18n = services.getRequiredService(I18nService);
   `start()`, the builder's other methods throw.
 - Options callbacks (`addI18n((options) => …)`) take the Rust options' methods in camelCase, and apply after the
   configuration binds, as in Rust.
+- A service crate's builder method (`addNavigation(..)`, `addFonts(..)`, …) exists, in JS and in the declarations,
+  once the crate's set is registered (`rayx_services_navigation::register(registry)`).
 - `defaultInitializationTimeout(ms)` and every TS timeout are in milliseconds.
 - `start()` requires the platform, suspension, asset and font services (`addPlatform()`, `addSuspension()`,
   `addAssets()`, `addFonts()` from their crates' sets, or the app's own) and rejects naming each one missing.
@@ -120,8 +122,8 @@ listener.
 | Class | Rust service | What it does |
 | --- | --- | --- |
 | `I18nService` | `I18nService` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, `setLanguage(language)` ([I18n](services/i18n.md#tsx)) |
-| `NavigationService` | `NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)) |
-| `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)) |
+| `NavigationService` | `dyn NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)); in `rayx_services_navigation`'s set |
+| `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)); in `rayx_services_storage`'s set |
 | `ApplicationConfigurationService` | `ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()` |
 | `AssetService` | `AssetService` | Asset URLs: `url(path)`, `urlForScale(path, scale)` |
 | `FontService` | `FontService` | Font aliases: `family(alias)`, `aliases()` |
