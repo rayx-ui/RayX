@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 0,
+  "revision": 9,
   "planRevision": 1,
   "specHashes": {
     "requirements": "7f61a19d0a33b5696be1f2e11632bf0f87fe1b476b31d2bdb02d8d44ef477312",
@@ -10,7 +10,10 @@
   },
   "tasks": {
     "t01-crate-renames": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t02-layout": {
       "status": "pending"
@@ -73,11 +76,398 @@
       "status": "pending"
     }
   },
-  "validationBatches": {},
-  "checkResults": {},
-  "reviews": {},
-  "checkpoints": {},
-  "findings": [],
+  "validationBatches": {
+    "917a1a8928b3091415711059ea145207199a6b464843b31f991d508700a0c6b2": {
+      "snapshot": {
+        "specHash": "5c3aadf280487918db278399b8871f464f081a54a4c4c2e8e3882076e487a9f9",
+        "repositories": {
+          "rayx": "94ae130e2e9642dc801d5487b6b6ee95cdfa09e547ce698c3c99f443165d44c2",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T11:44:55Z"
+    },
+    "d2ec1ba5d0b0423f79a0bd559e47b32d61a6cd29c4af1aaba53f0b6130fc165d": {
+      "snapshot": {
+        "specHash": "5c3aadf280487918db278399b8871f464f081a54a4c4c2e8e3882076e487a9f9",
+        "repositories": {
+          "rayx": "cdfc7e1191b86ac8c65c89eaca6dcf164ec1a2bbb20d3b5ce921dbd9ce127d7b",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T11:51:32Z"
+    }
+  },
+  "checkResults": {
+    "s1-crate-names/c-crate-layout/final": {
+      "checkId": "c-crate-layout",
+      "boundaryId": "s1-crate-names",
+      "phase": "final",
+      "batchId": "917a1a8928b3091415711059ea145207199a6b464843b31f991d508700a0c6b2",
+      "definitionHash": "2e927cd2884d00379baf2446f217cd2d10ef8055f1fdbb9ace499be64952fcdd",
+      "basisHash": "77579cce059146f31dbdc5cc074f0445236cc8670aaeaabdd22b7e9546f5e14d",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 3.4401,
+      "recordedAt": "2026-11-17T11:42:20Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s1-crate-names-final-3e5b4144c82f.log",
+      "logSha256": "f849e762b7b75be896cc47e1433ad7509ecb165e8a32afd116af08995395f03b",
+      "inputsHash": "bb53368425fce6ff682d65994947e466bafc979bd6c9bcedc10403e7fafeb086"
+    },
+    "s1-crate-names/c-macro-paths/final": {
+      "checkId": "c-macro-paths",
+      "boundaryId": "s1-crate-names",
+      "phase": "final",
+      "batchId": "d2ec1ba5d0b0423f79a0bd559e47b32d61a6cd29c4af1aaba53f0b6130fc165d",
+      "definitionHash": "9f780c0d7a70ba305c71b67c7e47afbef3c83c94649686fb51ea460f2b46f522",
+      "basisHash": "0006655ff039d950c03d525aebe87c667fb03f707ce13488a07845cdc072652a",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 4,
+      "durationSeconds": 0.7416,
+      "recordedAt": "2026-11-17T11:51:28Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s1-crate-names-final-2b30a996e3c3.log",
+      "logSha256": "7f94d6898be181b10a83a1c622af776b298ab9c5392381d88a942ef2f514ae24",
+      "inputsHash": "82d68aac4b23c741606b368f8e504326e943226ed3a8e3d701efd4b29665cf73"
+    },
+    "s1-crate-names/c-workspace-build/final": {
+      "checkId": "c-workspace-build",
+      "boundaryId": "s1-crate-names",
+      "phase": "final",
+      "batchId": "d2ec1ba5d0b0423f79a0bd559e47b32d61a6cd29c4af1aaba53f0b6130fc165d",
+      "definitionHash": "328134a894accf506af2ec2628bda33a4224bd8e60bc4a6315701de221dac95a",
+      "basisHash": "8c9ee9fee4a61e4b45d49ff2ed8d243681450be96e87bc70d3500323239e8828",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 1.7631,
+      "recordedAt": "2026-11-17T11:51:29Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s1-crate-names-final-6541cdbd8a40.log",
+      "logSha256": "1e87c7781d0dd138711e418eeda102f1ad6bbcfe1291e9cb677e5613bb5ef684",
+      "inputsHash": "bc464e5485b4dd0f601465dfb036bd908ae1428df8017c40283e83b2429d8966"
+    },
+    "s1-crate-names/c-core-wasm/final": {
+      "checkId": "c-core-wasm",
+      "boundaryId": "s1-crate-names",
+      "phase": "final",
+      "batchId": "917a1a8928b3091415711059ea145207199a6b464843b31f991d508700a0c6b2",
+      "definitionHash": "51484270ab9a705ddacd8d3c2004fb5441ad324c1204f8472f2c53f611f12238",
+      "basisHash": "47c03315e7bbfbe5a86676463e04bc919d08806f1a8bf2e870d2e984e98e881d",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 5.0017,
+      "recordedAt": "2026-11-17T11:44:53Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s1-crate-names-final-7501638bf023.log",
+      "logSha256": "f6b5ad57f2338bf8774a70cd2f0850662b244b21408ce82976465227fb0c582f",
+      "inputsHash": "7263a6a8d5da49eff8d5fd27bff9a6321d3654cdd864a4e22cc29b1c938baf74"
+    },
+    "s1-crate-names/c-release-wiring/final": {
+      "checkId": "c-release-wiring",
+      "boundaryId": "s1-crate-names",
+      "phase": "final",
+      "batchId": "d2ec1ba5d0b0423f79a0bd559e47b32d61a6cd29c4af1aaba53f0b6130fc165d",
+      "definitionHash": "44720a59a63a9184b7a5bcb71f863cc04c0f0045d261a3f6c80f2ff1628aa988",
+      "basisHash": "302bd9e7eaee4c62d728ccde6f4395d4ad052da613e034d354c32a52774a940e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 26,
+      "durationSeconds": 2.2405,
+      "recordedAt": "2026-11-17T11:51:32Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s1-crate-names-final-d0f02e2fe6f5.log",
+      "logSha256": "3c8414d1ca1e145a9cd7ec195b2ac2238c92d204a19d501a2590b684e090bc15",
+      "inputsHash": "9d63b304fbf8482c2fce49b96396876c70c19d5ae27b8535d735bfdf7471f2f4"
+    }
+  },
+  "reviews": {
+    "s1-crate-names": {
+      "reviewerId": "reviewer-s1-independent",
+      "snapshotId": "d2ec1ba5d0b0423f79a0bd559e47b32d61a6cd29c4af1aaba53f0b6130fc165d",
+      "criterionIds": [
+        "CRATES-1",
+        "CRATES-2",
+        "CRATES-3",
+        "CRATES-4"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-2"
+          ],
+          "sha256": "dd83cf1f58fabbcda532ccb7721c162d0cd597474c8dca85780517d5fabceecd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-2"
+          ],
+          "sha256": "6b3559e6a575eea0007dafd7fce8dd9491a72ec1c690ebd5d329e5606b0490ca"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1"
+          ],
+          "sha256": "ceffa44e54fd56c5d7f55044ea78043625ae822c6b879c349bbd5c48ab334e83"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1"
+          ],
+          "sha256": "8d17f2ffe60b7405baf65f43062c1e591852741ac78e6da137680c26dea3fea6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-3"
+          ],
+          "sha256": "5fe859f4f2ebdd6a8fc568d5d43ab4c79795300e71adaaa55eb555c0d9f4d2c4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1"
+          ],
+          "sha256": "286a534f2ddf8d1950e04dcc5459c3d023e0909409a6817631854389dc5c3868"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/rust_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1"
+          ],
+          "sha256": "f1cdfd5932f9acac103ce4756207710b26473a66dd3955312bc3a76274677552"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "3403124531a41e1bab3f43990ef0a2fa96f8c0c3880e61a4edd9d7847197533a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/native_module.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "0427136c5fc667dd1088eec548d49433dd6b665af18ffa2ba5f8644ee0f1ac71"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "release-plz.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "bbf0e307cfd8fffcfb6331dddbaa568ac5ca3bb0a44ddf24ccb21fa6c6b14f58"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".github/workflows/ci.yml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "088844c64553515379fc7bba9575c9c85b65b0a5268fbb84f5a9e2461f5e52d4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/releasing.md",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "692ff94beac3dab16384fe7e3f78ec492ec3f4b403a8150884bb580b5ea78d29"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/crate_layout.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-2"
+          ],
+          "sha256": "29db0a82280cca16767dd852abbadb84219afbf36a0e35010428a6cc87254ccf"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/umbrella.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-1"
+          ],
+          "sha256": "c344acc79daf1bf1a0924a7151dcff93ea0dfe9c2cb35dfc20405ec34a83a517"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "5789dff88cee0ba761f657a1c4d596948c7ce920d9bfd9dc744db65b253a572f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/release_automation.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "83e5311af1d81fb99a8ca32595cb77b983e33fd1b321831b90a7588695a0ffae"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/ci_workflow.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "acd69e848d5be85d1e1fd2e01a64c98dc943a556371149bd51b5ec81552da4b4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/library_guard.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "281ad010f5044cd406b4b4ab582393102df158d4645191d9019c7a4f2a2bc665"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths/core_only/src/lib.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "490d1461cd8a2c301b0fcdbca5130143c9b4e7aa3eee9da6abe6126be794847b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths/host_only/src/lib.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "685534d4fa4a951265206de75f1060612231cc9b7edce442395ec9477e8cc663"
+        }
+      ],
+      "summaryMarkdown": "This review supersedes the failed review at revision 4. The rename is clean:\n\n- The moved files differ from their originals only by the mechanical path mapping.\n- No old-meaning `rayx_core`, `rayx::core` or `rayx::app::` remains outside deliberate history.\n- The macros resolve `rayx`, else `rayx_app`, else `rayx_app_nsh`, per d-crate-names.\n- The umbrella exposes `app` and `app_nsh`, and `rayx_app` is NSH-free.\n- CI's wasm step and the library guard match the design.\n\nThe three findings are resolved:\n\n- S1-F1: `rayx_app_nsh` carries a never-matching `git_tag_name` until its first release, asserted in `release_automation` and explained in `docs/releasing.md`.\n- S1-F2: `macro_paths` runs `cargo check` on fixture crates on `rayx_app` alone and on `rayx_app_nsh` alone.\n- S1-F3: the library guard's doc lists `rayx_services_*`.\n\nAll five sprint checks pass at this snapshot. CRATES-2 is supporting here and was judged only for its s1 part. The `refactor!` commit with its `Migration: apps:` footer is still to be made. Memory still names `rayx_core` (task t21).",
+      "findingIds": [
+        "S1-F1",
+        "S1-F2",
+        "S1-F3"
+      ],
+      "recordedAt": "2026-11-17T11:52:22Z"
+    }
+  },
+  "checkpoints": {
+    "s1-crate-names": {
+      "snapshotId": "d2ec1ba5d0b0423f79a0bd559e47b32d61a6cd29c4af1aaba53f0b6130fc165d",
+      "commits": {
+        "rayx": "0463a2647ee726a598fe621d592201a5c9cf6e58",
+        "root": "f8f986197908b834f4302803f1880231d6cbb7ee"
+      },
+      "reviewHash": "fb03a202b0f5c9c0ba1c88b3d9ce3284be4a7bf1ed1297fc33afc228dd452886",
+      "recordedAt": "2026-11-17T11:52:35Z"
+    }
+  },
+  "findings": [
+    {
+      "id": "S1-F1",
+      "boundaryId": "s1-crate-names",
+      "criterionIds": [
+        "CRATES-4"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "Resolved: `rayx_app_nsh` carries a never-matching `git_tag_name` until its first release, the comments and `docs/releasing.md` follow, and `release_automation` asserts it for every crate new since the last release.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "release-plz.toml"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/releasing.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/release_automation.rs"
+        }
+      ]
+    },
+    {
+      "id": "S1-F2",
+      "boundaryId": "s1-crate-names",
+      "criterionIds": [
+        "CRATES-3"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "Resolved: `macro_paths` now runs `cargo check` on a crate on `rayx_app` alone (the derive) and one on `rayx_app_nsh` alone (the derive through `::rayx_app_nsh::di`, `#[contract]`, `#[app_extension]`).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths/core_only/src/lib.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths/host_only/src/lib.rs"
+        }
+      ]
+    },
+    {
+      "id": "S1-F3",
+      "boundaryId": "s1-crate-names",
+      "criterionIds": [
+        "CRATES-4"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "Resolved: the library guard's module doc lists `rayx_services_*` among the denied crates.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/library_guard.rs"
+        }
+      ]
+    }
+  ],
   "handoffMarkdown": "",
   "protectedPaths": {
     "rayx": {
