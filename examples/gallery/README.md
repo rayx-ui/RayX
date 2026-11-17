@@ -23,7 +23,7 @@ It is a mixed NSH app: the screens are TSX, so they reload as you save; the comp
 
 ## Run it
 
-From `RayX/`, with the `rayx` this repository builds (it runs the nsh the project pins, `nshx-0.5.0-6`,
+From `RayX/`, with the `rayx` this repository builds (it runs the nsh the project pins, `nshx-0.5.0-7`,
 and installs it the first time):
 
 ```sh
