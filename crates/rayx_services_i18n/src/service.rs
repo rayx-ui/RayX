@@ -2,7 +2,8 @@
 //! messages added while the app runs), the user's locale (the platform's languages and clock,
 //! or the app's choice) and time zone, published as [`I18nState`].
 
-use std::sync::{Arc, Mutex, PoisonError};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, PoisonError, TryLockError};
 
 use dxn_i18n::Bundle;
 use dxn_intl::{DateTime, Direction, Locale, negotiate, parse_locale};
@@ -43,6 +44,10 @@ pub(crate) struct RayxI18n {
     fallbacks: Vec<Locale>,
     inner: Mutex<Inner>,
     i18n: StateCell<I18nState>,
+    /// Held by the thread publishing the state ([`RayxI18n::publish_latest`]).
+    publishing: Mutex<()>,
+    /// A change was made since the publishing thread read the state.
+    stale: AtomicBool,
     assets: Option<Arc<dyn AssetService>>,
     platform: Option<Arc<dyn PlatformInfoService>>,
     following: Mutex<Option<ChangeSubscription>>,
@@ -76,6 +81,8 @@ impl RayxI18n {
             default,
             fallbacks,
             inner: Mutex::new(inner),
+            publishing: Mutex::new(()),
+            stale: AtomicBool::new(false),
             assets,
             platform,
             following: Mutex::default(),
@@ -114,38 +121,76 @@ impl RayxI18n {
         }
     }
 
-    /// Changes the state with `change` and publishes it under the next version, once the lock
-    /// is released (a subscriber may call the service).
-    fn change(&self, change: impl FnOnce(&mut Inner)) {
-        let state = {
+    /// Changes the state with `change`, which says whether it changed anything, and publishes
+    /// it under the next version if it did.
+    fn change(&self, change: impl FnOnce(&mut Inner) -> bool) {
+        {
             let mut inner = self.lock();
-            change(&mut inner);
+            if !change(&mut inner) {
+                return;
+            }
             inner.version += 1;
-            self.state(&inner)
-        };
-        self.i18n.publish(state);
+        }
+        self.publish_latest();
+    }
+
+    /// Publishes the latest state, outside the state's lock (a subscriber may call the
+    /// service). One thread publishes at a time and reads the state when it does, so the
+    /// published state is never older than one published before it: a change made while
+    /// another thread (or a subscriber of this one) publishes is published right after, by the
+    /// publishing thread, once it finds the state stale.
+    fn publish_latest(&self) {
+        self.stale.store(true, Ordering::SeqCst);
+        loop {
+            let publishing = match self.publishing.try_lock() {
+                Ok(guard) => guard,
+                Err(TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
+                Err(TryLockError::WouldBlock) => return,
+            };
+            self.stale.store(false, Ordering::SeqCst);
+            let state = self.state(&self.lock());
+            if self.i18n.get().version != state.version {
+                self.i18n.publish(state);
+            }
+            drop(publishing);
+            if !self.stale.load(Ordering::SeqCst) {
+                return;
+            }
+        }
     }
 
     /// Takes the user's time zone from the platform, and their preferred languages and clock
     /// unless the app picked a language: the best of the app's languages for them, with the
-    /// user's region (for separators and date order) and hour cycle.
+    /// user's region (for separators and date order) and hour cycle. One change, decided
+    /// under the state's lock, so a language the app picks meanwhile is kept.
     fn apply_platform(&self, snapshot: &LocaleSnapshot) {
-        if !snapshot.time_zone.is_empty() && self.lock().time_zone != snapshot.time_zone {
-            let zone = snapshot.time_zone.clone();
-            self.change(|inner| inner.time_zone = zone);
+        self.change(|inner| self.take_platform(inner, snapshot));
+    }
+
+    /// [`apply_platform`](Self::apply_platform)'s change of `inner`; whether it changed it.
+    fn take_platform(&self, inner: &mut Inner, snapshot: &LocaleSnapshot) -> bool {
+        let mut changed = false;
+        if !snapshot.time_zone.is_empty() && inner.time_zone != snapshot.time_zone {
+            inner.time_zone.clone_from(&snapshot.time_zone);
+            changed = true;
         }
-        let (chosen, available) = {
-            let inner = self.lock();
-            let available: Vec<Locale> = inner
-                .bundles
-                .iter()
-                .filter_map(|bundle| parse_locale(&bundle.language).ok())
-                .collect();
-            (inner.chosen, available)
-        };
-        if chosen {
-            return;
+        if !inner.chosen {
+            let locale = self.platform_locale(snapshot, &inner.bundles);
+            if inner.locale != locale {
+                inner.locale = locale;
+                changed = true;
+            }
         }
+        changed
+    }
+
+    /// The best of the languages of `bundles` for the user's languages in `snapshot`, with the
+    /// user's region and hour cycle.
+    fn platform_locale(&self, snapshot: &LocaleSnapshot, bundles: &[MessageBundle]) -> Locale {
+        let available: Vec<Locale> = bundles
+            .iter()
+            .filter_map(|bundle| parse_locale(&bundle.language).ok())
+            .collect();
         let hour_cycle = match snapshot.hour_cycle.as_str() {
             "h11" | "h12" | "h23" => Some(snapshot.hour_cycle.as_str()),
             "h24" => Some("h23"),
@@ -166,14 +211,11 @@ impl RayxI18n {
         }
         let chosen = negotiate(&requested, &available, &self.default);
         // The user's own tag of that language, so its region formats the values.
-        let locale = requested
+        requested
             .iter()
             .find(|wanted| wanted.id.language == chosen.id.language)
             .cloned()
-            .unwrap_or(chosen);
-        if self.lock().locale != locale {
-            self.change(|inner| inner.locale = locale);
-        }
+            .unwrap_or(chosen)
     }
 
     /// Follows the platform's locale changes (with [`I18nOptions::follow_platform`]), starting
@@ -245,6 +287,7 @@ impl RayxI18n {
                 }
             };
             inner.bundles[index].messages.extend(messages);
+            true
         });
         result.map_err(|error| I18nServiceError::Resource {
             path: format!(
@@ -335,23 +378,30 @@ impl I18nService for RayxI18n {
     fn set_language(&self, language_tag: String) -> BoxFuture<'_, Result<(), I18nServiceError>> {
         let result = language(&language_tag).map(|locale| {
             self.change(|inner| {
+                let changed = !inner.chosen || inner.locale != locale;
                 inner.chosen = true;
                 inner.locale = locale;
+                changed
             });
         });
         futures::future::ready(result).boxed()
     }
 
     fn follow_platform(&self) -> BoxFuture<'_, Result<(), I18nServiceError>> {
-        self.change(|inner| inner.chosen = false);
         match &self.platform {
-            Some(platform) => self.apply_platform(&platform.platform().get().locale),
-            None => {
-                let default = self.default.clone();
-                if self.lock().locale != default {
-                    self.change(|inner| inner.locale = default);
-                }
+            Some(platform) => {
+                let snapshot = platform.platform().get();
+                self.change(|inner| {
+                    let was_chosen = std::mem::replace(&mut inner.chosen, false);
+                    self.take_platform(inner, &snapshot.locale) || was_chosen
+                });
             }
+            None => self.change(|inner| {
+                let changed = inner.chosen || inner.locale != self.default;
+                inner.chosen = false;
+                inner.locale = self.default.clone();
+                changed
+            }),
         }
         futures::future::ready(Ok(())).boxed()
     }
@@ -371,7 +421,13 @@ impl I18nService for RayxI18n {
 
     fn set_time_zone(&self, time_zone: String) -> BoxFuture<'_, Result<(), I18nServiceError>> {
         let result = DateTime::from_unix_millis_in(0, &time_zone)
-            .map(|_| self.change(|inner| inner.time_zone = time_zone))
+            .map(|_| {
+                self.change(|inner| {
+                    let changed = inner.time_zone != time_zone;
+                    inner.time_zone = time_zone;
+                    changed
+                });
+            })
             .map_err(|error| I18nServiceError::Format(error.to_string()));
         futures::future::ready(result).boxed()
     }
