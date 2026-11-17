@@ -90,3 +90,9 @@ required-features = [
     "storage",
     "suspension",
 ]
+
+# RayX's history over RayX's operation service, end to end (and kept in RayX's storage with
+# the `storage` feature).
+[[test]]
+name = "history_over_operations"
+required-features = ["history", "operations"]
