@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 9,
+  "revision": 18,
   "planRevision": 1,
   "specHashes": {
     "requirements": "7f61a19d0a33b5696be1f2e11632bf0f87fe1b476b31d2bdb02d8d44ef477312",
@@ -16,7 +16,10 @@
       ]
     },
     "t02-layout": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t03-published-values": {
       "status": "pending"
@@ -96,6 +99,16 @@
         }
       },
       "recordedAt": "2026-11-17T11:51:32Z"
+    },
+    "b96e06c31163505cbaed5f81aa3d4f23b08d43a20872aa8d0a12e2e5ef72241a": {
+      "snapshot": {
+        "specHash": "5c3aadf280487918db278399b8871f464f081a54a4c4c2e8e3882076e487a9f9",
+        "repositories": {
+          "rayx": "ce5d5dd2d37bb88dd8978e1d8596fba7e52c5ffb753c9e7de3056184fe53cef8",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-17T12:03:37Z"
     }
   },
   "checkResults": {
@@ -183,6 +196,57 @@
       "logPath": "artifacts-temp/agentx/service-crates/s1-crate-names-final-d0f02e2fe6f5.log",
       "logSha256": "3c8414d1ca1e145a9cd7ec195b2ac2238c92d204a19d501a2590b684e090bc15",
       "inputsHash": "9d63b304fbf8482c2fce49b96396876c70c19d5ae27b8535d735bfdf7471f2f4"
+    },
+    "s2-layout/c-source-layout/final": {
+      "checkId": "c-source-layout",
+      "boundaryId": "s2-layout",
+      "phase": "final",
+      "batchId": "b96e06c31163505cbaed5f81aa3d4f23b08d43a20872aa8d0a12e2e5ef72241a",
+      "definitionHash": "9cc6ebb6eded7a16b6f66f8134fe30553b720d9ec2c0c18b6e065c889cf5cd69",
+      "basisHash": "bb0a940a164a379e97ced8e387a883ac7dbbabb104d869ee4acd4315ba53e6da",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 0.2342,
+      "recordedAt": "2026-11-17T12:01:27Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s2-layout-final-f74fd3e452f0.log",
+      "logSha256": "f2a0224053c702adfab92a6e80d98c29382c332475367a84d1496703414bbb74",
+      "inputsHash": "fb109aadde9b6ed63fad68b6f214bf761b8a0372beec07b409257f300762be12"
+    },
+    "s2-layout/c-host-suite/final": {
+      "checkId": "c-host-suite",
+      "boundaryId": "s2-layout",
+      "phase": "final",
+      "batchId": "b96e06c31163505cbaed5f81aa3d4f23b08d43a20872aa8d0a12e2e5ef72241a",
+      "definitionHash": "d090d509dfb71e27bacefe5790a2de28170fd7b3ee14e5ba7e250a33ab297876",
+      "basisHash": "c612ef6853ef8085e77774e726d961dc8680c669fb3cf11767a6e309c8c5a81e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 110,
+      "durationSeconds": 127.8366,
+      "recordedAt": "2026-11-17T12:03:35Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s2-layout-final-61c05f51506d.log",
+      "logSha256": "6da6be4e87a697945dfc825b004af4524a65d1cff8afcf5394bc949769eeda69",
+      "inputsHash": "703563b3bc2418852816f785a707d8edca3384cc17b11d5b2ea178810eb1471b"
+    },
+    "s2-layout/c-host-docs/final": {
+      "checkId": "c-host-docs",
+      "boundaryId": "s2-layout",
+      "phase": "final",
+      "batchId": "b96e06c31163505cbaed5f81aa3d4f23b08d43a20872aa8d0a12e2e5ef72241a",
+      "definitionHash": "a9e156b1a07cbcdb9e02f62f0d3b07ee3ee58ee9a682d683143a9c27d7b1d042",
+      "basisHash": "886fcc58bd28f79959cdc148cc312375b53f88df52caa5cdd38146671617bf06",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 1.9071,
+      "recordedAt": "2026-11-17T12:03:37Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s2-layout-final-b4934167958e.log",
+      "logSha256": "39e21cd15d54fae930b6ceb4fa0255c34ad800f7f8d98652d5aa9f5e76cacf28",
+      "inputsHash": "4d60afb68a1a793ab6bd25ed69750eff23adf0a60313f6e87b78b18e175cfedb"
     }
   },
   "reviews": {
@@ -389,6 +453,117 @@
         "S1-F3"
       ],
       "recordedAt": "2026-11-17T11:52:22Z"
+    },
+    "s2-layout": {
+      "reviewerId": "reviewer-s2-independent",
+      "snapshotId": "b96e06c31163505cbaed5f81aa3d4f23b08d43a20872aa8d0a12e2e5ef72241a",
+      "criterionIds": [
+        "LAYOUT-1",
+        "LAYOUT-2"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "sha256": "913be7119157b3a488af13d5cf64837f24a1ce66f94e6db3bd3c6984873c22d6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "sha256": "6286b4151c3c6ce5f612408567162964c6ebe2b05e9face159213aaf7138338a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/services/mod.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "sha256": "7090d4f75799fa260e1f70aa4e366ce4bdeaf758d94b2a2c8ff987aea839f93b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/mod.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-2"
+          ],
+          "sha256": "74c18b14abf40e820b029260d2966d1884cb31ed6bf3584d61493a6a090dd786"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/configuration/mod.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-2"
+          ],
+          "sha256": "2fb6f44405807dfa602157b4cb52d32a6bf2d7fd964a95a9da9051f5da55e623"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/services/i18n/translate.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-2"
+          ],
+          "sha256": "57695242a29ab621b67228a6bc402a3d1b60ccb026e66058162b774228820e6e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/source_layout.rs",
+          "kind": "test",
+          "criterionIds": [
+            "LAYOUT-1"
+          ],
+          "sha256": "2e61768938305276fa476c04d88ffb7885695e0ec2dcf208370a25a22d8e8a5b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_app_start.rs",
+          "kind": "test",
+          "criterionIds": [
+            "LAYOUT-2"
+          ],
+          "sha256": "338d695a48af1aee46ce24332edd7b0f5ad67bdd911f768d10d7425444b49497"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tr_checked.rs",
+          "kind": "test",
+          "criterionIds": [
+            "LAYOUT-2"
+          ],
+          "sha256": "526b174bb0089c566f538484ec4a9e7d6605b2e1adda978936cb7b0642e24ef7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_builder.rs",
+          "kind": "test",
+          "criterionIds": [
+            "LAYOUT-2"
+          ],
+          "sha256": "07b683059d8a6a5e387b823ec11c44ab72d5f7e40079dca7086cd6b1a32fefc2"
+        }
+      ],
+      "summaryMarkdown": "The move matches d-layout's table file for file. Split items survive verbatim apart from paths, rustfmt and `pub(crate)` visibility. `ts.rs` re-exports HEAD's set, every crate-root re-export, `tr!`/`checked::tr!` and the macros' `di`/`ts`/`__private` paths resolve, and the `rayx_app::{di,configuration,services}::*` globs shadow nothing. S2-F1..F3 are repaired: the shared TSX class docs are back in `services/mod.rs`, `NshServicesAppBuilderExt` is inlined at the crate root again, and `source_layout` ignores dotfiles while still failing on any stray file. All three sprint checks pass at the current snapshot.",
+      "findingIds": [
+        "S2-F1",
+        "S2-F2",
+        "S2-F3"
+      ],
+      "recordedAt": "2026-11-17T12:03:59Z"
     }
   },
   "checkpoints": {
@@ -400,6 +575,15 @@
       },
       "reviewHash": "fb03a202b0f5c9c0ba1c88b3d9ce3284be4a7bf1ed1297fc33afc228dd452886",
       "recordedAt": "2026-11-17T11:52:35Z"
+    },
+    "s2-layout": {
+      "snapshotId": "b96e06c31163505cbaed5f81aa3d4f23b08d43a20872aa8d0a12e2e5ef72241a",
+      "commits": {
+        "rayx": "ce2ce1d82997476120c542108a7d247733ef50be",
+        "root": "f8f986197908b834f4302803f1880231d6cbb7ee"
+      },
+      "reviewHash": "e1da9b85c582d72d531e3299eebe5653bc43353ff949f913dd458df65cfa1d4e",
+      "recordedAt": "2026-11-17T12:04:13Z"
     }
   },
   "findings": [
@@ -466,6 +650,56 @@
           "path": "crates/rayx_cli/tests/library_guard.rs"
         }
       ]
+    },
+    {
+      "id": "S2-F1",
+      "criterionIds": [
+        "LAYOUT-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Shared docs of the TSX service classes dropped in the split** (`crates/rayx_app_nsh/src/services/mod.rs:1-4`, each `services/*/*_ts.rs:1`).\n\nExpected: t02 keeps each item's docs; the split of `ts/services.rs` keeps what its module doc said about every class it held. Observed: `git show HEAD:crates/rayx_app_nsh/src/ts/services.rs` lines 1-7 (each class carries its Rust service's name and is its own token; each `onChange` listener hears changes until its returned function is called, its reactive owner goes or the object is disposed; values cross as plain objects, the services' snapshots serialized; the services notify on the engine's thread, where TSX listeners run) appear nowhere in the tree: the new files say only \"The X service for TSX.\" (`ts/options.rs`' and `platform.rs`' module docs were carried over into `configuration/options_ts.rs`, `configuration_builder_ts.rs`, `snapshot.rs`, `sync.rs`, `reader.rs`, `registrar.rs`; this one was not).\n\nRepair: move that paragraph (with the `I18nService` link pointed at `crate::ts::I18nService`) into the module doc of `services/mod.rs`, where the shared `json()` helper the classes use now lives, or into `ts.rs`' list of the services' classes.\n\nResolved: `services/mod.rs`'s module doc now carries HEAD's paragraph (own token, `onChange` lifetime, plain objects, engine-thread notifications) with `crate::ts::I18nService`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/services/mod.rs"
+        }
+      ],
+      "boundaryId": "s2-layout"
+    },
+    {
+      "id": "S2-F2",
+      "criterionIds": [
+        "LAYOUT-2"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**`NshServicesAppBuilderExt`'s documented home moved off the crate root** (`crates/rayx_app_nsh/src/lib.rs:120`, `crates/rayx_app_nsh/src/services/mod.rs:52`).\n\nExpected (LAYOUT-2, no public path change): the trait is documented where it was, `rayx_app_nsh::NshServicesAppBuilderExt` (`target/doc/rayx_app_nsh/trait.NshServicesAppBuilderExt.html`), as at HEAD, when it sat in the private `platform` module and rustdoc inlined the root re-export. Observed: d-layout puts it in `services/mod.rs`, and choice (a) made `services` a `pub mod`, so the trait gained a second public path `rayx_app_nsh::services::NshServicesAppBuilderExt` and rustdoc no longer inlines the root re-export: after `cargo doc -p rayx_app_nsh --no-deps`, `target/doc/rayx_app_nsh/trait.NshServicesAppBuilderExt.html` is gone, only `services/trait.NshServicesAppBuilderExt.html` exists, and the root lists the trait under Re-exports. Rust paths still resolve (`rayx_app_nsh::NshServicesAppBuilderExt`, the `rayx` prelude), so no code breaks. It is the only item that changed this way: every other root re-export comes from a `pub(crate)` submodule and is still inlined.\n\nRepair: put `#[doc(inline)]` on `pub use services::NshServicesAppBuilderExt;` in `lib.rs`, so the root page is generated again. The extra path `services::NshServicesAppBuilderExt` follows from d-layout's table plus choice (a) and goes away when s4 removes the trait. Note it in the commit body rather than moving the trait out of `services/mod.rs`.\n\nResolved: `#[doc(inline)]` on the root re-export (`lib.rs:120-121`); `target/doc/rayx_app_nsh/trait.NshServicesAppBuilderExt.html` is generated again.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/lib.rs",
+          "symbol": "NshServicesAppBuilderExt"
+        }
+      ],
+      "boundaryId": "s2-layout"
+    },
+    {
+      "id": "S2-F3",
+      "criterionIds": [
+        "LAYOUT-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**`source_layout` fails on OS and editor metadata files** (`crates/rayx_app_nsh/tests/source_layout.rs:80-90`).\n\nExpected: the group fails only on a file or folder that differs from d-layout, and the owner runs it on macOS. Observed: `files()` collects every directory entry, so a Finder `.DS_Store` in any `src/` folder, or an editor swap or backup file (`.builder_ts.rs.swp`), fails both checks with \"extra file src/.DS_Store\" although the layout is right. Git ignores these files, so `git status` stays clean while the test fails. Otherwise the test is sound: the exact expected set catches every stray, missing or misnamed file and every non-empty stray folder, and `SERVICES` is separate so t13 can replace it.\n\nRepair: in `files()`, skip entries whose file name starts with `.`, and note that in its doc comment. A `.DS_Store` placed in `src/services/` should then leave both tests passing, and a stray `src/services/foo.rs` should still fail.\n\nResolved: `files()` skips entries whose name starts with `.`, documented in its comment; the exact expected set still catches a stray `.rs` file.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/source_layout.rs",
+          "symbol": "files"
+        }
+      ],
+      "boundaryId": "s2-layout"
     }
   ],
   "handoffMarkdown": "",
