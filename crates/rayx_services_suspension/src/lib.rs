@@ -11,6 +11,8 @@
 mod builder;
 mod service;
 mod suspension_ts;
+#[doc(hidden)]
+pub mod testing;
 
 use nsh_core::element::{Registry, TsAlias};
 use rayx_app::services::suspension::*;

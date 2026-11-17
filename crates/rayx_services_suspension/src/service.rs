@@ -5,7 +5,7 @@
 use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, PoisonError};
+use std::sync::{Arc, Mutex, PoisonError, TryLockError};
 
 use futures::FutureExt as _;
 use futures::StreamExt as _;
@@ -36,6 +36,13 @@ enum Order {
 /// The app's lifecycle on the surface whose provider holds this service.
 pub(crate) struct NshSuspension {
     suspension: StateCell<SuspensionSnapshot>,
+    /// The service's state, changed one change at a time (an event, or the app asking before it
+    /// quits, from any thread), and published from here.
+    state: Mutex<SuspensionSnapshot>,
+    /// Held by the thread publishing the state.
+    publishing: Mutex<()>,
+    /// Whether the state changed since it was last published.
+    stale: AtomicBool,
     events: EventStream<SuspensionEvent>,
     /// The engine thread's task, once the service initialized.
     orders: Mutex<Option<UnboundedSender<Order>>>,
@@ -48,6 +55,9 @@ impl NshSuspension {
     pub(crate) fn new() -> Arc<Self> {
         Arc::new(Self {
             suspension: StateCell::new(SuspensionSnapshot::default()),
+            state: Mutex::new(SuspensionSnapshot::default()),
+            publishing: Mutex::new(()),
+            stale: AtomicBool::new(false),
             events: EventStream::new(),
             orders: Mutex::new(None),
             waiting: Mutex::new(Vec::new()),
@@ -55,14 +65,45 @@ impl NshSuspension {
         })
     }
 
-    /// Applies `event`: the state changes when it changed, and every subscriber hears it.
+    /// Applies `event`: the state is published when it changed, and every subscriber hears the
+    /// event.
     pub(crate) fn publish(&self, event: SuspensionEvent) {
-        let current = *self.suspension.get();
-        let next = current.apply(&event);
-        if !current.same_state(&next) || next != current {
-            self.suspension.publish(next);
-        }
+        self.change(|state| state.apply(&event));
         self.events.publish(event);
+    }
+
+    /// Changes the state with `change` and publishes it. Changes are made one at a time, so one
+    /// made on another thread at once (an event on the engine thread, the app asking before it
+    /// quits on its own) is never lost.
+    fn change(&self, change: impl FnOnce(SuspensionSnapshot) -> SuspensionSnapshot) {
+        {
+            let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
+            *state = change(*state);
+        }
+        self.publish_state();
+    }
+
+    /// Publishes the state now, unless it is the one published: a change made while it is
+    /// published (on another thread, or by a subscriber) is published right after, by whoever
+    /// is publishing.
+    fn publish_state(&self) {
+        self.stale.store(true, Ordering::SeqCst);
+        loop {
+            let publishing = match self.publishing.try_lock() {
+                Ok(guard) => guard,
+                Err(TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
+                Err(TryLockError::WouldBlock) => return,
+            };
+            self.stale.store(false, Ordering::SeqCst);
+            let state = *self.state.lock().unwrap_or_else(PoisonError::into_inner);
+            if *self.suspension.get() != state {
+                self.suspension.publish(state);
+            }
+            drop(publishing);
+            if !self.stale.load(Ordering::SeqCst) {
+                return;
+            }
+        }
     }
 
     /// Gives `order` to the engine thread's task (kept until the service initialized).
@@ -229,13 +270,10 @@ impl SuspensionService for NshSuspension {
     }
 
     fn ask_before_quit(&self, ask: bool) -> BoxFuture<'_, Result<(), SuspensionError>> {
-        let current = *self.suspension.get();
-        if current.asks_before_quit != ask {
-            self.suspension.publish(SuspensionSnapshot {
-                asks_before_quit: ask,
-                ..current
-            });
-        }
+        self.change(|state| SuspensionSnapshot {
+            asks_before_quit: ask,
+            ..state
+        });
         self.order(Order::Ask(ask));
         Box::pin(futures::future::ready(Ok(())))
     }
