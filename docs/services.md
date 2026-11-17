@@ -51,9 +51,9 @@ const services = await new RayXAppBuilder()
 ```
 
 `add_<service>(..)` keeps a service registered earlier; `with_<service>_service(..)` replaces it, for tests or a
-custom implementation. A service registers what it depends on: `add_i18n` adds the asset
-service, `add_history` the operation service; one moved to a crate of its own requires it instead (`add_input_map`
-and `add_persistent_history` require a key-value store, `add_storage()`).
+custom implementation. A service in `rayx_runtime` registers what it depends on (`add_history` adds the operation
+service); a service crate's requires it instead (`add_i18n` requires the asset and platform services, `add_input_map`
+and `add_persistent_history` a key-value store, `add_storage()`).
 
 **Configured through options.** A service reads its options with RayX's [options model](configuration.md) from the
 section `RayX:Services:<Name>`. The configuration binds first, then the closure passed to `add_<service>(..)` changes
@@ -68,20 +68,22 @@ the result, so `appsettings.json` sets the defaults and code has the last word. 
 [startup services](startup.md): they initialize in dependency order before the app is ready, and invalid options fail
 startup instead of the first use.
 
-**Resolved by type.** Rust code resolves a service from the provider: `services.required_service::<I18nService>()`, or
-`rayx_app_nsh::services()` in a component. TSX resolves them by their classes, named after the Rust services, from the
-provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.md#rayxs-services)).
+**Resolved by type.** Rust code resolves a service from the provider: `services.required_service::<dyn I18nService>()`,
+or `rayx_app_nsh::services()` in a component. TSX resolves them by their classes, named after the Rust services, from
+the provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.md#rayxs-services)).
 
 **Written in TS too.** An app's own services may be TS classes in the same container, and a Rust trait marked
 `#[rayx::contract]` lets Rust call a TS implementation ([TSX](tsx.md#services-written-in-ts)).
 
 **Contracts in the core, implementations in crates.** A service's trait and data types live in `rayx_app::services`
 (NSH-free, building for `wasm32-unknown-unknown`), and RayX's implementation in a crate of its own: the platform,
-suspension, asset, font, storage and navigation services are `rayx_services_platform`,
-`rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage` and
-`rayx_services_navigation`, each registering itself as `dyn Trait` (`add_platform()`, `add_suspension()`,
-`add_assets(..)`, `add_fonts(..)`, `add_storage()`, `add_navigation(..)`, and `builder.addPlatform()` and the others in
-TS, once the crate's set is registered). A service that
+suspension, asset, font, storage, navigation and i18n services are `rayx_services_platform`,
+`rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage`,
+`rayx_services_navigation` and `rayx_services_i18n`, each registering itself as `dyn Trait` (`add_platform()`,
+`add_suspension()`, `add_assets(..)`, `add_fonts(..)`, `add_storage()`, `add_navigation(..)`, `add_i18n(..)`, and
+`builder.addPlatform()` and the others in TS, once the crate's set is registered). I18n is two traits: the
+`I18nService` contract and the Rust-only `MessageFormatter`, which `add_i18n` registers too
+([I18n](services/i18n.md)). A service that
 needs another resolves it by trait, so an app's own implementation, in Rust or TS, replaces RayX's anywhere;
 `rayx_app::testing` has a fake of each trait. `rayx_runtime` still holds the services not yet moved.
 
@@ -99,7 +101,8 @@ needs another resolves it by trait, so an app's own implementation, in Rust or T
 - The [platform](services/platform.md) and [suspension](services/suspension.md) services keep themselves current from
   NSH from their startup on, in Rust and TSX apps alike; the [asset](services/assets.md) and [font](services/fonts.md)
   services read and register through NSH from any thread, and so does the [key-value store](services/storage.md),
-  which writes what waits as the app quits.
+  which writes what waits as the app quits; the [i18n](services/i18n.md) formatter keeps `tr!` and NSH's locale on
+  the i18n service from its startup on.
 
 ## Writing a service
 

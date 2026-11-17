@@ -81,7 +81,7 @@ impl Probe {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { I18nService, Probe, RayXAppBuilder, ServiceToken, Tracker } from "test/app";
+import { ApplicationConfigurationService, Probe, RayXAppBuilder, ServiceToken, Tracker } from "test/app";
 
 class Clock { now() { return 42; } }
 class Page {}
@@ -101,7 +101,7 @@ function scoped(services) {
     page === scope.getRequiredService(Page) && page !== other.getRequiredService(Page),
     page.services === scope,
     page.clock === services.getRequiredService(Clock),
-    page.i18n instanceof I18nService,
+    page.navigation instanceof ApplicationConfigurationService,
     services.getRequiredService(Clock) === scope.getRequiredService(Clock)
       && scope.getRequiredService(Clock) === other.getRequiredService(Clock),
   ].join(" ");
@@ -115,13 +115,13 @@ setTimeout(async () => {
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
     const services = await new RayXAppBuilder().addHostFakes()
-      .addI18n()
+      .addApplicationConfiguration()
       .addSingleton(Clock, () => new Clock())
       .addScoped(Page, (s) => ({
         id: ++pages,
         tracker: new Tracker(),
         clock: s.getRequiredService(Clock),
-        i18n: s.getRequiredService(I18nService),
+        navigation: s.getRequiredService(ApplicationConfigurationService),
         services: s,
       }))
       .addTransient(Stamp, () => ({ n: ++stamps }))
@@ -154,7 +154,7 @@ setTimeout(async () => {
     lines.push(await Probe.outsideACall(services, Lazy));
     lines.push(await Probe.outsideACall(services, Clock));
     // A factory that throws, and a RayX class as a token.
-    lines.push(thrown(() => new RayXAppBuilder().addHostFakes().addSingleton(I18nService, () => ({}))));
+    lines.push(thrown(() => new RayXAppBuilder().addHostFakes().addSingleton(ApplicationConfigurationService, () => ({}))));
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -178,7 +178,7 @@ fn ts_services_live_in_the_container_with_rusts_lifetimes() {
          |service `Clock` is thread-bound and resolves on its own thread only\
          |service `Lazy` is thread-bound and resolves on its own thread only\
          |resolved|resolved\
-         |I18nService is a RayX service's class: register a TS service under a TS class or a \
+         |ApplicationConfigurationService is a RayX service's class: register a TS service under a TS class or a \
          ServiceToken"
     );
 }

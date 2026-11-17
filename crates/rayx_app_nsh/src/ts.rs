@@ -3,30 +3,31 @@
 //!
 //! ```ts
 //! const services = await new RayXAppBuilder()
-//!   .addI18n((options) => { options.defaultLanguage("en"); })
+//!   .addOperations()
 //!   .start();
-//! const i18n = services.getRequiredService(I18nService);
+//! const navigation = services.getRequiredService(NavigationService);
 //! ```
 //!
 //! - [`RayXAppBuilder`]: the composition root, a camelCase twin of every Rust builder method
-//!   (`addI18n(options => …)` with the options classes of [`options`](self#options-classes)),
+//!   (`addNavigation(options => …)` with the options classes of [`options`](self#options-classes)),
 //!   and `await builder.start()`.
 //! - [`ServiceProvider`]: what `start()` resolves with: `getService`, `getRequiredService`,
 //!   `createScope` and `dispose`. A RayX service's class is its own token, and a
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
-//!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
-//! - The services' classes: [`I18nService`] and [`ApplicationConfigurationService`]; the
-//!   service crates (`rayx_services_*`) add theirs (`AssetService`, `FontService`,
+//!   `ServiceKey<T>`, so `getRequiredService(ApplicationConfigurationService)` is an
+//!   `ApplicationConfigurationService` in TS.
+//! - The services' classes: [`ApplicationConfigurationService`]; the service crates
+//!   (`rayx_services_*`) add theirs (`AssetService`, `FontService`, `I18nService`,
 //!   `KeyValueStore`, `NavigationService` with `NavigationRegion`,
 //!   `PlatformInfoService`, `SuspensionService`) with their sets.
 //!
 //! # Options classes
 //!
-//! [`I18nOptions`], [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
+//! [`InputMapOptions`], [`ApplicationConfigurationOptions`] and the [`ConfigurationBuilder`] of
 //! `configureAppConfiguration`: what a builder method's callback gets, valid during the call.
 //!
 //! The structs live beside their services (`services/<name>/`, `di/`, `app/`, `configuration/`)
-//! and are re-exported here, not at the crate root, so their names (`I18nService`) are the Rust
+//! and are re-exported here, not at the crate root, so their names (`NavigationService`) are the Rust
 //! services' without clashing with [`rayx_runtime`]'s types. [`register`] adds them all to a UI
 //! set.
 
@@ -52,10 +53,6 @@ pub use crate::di::startup_ts::{
 };
 pub use crate::services::application_configuration::application_configuration_ts::ApplicationConfigurationService;
 pub use crate::services::application_configuration::options_ts::ApplicationConfigurationOptions;
-pub use crate::services::i18n::i18n_ts::{
-    DateFormat, DateLength, I18nService, NumberFormat, NumberKind, TimeDetail,
-};
-pub use crate::services::i18n::options_ts::I18nOptions;
 pub use crate::services::input_map::options_ts::InputMapOptions;
 pub use crate::services::json;
 pub use crate::services::listeners_ts::Listeners;
@@ -100,8 +97,6 @@ pub fn register(registry: &mut Registry) {
         .class::<OptionsBuilder>()
         .class::<ConfigurationBuilder>()
         .class::<ApplicationConfigurationOptions>()
-        .class::<I18nOptions>()
         .class::<InputMapOptions>()
-        .service_class::<I18nService>()
         .service_class::<ApplicationConfigurationService>();
 }

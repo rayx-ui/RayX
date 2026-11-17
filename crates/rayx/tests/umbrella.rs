@@ -3,24 +3,28 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+use futures::executor::block_on;
 use rayx::prelude::*;
 
 #[test]
 fn the_prelude_builds_an_app_with_the_services() {
-    let services = RayXAppBuilder::new()
-        .add_history()
-        .add_i18n(|options| {
-            options.auto_load_assets(false).default_language("hr");
-        })
-        .build()
-        .unwrap();
-    let i18n = services.required_service::<I18nService>().unwrap();
-    i18n.add_resource("hr", None, r#"{ "hi": "Bok, {$name}!" }"#)
-        .unwrap();
+    let builder = RayXAppBuilder::new().add_history().add_i18n(|options| {
+        options
+            .auto_load_assets(false)
+            .follow_platform(false)
+            .default_language("hr");
+    });
+    // The platform and asset services `add_i18n` requires.
+    let services = rayx::app::testing::add_host_fakes(builder).build().unwrap();
+    let i18n = services.required_service::<dyn I18nService>().unwrap();
+    block_on(i18n.add_resource("hr".into(), None, r#"{ "hi": "Bok, {$name}!" }"#.into())).unwrap();
+    let formatter = services.required_service::<dyn MessageFormatter>().unwrap();
     assert_eq!(
-        i18n.format("hi", &Args::new().with("name", "Ana")),
+        formatter.format("hi", &Args::new().with("name", "Ana")),
         "Bok, Ana!"
     );
+    // `tr!` is the id outside an engine.
+    assert_eq!(tr!("hi", name = "Ana"), "hi");
     assert!(
         services
             .service::<rayx::runtime::services::history::HistoryService>()

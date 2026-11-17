@@ -17,7 +17,6 @@ pub mod services;
 pub mod prelude {
     pub use crate::services::application_configuration::ApplicationConfigurationAppBuilderExt;
     pub use crate::services::history::HistoryAppBuilderExt;
-    pub use crate::services::i18n::I18nAppBuilderExt;
     pub use crate::services::input_map::InputMapAppBuilderExt;
     pub use crate::services::operations::OperationsAppBuilderExt;
     pub use crate::services::selection::SelectionAppBuilderExt;

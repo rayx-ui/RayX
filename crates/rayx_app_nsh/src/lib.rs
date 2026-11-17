@@ -36,14 +36,11 @@
 //!   and fails naming each one missing. Here is [`AppSettingsAppBuilderExt::add_app_settings`],
 //!   which adds the app's bundled `appsettings.json` as a configuration source
 //!   ([`AppSettingsSource`]).
-//! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
-//!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
-//!   following the language; [`checked::tr!`](checked::tr) checks the call against the app's
-//!   messages when it builds), and the [`ts::I18nService`] class gives TSX them
-//!   (`services.getRequiredService(I18nService).t("id", { n: 3 })`) and their changes.
+//! - **Translations** are `rayx_services_i18n`'s: its i18n service, `tr!` in a Rust component
+//!   and the `I18nService` class in TSX.
 //! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
-//!   and is its own token (`I18nService` and `ApplicationConfigurationService` here;
-//!   `AssetService`, `FontService`, `KeyValueStore`, `NavigationService`, `PlatformInfoService`
+//!   and is its own token (`ApplicationConfigurationService` here; `AssetService`,
+//!   `FontService`, `I18nService`, `KeyValueStore`, `NavigationService`, `PlatformInfoService`
 //!   and `SuspensionService` in their crates' sets), and its `onChange` hears the service's
 //!   changes.
 //! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
@@ -103,7 +100,9 @@ pub use rayx_app::{
     ServiceResolutionError, StartupRegistry, StateCell, options, prelude,
 };
 
-pub use app::surface::{AppError, AppState, StartAppBuilderExt, app_services, app_state, install};
+pub use app::surface::{
+    AppError, AppState, StartAppBuilderExt, app_services, app_state, install, tracked_app_services,
+};
 pub use binding::{
     EngineGone, EngineRunner, Observable, ReactiveCommand, UiCommand, use_command,
     use_event_stream, use_list, use_reactive, use_state_cell, use_stream, use_two_way,
@@ -115,6 +114,10 @@ pub use devtools::{
 };
 pub use di::screen::{ScreenScope, services, use_screen_scope, use_view_model};
 pub use rayx_runtime;
+
+/// What the macros use; not part of the API: NSH's core for the code `#[rayx::native_module]`,
+/// `#[app_extension]` and `#[contract]` generate (an app crate may take NSH through RayX).
 #[doc(hidden)]
-pub use services::i18n::translate::__private;
-pub use services::i18n::translate::{checked, translate};
+pub mod __private {
+    pub use nsh_core;
+}

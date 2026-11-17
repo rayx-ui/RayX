@@ -1,7 +1,7 @@
 //! The TS classes of RayX's services carry the Rust services' names, with the members the old
 //! classes had and no static `of`; the old entry and scope classes and the old names are gone
 //! from the set and its declarations. (The service crates' classes, `AssetService`,
-//! `NavigationService` and the others, are in their crates' sets.)
+//! `I18nService`, `NavigationService` and the others, are in their crates' sets.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -20,32 +20,15 @@ fn class<'a>(ts: &'a str, name: &str) -> &'a str {
 fn the_service_classes_carry_the_rust_services_names_and_their_members() {
     let set = headless::set(|_| {});
     let ts = headless::declarations(&set);
-    for (name, members) in [
-        (
-            "I18nService",
-            &[
-                "t(",
-                "formatDate(",
-                "formatNumber(",
-                "timeZone(",
-                "has(",
-                "locale(",
-                "languages(",
-                "direction(",
-                "setLanguage(",
-                "onChange(",
-            ][..],
-        ),
-        (
-            "ApplicationConfigurationService",
-            &[
-                "current(",
-                "layoutDirection(",
-                "reducedMotion(",
-                "onChange(",
-            ],
-        ),
-    ] {
+    for (name, members) in [(
+        "ApplicationConfigurationService",
+        &[
+            "current(",
+            "layoutDirection(",
+            "reducedMotion(",
+            "onChange(",
+        ][..],
+    )] {
         let declared = class(&ts, name);
         // Made by the provider only: its own token, never `new`ed or `of(app)`.
         assert!(
@@ -87,7 +70,6 @@ fn the_old_api_is_gone_from_the_set() {
         "RayXAppBuilder",
         "ServiceProvider",
         "ServiceToken",
-        "I18nService",
         "ApplicationConfigurationService",
     ] {
         assert!(names.contains(&name), "{name} is not in the set: {names:?}");

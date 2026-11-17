@@ -169,6 +169,14 @@ pub trait ServiceClass: Class {
     type Service: ?Sized + Send + Sync + 'static;
     /// The class's value for `service`.
     fn wrap(service: Arc<Self::Service>) -> Self;
+
+    /// The class's value for `service`, resolved in `services`: what the provider makes it with.
+    /// A class over more than its service (the i18n class's formatter) resolves the rest here;
+    /// by default it is [`wrap`](Self::wrap).
+    fn wrap_in(service: Arc<Self::Service>, services: &rayx_app::ServiceProvider) -> Self {
+        let _ = services;
+        Self::wrap(service)
+    }
 }
 
 /// A RayX service class as a token: how it resolves its Rust service in a provider (and gives
@@ -248,24 +256,27 @@ fn resolve_class<C: ServiceClass>(
         TypeId::of::<C>(),
         Arc::as_ptr(&service).cast::<()>() as usize,
     );
-    let instance = this.with_mut(|provider| {
-        let kept = provider
+    let kept = this.with(|provider| {
+        provider
             .wrapped
             .get(&key)
             .and_then(|wrapped| wrapped.instance.downcast_ref::<Instance<C>>())
             .filter(|instance| !instance.is_disposed())
-            .cloned();
-        kept.unwrap_or_else(|| {
-            let instance = Instance::new(C::wrap(Arc::clone(&service)));
-            provider.wrapped.insert(
-                key,
-                Wrapped {
-                    _service: Arc::new(service),
-                    instance: Box::new(instance.clone()),
-                },
-            );
-            instance
-        })
+            .cloned()
+    });
+    if let Some(instance) = kept {
+        return Ok(Resolved::instance(instance));
+    }
+    // Made outside the provider's borrow: the class may resolve more services.
+    let instance = Instance::new(C::wrap_in(Arc::clone(&service), &services));
+    this.with_mut(|provider| {
+        provider.wrapped.insert(
+            key,
+            Wrapped {
+                _service: Arc::new(service),
+                instance: Box::new(instance.clone()),
+            },
+        );
     });
     Ok(Resolved::instance(instance))
 }

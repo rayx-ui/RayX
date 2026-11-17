@@ -18,6 +18,8 @@
 //!   `rayx::components::register` adds them to an app's UI set.
 //! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
 //!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
+//! - [`rayx_services_i18n`]'s `add_i18n`, `tr!` and [`checked::tr!`](checked::tr) in the
+//!   prelude (its TS side is its set, `rayx_services_i18n::register`).
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
 //!   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), which the i18n service wraps, for their
 //!   message, number and date types.
@@ -85,17 +87,18 @@ pub use rayx_app_nsh::native_module;
 
 /// `tr!` with the call checked against the app's messages when it builds: `use
 /// rayx::checked::tr;` after the prelude's glob import uses it in place of the prelude's.
-pub use rayx_app_nsh::checked;
+pub use rayx_services_i18n::checked;
 
 /// What an app uses most: the core's prelude, the services' builder extensions, the NSH layer's
-/// classes, hooks and builder extensions, the i18n arguments and `tr!`.
+/// classes, hooks and builder extensions, the i18n service's builder extension, contracts and
+/// arguments, and `tr!`.
 pub mod prelude {
     pub use rayx_app::prelude::*;
     pub use rayx_runtime::prelude::*;
 
+    pub use rayx_app::services::i18n::{I18nService, MessageFormatter};
     /// The registry a [`native_module`](crate::native_module) function adds the app's exports to.
     pub use rayx_app_nsh::__private::nsh_core::element::Registry;
-    pub use rayx_app_nsh::tr;
     pub use rayx_app_nsh::ts::ContractRegistryExt;
     pub use rayx_app_nsh::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app_nsh::{
@@ -105,7 +108,7 @@ pub mod prelude {
         use_two_way, use_view_model,
     };
     pub use rayx_app_nsh::{DevLayer, DevTools, dev_layer};
-    pub use rayx_runtime::services::i18n::{Args, I18nService};
+    pub use rayx_services_i18n::{Args, I18nAppBuilderExt, tr};
     pub use rayx_services_navigation::{
         NavigationAppBuilderExt, navigation_region, navigation_view,
     };

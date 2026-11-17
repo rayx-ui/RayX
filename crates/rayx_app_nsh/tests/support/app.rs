@@ -7,6 +7,20 @@ use crossbeam_channel::Sender;
 use nsh_core::{ApproxTextEngine, MountBatch, Size, element::Registry, prelude::px};
 use nsh_engine::{App, Bundle, Engine, EngineConfig, MountSink};
 use rayx_app_nsh::DevTools;
+use rayx_app_nsh::ts::RayXAppBuilder;
+
+/// `builder.addHostFakes()`: fakes of the services the host requires.
+pub struct HostFakes;
+
+#[nsh_core::prelude::class_extension(RayXAppBuilder)]
+impl HostFakes {
+    /// Registers fakes of the services the host requires where the app registered none.
+    pub fn add_host_fakes(
+        this: nsh_core::prelude::Instance<RayXAppBuilder>,
+    ) -> Result<nsh_core::prelude::Instance<RayXAppBuilder>, String> {
+        RayXAppBuilder::extend_with(this, rayx_app::testing::add_host_fakes)
+    }
+}
 
 use super::hub::Hub;
 
@@ -32,7 +46,7 @@ function App() {
 
 mount(App);
 setInterval(() => ticks.update((t) => t + 1), 30);
-new RayXAppBuilder().start().then(() => DevTools.start({ url: "@URL@" }));
+new RayXAppBuilder().addHostFakes().start().then(() => DevTools.start({ url: "@URL@" }));
 "#;
 
 struct Sink(Sender<MountBatch>);
@@ -54,6 +68,7 @@ pub fn start(hub: &Hub) -> (Engine, std::path::PathBuf) {
     let mut set = Registry::ui_set("test/app");
     rayx_app_nsh::ts::register(&mut set);
     set.class::<DevTools>();
+    set.class_extension::<HostFakes>();
     let dir = std::env::temp_dir().join(format!("rayx-devtools-tree-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("App.tsx"), APP.replace("@URL@", &hub.url())).unwrap();

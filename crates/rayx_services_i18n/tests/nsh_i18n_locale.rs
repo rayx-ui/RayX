@@ -7,35 +7,36 @@
 use std::{cell::RefCell, time::Duration};
 
 use crossbeam_channel::{Receiver, Sender};
+use futures::executor::block_on;
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
-use rayx_app_nsh::rayx_runtime::services::platform::PlatformInfoService;
+use rayx_app::services::i18n::{I18nService, MessageFormatter};
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
 };
+use rayx_services_i18n::I18nAppBuilderExt as _;
+
+mod messages;
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
 }
 
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    let mut options = I18nOptions::default();
-    options.auto_load_assets(false);
-    let service = I18nService::new(options).unwrap();
-    service
-        .add_resource("en", None, r#"{ "hello": "Hello" }"#)
-        .unwrap();
-    service
-        .add_resource("hr", None, r#"{ "hello": "Bok" }"#)
-        .unwrap();
-    builder.with_i18n_service(service)
+    messages::add_messages(
+        builder,
+        &[
+            ("locales/en.json", r#"{ "hello": "Hello" }"#),
+            ("locales/hr.json", r#"{ "hello": "Bok" }"#),
+        ],
+    )
+    .add_i18n(|_| {})
 }
 
 /// Starts the app and shows NSH's locale once it is ready.
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
+    ::rayx_app::testing::add_host_fakes(build_app(RayXAppBuilder::new())).start();
     dynamic(move || match app_state() {
         AppState::Ready => {
             ROOT.with_borrow_mut(|root| *root = Some(app_services().unwrap()));
@@ -86,19 +87,19 @@ fn the_apps_language_choice_reaches_nsh_and_lets_go_of_it() {
     // The app follows the device's languages, and so does NSH.
     pump_until(&mut engine, &rx, "nsh en-US");
     let root = ROOT.with_borrow(|root| root.clone()).unwrap();
-    let i18n = root.required_service::<I18nService>().unwrap();
-    assert_eq!(i18n.t("hello"), "Hello");
+    let i18n = root.required_service::<dyn I18nService>().unwrap();
+    let formatter = root.required_service::<dyn MessageFormatter>().unwrap();
+    assert_eq!(formatter.t("hello"), "Hello");
     assert_eq!(i18n.chosen_language(), None);
 
     // A language the app picks is NSH's too.
-    i18n.set_language("hr").unwrap();
+    block_on(i18n.set_language("hr".into())).unwrap();
     pump_until(&mut engine, &rx, "nsh hr");
-    assert_eq!(i18n.t("hello"), "Bok");
+    assert_eq!(formatter.t("hello"), "Bok");
     assert_eq!(i18n.chosen_language().as_deref(), Some("hr"));
 
     // Following the platform again lets NSH follow the device again.
-    let platform = root.required_service::<dyn PlatformInfoService>().unwrap();
-    i18n.follow_platform_again(&platform.platform().get().locale);
+    block_on(i18n.follow_platform()).unwrap();
     pump_until(&mut engine, &rx, "nsh en-US");
-    assert_eq!(i18n.t("hello"), "Hello");
+    assert_eq!(formatter.t("hello"), "Hello");
 }

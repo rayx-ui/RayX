@@ -1,19 +1,21 @@
 //! The i18n service, for TSX.
 
 use std::str::FromStr;
+use std::sync::Arc;
 
+use dxn_i18n::{Args, Value};
 use dxn_intl::{
     DateFields, DateTimeOptions, Grouping, HourCycle, Length, Number, NumberOptions, NumberStyle,
     TimePrecision,
 };
+use futures::FutureExt as _;
+use futures::future::BoxFuture;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
-use rayx_app::ChangeSubscription;
-use rayx_runtime::services::i18n::{Args, I18nService as I18n, Value};
-use std::sync::Arc;
-
-use crate::di::provider_ts::ServiceClass;
-use crate::services::listeners_ts::Listeners;
+use rayx_app::services::i18n::{I18nService as I18n, I18nServiceError, MessageFormatter};
+use rayx_app::services::platform::TextDirection;
+use rayx_app::{ChangeSubscription, ServiceProvider};
+use rayx_app_nsh::ts::{Listeners, ServiceClass};
 
 /// The app's translations, for TSX: `const i18n = services.getRequiredService(I18nService)` once
 /// `await builder.start()` resolved, then `i18n.t("cart", { n: 3 })`,
@@ -24,28 +26,58 @@ use crate::services::listeners_ts::Listeners;
 /// offset) as a date in the user's time zone. A `Date` or any other object throws: JavaScript
 /// hands it over as an empty object. `onChange` hears every change of the locale, the time zone
 /// or the messages, with the locale's tag; format again then.
+///
+/// It wraps whichever `dyn I18nService` is registered (RayX's, or a TS implementation of the
+/// contract `I18nServiceContract` registered under this class) and formats synchronously
+/// through the app's `dyn MessageFormatter` (`addI18n` registers RayX's).
 #[class]
 pub struct I18nService {
-    service: Arc<I18n>,
+    service: Arc<dyn I18n>,
+    formatter: Option<Arc<dyn MessageFormatter>>,
     listeners: Listeners,
 }
 
 impl ServiceClass for I18nService {
-    type Service = I18n;
+    type Service = dyn I18n;
 
-    fn wrap(service: Arc<I18n>) -> Self {
+    fn wrap(service: Arc<dyn I18n>) -> Self {
         Self {
             service,
+            formatter: None,
             listeners: Listeners::default(),
         }
+    }
+
+    fn wrap_in(service: Arc<dyn I18n>, services: &ServiceProvider) -> Self {
+        Self {
+            formatter: services.service::<dyn MessageFormatter>(),
+            ..Self::wrap(service)
+        }
+    }
+}
+
+/// What a command's call answered now: RayX's implementation answers when called; a TS one's
+/// starts (its failure reaches TS from its own promise).
+fn answered(call: BoxFuture<'_, Result<(), I18nServiceError>>) -> Result<(), String> {
+    match call.now_or_never() {
+        Some(result) => result.map_err(|error| error.to_string()),
+        None => Ok(()),
     }
 }
 
 #[class]
 impl I18nService {
+    /// The contract this class is the token of (TS types only: `null` at run time).
+    #[getter]
+    #[ts("(): I18nServiceContract | null")]
+    pub fn contract(&self) -> Option<bool> {
+        None
+    }
+
     /// The message `id` formatted with `args`; throws for an argument that is an object.
     pub fn t(&self, id: String, args: Option<JsonValue>) -> Result<String, String> {
-        Ok(self.service.format(&id, &arguments(&self.service, args)?))
+        let formatter = self.formatter()?;
+        Ok(formatter.format(&id, &arguments(formatter.as_ref(), args)?))
     }
 
     /// `instant` (`date.toISOString()`: a timestamp with its offset) as the user's wall time in
@@ -55,11 +87,11 @@ impl I18nService {
         instant: String,
         options: Option<DateFormat>,
     ) -> Result<String, String> {
-        let local = self
-            .service
+        let formatter = self.formatter()?;
+        let local = formatter
             .local_time(&instant)
             .map_err(|error| error.to_string())?;
-        self.service
+        formatter
             .format_date_time(&local, options.unwrap_or_default().resolve()?)
             .map_err(|error| error.to_string())
     }
@@ -71,7 +103,7 @@ impl I18nService {
         options: Option<NumberFormat>,
     ) -> Result<String, String> {
         let number = Number::try_from(value).map_err(|error| error.to_string())?;
-        self.service
+        self.formatter()?
             .format_number(number, options.unwrap_or_default().resolve()?)
             .map_err(|error| error.to_string())
     }
@@ -82,13 +114,13 @@ impl I18nService {
     }
 
     /// Whether the message `id` exists in the user's languages or the fallbacks.
-    pub fn has(&self, id: String) -> bool {
-        self.service.contains(&id)
+    pub fn has(&self, id: String) -> Result<bool, String> {
+        Ok(self.formatter()?.contains(&id))
     }
 
     /// The locale messages are formatted for (`de-AT-u-hc-h23`).
     pub fn locale(&self) -> String {
-        self.service.locale().to_string()
+        self.service.locale()
     }
 
     /// The languages the app has messages for.
@@ -98,14 +130,27 @@ impl I18nService {
 
     /// `"ltr"` or `"rtl"`.
     pub fn direction(&self) -> String {
-        self.service.direction().as_str().to_owned()
+        match self.service.direction() {
+            TextDirection::Ltr => "ltr",
+            TextDirection::Rtl => "rtl",
+        }
+        .to_owned()
     }
 
     /// Shows the app in `language` from now on, whatever the system's languages.
     pub fn set_language(&self, language: String) -> Result<(), String> {
-        self.service
-            .set_language(&language)
-            .map_err(|error| error.to_string())
+        answered(self.service.set_language(language))
+    }
+
+    /// Follows the system's languages again after `setLanguage`.
+    pub fn follow_platform(&self) -> Result<(), String> {
+        answered(self.service.follow_platform())
+    }
+
+    /// Shows instants in `timeZone` (an IANA name) from now on, until the system reports
+    /// another.
+    pub fn set_time_zone(&self, time_zone: String) -> Result<(), String> {
+        answered(self.service.set_time_zone(time_zone))
     }
 
     /// Calls `listener` with the locale's tag after every change, until the function it
@@ -117,7 +162,9 @@ impl I18nService {
         let service = Arc::clone(&self.service);
         self.listeners.listen(listener, move |post| {
             Ok::<ChangeSubscription, String>(
-                service.subscribe(move |event| post(event.locale.to_string())),
+                service
+                    .i18n()
+                    .subscribe(move |state| post(state.locale.clone())),
             )
         })
     }
@@ -125,8 +172,17 @@ impl I18nService {
 
 impl I18nService {
     /// The service, for Rust bridges that take an `Instance<I18nService>`.
-    pub fn service(&self) -> &I18n {
+    pub fn service(&self) -> &Arc<dyn I18n> {
         &self.service
+    }
+
+    /// The app's formatter, which `t` and the other formatting methods use.
+    pub fn formatter(&self) -> Result<&Arc<dyn MessageFormatter>, String> {
+        self.formatter.as_ref().ok_or_else(|| {
+            "no MessageFormatter is registered: addI18n() registers RayX's \
+             (add_message_formatter() in Rust over an i18n service of the app's own)"
+                .to_owned()
+        })
     }
 }
 
@@ -264,7 +320,7 @@ impl NumberFormat {
 
 /// A TSX object's fields as message arguments: an instant (a timestamp with its offset) is a
 /// date in the user's time zone, and an object is refused.
-fn arguments(service: &I18n, args: Option<JsonValue>) -> Result<Args, String> {
+fn arguments(formatter: &dyn MessageFormatter, args: Option<JsonValue>) -> Result<Args, String> {
     let fields = match args {
         None | Some(JsonValue::Null) => return Ok(Args::new()),
         Some(JsonValue::Object(fields)) => fields,
@@ -278,7 +334,7 @@ fn arguments(service: &I18n, args: Option<JsonValue>) -> Result<Args, String> {
         .into_iter()
         .map(|(name, value)| {
             let value = match value {
-                JsonValue::String(text) => match service.local_time(&text) {
+                JsonValue::String(text) => match formatter.local_time(&text) {
                     Ok(local) => Value::DateTime(local),
                     Err(_) => Value::String(text),
                 },

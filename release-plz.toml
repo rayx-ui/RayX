@@ -41,6 +41,7 @@ changelog_include = [
     "rayx_devtools_protocol",
     "rayx_services_assets",
     "rayx_services_fonts",
+    "rayx_services_i18n",
     "rayx_services_navigation",
     "rayx_services_platform",
     "rayx_services_storage",
@@ -110,6 +111,17 @@ version_group = "rayx"
 # tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
 # after that release's tag.
 git_tag_name = "rayx_services_fonts-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_i18n"
+version_group = "rayx"
+# RayX's i18n service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_i18n-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false

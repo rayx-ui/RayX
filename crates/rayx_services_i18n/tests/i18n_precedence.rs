@@ -10,8 +10,9 @@ use futures::executor::block_on;
 use rayx_app::RayXAppBuilder;
 use rayx_app::di::StartupInitializationContext;
 use rayx_app::services::assets::{AssetCatalog, AssetService};
-use rayx_app::testing::FakeAssets;
-use rayx_runtime::services::i18n::*;
+use rayx_app::services::i18n::MessageFormatter;
+use rayx_app::testing::{FakeAssets, add_host_fakes};
+use rayx_services_i18n::I18nAppBuilderExt as _;
 
 /// The app's package `app` and a library `widgets`, both translating `ok` (`app` sorts first),
 /// listed in `packages`' order.
@@ -35,7 +36,7 @@ fn start(packages: &[&str]) -> rayx_app::ServiceProvider {
     builder
         .services
         .add_singleton_as::<dyn AssetService>(assets(packages));
-    let services = builder.build().unwrap();
+    let services = add_host_fakes(builder).build().unwrap();
     services.validate_options_on_start().unwrap();
     block_on(
         services
@@ -49,7 +50,7 @@ fn start(packages: &[&str]) -> rayx_app::ServiceProvider {
 #[test]
 fn the_apps_translations_override_its_libraries() {
     let services = start(&["app", "widgets"]);
-    let i18n = services.required_service::<I18nService>().unwrap();
+    let i18n = services.required_service::<dyn MessageFormatter>().unwrap();
     assert_eq!(i18n.t("ok"), "Got it");
     assert_eq!(i18n.t("cancel"), "Cancel");
 }
@@ -57,6 +58,6 @@ fn the_apps_translations_override_its_libraries() {
 #[test]
 fn the_package_listed_first_wins_whatever_its_name() {
     let services = start(&["widgets", "app"]);
-    let i18n = services.required_service::<I18nService>().unwrap();
+    let i18n = services.required_service::<dyn MessageFormatter>().unwrap();
     assert_eq!(i18n.t("ok"), "OK");
 }

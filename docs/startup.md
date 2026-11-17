@@ -113,8 +113,8 @@ builder
         let store = context.services().required_service::<dyn KeyValueStore>()?;
         let saved = store.bucket("settings").try_get_json::<String>("language").await.ok().flatten();
         if let Some(language) = saved {
-            let i18n = context.services().required_service::<I18nService>()?;
-            i18n.set_language(&language).map_err(|error| ReadyError::new(error.to_string()))?;
+            let i18n = context.services().required_service::<dyn I18nService>()?;
+            i18n.set_language(language).await.map_err(|error| ReadyError::new(error.to_string()))?;
         }
         Ok(())
     })

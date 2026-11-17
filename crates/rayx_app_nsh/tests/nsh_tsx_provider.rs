@@ -124,7 +124,7 @@ impl Probe {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, I18nService, Probe, RayXAppBuilder, ServiceToken,
+  ApplicationConfigurationService, Probe, RayXAppBuilder, ServiceToken,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -132,17 +132,15 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addOperations().addI18n()).start();
+    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addOperations().addApplicationConfiguration()).start();
 
     // A class is its own token; a singleton is one object.
-    const i18n = services.getRequiredService(I18nService);
-    lines.push(`${i18n instanceof I18nService} ${i18n === services.getRequiredService(I18nService)}`);
-    lines.push(String(services.getService(I18nService) === services.getRequiredService(I18nService)));
-    lines.push(typeof i18n.locale());
+    const configuration = services.getRequiredService(ApplicationConfigurationService);
+    lines.push(`${configuration instanceof ApplicationConfigurationService} ${configuration === services.getRequiredService(ApplicationConfigurationService)}`);
+    lines.push(String(services.getService(ApplicationConfigurationService) === services.getRequiredService(ApplicationConfigurationService)));
+    lines.push(typeof configuration.current().name);
 
     // Nothing registered: `null`, or an error naming the token.
-    lines.push(String(services.getService(ApplicationConfigurationService)));
-    lines.push(thrown(() => services.getRequiredService(ApplicationConfigurationService)).includes("ApplicationConfigurationService") ? "named" : "unnamed");
     class Mine {}
     lines.push(String(services.getService(Mine)));
     lines.push(thrown(() => services.getRequiredService(Mine)));
@@ -159,7 +157,7 @@ setTimeout(async () => {
     lines.push(String(page === Probe.page(scope) && Probe.active()));
     lines.push(String(page !== Probe.page(inner)));
     lines.push(String(Probe.sameSession(services, scope) && Probe.sameSession(scope, inner)));
-    lines.push(String(scope.getRequiredService(I18nService) instanceof I18nService));
+    lines.push(String(scope.getRequiredService(ApplicationConfigurationService) instanceof ApplicationConfigurationService));
     inner.dispose();
     lines.push(`${Probe.dropped() - before} ${Probe.active()}`);
     Probe.page(scope);
@@ -167,7 +165,7 @@ setTimeout(async () => {
     lines.push(String(Probe.active()));
     Probe.release();
     lines.push(String(Probe.dropped() - before));
-    lines.push(thrown(() => scope.getService(I18nService)).includes("disposed") ? "disposed" : "used");
+    lines.push(thrown(() => scope.getService(ApplicationConfigurationService)).includes("disposed") ? "disposed" : "used");
     lines.push(thrown(() => scope.createScope()).includes("disposed") ? "disposed" : "used");
   } catch (error) {
     lines.push(`threw ${error}`);
@@ -185,7 +183,7 @@ fn the_provider_resolves_by_class_and_token_with_scopes_disposed() {
     });
     assert_eq!(
         headless::run(set, TSX),
-        "done true true|true|string|null|named|null|no service is registered for Mine\
+        "done true true|true|string|null|no service is registered for Mine\
          |clock null|no service is registered for ServiceToken(clock)\
          |ServiceProvider.getService: `token`: expected an object, got 3\
          |true|true|true|true|0 false|false|2|disposed|disposed"

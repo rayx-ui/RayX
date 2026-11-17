@@ -7,46 +7,48 @@
 use std::{cell::RefCell, time::Duration};
 
 use crossbeam_channel::{Receiver, Sender};
+use futures::executor::block_on;
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
-use rayx_app_nsh::{RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, tr};
+use rayx_app::services::i18n::I18nService;
+use rayx_app_nsh::{RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services};
+use rayx_services_i18n::{I18nAppBuilderExt as _, tr};
+
+mod messages;
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
 }
 
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    let mut options = I18nOptions::default();
-    options.auto_load_assets(false);
-    let service = I18nService::new(options).unwrap();
-    service
-        .add_resource(
-            "en",
-            None,
-            r#"{
-              "hello": "Hello, {$name}!",
-              "items": ".input {$count :number}\n.match $count\none {{One item}}\n* {{{$count} items}}",
-              "profile": "User {$user-id} is {$type}."
-            }"#,
-        )
-        .unwrap();
-    service
-        .add_resource(
-            "hr",
-            None,
-            r#"{
-              "hello": "Bok, {$name}!",
-              "items": ".input {$count :number}\n.match $count\none {{{$count} artikl}}\nfew {{{$count} artikla}}\n* {{{$count} artikala}}"
-            }"#,
-        )
-        .unwrap();
-    builder.with_i18n_service(service)
+    messages::add_messages(
+        builder,
+        &[
+            (
+                "locales/en.json",
+                r#"{
+                  "hello": "Hello, {$name}!",
+                  "items": ".input {$count :number}\n.match $count\none {{One item}}\n* {{{$count} items}}",
+                  "profile": "User {$user-id} is {$type}."
+                }"#,
+            ),
+            (
+                "locales/hr.json",
+                r#"{
+                  "hello": "Bok, {$name}!",
+                  "items": ".input {$count :number}\n.match $count\none {{{$count} artikl}}\nfew {{{$count} artikla}}\n* {{{$count} artikala}}"
+                }"#,
+            ),
+        ],
+    )
+    .add_i18n(|options| {
+        options.follow_platform(false);
+    })
 }
 
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
+    ::rayx_app::testing::add_host_fakes(build_app(RayXAppBuilder::new())).start();
     let name = "Ana";
     let count = 1200;
     text(move || {
@@ -107,10 +109,10 @@ fn tr_shows_the_apps_messages_and_follows_its_language() {
         "Hello, Ana! | 1,200 items | User 7 is new. | missing",
     );
     let root = ROOT.with_borrow(|root| root.clone()).unwrap();
-    let i18n = root.required_service::<I18nService>().unwrap();
+    let i18n = root.required_service::<dyn I18nService>().unwrap();
 
     // A language change shows at once, with no state of the component's own.
-    i18n.set_language("hr").unwrap();
+    block_on(i18n.set_language("hr".into())).unwrap();
     pump_until(
         &mut engine,
         &rx,
@@ -119,7 +121,7 @@ fn tr_shows_the_apps_messages_and_follows_its_language() {
 
     // So do messages added while the app runs, from another thread too.
     std::thread::spawn(move || {
-        i18n.add_resource("hr", None, r#"{ "missing": "Pronađeno" }"#)
+        block_on(i18n.add_resource("hr".into(), None, r#"{ "missing": "Pronađeno" }"#.into()))
             .unwrap();
     })
     .join()

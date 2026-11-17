@@ -189,7 +189,7 @@ fn start_resolves_with_the_root_once_and_for_every_later_start() {
 }
 
 const SAME_TURN: &str = r#"import { mount, signal, Text } from "nsh";
-import { I18nService, RayXAppBuilder } from "test/app";
+import { ApplicationConfigurationService, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
@@ -199,9 +199,9 @@ setTimeout(async () => {
     const builder = new RayXAppBuilder().addHostFakes();
     const ready = builder.start();
     // The same turn: the builder was taken by the call, so nothing more reaches the startup.
-    lines.push(thrown(() => builder.addI18n((options) => { options.defaultLanguage("hr"); })));
+    lines.push(thrown(() => builder.addApplicationConfiguration()));
     const services = await ready;
-    lines.push(String(services.getService(I18nService)));
+    lines.push(String(services.getService(ApplicationConfigurationService)));
   } catch (error) {
     lines.push(`threw ${error}`);
   }

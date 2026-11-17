@@ -55,7 +55,7 @@ fn set() -> nsh_core::element::Registry {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { I18nService, Probe, RayXAppBuilder } from "test/app";
+import { ApplicationConfigurationService, Probe, RayXAppBuilder } from "test/app";
 
 class Warmup {
   isInitialized() { return false; }
@@ -73,7 +73,7 @@ setTimeout(async () => {
       .addRustHook()
       .addStartupSingleton(Warmup, () => new Warmup())
       .onReady(() => Probe.log("second"))
-      .onReadyWhen((s) => s.getService(I18nService) !== null, () => Probe.log("no i18n"))
+      .onReadyWhen((s) => s.getService(ApplicationConfigurationService) !== null, () => Probe.log("no configuration"))
       .onReadyWhen((s) => { asked = s; return true; }, async () => Probe.log("when"))
       .start();
     lines.push(Probe.logged());

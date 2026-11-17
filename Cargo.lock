@@ -4870,6 +4870,7 @@ dependencies = [
  "crossbeam-channel",
  "dxn_i18n",
  "dxn_intl",
+ "futures",
  "nsh-bundler",
  "nsh-core",
  "nsh-engine",
@@ -4879,6 +4880,7 @@ dependencies = [
  "rayx_components",
  "rayx_devtools_protocol",
  "rayx_runtime",
+ "rayx_services_i18n",
  "rayx_services_navigation",
  "serde_json",
 ]
@@ -4925,6 +4927,8 @@ dependencies = [
 name = "rayx_app"
 version = "0.11.0"
 dependencies = [
+ "dxn_i18n",
+ "dxn_intl",
  "futures",
  "rayx_app_macros",
  "serde",
@@ -4949,8 +4953,6 @@ version = "0.11.0"
 dependencies = [
  "base64 0.22.1",
  "crossbeam-channel",
- "dxn_i18n_macros",
- "dxn_intl",
  "dxn_reactive",
  "futures",
  "nsh-base",
@@ -4995,8 +4997,6 @@ dependencies = [
 name = "rayx_runtime"
 version = "0.11.0"
 dependencies = [
- "dxn_i18n",
- "dxn_intl",
  "futures",
  "rayx_app",
  "serde",
@@ -5032,6 +5032,23 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "rayx_services_i18n"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "dxn_i18n",
+ "dxn_i18n_macros",
+ "dxn_intl",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

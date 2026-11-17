@@ -9,15 +9,12 @@ use rayx_app::{
 };
 use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
 use rayx_runtime::services::history::HistoryAppBuilderExt as _;
-use rayx_runtime::services::i18n::I18nAppBuilderExt as _;
 use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
 use rayx_runtime::services::operations::OperationsAppBuilderExt as _;
 use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
-use crate::ts::{
-    ApplicationConfigurationOptions, ConfigurationBuilder, I18nOptions, InputMapOptions,
-};
+use crate::ts::{ApplicationConfigurationOptions, ConfigurationBuilder, InputMapOptions};
 use std::collections::HashMap;
 
 use nsh_core::JsonValue;
@@ -38,7 +35,7 @@ use rayx_app::di::{ServiceLifetime, StartupServiceType};
 /// ```ts
 /// const services = await new RayXAppBuilder()
 ///   .addAppSettings("my-app")
-///   .addI18n((options) => { options.defaultLanguage("en"); })
+///   .addOperations()
 ///   .start();
 /// ```
 ///
@@ -132,22 +129,6 @@ impl RayXAppBuilder {
     /// storage), with the operation service; it needs a key-value store (`addStorage`).
     pub fn add_persistent_history(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
         chain(this, |builder| builder.add_persistent_history())
-    }
-
-    /// Registers the app's i18n service (and the asset service it loads translations from);
-    /// `configure` sets its options (`options.defaultLanguage("en")`) after configuration's.
-    pub fn add_i18n(
-        this: Instance<Self>,
-        #[args(options)] configure: Option<Callback<Instance<I18nOptions>>>,
-    ) -> Result<Instance<Self>, String> {
-        let steps = record(I18nOptions::new(), configure, I18nOptions::take)?;
-        chain_err(this, |builder| {
-            builder.add_i18n(move |options| {
-                for step in &steps {
-                    step.apply(options);
-                }
-            })
-        })
     }
 
     /// Registers the app's input map (it keeps the user's bindings in the app's key-value store:

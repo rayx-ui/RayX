@@ -1,9 +1,9 @@
 //! The i18n service's options for TSX (`addI18n`).
 
 use nsh_core::prelude::*;
-use rayx_runtime::services::i18n::{I18nOptions as I18n, MissingMessagePolicy};
+use rayx_app_nsh::ts::push;
 
-use crate::configuration::options_ts::push;
+use crate::options::{I18nOptions as I18n, MissingMessagePolicy};
 
 /// The i18n service's options (`addI18n`), as Rust's `I18nOptions` sets them: each method sets
 /// one and returns the object, so calls chain.

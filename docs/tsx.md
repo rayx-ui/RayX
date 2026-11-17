@@ -83,6 +83,8 @@ const i18n = services.getRequiredService(I18nService);
 - `defaultInitializationTimeout(ms)` and every TS timeout are in milliseconds.
 - `start()` requires the platform, suspension, asset and font services (`addPlatform()`, `addSuspension()`,
   `addAssets()`, `addFonts()` from their crates' sets, or the app's own) and rejects naming each one missing.
+- A service crate's builder method and class exist once its set is registered in the native module's body:
+  `rayx_services_i18n::register(registry)` gives `addI18n(..)`, `addMessageFormatter()` and the `I18nService` class.
 
 See [Startup](startup.md).
 
@@ -121,7 +123,7 @@ listener.
 
 | Class | Rust service | What it does |
 | --- | --- | --- |
-| `I18nService` | `I18nService` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, `setLanguage(language)` ([I18n](services/i18n.md#tsx)) |
+| `I18nService` | `dyn I18nService`, formatted by `dyn MessageFormatter` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, `setLanguage(language)`, `followPlatform()`, `setTimeZone(zone)`; `rayx_services_i18n`'s set ([I18n](services/i18n.md#tsx)) |
 | `NavigationService` | `dyn NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)); in `rayx_services_navigation`'s set |
 | `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)); in `rayx_services_storage`'s set |
 | `ApplicationConfigurationService` | `ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()` |

@@ -9,6 +9,8 @@ publish.workspace = true
 repository.workspace = true
 
 [dependencies]
+dxn_i18n.workspace = true
+dxn_intl.workspace = true
 futures = { workspace = true, features = ["alloc"] }
 rayx_app_macros.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }

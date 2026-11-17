@@ -1,10 +1,10 @@
 //! TS `RayXAppBuilder` through NSH's engine, headless: every Rust builder method an app calls
 //! has a chaining camelCase twin that registers what the Rust method does, with the same implied
 //! services, and the set declares each with a doc comment. (The service crates' methods,
-//! `addPlatform`, `addAssets`, `addStorage`, `addNavigation` and the others, are their crates'
-//! groups'; the services the host requires come from `addHostFakes()` here, a key-value store
-//! from the test's `addFakeStorage()`, and the navigation `addSelection()` follows from
-//! `addTestNavigation()`, a fake.)
+//! `addPlatform`, `addAssets`, `addStorage`, `addNavigation`, `addI18n` and the others, are
+//! their crates' groups'; the services the host requires come from `addHostFakes()` here, a
+//! key-value store from the test's `addFakeStorage()`, and the navigation `addSelection()`
+//! follows from `addTestNavigation()`, a fake.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -17,9 +17,8 @@ use nsh_core::prelude::*;
 use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::{
     application_configuration::ApplicationConfigurationService, history::HistoryService,
-    history::HistoryStore, i18n::I18nService, input_map::InputMapService,
-    navigation::NavigationService, operations::OperationService, selection::SelectionService,
-    storage::KeyValueStore,
+    history::HistoryStore, input_map::InputMapService, navigation::NavigationService,
+    operations::OperationService, selection::SelectionService, storage::KeyValueStore,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, RayXAppBuilder, ServiceProvider as Services};
@@ -68,12 +67,11 @@ impl Probe {
     pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
         services.with(|services| {
             let services = services.services();
-            let checks: [(&str, Resolves); 9] = [
+            let checks: [(&str, Resolves); 8] = [
                 ("KeyValueStore", resolves::<dyn KeyValueStore>),
                 ("OperationService", resolves::<OperationService>),
                 ("HistoryService", resolves::<HistoryService>),
                 ("HistoryStore", resolves::<dyn HistoryStore>),
-                ("I18nService", resolves::<I18nService>),
                 ("NavigationService", resolves::<dyn NavigationService>),
                 ("InputMapService", resolves::<InputMapService>),
                 ("SelectionService", resolves::<SelectionService>),
@@ -165,7 +163,6 @@ setTimeout(async () => {
       .addFakeStorage()
       .addOperations()
       .addHistory()
-      .addI18n()
       .addTestNavigation()
       .addInputMap()
       .addSelection()
@@ -191,7 +188,7 @@ fn each_builder_method_registers_its_service() {
     assert_eq!(
         shown,
         "done true\
-         |KeyValueStore,OperationService,HistoryService,I18nService,NavigationService,\
+         |KeyValueStore,OperationService,HistoryService,NavigationService,\
          InputMapService,SelectionService,ApplicationConfigurationService\
          |json,appsettings,3,live|1234"
     );
@@ -227,7 +224,6 @@ fn builder_methods_add_the_services_they_imply_as_in_rust() {
             ".addFakeStorage().addPersistentHistory()",
             "KeyValueStore,OperationService,HistoryService,HistoryStore",
         ),
-        (".addI18n()", "I18nService"),
         (
             ".addFakeStorage().addInputMap()",
             "KeyValueStore,InputMapService",
@@ -266,7 +262,6 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addOperations(): RayXAppBuilder;",
         "addHistory(): RayXAppBuilder;",
         "addPersistentHistory(): RayXAppBuilder;",
-        "addI18n(configure?: ((options: I18nOptions) => void) | null): RayXAppBuilder;",
         "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
         "addSelection(): RayXAppBuilder;",
         "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",

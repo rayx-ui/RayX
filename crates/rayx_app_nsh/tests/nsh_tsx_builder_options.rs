@@ -15,8 +15,7 @@ use nsh_core::prelude::*;
 use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfiguration, i18n::I18nOptions,
-    input_map::InputMapOptions,
+    application_configuration::ApplicationConfiguration, input_map::InputMapOptions,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 
@@ -39,7 +38,6 @@ impl Assets for AppFiles {
     fn read(&self, uri: &str) -> Result<Vec<u8>, String> {
         match uri {
             "asset:/@app/appsettings.json" => Ok(br#"{ "RayX": { "Services": {
-                "I18N": { "DefaultLanguage": "de", "ResourcesPath": "translations", "BidiIsolation": true },
                 "Fonts": { "AutoRegisterAssets": true }
             }, "Application": { "Name": "From settings", "Description": "kept" } } }"#
                 .to_vec()),
@@ -73,7 +71,6 @@ impl Probe {
         name: String,
     ) -> Result<JsonValue, String> {
         match name.as_str() {
-            "i18n" => options::<I18nOptions>(&services),
             "inputMap" => options::<InputMapOptions>(&services),
             "application" => options::<ApplicationConfiguration>(&services),
             other => Err(format!("no options {other}")),
@@ -89,7 +86,7 @@ fn set() -> nsh_core::element::Registry {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, I18nService, Probe, RayXAppBuilder,
+  ApplicationConfigurationService, Probe, RayXAppBuilder,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -98,21 +95,12 @@ setTimeout(async () => {
   try {
     const services = await new RayXAppBuilder().addHostFakes().addFakeStorage()
       .addAppSettings("app")
-      .addI18n((options) => {
-        options.defaultLanguage("hr").fallbackLanguage("en").autoLoadAssets(false);
-        options.followPlatform(false).missingMessage("empty");
-      })
       .addInputMap((options) => { options.bindKey("Editor", "ctrl-s", "save"); })
       .addApplicationConfiguration((options) => {
         options.name("From TS").merge({ notifications: { maxItems: 7 } });
       })
       .start();
 
-    // Set by the callback over the file's; left alone, the file's.
-    const i18n = Probe.options(services, "i18n");
-    lines.push(`${i18n.default_language} ${i18n.fallback_languages} ${i18n.auto_load_assets} ${i18n.follow_platform} ${i18n.missing_message}`);
-    lines.push(`${i18n.resources_path} ${i18n.bidi_isolation}`);
-    lines.push(services.getRequiredService(I18nService).locale());
 
     const bindings = Probe.options(services, "inputMap").application;
     lines.push(bindings.map((entry) => `${entry.context}:${entry.action}`).join(","));
@@ -133,14 +121,11 @@ mount(() => <Text>{shown()}</Text>);
 fn options_set_in_ts_apply_after_configuration_and_reach_their_services() {
     let shown = headless::run_with_assets(set(), TSX, Arc::new(AppFiles));
     let parts: Vec<&str> = shown.split('|').collect();
-    assert_eq!(parts[0], "done hr en false false empty", "{shown}");
-    assert_eq!(parts[1], "translations true", "{shown}");
-    assert_eq!(parts[2], "hr", "{shown}");
-    assert_eq!(parts[3], "Editor:save", "{shown}");
+    assert_eq!(parts[0], "done Editor:save", "{shown}");
     // Set by the callback over the file's; left alone, the file's.
-    assert_eq!(parts[4], "From TS kept 7", "{shown}");
-    assert_eq!(parts[5], "From TS", "{shown}");
-    assert_eq!(parts.len(), 6, "{shown}");
+    assert_eq!(parts[1], "From TS kept 7", "{shown}");
+    assert_eq!(parts[2], "From TS", "{shown}");
+    assert_eq!(parts.len(), 3, "{shown}");
 }
 
 const THROWING: &str = r#"import { mount, signal, Text } from "nsh";
@@ -151,9 +136,7 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   const builder = new RayXAppBuilder().addHostFakes().addFakeStorage();
-  lines.push(thrown(() => builder.addI18n(() => { throw new Error("no languages"); })));
   lines.push(thrown(() => builder.configureAppConfiguration(() => { throw new Error("no sources"); })));
-  lines.push(thrown(() => builder.addI18n((options) => { options.missingMessage("loud"); })));
   lines.push(thrown(() => builder.addApplicationConfiguration((options) => {
     options.merge({ notifications: { maxItems: "many" } });
   })).startsWith("merge: ") ? "merge refused" : "merge kept");
@@ -178,8 +161,7 @@ mount(() => <Text>{shown()}</Text>);
 fn a_throwing_callback_makes_its_builder_call_throw_with_its_message() {
     assert_eq!(
         headless::run(set(), THROWING),
-        "done no languages|no sources\
-         |missingMessage takes \"id\" or \"empty\", not \"loud\"|merge refused|disposed|started"
+        "done no sources|merge refused|disposed|started"
     );
 }
 
@@ -187,10 +169,6 @@ fn a_throwing_callback_makes_its_builder_call_throw_with_its_message() {
 fn the_options_classes_are_declared_with_rust_s_methods() {
     let ts = headless::declarations(&set());
     for declared in [
-        "export declare class I18nOptions {",
-        "  defaultLanguage(language: string): I18nOptions;",
-        "  fallbackLanguage(language: string): I18nOptions;",
-        "  missingMessage(policy: string): I18nOptions;",
         "export declare class InputMapOptions {",
         "  bindKey(context: string, sequence: string, action: string): InputMapOptions;",
         "export declare class ConfigurationBuilder {",

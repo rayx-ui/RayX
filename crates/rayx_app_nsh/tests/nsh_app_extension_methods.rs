@@ -43,7 +43,7 @@ fn set() -> nsh_core::element::Registry {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { I18nService, Probe, RayXAppBuilder } from "test/app";
+import { ApplicationConfigurationService, Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
@@ -54,9 +54,9 @@ setTimeout(async () => {
     // Chained with RayX's own methods: the method returns the builder itself.
     const builder = new RayXAppBuilder().addHostFakes().addOperations();
     lines.push(String(builder.addWeather() === builder));
-    const services = await builder.addI18n().start();
+    const services = await builder.addApplicationConfiguration().start();
     lines.push(Probe.forecast(services));
-    lines.push(String(services.getRequiredService(I18nService) instanceof I18nService));
+    lines.push(String(services.getRequiredService(ApplicationConfigurationService) instanceof ApplicationConfigurationService));
     // After `start()`, it throws.
     lines.push(thrown(() => builder.addWeather()).includes("started") ? "started" : "open");
   } catch (error) {

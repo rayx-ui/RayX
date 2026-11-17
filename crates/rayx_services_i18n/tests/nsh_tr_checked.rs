@@ -8,11 +8,15 @@
 use std::{cell::RefCell, time::Duration};
 
 use crossbeam_channel::{Receiver, Sender};
+use futures::executor::block_on;
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
-use rayx_app_nsh::checked::tr;
-use rayx_app_nsh::rayx_runtime::services::i18n::{I18nAppBuilderExt, I18nOptions, I18nService};
+use rayx_app::services::i18n::I18nService;
 use rayx_app_nsh::{RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services};
+use rayx_services_i18n::I18nAppBuilderExt as _;
+use rayx_services_i18n::checked::tr;
+
+mod messages;
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
@@ -20,35 +24,31 @@ thread_local! {
 
 /// The service with the same messages the check reads.
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    let mut options = I18nOptions::default();
-    options.auto_load_assets(false);
-    let service = I18nService::new(options).unwrap();
-    let resources = [
-        (
-            "en",
-            None,
-            include_str!("fixtures/locales/en/translation.json"),
-        ),
-        (
-            "en",
-            Some("checkout"),
-            include_str!("fixtures/locales/en/checkout.json"),
-        ),
-        (
-            "hr",
-            None,
-            include_str!("fixtures/locales/hr/translation.json"),
-        ),
-    ];
-    for (language, namespace, json) in resources {
-        service.add_resource(language, namespace, json).unwrap();
-    }
-    builder.with_i18n_service(service)
+    messages::add_messages(
+        builder,
+        &[
+            (
+                "locales/en/translation.json",
+                include_str!("fixtures/locales/en/translation.json"),
+            ),
+            (
+                "locales/en/checkout.json",
+                include_str!("fixtures/locales/en/checkout.json"),
+            ),
+            (
+                "locales/hr/translation.json",
+                include_str!("fixtures/locales/hr/translation.json"),
+            ),
+        ],
+    )
+    .add_i18n(|options| {
+        options.follow_platform(false);
+    })
 }
 
 #[component]
 fn Root() -> impl IntoElement {
-    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
+    ::rayx_app::testing::add_host_fakes(build_app(RayXAppBuilder::new())).start();
     let name = "Ana";
     let count = 1200;
     text(move || {
@@ -108,8 +108,8 @@ fn checked_tr_shows_the_apps_messages_and_follows_its_language() {
         "Hello, Ana! | 1,200 items | User 7 is new. | Checkout",
     );
     let root = ROOT.with_borrow(|root| root.clone()).unwrap();
-    let i18n = root.required_service::<I18nService>().unwrap();
-    i18n.set_language("hr").unwrap();
+    let i18n = root.required_service::<dyn I18nService>().unwrap();
+    block_on(i18n.set_language("hr".into())).unwrap();
     pump_until(
         &mut engine,
         &rx,

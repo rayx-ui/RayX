@@ -124,7 +124,6 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
         "class StartupInitializationState",
         "class StartupInitializationContext",
         "class ReadyContext",
-        "class I18nService",
         "component rayx_components::button::Button",
         "type ServiceKey<T>",
     ] {
@@ -166,7 +165,7 @@ fn an_extension_is_plain_rust_too() {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { I18nService, Probe, RayXAppBuilder } from "test/app";
+import { ApplicationConfigurationService, Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
@@ -175,11 +174,11 @@ setTimeout(async () => {
   try {
     // Extensions run in chain order: the later registration wins.
     const builder = new RayXAppBuilder().addHostFakes().addRainy().addOperations().addSunny();
-    lines.push(String(builder.apply((b) => b.addI18n()) === builder));
+    lines.push(String(builder.apply((b) => b.addApplicationConfiguration()) === builder));
     lines.push(thrown(() => builder.apply(() => { throw new Error("no weather"); })));
     const services = await builder.start();
     lines.push(Probe.forecast(services));
-    lines.push(String(services.getRequiredService(I18nService) instanceof I18nService));
+    lines.push(String(services.getRequiredService(ApplicationConfigurationService) instanceof ApplicationConfigurationService));
     lines.push(thrown(() => builder.addRainy()).includes("started already") ? "started" : "open");
   } catch (error) {
     lines.push(`threw ${error}`);

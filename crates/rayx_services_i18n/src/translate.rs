@@ -1,25 +1,26 @@
 //! [`tr!`](crate::tr): the app's messages in a Rust component, following its language.
 
+use std::sync::Arc;
+
+use dxn_i18n::Args;
 use futures::StreamExt as _;
 use futures::channel::mpsc::unbounded;
-use nsh_core::prelude::{Owner, global, spawn, try_global};
-use rayx_app::ServiceProvider;
-use rayx_runtime::services::i18n::{Args, I18nService};
+use nsh_core::prelude::{Owner, spawn, try_global};
+use rayx_app::services::i18n::{I18nService, MessageFormatter};
 
 /// Moves on with every change of the surface's i18n service, so reading it subscribes to them.
 #[derive(Clone, Copy, Default)]
 struct I18nRevision(u64);
 
-/// Moves the surface's [`I18nRevision`] on with every change of the root's [`I18nService`]
-/// (language, time zone, messages), from any thread, for the surface's life. The app's startup
-/// calls it once the services are ready, where the engine runs Rust code.
-pub(crate) fn follow_i18n_changes(root: &ServiceProvider) {
-    let Some(i18n) = root.service::<I18nService>() else {
+/// Moves the surface's [`I18nRevision`] on with every change `i18n` publishes (language, time
+/// zone, messages), from any thread, for the surface's life. The formatter's startup calls it,
+/// where the engine runs Rust code; outside an engine it does nothing.
+pub(crate) fn follow_i18n_changes(i18n: &Arc<dyn I18nService>) {
+    let Some(revision) = try_global::<I18nRevision>() else {
         return;
     };
-    let revision = global::<I18nRevision>();
     let (send, mut changes) = unbounded::<()>();
-    let subscription = i18n.subscribe(move |_| {
+    let subscription = i18n.i18n().subscribe(move |_| {
         let _ = send.unbounded_send(());
     });
     Owner::detached().run(move || {
@@ -33,24 +34,25 @@ pub(crate) fn follow_i18n_changes(root: &ServiceProvider) {
 }
 
 /// The message `id` in the app's language, formatted with `args` by the surface's
-/// [`I18nService`]: what [`tr!`](crate::tr) calls.
+/// [`MessageFormatter`]: what [`tr!`](crate::tr) calls.
 ///
 /// Reading it subscribes, as reading a signal does: in a `text(move || …)` or `dynamic`, the
 /// text follows the app's start and every change of the language, time zone or messages. Until
-/// the app is ready, and in an app without the i18n service or outside an engine, it is `id`.
+/// the app is ready, and in an app without a message formatter or outside an engine, it is
+/// `id`.
 pub fn translate(id: &str, args: &Args) -> String {
     if let Some(revision) = try_global::<I18nRevision>() {
         revision.with(|_| ());
     }
-    crate::app::surface::tracked_root()
-        .and_then(|root| root.service::<I18nService>())
-        .map_or_else(|| id.to_owned(), |i18n| i18n.format(id, args))
+    rayx_app_nsh::tracked_app_services()
+        .and_then(|root| root.service::<dyn MessageFormatter>())
+        .map_or_else(|| id.to_owned(), |formatter| formatter.format(id, args))
 }
 
 /// The message `id` in the app's language: `tr!(id, name = value, …)`, in a Rust component on
 /// the engine's thread.
 ///
-/// The arguments are `dxn_i18n`'s [`args!`](rayx_runtime::services::i18n::args): they keep
+/// The arguments are `dxn_i18n`'s [`args!`](dxn_i18n::args): they keep
 /// their types, so a number stays a number for `.match` and `:number`; a name is an identifier
 /// (a raw one without its `r#`) or, for a variable name Rust cannot spell, a string literal
 /// (`"user-id" = 7`), and a lone identifier passes the variable of that name, as `format!` does.
@@ -58,7 +60,7 @@ pub fn translate(id: &str, args: &Args) -> String {
 ///
 /// ```no_run
 /// use nsh_core::prelude::*;
-/// use rayx_app_nsh::tr;
+/// use rayx_services_i18n::tr;
 ///
 /// fn cart_summary(count: usize) -> impl IntoElement {
 ///     let name = "Ana";
@@ -72,10 +74,10 @@ pub fn translate(id: &str, args: &Args) -> String {
 #[macro_export]
 macro_rules! tr {
     ($id:expr $(,)?) => {
-        $crate::translate($id, &$crate::rayx_runtime::services::i18n::Args::new())
+        $crate::translate($id, &$crate::__private::Args::new())
     };
     ($id:expr, $($args:tt)+) => {
-        $crate::translate($id, &$crate::rayx_runtime::services::i18n::args!($($args)+))
+        $crate::translate($id, &$crate::__private::args!($($args)+))
     };
 }
 
@@ -132,11 +134,9 @@ pub mod checked {
     pub use crate::__checked_tr as tr;
 }
 
-/// What the macros use; not part of the API: `tr!`'s check, and NSH's core for the code
-/// `#[rayx::native_module]`, `#[app_extension]` and `#[contract]` generate (an app crate may
-/// take NSH through RayX).
+/// What the macros use; not part of the API: `tr!`'s arguments and its check.
 #[doc(hidden)]
 pub mod __private {
+    pub use dxn_i18n::{Args, args};
     pub use dxn_i18n_macros::check;
-    pub use nsh_core;
 }
