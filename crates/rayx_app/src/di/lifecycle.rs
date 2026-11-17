@@ -706,7 +706,9 @@ impl StartupRegistry {
     }
 
     /// The initialization layers of the services added already made (factories make theirs
-    /// only when startup runs).
+    /// only when startup runs). It sees startup services only: a dependency no startup service
+    /// is keyed by is reported missing here, though a startup run, which asks its provider,
+    /// counts it met when a service that does not initialize is registered under its key.
     pub fn initialization_layers(
         &self,
     ) -> Result<Vec<Vec<StartupService>>, StartupInitializationError> {
