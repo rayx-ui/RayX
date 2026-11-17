@@ -4882,6 +4882,7 @@ dependencies = [
  "rayx_runtime",
  "rayx_services_i18n",
  "rayx_services_navigation",
+ "rayx_services_operations",
  "serde_json",
 ]
 
@@ -5064,6 +5065,20 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
+]
+
+[[package]]
+name = "rayx_services_operations"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

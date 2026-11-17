@@ -15,6 +15,7 @@ use rayx_runtime::services::input_map::{
     INPUT_MAP_STORAGE_BUCKET, InputMapAppBuilderExt as _, InputMapDocument, InputMapService,
     InputMapSource,
 };
+use rayx_runtime::services::operations::OperationService;
 use rayx_runtime::services::storage::KeyValueStore;
 
 #[test]
@@ -56,9 +57,12 @@ fn over_the_app_s_own_store_they_start() {
     ))
     .unwrap();
     let mut builder = RayXAppBuilder::new();
-    builder
-        .services_mut()
-        .add_singleton_as::<dyn KeyValueStore>(Arc::clone(&store) as Arc<dyn KeyValueStore>);
+    let services = builder.services_mut();
+    services.add_singleton_as::<dyn KeyValueStore>(Arc::clone(&store) as Arc<dyn KeyValueStore>);
+    // What history requires besides the store.
+    services.add_singleton_as::<dyn OperationService>(
+        rayx_app::testing::FakeOperations::new() as Arc<dyn OperationService>
+    );
     let services = builder
         .add_input_map(|_| {})
         .add_persistent_history()

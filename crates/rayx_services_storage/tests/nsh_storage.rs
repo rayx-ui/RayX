@@ -61,7 +61,13 @@ impl StorageBackend for Device {
     }
 }
 
-fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
+fn build_app(mut builder: RayXAppBuilder) -> RayXAppBuilder {
+    // The operation service persistent history observes.
+    rayx_app_nsh::AppBuilder::services_mut(&mut builder)
+        .add_singleton_as::<dyn rayx_app::services::operations::OperationService>(
+        rayx_app::testing::FakeOperations::new()
+            as std::sync::Arc<dyn rayx_app::services::operations::OperationService>,
+    );
     builder.add_storage().add_persistent_history()
 }
 

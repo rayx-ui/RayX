@@ -155,7 +155,7 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addOperations().addApplicationConfiguration()).start();
+    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addApplicationConfiguration()).start();
 
     // A class is its own token; a singleton is one object.
     const configuration = services.getRequiredService(ApplicationConfigurationService);

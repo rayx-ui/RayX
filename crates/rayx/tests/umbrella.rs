@@ -8,12 +8,15 @@ use rayx::prelude::*;
 
 #[test]
 fn the_prelude_builds_an_app_with_the_services() {
-    let builder = RayXAppBuilder::new().add_history().add_i18n(|options| {
-        options
-            .auto_load_assets(false)
-            .follow_platform(false)
-            .default_language("hr");
-    });
+    let builder = RayXAppBuilder::new()
+        .add_operations()
+        .add_history()
+        .add_i18n(|options| {
+            options
+                .auto_load_assets(false)
+                .follow_platform(false)
+                .default_language("hr");
+        });
     // The platform and asset services `add_i18n` requires.
     let services = rayx::app::testing::add_host_fakes(builder).build().unwrap();
     let i18n = services.required_service::<dyn I18nService>().unwrap();
@@ -28,6 +31,11 @@ fn the_prelude_builds_an_app_with_the_services() {
     assert!(
         services
             .service::<rayx::runtime::services::history::HistoryService>()
+            .is_some()
+    );
+    assert!(
+        services
+            .service::<dyn rayx::app::services::operations::OperationService>()
             .is_some()
     );
 }

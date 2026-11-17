@@ -5,10 +5,11 @@
 
 use std::sync::{Arc, Mutex};
 
+use futures::FutureExt as _;
 use futures::executor::block_on;
 use rayx_app::AppBuilder as _;
 use rayx_app::di::StartupInitializationContext;
-use rayx_app::testing::FakeKeyValueStore;
+use rayx_app::testing::{FakeKeyValueStore, FakeOperations};
 use rayx_app::{RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::history::{
     HISTORY_BUCKET, HistoryAppBuilderExt, HistoryJournalV2, HistoryScopeId, HistoryService,
@@ -29,11 +30,19 @@ impl DomainOperation for Set {
     const VERSION: u32 = 1;
 }
 
-/// `builder` with `store` as its key-value store, which persistent history requires.
+/// What `call` answered: the services here answer at once.
+fn now<F: std::future::Future>(call: F) -> F::Output {
+    call.now_or_never().expect("answers at once")
+}
+
+/// `builder` with `store` as its key-value store and an operation service, which persistent
+/// history requires.
 fn with_store(mut builder: RayXAppBuilder, store: Arc<FakeKeyValueStore>) -> RayXAppBuilder {
-    builder
-        .services_mut()
-        .add_singleton_as::<dyn KeyValueStore>(store as Arc<dyn KeyValueStore>);
+    let services = builder.services_mut();
+    services.add_singleton_as::<dyn KeyValueStore>(store as Arc<dyn KeyValueStore>);
+    services.add_singleton_as::<dyn OperationService>(
+        FakeOperations::new() as Arc<dyn OperationService>
+    );
     builder
 }
 
@@ -61,7 +70,7 @@ impl OperationTargetHandler<Set> for Target {
 /// An app over `store`, started, with a target at `value` bound to the scope.
 struct App {
     _services: ServiceProvider,
-    operations: OperationService,
+    operations: Arc<dyn OperationService>,
     history: HistoryService,
     target: Arc<Target>,
     target_id: OperationTargetId,
@@ -80,11 +89,7 @@ impl App {
                 .initialize(StartupInitializationContext::new(services.clone())),
         )
         .unwrap();
-        let operations = services
-            .required_service::<OperationService>()
-            .unwrap()
-            .as_ref()
-            .clone();
+        let operations = services.required_service::<dyn OperationService>().unwrap();
         let history = services
             .required_service::<HistoryService>()
             .unwrap()
@@ -93,9 +98,7 @@ impl App {
         let target = Arc::new(Target(Mutex::new(value)));
         let target_id = OperationTargetId::new("persistence:target").unwrap();
         let scope = HistoryScopeId::new("persistence:scope").unwrap();
-        operations
-            .register_target(target_id.clone(), target.clone())
-            .unwrap();
+        now(operations.register_handler(target_id.clone(), target.clone())).unwrap();
         history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap();
@@ -110,9 +113,10 @@ impl App {
     }
 
     fn set(&self, value: u64) {
-        self.operations
-            .submit(&self.target_id, Set(value), OperationOrigin::LocalUser)
-            .unwrap();
+        now(self
+            .operations
+            .submit(&self.target_id, Set(value), OperationOrigin::LocalUser))
+        .unwrap();
     }
 
     fn value(&self) -> u64 {

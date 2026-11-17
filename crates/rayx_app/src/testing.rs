@@ -3,6 +3,7 @@
 //! services an NSH host requires.
 
 use std::collections::BTreeMap;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use futures::FutureExt as _;
@@ -17,6 +18,11 @@ use crate::services::navigation::{
     NavigationHistoryMode, NavigationJournal, NavigationLifecycleData, NavigationRegion,
     NavigationRequest, NavigationResult, NavigationService, NavigationState, Route,
     RouteChangedEvent, RouteParams, RoutingData, RoutingStatus,
+};
+use crate::services::operations::{
+    OperationApplyStatus, OperationError, OperationEvent, OperationFailure, OperationOrigin,
+    OperationReceipt, OperationRecord, OperationService, OperationState, OperationTargetHandle,
+    OperationTargetId,
 };
 use crate::services::platform::{PlatformInfoService, PlatformSnapshot};
 use crate::services::storage::{KeyValueStore, StorageCapabilities, StorageError};
@@ -637,4 +643,250 @@ pub fn add_host_fakes<B: AppBuilder>(mut builder: B) -> B {
         );
     }
     builder
+}
+
+/// An operation service applying records through their targets' handlers as RayX's does
+/// (transactions queue their events until they commit and undo their operations, newest first,
+/// when they abort; a released target refuses operations), publishing its targets and every
+/// event, without diagnostics. For testing what consumes operations (history) without RayX's.
+pub struct FakeOperations {
+    instance_id: u64,
+    next_transaction: AtomicU64,
+    state: Mutex<FakeOperationState>,
+    operations: StateCell<OperationState>,
+    events: EventStream<OperationEvent>,
+    /// Held while the targets are published; a change meanwhile marks them stale.
+    publishing: Mutex<()>,
+    stale: AtomicBool,
+}
+
+#[derive(Default)]
+struct FakeOperationState {
+    targets: BTreeMap<OperationTargetId, OperationTargetHandle>,
+    released: std::collections::BTreeSet<OperationTargetId>,
+    /// The open transactions' receipts, with the handler that applied each.
+    pending: BTreeMap<u64, Vec<(OperationReceipt, OperationTargetHandle)>>,
+}
+
+impl FakeOperations {
+    pub fn new() -> Arc<Self> {
+        /// Numbers from far above RayX's service's, so a test tells them apart.
+        static NEXT_INSTANCE: AtomicU64 = AtomicU64::new(1 << 32);
+        Arc::new(Self {
+            instance_id: NEXT_INSTANCE.fetch_add(1, Ordering::Relaxed),
+            next_transaction: AtomicU64::new(0),
+            state: Mutex::default(),
+            operations: StateCell::new(OperationState::default()),
+            events: EventStream::new(),
+            publishing: Mutex::new(()),
+            stale: AtomicBool::new(false),
+        })
+    }
+
+    fn next_transaction_id(&self) -> u64 {
+        self.next_transaction.fetch_add(1, Ordering::SeqCst) + 1
+    }
+
+    /// Publishes the targets unless they are the ones published: a change made meanwhile is
+    /// published right after, by whoever is publishing.
+    fn publish_targets(&self) {
+        self.stale.store(true, Ordering::SeqCst);
+        loop {
+            let publishing = match self.publishing.try_lock() {
+                Ok(guard) => guard,
+                Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
+                Err(std::sync::TryLockError::WouldBlock) => return,
+            };
+            self.stale.store(false, Ordering::SeqCst);
+            let targets: Vec<OperationTargetId> =
+                lock(&self.state).targets.keys().cloned().collect();
+            if self.operations.get().targets != targets {
+                self.operations.publish(OperationState {
+                    targets,
+                    ..OperationState::default()
+                });
+            }
+            drop(publishing);
+            if !self.stale.load(Ordering::SeqCst) {
+                return;
+            }
+        }
+    }
+
+    fn target(
+        &self,
+        target_id: &OperationTargetId,
+    ) -> Result<OperationTargetHandle, OperationError> {
+        let state = lock(&self.state);
+        match state.targets.get(target_id) {
+            Some(target) => Ok(target.clone()),
+            None if state.released.contains(target_id) => Err(OperationError::TargetReleased(
+                target_id.as_str().to_owned(),
+            )),
+            None => Err(OperationError::UnknownTarget(target_id.as_str().to_owned())),
+        }
+    }
+
+    fn submit_now(
+        &self,
+        record: OperationRecord,
+        origin: OperationOrigin,
+        transaction_id: Option<u64>,
+    ) -> Result<OperationReceipt, OperationError> {
+        let transaction_id = transaction_id.unwrap_or_else(|| self.next_transaction_id());
+        let target = self.target(&record.target_id)?;
+        let result = match target.apply(&record, &origin) {
+            Ok(result) => result,
+            Err(error) => {
+                self.events
+                    .publish(OperationEvent::Failed(OperationFailure {
+                        transaction_id,
+                        target_id: record.target_id.clone(),
+                        kind: record.kind.clone(),
+                        version: record.version,
+                        origin,
+                        error_code: error.code().to_owned(),
+                    }));
+                return Err(error);
+            }
+        };
+        let receipt = OperationReceipt {
+            transaction_id,
+            target_id: record.target_id.clone(),
+            forward: record,
+            inverse: result.inverse,
+            origin,
+            status: result.status,
+            affected_ids: result.affected_ids,
+            before_revision: result.before_revision,
+            after_revision: result.after_revision,
+        };
+        let queued = match lock(&self.state).pending.get_mut(&transaction_id) {
+            Some(pending) => {
+                pending.push((receipt.clone(), target));
+                true
+            }
+            None => false,
+        };
+        if !queued {
+            self.events
+                .publish(OperationEvent::Committed(receipt.clone()));
+        }
+        Ok(receipt)
+    }
+}
+
+impl OperationService for FakeOperations {
+    fn operations(&self) -> &StateCell<OperationState> {
+        &self.operations
+    }
+
+    fn events(&self) -> &EventStream<OperationEvent> {
+        &self.events
+    }
+
+    fn instance_id(&self) -> u64 {
+        self.instance_id
+    }
+
+    fn register_target(
+        &self,
+        target_id: OperationTargetId,
+        handler: OperationTargetHandle,
+    ) -> BoxFuture<'_, Result<(), OperationError>> {
+        {
+            let mut state = lock(&self.state);
+            if state.targets.contains_key(&target_id) {
+                return ready(Err(OperationError::DuplicateTarget(
+                    target_id.as_str().to_owned(),
+                )));
+            }
+            state.released.remove(&target_id);
+            state.targets.insert(target_id, handler);
+        }
+        self.publish_targets();
+        ready(Ok(()))
+    }
+
+    fn release_target(
+        &self,
+        target_id: OperationTargetId,
+    ) -> BoxFuture<'_, Result<bool, OperationError>> {
+        let released = {
+            let mut state = lock(&self.state);
+            let released = state.targets.remove(&target_id).is_some();
+            if released {
+                state.released.insert(target_id);
+            }
+            released
+        };
+        self.publish_targets();
+        ready(Ok(released))
+    }
+
+    fn begin(&self) -> BoxFuture<'_, Result<u64, OperationError>> {
+        let transaction_id = self.next_transaction_id();
+        lock(&self.state).pending.insert(transaction_id, Vec::new());
+        ready(Ok(transaction_id))
+    }
+
+    fn commit(&self, transaction_id: u64) -> BoxFuture<'_, Result<(), OperationError>> {
+        let Some(pending) = lock(&self.state).pending.remove(&transaction_id) else {
+            return ready(Err(OperationError::TransactionClosed));
+        };
+        for (receipt, _) in pending {
+            self.events.publish(OperationEvent::Committed(receipt));
+        }
+        ready(Ok(()))
+    }
+
+    fn abort(&self, transaction_id: u64) -> BoxFuture<'_, Result<(), OperationError>> {
+        let Some(pending) = lock(&self.state).pending.remove(&transaction_id) else {
+            return ready(Err(OperationError::TransactionClosed));
+        };
+        for (receipt, target) in pending.into_iter().rev() {
+            if let Some(inverse) = &receipt.inverse
+                && let Err(error) = target.apply(inverse, &OperationOrigin::HistoryUndo)
+            {
+                return ready(Err(error));
+            }
+        }
+        ready(Ok(()))
+    }
+
+    fn submit_record(
+        &self,
+        record: OperationRecord,
+        origin: OperationOrigin,
+        transaction_id: Option<u64>,
+    ) -> BoxFuture<'_, Result<OperationReceipt, OperationError>> {
+        ready(self.submit_now(record, origin, transaction_id))
+    }
+
+    fn publish_remote_record(
+        &self,
+        record: OperationRecord,
+        peer_id: String,
+        before_revision: u64,
+        after_revision: u64,
+        affected_ids: Vec<String>,
+    ) -> BoxFuture<'_, Result<OperationReceipt, OperationError>> {
+        if let Err(error) = self.target(&record.target_id) {
+            return ready(Err(error));
+        }
+        let receipt = OperationReceipt {
+            transaction_id: self.next_transaction_id(),
+            target_id: record.target_id.clone(),
+            forward: record,
+            inverse: None,
+            origin: OperationOrigin::Remote(peer_id),
+            status: OperationApplyStatus::Applied,
+            affected_ids,
+            before_revision,
+            after_revision,
+        };
+        self.events
+            .publish(OperationEvent::Committed(receipt.clone()));
+        ready(Ok(receipt))
+    }
 }

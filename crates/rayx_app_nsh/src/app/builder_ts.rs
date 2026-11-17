@@ -10,7 +10,6 @@ use rayx_app::{
 use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
 use rayx_runtime::services::history::HistoryAppBuilderExt as _;
 use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
-use rayx_runtime::services::operations::OperationsAppBuilderExt as _;
 use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
@@ -35,13 +34,13 @@ use rayx_app::di::{ServiceLifetime, StartupServiceType};
 /// ```ts
 /// const services = await new RayXAppBuilder()
 ///   .addAppSettings("my-app")
-///   .addOperations()
+///   .addApplicationConfiguration()
 ///   .start();
 /// ```
 ///
-/// Each method registers what the Rust method of its name does, with the same implied services
-/// (`addHistory` adds operations); a service crate's set adds its own methods (`addStorage` from
-/// `rayx_services_storage`). A method taking a callback calls it at once with an options object
+/// Each method registers what the Rust method of its name does, and no other service (what it
+/// needs it requires, and the start names what is missing); a service crate's set adds its own
+/// methods (`addStorage` from `rayx_services_storage`). A method taking a callback calls it at once with an options object
 /// whose methods are Rust's; what it sets applies after the options bound from configuration, and
 /// a callback that throws makes the method throw. After `start()` the other methods throw.
 ///
@@ -114,19 +113,15 @@ impl RayXAppBuilder {
         })
     }
 
-    /// Registers the app's operation service (the commands its history undoes and redoes).
-    pub fn add_operations(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_operations())
-    }
-
-    /// Registers the app's history (undo and redo of operations, kept in memory), and the
-    /// operation service it observes.
+    /// Registers the app's history (undo and redo of operations, kept in memory); it needs an
+    /// operation service (`addOperations`).
     pub fn add_history(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
         chain(this, |builder| builder.add_history())
     }
 
     /// Registers the app's history kept in its key-value store (so on NSH in the device's
-    /// storage), with the operation service; it needs a key-value store (`addStorage`).
+    /// storage); it needs an operation service (`addOperations`) and a key-value store
+    /// (`addStorage`).
     pub fn add_persistent_history(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
         chain(this, |builder| builder.add_persistent_history())
     }

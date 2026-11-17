@@ -173,7 +173,7 @@ setTimeout(async () => {
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
     // Extensions run in chain order: the later registration wins.
-    const builder = new RayXAppBuilder().addHostFakes().addRainy().addOperations().addSunny();
+    const builder = new RayXAppBuilder().addHostFakes().addRainy().defaultInitializationTimeout(1000).addSunny();
     lines.push(String(builder.apply((b) => b.addApplicationConfiguration()) === builder));
     lines.push(thrown(() => builder.apply(() => { throw new Error("no weather"); })));
     const services = await builder.start();

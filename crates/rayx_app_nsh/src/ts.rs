@@ -3,7 +3,7 @@
 //!
 //! ```ts
 //! const services = await new RayXAppBuilder()
-//!   .addOperations()
+//!   .addNavigation((options) => options.addRoute("/"))
 //!   .start();
 //! const navigation = services.getRequiredService(NavigationService);
 //! ```
@@ -18,8 +18,8 @@
 //!   `ApplicationConfigurationService` in TS.
 //! - The services' classes: [`ApplicationConfigurationService`]; the service crates
 //!   (`rayx_services_*`) add theirs (`AssetService`, `FontService`, `I18nService`,
-//!   `KeyValueStore`, `NavigationService` with `NavigationRegion`,
-//!   `PlatformInfoService`, `SuspensionService`) with their sets.
+//!   `KeyValueStore`, `NavigationService` with `NavigationRegion`, `OperationService` with
+//!   `OperationTarget`, `PlatformInfoService`, `SuspensionService`) with their sets.
 //!
 //! # Options classes
 //!

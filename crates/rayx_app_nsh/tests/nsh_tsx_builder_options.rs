@@ -146,7 +146,7 @@ setTimeout(async () => {
   lines.push(thrown(() => kept.bindKey("Editor", "ctrl-q", "quit")).includes("disposed") ? "disposed" : "kept");
   // The builder still works after a callback threw.
   try {
-    await builder.addOperations().start();
+    await builder.defaultInitializationTimeout(1000).start();
     lines.push("started");
   } catch (error) {
     lines.push(`rejected ${error.message}`);

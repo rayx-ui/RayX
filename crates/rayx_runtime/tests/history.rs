@@ -2,14 +2,31 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+use std::future::Future;
+use std::sync::Arc;
+
+use futures::FutureExt as _;
+use rayx_runtime::services::operations::OperationService;
+
+/// What `call` answered: the services here answer at once.
+fn now<F: Future>(call: F) -> F::Output {
+    call.now_or_never().expect("answers at once")
+}
+
+/// An operation service for the history to observe: `rayx_app`'s fake.
+fn operations() -> Arc<dyn OperationService> {
+    rayx_app::testing::FakeOperations::new()
+}
+
 mod service_contracts {
+    use super::now;
     use std::sync::{Arc, Mutex};
 
     use rayx_runtime::services::{
         history::{HistoryScopeId, HistoryService},
         operations::{
-            DomainOperation, OperationApplyResult, OperationOrigin, OperationService,
-            OperationTargetHandler, OperationTargetId,
+            DomainOperation, OperationApplyResult, OperationOrigin, OperationTargetHandler,
+            OperationTargetId,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -59,36 +76,30 @@ mod service_contracts {
 
     #[test]
     fn local_receipts_record_in_an_explicit_scope_and_undo_redo_resubmit_operations() {
-        let operations = OperationService::new();
+        let operations = super::operations();
         let target = Arc::new(ValueTarget::default());
         let target_id = OperationTargetId::new("history:sample").unwrap();
-        operations
-            .register_target(target_id.clone(), target.clone())
-            .unwrap();
-        let history = HistoryService::new(operations.clone()).unwrap();
+        now(operations.register_handler(target_id.clone(), target.clone())).unwrap();
+        let history = HistoryService::new(Arc::clone(&operations)).unwrap();
         let no_op_target_id = OperationTargetId::new("history:no-op").unwrap();
-        operations
-            .register_target(no_op_target_id.clone(), Arc::new(NoOpTarget))
-            .unwrap();
+        now(operations.register_handler(no_op_target_id.clone(), Arc::new(NoOpTarget))).unwrap();
         let scope = HistoryScopeId::new("property-grid:sample").unwrap();
         history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap();
 
-        operations
-            .submit(
-                &target_id,
-                SetValue { value: 5 },
-                OperationOrigin::LocalUser,
-            )
-            .unwrap();
-        operations
-            .submit(
-                &no_op_target_id,
-                SetValue { value: 10 },
-                OperationOrigin::LocalUser,
-            )
-            .unwrap();
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 5 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
+        now(operations.submit(
+            &no_op_target_id,
+            SetValue { value: 10 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
         assert!(history.can_undo(&scope).unwrap());
         assert!(history.can_undo(&scope).unwrap());
         #[cfg(feature = "diagnostics")]
@@ -112,34 +123,30 @@ mod service_contracts {
 
     #[test]
     fn remote_and_history_receipts_do_not_reenter_local_history() {
-        let operations = OperationService::new();
+        let operations = super::operations();
         let target_id = OperationTargetId::new("history:remote").unwrap();
-        operations
-            .register_target(target_id.clone(), Arc::new(ValueTarget::default()))
+        now(operations.register_handler(target_id.clone(), Arc::new(ValueTarget::default())))
             .unwrap();
-        let history = HistoryService::new(operations.clone()).unwrap();
+        let history = HistoryService::new(Arc::clone(&operations)).unwrap();
 
-        operations
-            .submit(
-                &target_id,
-                SetValue { value: 5 },
-                OperationOrigin::Remote("peer-a".to_string()),
-            )
-            .unwrap();
-        operations
-            .submit(
-                &target_id,
-                SetValue { value: 7 },
-                OperationOrigin::HistoryRedo,
-            )
-            .unwrap();
-        operations
-            .submit(
-                &target_id,
-                SetValue { value: 9 },
-                OperationOrigin::LocalUser,
-            )
-            .unwrap();
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 5 },
+            OperationOrigin::Remote("peer-a".to_string()),
+        ))
+        .unwrap();
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 7 },
+            OperationOrigin::HistoryRedo,
+        ))
+        .unwrap();
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 9 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
 
         let scope = HistoryScopeId::new(target_id.as_str()).unwrap();
         assert!(history.can_undo(&scope).unwrap());
@@ -147,38 +154,35 @@ mod service_contracts {
 
     #[test]
     fn transaction_receipts_form_one_entry_and_released_targets_keep_that_entry_available() {
-        let operations = OperationService::new();
+        let operations = super::operations();
         let target_id = OperationTargetId::new("history:transaction").unwrap();
-        operations
-            .register_target(target_id.clone(), Arc::new(ValueTarget::default()))
+        now(operations.register_handler(target_id.clone(), Arc::new(ValueTarget::default())))
             .unwrap();
-        let history = HistoryService::new(operations.clone()).unwrap();
+        let history = HistoryService::new(Arc::clone(&operations)).unwrap();
         let scope = HistoryScopeId::new("inspector:transaction").unwrap();
         history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap();
 
-        let transaction = operations
-            .begin_transaction(rayx_runtime::services::operations::OperationTransactionMode::New)
-            .unwrap();
-        operations
-            .submit(
-                &target_id,
-                SetValue { value: 2 },
-                OperationOrigin::LocalUser,
-            )
-            .unwrap();
-        operations
-            .submit(
-                &target_id,
-                SetValue { value: 3 },
-                OperationOrigin::LocalUser,
-            )
-            .unwrap();
-        transaction.commit().unwrap();
+        let transaction = now(operations
+            .begin_transaction(rayx_runtime::services::operations::OperationTransactionMode::New))
+        .unwrap();
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 2 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 3 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
+        now(transaction.commit()).unwrap();
 
         assert!(history.can_undo(&scope).unwrap());
-        operations.release_target(&target_id).unwrap();
+        now(operations.release_target(target_id.clone())).unwrap();
         let error = history.undo(&scope).unwrap_err();
         assert!(
             matches!(
@@ -197,6 +201,7 @@ mod service_contracts {
 }
 
 mod scope_lifecycle {
+    use super::now;
     use std::sync::{
         Arc, Mutex,
         atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -216,8 +221,8 @@ mod scope_lifecycle {
         },
         operations::{
             DomainOperation, MAX_OPERATION_PAYLOAD_BYTES, OperationApplyResult, OperationError,
-            OperationOrigin, OperationRecord, OperationService, OperationTargetHandler,
-            OperationTargetId, OperationTransactionMode,
+            OperationOrigin, OperationRecord, OperationTargetHandler, OperationTargetId,
+            OperationTransactionMode,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -275,7 +280,7 @@ mod scope_lifecycle {
     }
 
     struct Fixture {
-        operations: OperationService,
+        operations: Arc<dyn rayx_runtime::services::operations::OperationService>,
         history: HistoryService,
         target: Arc<Target>,
         target_id: OperationTargetId,
@@ -284,19 +289,18 @@ mod scope_lifecycle {
 
     impl Fixture {
         fn new(store: Option<Arc<dyn HistoryStore>>) -> Self {
-            let operations = OperationService::new();
+            let operations = super::operations();
             let target = Arc::new(Target::default());
             let target_id = OperationTargetId::new("lifecycle:target")
                 .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
             let scope = HistoryScopeId::new("lifecycle:scope")
                 .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-            operations
-                .register_target(target_id.clone(), target.clone())
+            now(operations.register_handler(target_id.clone(), target.clone()))
                 .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
             let history = match store {
-                Some(store) => HistoryService::with_store(operations.clone(), store)
+                Some(store) => HistoryService::with_store(Arc::clone(&operations), store)
                     .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}")),
-                None => HistoryService::new(operations.clone())
+                None => HistoryService::new(Arc::clone(&operations))
                     .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}")),
             };
             history
@@ -312,9 +316,10 @@ mod scope_lifecycle {
         }
 
         fn set(&self, value: u64) {
-            self.operations
-                .submit(&self.target_id, Set(value), OperationOrigin::LocalUser)
-                .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+            now(self
+                .operations
+                .submit(&self.target_id, Set(value), OperationOrigin::LocalUser))
+            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         }
 
         fn depths(&self) -> (usize, usize) {
@@ -437,28 +442,29 @@ mod scope_lifecycle {
         let other_id = OperationTargetId::new("lifecycle:other-target")
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let other_target = Arc::new(Target::default());
-        f.operations
-            .register_target(other_id.clone(), other_target.clone())
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+        now(f
+            .operations
+            .register_handler(other_id.clone(), other_target.clone()))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.history
             .bind_target_scope(other_id.clone(), other.clone())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.history
             .set_scope_entry_limit(&f.scope, 1)
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        let transaction = f
+        let transaction = now(f
             .operations
-            .begin_transaction(OperationTransactionMode::New)
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+            .begin_transaction(OperationTransactionMode::New))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.set(1);
         f.set(2);
-        transaction
-            .commit()
+        now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         assert_eq!(f.depths(), (1, 0));
-        f.operations
-            .submit(&other_id, Set(9), OperationOrigin::LocalUser)
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+        now(f
+            .operations
+            .submit(&other_id, Set(9), OperationOrigin::LocalUser))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.set(3);
         f.history
             .undo(&f.scope)
@@ -610,10 +616,10 @@ mod scope_lifecycle {
             .on_replay
             .lock()
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}")) = None;
-        let transaction = f
+        let transaction = now(f
             .operations
-            .begin_transaction(OperationTransactionMode::New)
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+            .begin_transaction(OperationTransactionMode::New))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         assert!(matches!(
             f.history.clear_scope(&f.scope),
             Err(HistoryError::ScopeBusy)
@@ -622,8 +628,7 @@ mod scope_lifecycle {
             f.history.set_scope_entry_limit(&f.scope, 1),
             Err(HistoryError::ScopeBusy)
         ));
-        transaction
-            .commit()
+        now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         assert_eq!(f.depths(), (1, 0));
     }
@@ -643,14 +648,13 @@ mod scope_lifecycle {
                 }
             })
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        let transaction = f
+        let transaction = now(f
             .operations
-            .begin_transaction(OperationTransactionMode::New)
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+            .begin_transaction(OperationTransactionMode::New))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.set(1);
         f.set(2);
-        transaction
-            .commit()
+        now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         assert!(matches!(
             rx.recv_timeout(WAIT)
@@ -766,7 +770,7 @@ mod scope_lifecycle {
         let operations = f.operations.clone();
         let target_id = f.target_id.clone();
         let writer = std::thread::spawn(move || {
-            operations.submit(&target_id, Set(1), OperationOrigin::LocalUser)
+            now(operations.submit(&target_id, Set(1), OperationOrigin::LocalUser))
         });
         entered_rx
             .recv_timeout(WAIT)
@@ -876,12 +880,10 @@ mod scope_lifecycle {
         let (commit_tx, commit_rx) = mpsc::channel();
         let (done_tx, done_rx) = mpsc::channel();
         let writer = std::thread::spawn(move || {
-            let transaction = operations
-                .begin_transaction(OperationTransactionMode::New)
+            let transaction = now(operations.begin_transaction(OperationTransactionMode::New))
                 .unwrap_or_else(|error| panic!("begin transaction failed: {error:?}"));
             for value in [1, 2] {
-                operations
-                    .submit(&target_id, Set(value), OperationOrigin::LocalUser)
+                now(operations.submit(&target_id, Set(value), OperationOrigin::LocalUser))
                     .unwrap_or_else(|error| panic!("transaction edit failed: {error:?}"));
             }
             ready_tx
@@ -891,7 +893,7 @@ mod scope_lifecycle {
                 .recv_timeout(WAIT)
                 .unwrap_or_else(|error| panic!("commit release timed out: {error:?}"));
             done_tx
-                .send(transaction.commit())
+                .send(now(transaction.commit()))
                 .unwrap_or_else(|error| panic!("completion signal failed: {error:?}"));
         });
         ready_rx
@@ -947,14 +949,13 @@ mod scope_lifecycle {
                 .is_empty()
         );
         f.set(1);
-        let transaction = f
+        let transaction = now(f
             .operations
-            .begin_transaction(OperationTransactionMode::New)
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+            .begin_transaction(OperationTransactionMode::New))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.set(2);
         f.set(3);
-        transaction
-            .commit()
+        now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.set(4);
         let snapshot = f
@@ -1143,27 +1144,25 @@ mod scope_lifecycle {
 
     #[test]
     fn scope_default_payload_limit_rejects_oversized_submission_before_target_or_history_change() {
-        let operations = OperationService::new();
-        let history = HistoryService::new(operations.clone())
+        let operations = super::operations();
+        let history = HistoryService::new(Arc::clone(&operations))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let target = Arc::new(TextTarget::default());
         let target_id = OperationTargetId::new("lifecycle:limited-text")
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let scope = HistoryScopeId::new("lifecycle:limited-text")
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        operations
-            .register_target::<LimitedText, _>(target_id.clone(), target.clone())
+        now(operations.register_handler::<LimitedText, _>(target_id.clone(), target.clone()))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        operations
-            .submit(
-                &target_id,
-                LimitedText("baseline".into()),
-                OperationOrigin::LocalUser,
-            )
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+        now(operations.submit(
+            &target_id,
+            LimitedText("baseline".into()),
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let before = history
             .retained_records(&scope)
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
@@ -1172,7 +1171,7 @@ mod scope_lifecycle {
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
             .len();
         assert!(
-            matches!(operations.submit(&target_id, operation, OperationOrigin::LocalUser), Err(OperationError::PayloadTooLarge { size, limit }) if size == encoded_size && limit == MAX_OPERATION_PAYLOAD_BYTES)
+            matches!(now(operations.submit(&target_id, operation, OperationOrigin::LocalUser)), Err(OperationError::PayloadTooLarge { size, limit }) if size == encoded_size && limit == MAX_OPERATION_PAYLOAD_BYTES)
         );
         assert_eq!(
             target
@@ -1199,8 +1198,8 @@ mod scope_lifecycle {
 
     #[test]
     fn scope_opted_in_large_forward_and_inverse_replay_with_unchanged_record_wire_shape() {
-        let operations = OperationService::new();
-        let history = HistoryService::new(operations.clone())
+        let operations = super::operations();
+        let history = HistoryService::new(Arc::clone(&operations))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let initial = "a".repeat(MAX_OPERATION_PAYLOAD_BYTES + 17);
         let updated = "b".repeat(MAX_OPERATION_PAYLOAD_BYTES + 31);
@@ -1212,19 +1211,17 @@ mod scope_lifecycle {
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let scope = HistoryScopeId::new("lifecycle:unbounded-text")
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        operations
-            .register_target::<UnboundedText, _>(target_id.clone(), target.clone())
+        now(operations.register_handler::<UnboundedText, _>(target_id.clone(), target.clone()))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        operations
-            .submit(
-                &target_id,
-                UnboundedText(updated.clone()),
-                OperationOrigin::LocalUser,
-            )
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+        now(operations.submit(
+            &target_id,
+            UnboundedText(updated.clone()),
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         let records = history
             .retained_records(&scope)
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
@@ -1306,6 +1303,7 @@ mod scope_lifecycle {
 }
 
 mod persistence {
+    use super::now;
     use rayx_runtime::services::{
         history::{
             HistoryJournalError, HistoryJournalV2, HistoryLimits, HistoryScopeId, HistoryService,
@@ -1313,7 +1311,7 @@ mod persistence {
         },
         operations::{
             DomainOperation, OperationApplyResult, OperationOrigin, OperationRecord,
-            OperationService, OperationTargetHandler, OperationTargetId,
+            OperationTargetHandler, OperationTargetId,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -1418,25 +1416,22 @@ mod persistence {
         let scope = HistoryScopeId::new("history:restart").unwrap();
         let target_id = OperationTargetId::new("history:restart-target").unwrap();
 
-        let first_operations = OperationService::new();
-        first_operations
-            .register_target(target_id.clone(), Arc::new(ValueTarget::default()))
+        let first_operations = super::operations();
+        now(first_operations.register_handler(target_id.clone(), Arc::new(ValueTarget::default())))
             .unwrap();
         let first_history =
-            HistoryService::with_store(first_operations.clone(), store.clone()).unwrap();
+            HistoryService::with_store(Arc::clone(&first_operations), store.clone()).unwrap();
         first_history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap();
-        first_operations
-            .submit(&target_id, Set { value: 7 }, OperationOrigin::LocalUser)
+        now(first_operations.submit(&target_id, Set { value: 7 }, OperationOrigin::LocalUser))
             .unwrap();
         assert!(first_history.can_undo(&scope).unwrap());
         drop(first_history);
 
-        let restarted_operations = OperationService::new();
+        let restarted_operations = super::operations();
         let restarted_target = Arc::new(ValueTarget::with_value(7));
-        restarted_operations
-            .register_target(target_id.clone(), restarted_target.clone())
+        now(restarted_operations.register_handler(target_id.clone(), restarted_target.clone()))
             .unwrap();
         let restarted_history =
             HistoryService::with_store(restarted_operations, store.clone()).unwrap();
@@ -1450,13 +1445,14 @@ mod persistence {
 }
 
 mod receipt_admission {
+    use super::now;
     use std::sync::{Arc, Mutex};
 
     use rayx_runtime::services::{
         history::{HistoryScopeId, HistoryService},
         operations::{
             DomainOperation, OperationApplyResult, OperationApplyStatus, OperationOrigin,
-            OperationService, OperationTargetHandler, OperationTargetId, OperationTransactionMode,
+            OperationTargetHandler, OperationTargetId, OperationTransactionMode,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -1494,13 +1490,11 @@ mod receipt_admission {
     }
     #[test]
     fn only_applied_local_user_receipts_with_inverses_enter_one_transaction_entry() {
-        let operations = OperationService::new();
+        let operations = super::operations();
         let target_id = OperationTargetId::new("history:admission").unwrap();
         let target = Arc::new(ValueTarget::default());
-        operations
-            .register_target(target_id.clone(), target.clone())
-            .unwrap();
-        let history = HistoryService::new(operations.clone()).unwrap();
+        now(operations.register_handler(target_id.clone(), target.clone())).unwrap();
+        let history = HistoryService::new(Arc::clone(&operations)).unwrap();
         let scope = HistoryScopeId::new("history:admission").unwrap();
         history
             .bind_target_scope(target_id.clone(), scope.clone())
@@ -1513,24 +1507,17 @@ mod receipt_admission {
             OperationOrigin::HistoryUndo,
             OperationOrigin::HistoryRedo,
         ] {
-            operations.submit(&target_id, SetValue(1), origin).unwrap();
+            now(operations.submit(&target_id, SetValue(1), origin)).unwrap();
         }
-        let no_op = operations
-            .submit(&target_id, SetValue(1), OperationOrigin::LocalUser)
-            .unwrap();
+        let no_op =
+            now(operations.submit(&target_id, SetValue(1), OperationOrigin::LocalUser)).unwrap();
         assert_eq!(no_op.status, OperationApplyStatus::NoOp);
         assert!(!history.can_undo(&scope).unwrap());
 
-        let transaction = operations
-            .begin_transaction(OperationTransactionMode::New)
-            .unwrap();
-        operations
-            .submit(&target_id, SetValue(2), OperationOrigin::LocalUser)
-            .unwrap();
-        operations
-            .submit(&target_id, SetValue(3), OperationOrigin::LocalUser)
-            .unwrap();
-        transaction.commit().unwrap();
+        let transaction = now(operations.begin_transaction(OperationTransactionMode::New)).unwrap();
+        now(operations.submit(&target_id, SetValue(2), OperationOrigin::LocalUser)).unwrap();
+        now(operations.submit(&target_id, SetValue(3), OperationOrigin::LocalUser)).unwrap();
+        now(transaction.commit()).unwrap();
 
         assert!(history.can_undo(&scope).unwrap());
         assert!(history.undo(&scope).unwrap());
@@ -1539,13 +1526,14 @@ mod receipt_admission {
 }
 
 mod fresh_replay {
+    use super::now;
     use std::sync::{Arc, Mutex};
 
     use rayx_runtime::services::{
         history::{HistoryScopeId, HistoryService},
         operations::{
-            DomainOperation, OperationApplyResult, OperationOrigin, OperationService,
-            OperationTargetHandler, OperationTargetId,
+            DomainOperation, OperationApplyResult, OperationOrigin, OperationTargetHandler,
+            OperationTargetId,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -1580,24 +1568,18 @@ mod fresh_replay {
     }
     #[test]
     fn replay_uses_the_inverse_captured_at_replay_time_for_the_opposite_stack() {
-        let operations = OperationService::new();
+        let operations = super::operations();
         let target = Arc::new(ValueTarget::default());
         let target_id = OperationTargetId::new("history:fresh-replay").unwrap();
-        operations
-            .register_target(target_id.clone(), target.clone())
-            .unwrap();
-        let history = HistoryService::new(operations.clone()).unwrap();
+        now(operations.register_handler(target_id.clone(), target.clone())).unwrap();
+        let history = HistoryService::new(Arc::clone(&operations)).unwrap();
         let scope = HistoryScopeId::new("history:fresh-replay").unwrap();
         history
             .bind_target_scope(target_id.clone(), scope.clone())
             .unwrap();
 
-        operations
-            .submit(&target_id, SetValue(1), OperationOrigin::LocalUser)
-            .unwrap();
-        operations
-            .submit(&target_id, SetValue(5), OperationOrigin::System)
-            .unwrap();
+        now(operations.submit(&target_id, SetValue(1), OperationOrigin::LocalUser)).unwrap();
+        now(operations.submit(&target_id, SetValue(5), OperationOrigin::System)).unwrap();
         assert!(history.undo(&scope).unwrap());
         assert_eq!(*target.0.lock().unwrap(), 0);
         assert!(history.redo(&scope).unwrap());
@@ -1610,13 +1592,14 @@ mod fresh_replay {
 }
 
 mod multi_window {
+    use super::now;
     use std::sync::{Arc, Mutex};
 
     use rayx_runtime::services::{
         history::{HistoryScopeId, HistoryService},
         operations::{
-            DomainOperation, OperationApplyResult, OperationOrigin, OperationService,
-            OperationTargetHandler, OperationTargetId,
+            DomainOperation, OperationApplyResult, OperationOrigin, OperationTargetHandler,
+            OperationTargetId,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -1651,18 +1634,14 @@ mod multi_window {
     }
     #[test]
     fn explicit_scopes_keep_two_windows_independent_without_global_focus() {
-        let operations = OperationService::new();
+        let operations = super::operations();
         let left_id = OperationTargetId::new("history:window:left").unwrap();
         let right_id = OperationTargetId::new("history:window:right").unwrap();
         let left = Arc::new(ValueTarget::default());
         let right = Arc::new(ValueTarget::default());
-        operations
-            .register_target(left_id.clone(), left.clone())
-            .unwrap();
-        operations
-            .register_target(right_id.clone(), right.clone())
-            .unwrap();
-        let history = HistoryService::new(operations.clone()).unwrap();
+        now(operations.register_handler(left_id.clone(), left.clone())).unwrap();
+        now(operations.register_handler(right_id.clone(), right.clone())).unwrap();
+        let history = HistoryService::new(Arc::clone(&operations)).unwrap();
         let left_scope = HistoryScopeId::new("window:left").unwrap();
         let right_scope = HistoryScopeId::new("window:right").unwrap();
         let empty_scope = HistoryScopeId::new("window:empty").unwrap();
@@ -1673,12 +1652,8 @@ mod multi_window {
             .bind_target_scope(right_id.clone(), right_scope.clone())
             .unwrap();
 
-        operations
-            .submit(&left_id, SetValue(1), OperationOrigin::LocalUser)
-            .unwrap();
-        operations
-            .submit(&right_id, SetValue(2), OperationOrigin::LocalUser)
-            .unwrap();
+        now(operations.submit(&left_id, SetValue(1), OperationOrigin::LocalUser)).unwrap();
+        now(operations.submit(&right_id, SetValue(2), OperationOrigin::LocalUser)).unwrap();
         assert!(history.can_undo(&left_scope).unwrap());
         assert!(history.can_undo(&right_scope).unwrap());
         assert!(!history.can_undo(&empty_scope).unwrap());
@@ -1744,12 +1719,21 @@ mod legacy_history_reset {
 }
 
 mod registration {
-    use rayx_app::RayXAppBuilder;
     use rayx_app::di::StartupInitializationContext;
+    use rayx_app::{AppBuilder as _, RayXAppBuilder};
     use rayx_runtime::services::history::{
         HistoryAppBuilderExt, HistoryService, InMemoryHistoryStore,
     };
     use rayx_runtime::services::operations::OperationService;
+
+    /// A builder with an operation service, which history requires.
+    fn with_operations() -> RayXAppBuilder {
+        let mut builder = RayXAppBuilder::new();
+        builder
+            .services_mut()
+            .add_singleton_as::<dyn OperationService>(super::operations());
+        builder
+    }
 
     fn start(builder: RayXAppBuilder) -> rayx_app::ServiceProvider {
         let services = builder.build().unwrap();
@@ -1764,16 +1748,33 @@ mod registration {
 
     #[test]
     fn add_history_registers_history_over_the_apps_operations() {
-        let services = start(RayXAppBuilder::new().add_history());
+        let services = start(with_operations().add_history());
         let history = services.required_service::<HistoryService>().unwrap();
-        let operations = services.required_service::<OperationService>().unwrap();
-        assert!(history.uses_operation_service(&operations));
+        let operations = services.required_service::<dyn OperationService>().unwrap();
+        assert!(history.uses_operation_service(&*operations));
+    }
+
+    #[test]
+    fn add_history_requires_an_operation_service_and_registers_none() {
+        let Err(error) = RayXAppBuilder::new().add_history().build() else {
+            panic!("the build fails");
+        };
+        let error = error.to_string();
+        assert!(error.contains("OperationService"), "{error}");
+        assert!(error.contains("add_operations()"), "{error}");
+        assert!(error.contains("rayx_services_operations"), "{error}");
+        let mut builder = RayXAppBuilder::new().add_history();
+        assert!(
+            !builder
+                .services_mut()
+                .contains_service::<dyn OperationService>()
+        );
     }
 
     #[test]
     fn add_history_with_store_persists_through_the_store() {
         let services =
-            start(RayXAppBuilder::new().add_history_with_store(InMemoryHistoryStore::default()));
+            start(with_operations().add_history_with_store(InMemoryHistoryStore::default()));
         let history = services.required_service::<HistoryService>().unwrap();
         let store = services
             .required_service::<dyn rayx_runtime::services::history::HistoryStore>()

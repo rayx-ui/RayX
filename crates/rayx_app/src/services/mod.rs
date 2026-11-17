@@ -8,6 +8,7 @@ pub mod assets;
 pub mod fonts;
 pub mod i18n;
 pub mod navigation;
+pub mod operations;
 pub mod platform;
 pub mod storage;
 pub mod suspension;

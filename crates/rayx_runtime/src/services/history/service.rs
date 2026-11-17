@@ -11,15 +11,17 @@ use super::{
     HistoryStore,
 };
 use crate::services::operations::{
-    OperationApplyStatus, OperationEvent, OperationOrigin, OperationReceipt, OperationService,
-    OperationSubscription, OperationTargetId, OperationTransactionMode,
+    OperationApplyStatus, OperationError, OperationEvent, OperationOrigin, OperationReceipt,
+    OperationService, OperationTargetId, OperationTransactionMode,
 };
 use futures::{FutureExt, future::LocalBoxFuture};
+use rayx_app::ChangeSubscription;
 use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceError,
     StartupServiceType,
 };
+use rayx_app::services::ContractFailure;
 
 #[cfg(feature = "diagnostics")]
 pub(super) const MAX_RECENT_FAILURES: usize = 32;
@@ -65,11 +67,11 @@ pub(super) struct HistoryState {
 
 #[derive(Clone)]
 pub struct HistoryService {
-    pub(super) operations: OperationService,
+    pub(super) operations: Arc<dyn OperationService>,
     pub(super) store: Arc<Mutex<Option<Arc<dyn HistoryStore>>>>,
     store_configured: bool,
     pub(super) state: Arc<Mutex<HistoryState>>,
-    operation_subscription: Arc<Mutex<Option<OperationSubscription>>>,
+    operation_subscription: Arc<Mutex<Option<ChangeSubscription>>>,
     pub(super) persistence: Arc<Mutex<()>>,
     initialization: StartupInitializationState,
 }
@@ -92,28 +94,30 @@ impl Drop for HistorySubscription {
 }
 
 impl HistoryService {
-    pub fn new(operations: OperationService) -> Result<Self, HistoryError> {
+    pub fn new(operations: Arc<dyn OperationService>) -> Result<Self, HistoryError> {
         Self::create(operations, None, false)
     }
 
     pub fn with_store(
-        operations: OperationService,
+        operations: Arc<dyn OperationService>,
         store: Arc<dyn HistoryStore>,
     ) -> Result<Self, HistoryError> {
         Self::create(operations, Some(store), true)
     }
 
-    pub fn with_configured_store(operations: OperationService) -> Result<Self, HistoryError> {
+    pub fn with_configured_store(
+        operations: Arc<dyn OperationService>,
+    ) -> Result<Self, HistoryError> {
         Self::create(operations, None, true)
     }
 
     fn create(
-        operations: OperationService,
+        operations: Arc<dyn OperationService>,
         store: Option<Arc<dyn HistoryStore>>,
         store_configured: bool,
     ) -> Result<Self, HistoryError> {
         let service = Self {
-            operations: operations.clone(),
+            operations: Arc::clone(&operations),
             store: Arc::new(Mutex::new(store)),
             store_configured,
             state: Arc::new(Mutex::new(HistoryState::default())),
@@ -122,7 +126,7 @@ impl HistoryService {
             initialization: StartupInitializationState::default(),
         };
         let observer = service.clone();
-        let subscription = operations.subscribe(move |event| observer.observe_operation(event))?;
+        let subscription = operations.subscribe(move |event| observer.observe_operation(event));
         *service
             .operation_subscription
             .lock()
@@ -131,7 +135,7 @@ impl HistoryService {
     }
 
     /// Reports whether this history service observes the exact operation-service instance.
-    pub fn uses_operation_service(&self, operations: &OperationService) -> bool {
+    pub fn uses_operation_service(&self, operations: &dyn OperationService) -> bool {
         self.operations.instance_id() == operations.instance_id()
     }
 
@@ -171,38 +175,25 @@ impl HistoryService {
     }
 
     pub fn undo(&self, scope_id: &HistoryScopeId) -> Result<bool, HistoryError> {
-        self.ensure_scope_loaded(scope_id)?;
-        let Some(entry) = self.peek_entry(scope_id, true)? else {
-            return Ok(false);
-        };
-        let replayed = match self.resubmit(&entry, true) {
-            Ok(entry) => entry,
-            Err(error) => {
-                if let Some(scope) = self.lock_state()?.scopes.get_mut(scope_id) {
-                    scope.replaying = false;
-                }
-                self.record_failure(scope_id.clone(), &error);
-                return Err(error);
-            }
-        };
-        let mut state = self.lock_state()?;
-        let scope = state.scopes.entry(scope_id.clone()).or_default();
-        scope.undo.pop().ok_or(HistoryError::StackChanged)?;
-        scope.redo.push(replayed);
-        scope.replaying = false;
-        scope.revision += 1;
-        drop(state);
-        self.persist_scope(scope_id)?;
-        self.emit(HistoryEvent::UndoCompleted(scope_id.clone()));
-        Ok(true)
+        at_once(self.replay(scope_id, true), "undo")
     }
 
     pub fn redo(&self, scope_id: &HistoryScopeId) -> Result<bool, HistoryError> {
+        at_once(self.replay(scope_id, false), "redo")
+    }
+
+    /// Undoes (`undo`) or redoes the scope's latest entry: its records resubmitted in a
+    /// transaction of their own, recorded on the other stack with the inverses they answered.
+    pub(super) async fn replay(
+        &self,
+        scope_id: &HistoryScopeId,
+        undo: bool,
+    ) -> Result<bool, HistoryError> {
         self.ensure_scope_loaded(scope_id)?;
-        let Some(entry) = self.peek_entry(scope_id, false)? else {
+        let Some(entry) = self.peek_entry(scope_id, undo)? else {
             return Ok(false);
         };
-        let replayed = match self.resubmit(&entry, false) {
+        let replayed = match self.resubmit(&entry, undo).await {
             Ok(entry) => entry,
             Err(error) => {
                 if let Some(scope) = self.lock_state()?.scopes.get_mut(scope_id) {
@@ -212,15 +203,25 @@ impl HistoryService {
                 return Err(error);
             }
         };
-        let mut state = self.lock_state()?;
-        let scope = state.scopes.entry(scope_id.clone()).or_default();
-        scope.redo.pop().ok_or(HistoryError::StackChanged)?;
-        scope.undo.push(replayed);
-        scope.replaying = false;
-        scope.revision += 1;
-        drop(state);
+        {
+            let mut state = self.lock_state()?;
+            let scope = state.scopes.entry(scope_id.clone()).or_default();
+            let (from, to) = if undo {
+                (&mut scope.undo, &mut scope.redo)
+            } else {
+                (&mut scope.redo, &mut scope.undo)
+            };
+            from.pop().ok_or(HistoryError::StackChanged)?;
+            to.push(replayed);
+            scope.replaying = false;
+            scope.revision += 1;
+        }
         self.persist_scope(scope_id)?;
-        self.emit(HistoryEvent::RedoCompleted(scope_id.clone()));
+        self.emit(if undo {
+            HistoryEvent::UndoCompleted(scope_id.clone())
+        } else {
+            HistoryEvent::RedoCompleted(scope_id.clone())
+        });
         Ok(true)
     }
 
@@ -333,10 +334,15 @@ impl HistoryService {
         Ok(())
     }
 
-    fn resubmit(&self, entry: &HistoryEntry, undo: bool) -> Result<HistoryEntry, HistoryError> {
+    async fn resubmit(
+        &self,
+        entry: &HistoryEntry,
+        undo: bool,
+    ) -> Result<HistoryEntry, HistoryError> {
         let transaction = self
             .operations
-            .begin_transaction(OperationTransactionMode::New)?;
+            .begin_transaction(OperationTransactionMode::New)
+            .await?;
         let records = if undo {
             entry.inverse.iter().rev().cloned().collect::<Vec<_>>()
         } else {
@@ -349,20 +355,24 @@ impl HistoryService {
         };
         let mut receipts = Vec::with_capacity(records.len());
         for record in records.iter().cloned() {
-            let receipt = match self.operations.resubmit(record, origin.clone()) {
+            let receipt = match self
+                .operations
+                .submit_record(record, origin.clone(), Some(transaction.id()))
+                .await
+            {
                 Ok(receipt) => receipt,
                 Err(error) => {
-                    let _ = transaction.abort();
+                    let _ = transaction.abort().await;
                     return Err(error.into());
                 }
             };
             if receipt.status != OperationApplyStatus::Applied {
-                let _ = transaction.abort();
+                let _ = transaction.abort().await;
                 return Err(HistoryError::ApplyStatus(receipt.status));
             }
             receipts.push(receipt);
         }
-        transaction.commit()?;
+        transaction.commit().await?;
         let mut fresh_inverses = receipts
             .into_iter()
             .map(|receipt| receipt.inverse.ok_or(HistoryError::StackChanged))
@@ -503,10 +513,29 @@ impl StartupInitializable for HistoryService {
     }
 
     fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
-        let mut dependencies = vec![StartupServiceType::of::<OperationService>()];
+        let mut dependencies = vec![StartupServiceType::of::<dyn OperationService>()];
         if self.store_configured {
             dependencies.push(StartupServiceType::of::<dyn HistoryStore>());
         }
         dependencies
     }
+}
+
+/// What `call` answered at once: RayX's history needs an operation service that answers at once
+/// (as RayX's does) for its synchronous calls.
+pub(super) fn at_once<T>(
+    call: impl std::future::Future<Output = Result<T, HistoryError>>,
+    member: &'static str,
+) -> Result<T, HistoryError> {
+    call.now_or_never().unwrap_or_else(|| {
+        Err(HistoryError::Operation(OperationError::Failed(
+            ContractFailure {
+                contract: "OperationService",
+                member,
+                message: "the operation service answers later; the history's synchronous calls \
+                          need one that answers at once"
+                    .to_owned(),
+            },
+        )))
+    })
 }

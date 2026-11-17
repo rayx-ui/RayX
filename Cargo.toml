@@ -9,6 +9,7 @@ members = [
     "crates/rayx_services_fonts",
     "crates/rayx_services_i18n",
     "crates/rayx_services_navigation",
+    "crates/rayx_services_operations",
     "crates/rayx_services_platform",
     "crates/rayx_services_storage",
     "crates/rayx_services_suspension",
@@ -39,6 +40,7 @@ rayx_services_assets = { path = "crates/rayx_services_assets" }
 rayx_services_fonts = { path = "crates/rayx_services_fonts" }
 rayx_services_i18n = { path = "crates/rayx_services_i18n" }
 rayx_services_navigation = { path = "crates/rayx_services_navigation" }
+rayx_services_operations = { path = "crates/rayx_services_operations" }
 rayx_services_platform = { path = "crates/rayx_services_platform" }
 rayx_services_storage = { path = "crates/rayx_services_storage" }
 rayx_services_suspension = { path = "crates/rayx_services_suspension" }

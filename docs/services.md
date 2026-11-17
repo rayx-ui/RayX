@@ -9,7 +9,7 @@ follow the same pattern.
 | Service | What it does | Registered with | Options section |
 | --- | --- | --- | --- |
 | [I18n](services/i18n.md) | MessageFormat 2 translations; numbers, dates and plurals for the user's locale | `add_i18n(..)` | `RayX:Services:I18N` |
-| [Operations](services/operations.md) | Typed domain operations applied to targets, with inverses | `add_operations()` | |
+| [Operations](services/operations.md) | Typed domain operations applied to targets, with inverses | `add_operations()` (`rayx_services_operations`) | |
 | [History](services/history.md) | Undo and redo per scope, in memory or persisted | `add_history()`, `add_persistent_history()` | |
 | [Storage](services/storage.md) | Values by bucket and key, persisted on NSH | `add_storage()`, `add_in_memory_storage()` | |
 | [Navigation](services/navigation.md) | Routes, regions with journals, one location for the app | `add_navigation(..)` | `RayX:Services:Navigation` |
@@ -34,6 +34,7 @@ method in camelCase:
 RayXAppBuilder::new()
     .add_app_settings("my-app")
     .add_storage()
+    .add_operations()
     .add_persistent_history()
     .add_i18n(|options| {
         options.default_language("en");
@@ -45,15 +46,16 @@ RayXAppBuilder::new()
 const services = await new RayXAppBuilder()
   .addAppSettings("my-app")
   .addStorage()
+  .addOperations()
   .addPersistentHistory()
   .addI18n((options) => options.defaultLanguage("en"))
   .start();
 ```
 
 `add_<service>(..)` keeps a service registered earlier; `with_<service>_service(..)` replaces it, for tests or a
-custom implementation. A service in `rayx_runtime` registers what it depends on (`add_history` adds the operation
-service); a service crate's requires it instead (`add_i18n` requires the asset and platform services, `add_input_map`
-and `add_persistent_history` a key-value store, `add_storage()`).
+custom implementation. A service registers no other: it requires what it depends on (`add_i18n` requires the asset
+and platform services, `add_history` an operation service, `add_operations()`, and `add_input_map` and
+`add_persistent_history` a key-value store, `add_storage()`).
 
 **Configured through options.** A service reads its options with RayX's [options model](configuration.md) from the
 section `RayX:Services:<Name>`. The configuration binds first, then the closure passed to `add_<service>(..)` changes

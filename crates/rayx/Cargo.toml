@@ -20,6 +20,7 @@ rayx_devtools_protocol.workspace = true
 # Until the umbrella's service features: `tr!`, `checked::tr!` and `add_i18n` in the prelude.
 rayx_services_i18n.workspace = true
 rayx_services_navigation.workspace = true
+rayx_services_operations.workspace = true
 dxn_i18n.workspace = true
 dxn_intl.workspace = true
 
