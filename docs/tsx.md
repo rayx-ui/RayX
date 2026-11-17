@@ -121,7 +121,7 @@ listener.
 | --- | --- | --- |
 | `I18nService` | `I18nService` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, `setLanguage(language)` ([I18n](services/i18n.md#tsx)) |
 | `NavigationService` | `NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)) |
-| `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear` ([Storage](services/storage.md#tsx)) |
+| `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)) |
 | `ApplicationConfigurationService` | `ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()` |
 | `AssetService` | `AssetService` | Asset URLs: `url(path)`, `urlForScale(path, scale)` |
 | `FontService` | `FontService` | Font aliases: `family(alias)`, `aliases()` |
@@ -133,7 +133,7 @@ const i18n = services.getRequiredService(I18nService);
 title.set(i18n.t("welcome", { name: "Ada" }));
 const stop = i18n.onChange(() => title.set(i18n.t("welcome", { name: "Ada" })));
 
-services.getRequiredService(KeyValueStore).setJson("settings", "theme", { mode: "dark" });
+await services.getRequiredService(KeyValueStore).setJson("settings", "theme", { mode: "dark" });
 ```
 
 ## Services written in TS

@@ -13,8 +13,9 @@ builder.add_history_with_store(my_store)  // any HistoryStore
 ```
 
 Each registers the operation service too. `add_persistent_history()` keeps each scope's journal as JSON in the
-`rayx.history` bucket of the app's [storage](storage.md), so it persists wherever the store does: on NSH, in the
-device's storage.
+`rayx.history` bucket of the app's [key-value store](storage.md), which it requires (`add_storage()` from
+`rayx_services_storage`, or the app's own `dyn KeyValueStore`) and registers none, so it persists wherever the store
+does: on NSH, in the device's storage.
 
 ## Use
 

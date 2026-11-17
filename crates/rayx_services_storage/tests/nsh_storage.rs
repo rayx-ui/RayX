@@ -1,6 +1,7 @@
-//! The app's key-value store on NSH, headless: it loads what the device's storage held at
-//! startup, writes through NSH's storage on the engine thread, and a write made outside the
-//! engine reaches the device once the engine runs again. History persists through it.
+//! The app's key-value store on NSH (`add_storage()`), headless: it loads what the device's
+//! storage held at startup, writes through NSH's storage on the engine thread, and a write made
+//! outside the engine reaches the device once the engine runs again (through the engine
+//! runner). History persists through it.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -12,15 +13,18 @@ use std::{
 };
 
 use crossbeam_channel::{Receiver, Sender};
+use futures::FutureExt as _;
+use futures::executor::block_on;
 use nsh_core::storage::{StorageBackend, StorageChange};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
+use rayx_app::services::storage::KeyValueStore;
 use rayx_app_nsh::rayx_runtime::prelude::*;
 use rayx_app_nsh::rayx_runtime::services::history::{HISTORY_BUCKET, HistoryStore};
-use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
 };
+use rayx_services_storage::StorageAppBuilderExt as _;
 
 thread_local! {
     static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
@@ -71,8 +75,18 @@ fn Root() -> impl IntoElement {
             let services = app_services().unwrap();
             ROOT.with_borrow_mut(|root| *root = Some(services.clone()));
             let store = services.required_service::<dyn KeyValueStore>().unwrap();
-            let theme = store.get("prefs", "theme").unwrap().unwrap_or_default();
-            store.set("prefs", "lang", b"hr".to_vec()).unwrap();
+            // Loaded at startup: the store answers at once.
+            let theme = store
+                .get("prefs".into(), "theme".into())
+                .now_or_never()
+                .unwrap()
+                .unwrap()
+                .unwrap_or_default();
+            store
+                .set("prefs".into(), "lang".into(), b"hr".to_vec())
+                .now_or_never()
+                .unwrap()
+                .unwrap();
             text(format!("theme {}", String::from_utf8(theme).unwrap())).into_element()
         }
         AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
@@ -138,10 +152,18 @@ fn the_store_keeps_the_app_s_values_in_nsh_s_storage() {
         .expect("the app started");
     let store = services.required_service::<dyn KeyValueStore>().unwrap();
     assert!(store.capabilities().persistent);
-    // Outside the engine (the engine runs only while it is pumped): read from the mirror, and
-    // written to the device once the engine runs again.
-    assert_eq!(store.get("prefs", "lang").unwrap(), Some(b"hr".to_vec()));
-    store.set("prefs", "later", b"1".to_vec()).unwrap();
+    // On another thread (the engine runs only while it is pumped): read from the mirror, and
+    // written to the device by the engine runner once the engine runs again.
+    let other = Arc::clone(&store);
+    std::thread::spawn(move || {
+        assert_eq!(
+            block_on(other.get("prefs".into(), "lang".into())).unwrap(),
+            Some(b"hr".to_vec())
+        );
+        block_on(other.set("prefs".into(), "later".into(), b"1".to_vec())).unwrap();
+    })
+    .join()
+    .unwrap();
     assert!(!device.0.lock().unwrap().contains_key("rayx/prefs/later"));
     let written = || device.0.lock().unwrap().get("rayx/prefs/later").cloned();
     let deadline = std::time::Instant::now() + Duration::from_secs(10);
@@ -151,19 +173,24 @@ fn the_store_keeps_the_app_s_values_in_nsh_s_storage() {
     }
     assert_eq!(written().as_deref(), Some("t1"));
 
-    // History is kept in the same store, so on the device.
+    // History is kept in the same store (saved here on another thread), so on the device.
     let history = services.required_service::<dyn HistoryStore>().unwrap();
-    let scope = rayx_app_nsh::rayx_runtime::services::history::HistoryScopeId::new("doc").unwrap();
-    history
-        .save(
-            rayx_app_nsh::rayx_runtime::services::history::HistoryJournalV2::new(
-                1,
-                scope,
-                Vec::new(),
-            ),
-            None,
-        )
-        .unwrap();
+    std::thread::spawn(move || {
+        let scope =
+            rayx_app_nsh::rayx_runtime::services::history::HistoryScopeId::new("doc").unwrap();
+        history
+            .save(
+                rayx_app_nsh::rayx_runtime::services::history::HistoryJournalV2::new(
+                    1,
+                    scope,
+                    Vec::new(),
+                ),
+                None,
+            )
+            .unwrap();
+    })
+    .join()
+    .unwrap();
     let key = format!("rayx/{HISTORY_BUCKET}/doc");
     let deadline = std::time::Instant::now() + Duration::from_secs(10);
     while !device.0.lock().unwrap().contains_key(&key) && std::time::Instant::now() < deadline {

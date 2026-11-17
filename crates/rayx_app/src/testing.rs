@@ -13,6 +13,7 @@ use crate::services::app::AppBuilder;
 use crate::services::assets::{AssetCatalog, AssetError, AssetService};
 use crate::services::fonts::{FontService, FontServiceError, FontState, RegisteredFontFace};
 use crate::services::platform::{PlatformInfoService, PlatformSnapshot};
+use crate::services::storage::{KeyValueStore, StorageCapabilities, StorageError};
 use crate::services::suspension::{
     SuspensionError, SuspensionEvent, SuspensionEventKind, SuspensionEventReason,
     SuspensionService, SuspensionSnapshot,
@@ -237,6 +238,91 @@ impl FontService for FakeFonts {
 
     fn register_font_assets(&self) -> BoxFuture<'_, Result<(), FontServiceError>> {
         futures::future::ready(Ok(())).boxed()
+    }
+}
+
+/// A key-value store in memory (values live as long as the store), reporting the capabilities
+/// the test gives it ([`FakeKeyValueStore::with_capabilities`]; none by default).
+#[derive(Default)]
+pub struct FakeKeyValueStore {
+    capabilities: StorageCapabilities,
+    buckets: Mutex<BTreeMap<String, BTreeMap<String, Vec<u8>>>>,
+}
+
+impl FakeKeyValueStore {
+    pub fn new() -> Arc<Self> {
+        Arc::default()
+    }
+
+    /// An empty store reporting `capabilities`.
+    pub fn with_capabilities(capabilities: StorageCapabilities) -> Arc<Self> {
+        Arc::new(Self {
+            capabilities,
+            buckets: Mutex::default(),
+        })
+    }
+
+    fn with<R>(
+        &self,
+        f: impl FnOnce(&mut BTreeMap<String, BTreeMap<String, Vec<u8>>>) -> R,
+    ) -> BoxFuture<'_, Result<R, StorageError>>
+    where
+        R: Send + 'static,
+    {
+        futures::future::ready(Ok(f(&mut lock(&self.buckets)))).boxed()
+    }
+}
+
+impl KeyValueStore for FakeKeyValueStore {
+    fn capabilities(&self) -> StorageCapabilities {
+        self.capabilities
+    }
+
+    fn get(
+        &self,
+        bucket: String,
+        key: String,
+    ) -> BoxFuture<'_, Result<Option<Vec<u8>>, StorageError>> {
+        self.with(move |buckets| {
+            buckets
+                .get(&bucket)
+                .and_then(|values| values.get(&key))
+                .cloned()
+        })
+    }
+
+    fn set(
+        &self,
+        bucket: String,
+        key: String,
+        value: Vec<u8>,
+    ) -> BoxFuture<'_, Result<(), StorageError>> {
+        self.with(move |buckets| {
+            buckets.entry(bucket).or_default().insert(key, value);
+        })
+    }
+
+    fn remove(&self, bucket: String, key: String) -> BoxFuture<'_, Result<bool, StorageError>> {
+        self.with(move |buckets| {
+            buckets
+                .get_mut(&bucket)
+                .is_some_and(|values| values.remove(&key).is_some())
+        })
+    }
+
+    fn keys(&self, bucket: String) -> BoxFuture<'_, Result<Vec<String>, StorageError>> {
+        self.with(move |buckets| {
+            buckets
+                .get(&bucket)
+                .map(|values| values.keys().cloned().collect())
+                .unwrap_or_default()
+        })
+    }
+
+    fn clear(&self, bucket: String) -> BoxFuture<'_, Result<(), StorageError>> {
+        self.with(move |buckets| {
+            buckets.remove(&bucket);
+        })
     }
 }
 

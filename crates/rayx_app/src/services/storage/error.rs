@@ -1,3 +1,5 @@
+use crate::services::ContractFailure;
+
 /// Why a storage call failed.
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 pub enum StorageError {
@@ -17,6 +19,15 @@ pub enum StorageError {
     /// The store's backend failed.
     #[error("the storage backend failed: {0}")]
     Backend(String),
+    /// The call failed (a TS implementation threw, the engine is gone).
+    #[error("{0}")]
+    Failed(ContractFailure),
+}
+
+impl From<ContractFailure> for StorageError {
+    fn from(failure: ContractFailure) -> Self {
+        Self::Failed(failure)
+    }
 }
 
 /// The result of a storage call.

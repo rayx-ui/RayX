@@ -7,8 +7,9 @@
 use std::sync::Arc;
 
 use futures::executor::block_on;
+use rayx_app::testing::FakeKeyValueStore;
 use rayx_runtime::services::input_map::*;
-use rayx_runtime::services::storage::{InMemoryKeyValueStore, KeyValueStore};
+use rayx_runtime::services::storage::KeyValueStore;
 
 fn key(sequence: &str) -> InputBinding {
     InputBinding::Keyboard(sequence.into())
@@ -63,7 +64,7 @@ fn bindings_resolve_whatever_their_spelling() {
         )],
     );
     let application = InputMapDocument::new(InputMapSource::Application, 0, Vec::new());
-    let store: Arc<dyn KeyValueStore> = Arc::new(InMemoryKeyValueStore::new());
+    let store: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
     let service = InputMapService::new(store, framework, application).unwrap();
     block_on(service.load()).unwrap();
 

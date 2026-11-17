@@ -3,7 +3,6 @@
 //!
 //! ```ts
 //! const services = await new RayXAppBuilder()
-//!   .addStorage()
 //!   .addI18n((options) => { options.defaultLanguage("en"); })
 //!   .start();
 //! const i18n = services.getRequiredService(I18nService);
@@ -17,8 +16,8 @@
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
 //!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
 //! - The services' classes: [`I18nService`], [`NavigationService`] (with
-//!   [`NavigationRegion`]s), [`KeyValueStore`] and [`ApplicationConfigurationService`]; the
-//!   service crates (`rayx_services_*`) add theirs (`AssetService`, `FontService`,
+//!   [`NavigationRegion`]s) and [`ApplicationConfigurationService`]; the service crates
+//!   (`rayx_services_*`) add theirs (`AssetService`, `FontService`, `KeyValueStore`,
 //!   `PlatformInfoService`, `SuspensionService`) with their sets.
 //!
 //! # Options classes
@@ -63,7 +62,6 @@ pub use crate::services::listeners_ts::Listeners;
 pub use crate::services::navigation::navigation_ts::NavigationService;
 pub use crate::services::navigation::options_ts::{NavigationOptions, RouteOptions};
 pub use crate::services::navigation::region_ts::NavigationRegion;
-pub use crate::services::storage::storage_ts::KeyValueStore;
 
 /// What names a service of type `T` in TS: its class (a RayX service's, whose constructor is
 /// private, so it is taken through its `prototype`), or a [`ServiceToken`].
@@ -111,6 +109,5 @@ pub fn register(registry: &mut Registry) {
         .service_class::<I18nService>()
         .service_class::<NavigationService>()
         .class::<NavigationRegion>()
-        .service_class::<KeyValueStore>()
         .service_class::<ApplicationConfigurationService>();
 }

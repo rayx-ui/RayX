@@ -52,7 +52,7 @@ setTimeout(async () => {
   try {
     lines.push(typeof RayXAppBuilder.prototype.addWeather);
     // Chained with RayX's own methods: the method returns the builder itself.
-    const builder = new RayXAppBuilder().addHostFakes().addStorage();
+    const builder = new RayXAppBuilder().addHostFakes().addOperations();
     lines.push(String(builder.addWeather() === builder));
     const services = await builder.addI18n().start();
     lines.push(Probe.forecast(services));

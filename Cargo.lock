@@ -5050,6 +5050,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayx_services_storage"
+version = "0.11.0"
+dependencies = [
+ "base64 0.22.1",
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+]
+
+[[package]]
 name = "rayx_services_suspension"
 version = "0.11.0"
 dependencies = [

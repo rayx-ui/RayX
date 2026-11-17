@@ -170,7 +170,7 @@ setTimeout(async () => {
     lines.push(String((await new RayXAppBuilder().addHostFakes().start()) === services));
     lines.push(String(Probe.session(services) === Probe.session(also)));
     // The builder's other methods throw after `start()`.
-    lines.push(thrown(() => builder.addStorage()));
+    lines.push(thrown(() => builder.addOperations()));
   } catch (error) {
     lines.push(`threw ${error}`);
   }

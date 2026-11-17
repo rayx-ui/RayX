@@ -1,6 +1,5 @@
 //! RayX's services for TSX through NSH's engine, headless, in a TSX app with no Rust root: the
-//! `NavigationService`, `KeyValueStore` and `ApplicationConfigurationService` classes reach their
-//! services. (The service crates' classes have their groups in their crates.)
+//! `NavigationService` and `ApplicationConfigurationService` classes reach their services. (The service crates' classes have their groups in their crates.)
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -37,7 +36,7 @@ impl EngineAssets for AppAssets {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, KeyValueStore, NavigationService, RayXAppBuilder,
+  ApplicationConfigurationService, NavigationService, RayXAppBuilder,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -46,7 +45,6 @@ setTimeout(async () => {
   try {
     const services = await new RayXAppBuilder().addHostFakes()
       .addNavigation((options) => { options.addRoute("/").addRoute("/projects/{id}"); })
-      .addStorage()
       .addApplicationConfiguration()
       .start();
 
@@ -59,13 +57,6 @@ setTimeout(async () => {
     // Listeners are called on a later turn.
     await new Promise((resolve) => setTimeout(resolve, 0));
     lines.push(`changes ${changes.join(",")}`);
-
-    const storage = services.getRequiredService(KeyValueStore);
-    storage.set("prefs", "lang", "hr");
-    storage.setJson("prefs", "theme", { scale: 1.25 });
-    lines.push(`${storage.get("prefs", "lang")} ${storage.getJson("prefs", "theme").scale}`);
-    lines.push(storage.keys("prefs").join(","));
-    lines.push(`${storage.remove("prefs", "lang")} ${storage.get("prefs", "lang")}`);
 
     const configuration = services.getRequiredService(ApplicationConfigurationService);
     lines.push(`${configuration.layoutDirection()} ${typeof configuration.current()}`);
@@ -131,6 +122,6 @@ fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(
         last,
-        "done Success|/projects/12|/|changes /projects/12,/|hr 1.25|lang,theme|true null|ltr object"
+        "done Success|/projects/12|/|changes /projects/12,/|ltr object"
     );
 }

@@ -126,7 +126,6 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
         "class ReadyContext",
         "class I18nService",
         "class NavigationService",
-        "class KeyValueStore",
         "component rayx_components::button::Button",
         "type ServiceKey<T>",
     ] {
@@ -176,7 +175,7 @@ setTimeout(async () => {
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
     // Extensions run in chain order: the later registration wins.
-    const builder = new RayXAppBuilder().addHostFakes().addRainy().addStorage().addSunny();
+    const builder = new RayXAppBuilder().addHostFakes().addRainy().addOperations().addSunny();
     lines.push(String(builder.apply((b) => b.addI18n()) === builder));
     lines.push(thrown(() => builder.apply(() => { throw new Error("no weather"); })));
     const services = await builder.start();

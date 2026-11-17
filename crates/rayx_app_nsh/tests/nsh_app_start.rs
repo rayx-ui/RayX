@@ -7,7 +7,6 @@
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use std::cell::RefCell;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
@@ -337,40 +336,4 @@ fn app_errors_name_the_builder_s_start() {
         assert!(!message.contains(concat!("App", "Services")), "{message}");
     }
     assert!(AppError::NotStarted.to_string().contains("start"));
-}
-
-#[test]
-fn a_rust_root_s_storage_is_nsh_s_store_whatever_the_order() {
-    use rayx_app_nsh::NshKeyValueStore;
-    use rayx_app_nsh::rayx_runtime::services::storage::{KeyValueStore, StorageAppBuilderExt as _};
-
-    #[component]
-    fn StoreRoot() -> impl IntoElement {
-        let shown = signal(String::from("starting"));
-        spawn(async move {
-            // `add_storage()` before NSH's services are added (at the start): NSH's store still.
-            let root = ::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())
-                .add_storage()
-                .start_async()
-                .await
-                .unwrap();
-            let store = root.required_service::<dyn KeyValueStore>().unwrap();
-            let nsh = root.required_service::<NshKeyValueStore>().unwrap();
-            let same = std::ptr::eq(
-                Arc::as_ptr(&store).cast::<()>(),
-                Arc::as_ptr(&nsh).cast::<()>(),
-            );
-            shown.set(format!("store nsh {same}"));
-        });
-        text(move || shown.get())
-    }
-
-    let (tx, rx) = crossbeam_channel::unbounded();
-    let mut engine = LocalEngine::start(
-        EngineConfig::new(App::Rust(Root::of::<StoreRoot>())),
-        ApproxTextEngine,
-        ChannelSink(tx),
-    )
-    .unwrap();
-    assert_eq!(pump_until(&mut engine, &rx, "store"), "store nsh true");
 }

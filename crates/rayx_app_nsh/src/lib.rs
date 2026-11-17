@@ -42,17 +42,17 @@
 //!   services on NSH, each keeping itself current from its startup on; the app's start
 //!   requires the platform, suspension, asset and font services (`add_platform()`,
 //!   `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, or the app's own implementations)
-//!   and fails naming each one missing. Here are [`NshKeyValueStore`], the app's persistent
-//!   key-value store in NSH's storage, and [`AppSettingsAppBuilderExt::add_app_settings`], which
-//!   adds the app's bundled `appsettings.json` as a configuration source ([`AppSettingsSource`]).
+//!   and fails naming each one missing. Here is [`AppSettingsAppBuilderExt::add_app_settings`],
+//!   which adds the app's bundled `appsettings.json` as a configuration source
+//!   ([`AppSettingsSource`]).
 //! - **Translations.** `rayx_runtime`'s i18n service follows the platform service's languages
 //!   and clock; [`tr!`] gives a Rust component its messages (`text(move || tr!("id", n = 3))`,
 //!   following the language; [`checked::tr!`](checked::tr) checks the call against the app's
 //!   messages when it builds), and the [`ts::I18nService`] class gives TSX them
 //!   (`services.getRequiredService(I18nService).t("id", { n: 3 })`) and their changes.
 //! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
-//!   and is its own token (`I18nService`, `NavigationService`, `KeyValueStore`,
-//!   `ApplicationConfigurationService` here; `AssetService`, `FontService`,
+//!   and is its own token (`I18nService`, `NavigationService` and
+//!   `ApplicationConfigurationService` here; `AssetService`, `FontService`, `KeyValueStore`,
 //!   `PlatformInfoService` and `SuspensionService` in their crates' sets), and its `onChange`
 //!   hears the service's changes.
 //! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
@@ -129,4 +129,3 @@ pub use services::i18n::translate::__private;
 pub use services::i18n::translate::{checked, translate};
 pub use services::navigation::location::{NshLocationSynchronizer, location_of_address};
 pub use services::navigation::region::{navigation_region, navigation_view};
-pub use services::storage::store::{NshKeyValueStore, STORAGE_PREFIX};

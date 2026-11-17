@@ -128,7 +128,7 @@ setTimeout(async () => {
     lines.push(typeof RayXAppBuilder.prototype.addWeatherService);
     // With options, chained with RayX's own methods.
     const builder = new RayXAppBuilder().addHostFakes()
-      .addStorage()
+      .addOperations()
       .addWeatherService((options) => { options.city("Zagreb").city("Split"); });
     // A callback that throws: the method throws its message.
     lines.push(thrown(() => new RayXAppBuilder().addHostFakes().addWeatherService(() => { throw new Error("no cities"); })));

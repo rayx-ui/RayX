@@ -1,6 +1,7 @@
 use super::{HistoryJournalV2, HistoryScopeId, HistoryStore, HistoryStoreError};
-use crate::services::storage::KeyValueStore;
-use futures::{FutureExt as _, future::LocalBoxFuture};
+use crate::services::storage::{KeyValueStore, StorageError};
+use futures::FutureExt as _;
+use futures::future::{BoxFuture, LocalBoxFuture};
 use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
@@ -10,9 +11,14 @@ use std::sync::{Arc, Mutex};
 /// The bucket of the app's [`KeyValueStore`] that [`KeyValueHistoryStore`] keeps journals in.
 pub const HISTORY_BUCKET: &str = "rayx.history";
 
-/// A [`HistoryStore`] over a [`KeyValueStore`]: each scope's journal is one JSON value in
-/// [`HISTORY_BUCKET`], keyed by the scope's id, so history persists wherever the store keeps its
-/// values (NSH's storage on a device, through `rayx_app_nsh`).
+/// A [`HistoryStore`] over the app's `dyn KeyValueStore`: each scope's journal is one JSON value
+/// in [`HISTORY_BUCKET`], keyed by the scope's id, so history persists wherever the store keeps
+/// its values (NSH's storage on a device, through `rayx_services_storage`).
+///
+/// A history store answers synchronously, so the key-value store must answer its calls at once,
+/// as RayX's stores do (from their mirror or memory); a call it leaves pending (a TS
+/// implementation's, through the engine) fails with [`HistoryStoreError::Backend`]. It
+/// initializes after the key-value store.
 #[derive(Clone)]
 pub struct KeyValueHistoryStore {
     store: Arc<dyn KeyValueStore>,
@@ -36,17 +42,23 @@ fn backend(error: impl std::fmt::Display) -> HistoryStoreError {
     HistoryStoreError::Backend(error.to_string())
 }
 
+/// What the store answered, at once.
+fn now<T>(call: BoxFuture<'_, Result<T, StorageError>>) -> Result<T, HistoryStoreError> {
+    call.now_or_never()
+        .ok_or_else(|| backend("the key-value store did not answer at once"))?
+        .map_err(backend)
+}
+
 impl HistoryStore for KeyValueHistoryStore {
     fn load(&self, scope: &HistoryScopeId) -> Result<Option<HistoryJournalV2>, HistoryStoreError> {
-        self.store
-            .get(HISTORY_BUCKET, scope.as_str())
-            .map_err(backend)?
-            .map(|bytes| {
-                HistoryJournalV2::decode(&bytes).map_err(|error| {
-                    backend(format!("the journal of {} is {error:?}", scope.as_str()))
-                })
-            })
-            .transpose()
+        now(self
+            .store
+            .get(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned()))?
+        .map(|bytes| {
+            HistoryJournalV2::decode(&bytes)
+                .map_err(|error| backend(format!("the journal of {} is {error:?}", scope.as_str())))
+        })
+        .transpose()
     }
 
     fn save(
@@ -67,16 +79,18 @@ impl HistoryStore for KeyValueHistoryStore {
         let bytes = journal
             .encode()
             .map_err(|error| backend(format!("the journal did not encode: {error:?}")))?;
-        self.store
-            .set(HISTORY_BUCKET, journal.scope_id.as_str(), bytes)
-            .map_err(backend)
+        now(self.store.set(
+            HISTORY_BUCKET.to_owned(),
+            journal.scope_id.as_str().to_owned(),
+            bytes,
+        ))
     }
 
     fn delete_scope(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError> {
-        self.store
-            .remove(HISTORY_BUCKET, scope.as_str())
-            .map(|_| ())
-            .map_err(backend)
+        now(self
+            .store
+            .remove(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned()))
+        .map(|_| ())
     }
 }
 
@@ -101,5 +115,9 @@ impl AsyncInitializable for KeyValueHistoryStore {
 impl StartupInitializable for KeyValueHistoryStore {
     fn startup_service_type(&self) -> Option<StartupServiceType> {
         Some(StartupServiceType::of::<dyn HistoryStore>())
+    }
+
+    fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
+        vec![StartupServiceType::of::<dyn KeyValueStore>()]
     }
 }

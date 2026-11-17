@@ -2,8 +2,12 @@ use std::sync::Arc;
 
 use super::{HistoryService, HistoryStore, KeyValueHistoryStore};
 use crate::services::operations::{OperationService, OperationsAppBuilderExt};
-use crate::services::storage::{KeyValueStore, StorageAppBuilderExt};
+use crate::services::storage::KeyValueStore;
 use rayx_app::{AppBuilder, ServiceProvider};
+
+/// What an app keeping its history in its key-value store without one is told.
+const STORAGE_HINT: &str = "add_storage() (addStorage in TS) from rayx_services_storage, or \
+                            register your own dyn KeyValueStore";
 
 /// Registers the [`HistoryService`] (undo and redo of operations) on an app builder.
 pub trait HistoryAppBuilderExt: AppBuilder {
@@ -39,10 +43,14 @@ pub trait HistoryAppBuilderExt: AppBuilder {
     }
 
     /// Like [`add_history`](Self::add_history), with each scope's history kept in the app's
-    /// [`KeyValueStore`] (registered too when missing) by a [`KeyValueHistoryStore`], so it
-    /// persists wherever the store does: on NSH, in the device's storage.
+    /// `dyn KeyValueStore` (which it requires: `add_storage()` from `rayx_services_storage`, or
+    /// the app's own) by a [`KeyValueHistoryStore`], so it persists wherever the store does: on
+    /// NSH, in the device's storage.
     fn add_persistent_history(self) -> Self {
-        let mut builder = self.add_operations().add_storage();
+        let mut builder = self.add_operations();
+        builder
+            .services_mut()
+            .require_for::<dyn HistoryStore, dyn KeyValueStore>(STORAGE_HINT);
         builder
             .services_mut()
             .replace_app_service_factory_as::<dyn HistoryStore>(|services| {

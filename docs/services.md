@@ -11,7 +11,7 @@ follow the same pattern.
 | [I18n](services/i18n.md) | MessageFormat 2 translations; numbers, dates and plurals for the user's locale | `add_i18n(..)` | `RayX:Services:I18N` |
 | [Operations](services/operations.md) | Typed domain operations applied to targets, with inverses | `add_operations()` | |
 | [History](services/history.md) | Undo and redo per scope, in memory or persisted | `add_history()`, `add_persistent_history()` | |
-| [Storage](services/storage.md) | Values by bucket and key, persisted on NSH | `add_storage()` | |
+| [Storage](services/storage.md) | Values by bucket and key, persisted on NSH | `add_storage()`, `add_in_memory_storage()` | |
 | [Navigation](services/navigation.md) | Routes, regions with journals, one location for the app | `add_navigation(..)` | `RayX:Services:Navigation` |
 | [Selection](services/selection.md) | The active selection area and its status | `add_selection()` | |
 | [Input map](services/input-map.md) | Key and pointer bindings per context, in three layers | `add_input_map(..)` | `RayX:Services:InputMap` |
@@ -52,7 +52,8 @@ const services = await new RayXAppBuilder()
 
 `add_<service>(..)` keeps a service registered earlier; `with_<service>_service(..)` replaces it, for tests or a
 custom implementation. A service registers what it depends on: `add_i18n` adds the asset
-service, `add_history` the operation service.
+service, `add_history` the operation service; one moved to a crate of its own requires it instead (`add_input_map`
+and `add_persistent_history` require a key-value store, `add_storage()`).
 
 **Configured through options.** A service reads its options with RayX's [options model](configuration.md) from the
 section `RayX:Services:<Name>`. The configuration binds first, then the closure passed to `add_<service>(..)` changes
@@ -76,9 +77,10 @@ provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.
 
 **Contracts in the core, implementations in crates.** A service's trait and data types live in `rayx_app::services`
 (NSH-free, building for `wasm32-unknown-unknown`), and RayX's implementation in a crate of its own: the platform,
-suspension, asset and font services are `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets` and
-`rayx_services_fonts`, each registering itself as `dyn Trait` (`add_platform()`, `add_suspension()`, `add_assets(..)`,
-`add_fonts(..)`, and `builder.addPlatform()` and the others in TS, once the crate's set is registered). A service that
+suspension, asset, font and storage services are `rayx_services_platform`, `rayx_services_suspension`,
+`rayx_services_assets`, `rayx_services_fonts` and `rayx_services_storage`, each registering itself as `dyn Trait`
+(`add_platform()`, `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, `add_storage()`, and `builder.addPlatform()`
+and the others in TS, once the crate's set is registered). A service that
 needs another resolves it by trait, so an app's own implementation, in Rust or TS, replaces RayX's anywhere;
 `rayx_app::testing` has a fake of each trait. `rayx_runtime` still holds the services not yet moved.
 
@@ -89,13 +91,14 @@ needs another resolves it by trait, so an app's own implementation, in Rust or T
 - The app's start requires the platform, suspension, asset and font services: a missing one fails the start before
   anything is made, naming each one missing and how to add it. Nothing is registered for the app: `RayXAppBuilder::new()`
   and `new RayXAppBuilder()` are empty.
-- The app's start registers `NshKeyValueStore` (persists values in NSH's storage) and NSH's location where the app
-  registered none.
+- The app's start registers NSH's location where the app registered none. The key-value store on NSH's storage is
+  `rayx_services_storage`'s (`add_storage()`).
 - `add_app_settings(package)` adds the package's bundled `appsettings.json` as a configuration source, loaded
   asynchronously when the app starts.
 - The [platform](services/platform.md) and [suspension](services/suspension.md) services keep themselves current from
   NSH from their startup on, in Rust and TSX apps alike; the [asset](services/assets.md) and [font](services/fonts.md)
-  services read and register through NSH from any thread.
+  services read and register through NSH from any thread, and so does the [key-value store](services/storage.md),
+  which writes what waits as the app quits.
 
 ## Writing a service
 

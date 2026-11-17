@@ -124,7 +124,7 @@ impl Probe {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  I18nService, KeyValueStore, NavigationService, Probe, RayXAppBuilder, ServiceToken,
+  I18nService, NavigationService, Probe, RayXAppBuilder, ServiceToken,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -132,12 +132,12 @@ setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addStorage().addI18n()).start();
+    const services = await Probe.addPages(new RayXAppBuilder().addHostFakes().addOperations().addI18n()).start();
 
     // A class is its own token; a singleton is one object.
     const i18n = services.getRequiredService(I18nService);
     lines.push(`${i18n instanceof I18nService} ${i18n === services.getRequiredService(I18nService)}`);
-    lines.push(String(services.getService(KeyValueStore) === services.getRequiredService(KeyValueStore)));
+    lines.push(String(services.getService(I18nService) === services.getRequiredService(I18nService)));
     lines.push(typeof i18n.locale());
 
     // Nothing registered: `null`, or an error naming the token.

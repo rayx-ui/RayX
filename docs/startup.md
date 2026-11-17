@@ -111,7 +111,7 @@ services in place, such as restoring the language the user picked or opening the
 builder
     .on_ready(|context| async move {
         let store = context.services().required_service::<dyn KeyValueStore>()?;
-        let saved = store.bucket("settings").try_get_json::<String>("language").ok().flatten();
+        let saved = store.bucket("settings").try_get_json::<String>("language").await.ok().flatten();
         if let Some(language) = saved {
             let i18n = context.services().required_service::<I18nService>()?;
             i18n.set_language(&language).map_err(|error| ReadyError::new(error.to_string()))?;
@@ -137,7 +137,7 @@ in the order they were added; one that throws or rejects fails `start()` with it
 ```tsx
 builder.onReady(async (context) => {
   const store = context.services.getRequiredService(KeyValueStore);
-  const language = store.getJson("settings", "language");
+  const language = await store.getJson("settings", "language");
   if (typeof language === "string") context.services.getRequiredService(I18nService).setLanguage(language);
 });
 ```

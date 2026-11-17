@@ -7,6 +7,7 @@ pub mod app;
 pub mod assets;
 pub mod fonts;
 pub mod platform;
+pub mod storage;
 pub mod suspension;
 
 use std::fmt;

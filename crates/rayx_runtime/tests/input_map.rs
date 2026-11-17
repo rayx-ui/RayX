@@ -6,11 +6,21 @@
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
+use rayx_app::AppBuilder as _;
 use rayx_app::RayXAppBuilder;
 use rayx_app::di::StartupInitializationContext;
+use rayx_app::testing::FakeKeyValueStore;
 use rayx_runtime::services::input_map::*;
-use rayx_runtime::services::storage::{InMemoryKeyValueStore, KeyValueStore};
+use rayx_runtime::services::storage::KeyValueStore;
 use serde_json::json;
+
+/// `builder` with a key-value store, which the input map requires.
+fn with_store(mut builder: RayXAppBuilder) -> RayXAppBuilder {
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn KeyValueStore>(FakeKeyValueStore::new() as Arc<dyn KeyValueStore>);
+    builder
+}
 
 fn key(sequence: &str) -> InputBinding {
     InputBinding::Keyboard(sequence.into())
@@ -87,7 +97,7 @@ fn documents_reject_duplicates_and_malformed_bindings() {
 
 #[test]
 fn layers_and_contexts_resolve_innermost_and_highest_first() {
-    let service = service(Arc::new(InMemoryKeyValueStore::new()));
+    let service = service(FakeKeyValueStore::new());
     let resolved = service
         .resolve(&["editor", "workspace"], &key("cmd-d"))
         .unwrap();
@@ -102,7 +112,7 @@ fn layers_and_contexts_resolve_innermost_and_highest_first() {
 
 #[test]
 fn the_users_document_rebinds_unbinds_and_is_stored() {
-    let store: Arc<dyn KeyValueStore> = Arc::new(InMemoryKeyValueStore::new());
+    let store: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
     let service = service(Arc::clone(&store));
     let heard = Arc::new(Mutex::new(Vec::new()));
     let sink = Arc::clone(&heard);
@@ -157,7 +167,7 @@ fn the_users_document_rebinds_unbinds_and_is_stored() {
 
 #[test]
 fn an_invalid_candidate_leaves_the_document_and_the_store_unchanged() {
-    let store: Arc<dyn KeyValueStore> = Arc::new(InMemoryKeyValueStore::new());
+    let store: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
     let service = service(Arc::clone(&store));
     let invalid = InputMapDocument::new(
         InputMapSource::User,
@@ -167,16 +177,14 @@ fn an_invalid_candidate_leaves_the_document_and_the_store_unchanged() {
     assert!(block_on(service.apply_user_document(0, invalid)).is_err());
     assert_eq!(service.revision(), 0);
     assert_eq!(
-        store
-            .get(INPUT_MAP_STORAGE_BUCKET, "user-document")
-            .unwrap(),
+        block_on(store.get(INPUT_MAP_STORAGE_BUCKET.into(), "user-document".into())).unwrap(),
         None
     );
 }
 
 #[test]
 fn add_input_map_binds_configuration_and_code_and_loads_on_start() {
-    let mut builder = RayXAppBuilder::new().add_input_map(|options| {
+    let mut builder = with_store(RayXAppBuilder::new()).add_input_map(|options| {
         options.bind_key("editor", "cmd-s", "file::save");
     });
     builder.configuration.add_value(json!({
@@ -208,7 +216,7 @@ fn add_input_map_binds_configuration_and_code_and_loads_on_start() {
 
 #[test]
 fn duplicate_configured_bindings_fail_on_start() {
-    let services = RayXAppBuilder::new()
+    let services = with_store(RayXAppBuilder::new())
         .add_input_map(|options| {
             options
                 .bind_key("", "cmd-s", "a")

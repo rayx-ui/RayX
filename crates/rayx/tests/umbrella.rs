@@ -8,7 +8,6 @@ use rayx::prelude::*;
 #[test]
 fn the_prelude_builds_an_app_with_the_services() {
     let services = RayXAppBuilder::new()
-        .add_storage()
         .add_history()
         .add_i18n(|options| {
             options.auto_load_assets(false).default_language("hr");
@@ -24,7 +23,7 @@ fn the_prelude_builds_an_app_with_the_services() {
     );
     assert!(
         services
-            .service::<dyn rayx::runtime::services::storage::KeyValueStore>()
+            .service::<rayx::runtime::services::history::HistoryService>()
             .is_some()
     );
 }

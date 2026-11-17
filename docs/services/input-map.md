@@ -10,7 +10,8 @@ builder.add_input_map(|options| {
 })
 ```
 
-`add_input_map` registers the [storage](storage.md) too, where the user's bindings live.
+`add_input_map` requires a [key-value store](storage.md) (`add_storage()` from `rayx_services_storage`, or the app's
+own `dyn KeyValueStore`), where the user's bindings live, and registers none; the input map initializes after it.
 
 ## Configure
 

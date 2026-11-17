@@ -14,7 +14,6 @@ use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
 use rayx_runtime::services::navigation::NavigationAppBuilderExt as _;
 use rayx_runtime::services::operations::OperationsAppBuilderExt as _;
 use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
-use rayx_runtime::services::storage::StorageAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
 use crate::ts::{
@@ -41,16 +40,15 @@ use rayx_app::di::{ServiceLifetime, StartupServiceType};
 /// ```ts
 /// const services = await new RayXAppBuilder()
 ///   .addAppSettings("my-app")
-///   .addStorage()
 ///   .addI18n((options) => { options.defaultLanguage("en"); })
 ///   .start();
 /// ```
 ///
 /// Each method registers what the Rust method of its name does, with the same implied services
-/// (`addHistory` adds operations, `addInputMap` adds
-/// storage). A method taking a callback calls it at once with an options object whose methods
-/// are Rust's; what it sets applies after the options bound from configuration, and a callback
-/// that throws makes the method throw. After `start()` the other methods throw.
+/// (`addHistory` adds operations); a service crate's set adds its own methods (`addStorage` from
+/// `rayx_services_storage`). A method taking a callback calls it at once with an options object
+/// whose methods are Rust's; what it sets applies after the options bound from configuration, and
+/// a callback that throws makes the method throw. After `start()` the other methods throw.
 ///
 /// # Rust
 ///
@@ -121,12 +119,6 @@ impl RayXAppBuilder {
         })
     }
 
-    /// Registers the app's key-value store (on NSH, NSH's persistent storage) unless one is
-    /// registered.
-    pub fn add_storage(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_storage())
-    }
-
     /// Registers the app's operation service (the commands its history undoes and redoes).
     pub fn add_operations(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
         chain(this, |builder| builder.add_operations())
@@ -139,7 +131,7 @@ impl RayXAppBuilder {
     }
 
     /// Registers the app's history kept in its key-value store (so on NSH in the device's
-    /// storage), with the operation service and the store.
+    /// storage), with the operation service; it needs a key-value store (`addStorage`).
     pub fn add_persistent_history(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
         chain(this, |builder| builder.add_persistent_history())
     }
@@ -176,8 +168,8 @@ impl RayXAppBuilder {
         })
     }
 
-    /// Registers the app's input map (and the key-value store it keeps the user's bindings in);
-    /// `configure` adds the app's bindings (`options.bindKey("Editor", "ctrl-s", "save")`) after
+    /// Registers the app's input map (it keeps the user's bindings in the app's key-value store:
+    /// `addStorage`); `configure` adds the app's bindings (`options.bindKey("Editor", "ctrl-s", "save")`) after
     /// configuration's options.
     pub fn add_input_map(
         this: Instance<Self>,

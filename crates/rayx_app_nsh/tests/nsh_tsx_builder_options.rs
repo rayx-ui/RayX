@@ -12,11 +12,24 @@ use std::sync::Arc;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
+use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app_nsh::rayx_runtime::services::{
     application_configuration::ApplicationConfiguration, i18n::I18nOptions,
     input_map::InputMapOptions, navigation::NavigationOptions,
 };
 use rayx_app_nsh::ts::ServiceProvider;
+
+/// Registers a key-value store in memory, which the input map needs.
+#[rayx_app_nsh::app_extension]
+fn add_fake_storage(mut builder: rayx_app_nsh::RayXAppBuilder) -> rayx_app_nsh::RayXAppBuilder {
+    use rayx_app_nsh::AppBuilder as _;
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn KeyValueStore>(
+            rayx_app::testing::FakeKeyValueStore::new() as Arc<dyn KeyValueStore>
+        );
+    builder
+}
 
 /// The app's files: its settings and an asset catalog.
 struct AppFiles;
@@ -70,7 +83,7 @@ impl Probe {
 
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
-        set.module::<Probe>();
+        set.module::<Probe>().class_extension::<add_fake_storage>();
     })
 }
 
@@ -83,7 +96,7 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
-    const services = await new RayXAppBuilder().addHostFakes()
+    const services = await new RayXAppBuilder().addHostFakes().addFakeStorage()
       .addAppSettings("app")
       .addI18n((options) => {
         options.defaultLanguage("hr").fallbackLanguage("en").autoLoadAssets(false);
@@ -163,7 +176,7 @@ setTimeout(async () => {
   lines.push(thrown(() => kept.addRoute("/late")).includes("disposed") ? "disposed" : "kept");
   // The builder still works after a callback threw.
   try {
-    await builder.addStorage().start();
+    await builder.addOperations().start();
     lines.push("started");
   } catch (error) {
     lines.push(`rejected ${error.message}`);

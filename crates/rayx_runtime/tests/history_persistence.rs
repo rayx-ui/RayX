@@ -6,7 +6,9 @@
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
+use rayx_app::AppBuilder as _;
 use rayx_app::di::StartupInitializationContext;
+use rayx_app::testing::FakeKeyValueStore;
 use rayx_app::{RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::history::{
     HISTORY_BUCKET, HistoryAppBuilderExt, HistoryJournalV2, HistoryScopeId, HistoryService,
@@ -16,7 +18,7 @@ use rayx_runtime::services::operations::{
     DomainOperation, OperationApplyResult, OperationOrigin, OperationService,
     OperationTargetHandler, OperationTargetId,
 };
-use rayx_runtime::services::storage::{InMemoryKeyValueStore, KeyValueStore, StorageAppBuilderExt};
+use rayx_runtime::services::storage::KeyValueStore;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -25,6 +27,14 @@ struct Set(u64);
 impl DomainOperation for Set {
     const KIND: &'static str = "history.persistence.set";
     const VERSION: u32 = 1;
+}
+
+/// `builder` with `store` as its key-value store, which persistent history requires.
+fn with_store(mut builder: RayXAppBuilder, store: Arc<FakeKeyValueStore>) -> RayXAppBuilder {
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn KeyValueStore>(store as Arc<dyn KeyValueStore>);
+    builder
 }
 
 /// A value an app restores on its own (as a document it saved), here from the start.
@@ -59,9 +69,8 @@ struct App {
 }
 
 impl App {
-    fn start(store: &InMemoryKeyValueStore, value: u64) -> Self {
-        let services = RayXAppBuilder::new()
-            .with_key_value_store(store.clone())
+    fn start(store: &Arc<FakeKeyValueStore>, value: u64) -> Self {
+        let services = with_store(RayXAppBuilder::new(), Arc::clone(store))
             .add_persistent_history()
             .build()
             .unwrap();
@@ -113,14 +122,13 @@ impl App {
 
 #[test]
 fn a_second_app_over_the_same_store_undoes_the_first_app_s_edits() {
-    let store = InMemoryKeyValueStore::new();
+    let store = FakeKeyValueStore::new();
     let first = App::start(&store, 0);
     first.set(1);
     first.set(2);
     assert_eq!(first.history.stack_depths(&first.scope).unwrap(), (2, 0));
     assert!(
-        store
-            .get(HISTORY_BUCKET, first.scope.as_str())
+        block_on(store.get(HISTORY_BUCKET.into(), first.scope.as_str().into()))
             .unwrap()
             .is_some(),
         "the journal is in the app's store"
@@ -139,7 +147,7 @@ fn a_second_app_over_the_same_store_undoes_the_first_app_s_edits() {
 
 #[test]
 fn the_store_checks_revisions_and_deletes_scopes() {
-    let values: Arc<dyn KeyValueStore> = Arc::new(InMemoryKeyValueStore::new());
+    let values: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
     let store = KeyValueHistoryStore::new(values.clone());
     let scope = HistoryScopeId::new("persistence:direct").unwrap();
     assert_eq!(store.load(&scope).unwrap(), None);
@@ -162,12 +170,14 @@ fn the_store_checks_revisions_and_deletes_scopes() {
 
     store.delete_scope(&scope).unwrap();
     assert_eq!(store.load(&scope).unwrap(), None);
-    assert!(values.keys(HISTORY_BUCKET).unwrap().is_empty());
+    assert!(
+        block_on(values.keys(HISTORY_BUCKET.into()))
+            .unwrap()
+            .is_empty()
+    );
 
     // A value that is no journal is an error, not an empty history.
-    values
-        .set(HISTORY_BUCKET, scope.as_str(), b"{]".to_vec())
-        .unwrap();
+    block_on(values.set(HISTORY_BUCKET.into(), scope.as_str().into(), b"{]".to_vec())).unwrap();
     assert!(matches!(
         store.load(&scope),
         Err(HistoryStoreError::Backend(_))
@@ -176,7 +186,7 @@ fn the_store_checks_revisions_and_deletes_scopes() {
 
 #[test]
 fn persistent_history_registers_the_store_over_the_app_s_key_value_store() {
-    let services = RayXAppBuilder::new()
+    let services = with_store(RayXAppBuilder::new(), FakeKeyValueStore::new())
         .add_persistent_history()
         .build()
         .unwrap();
@@ -187,8 +197,7 @@ fn persistent_history_registers_the_store_over_the_app_s_key_value_store() {
         .save(HistoryJournalV2::new(1, scope.clone(), Vec::new()), None)
         .unwrap();
     assert!(
-        values
-            .get(HISTORY_BUCKET, scope.as_str())
+        block_on(values.get(HISTORY_BUCKET.into(), scope.as_str().into()))
             .unwrap()
             .is_some()
     );

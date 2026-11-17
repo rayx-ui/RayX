@@ -1,11 +1,10 @@
 //! The app's quitting and the system's wakes on NSH, headless: while the app asks before it
 //! quits, NSH's Quit item comes to it (`QuitRequested`) and the suspension service's `quit()`
-//! quits; as the app quits the service hears `Destroying` then `Destroyed`, and what the app saves
-//! on `Destroying` reaches the device; a wake from sleep is `Woke`.
+//! quits; as the app quits the service hears `Destroying` then `Destroyed` (what the storage
+//! writes then is `rayx_services_storage`'s group); a wake from sleep is `Woke`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
@@ -14,15 +13,12 @@ use crossbeam_channel::{Receiver, Sender};
 use futures::FutureExt as _;
 use nsh_core::desktop::{DesktopCommand, WindowEvent};
 use nsh_core::platform::{Idiom, Os};
-use nsh_core::storage::{StorageBackend, StorageChange};
 use nsh_core::{
     ApproxTextEngine, Command, EventKind, EventPayload, MountBatch, MountItem, ROOT_ID, prelude::*,
 };
 use nsh_engine::{App, Engine, EngineConfig, Environment, LocalEngine, MountSink};
 use rayx_app::services::suspension::{SuspensionEventKind, SuspensionService};
 use rayx_app::testing::add_host_fakes;
-use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
 };
@@ -43,7 +39,7 @@ fn serial() -> MutexGuard<'static, ()> {
 }
 
 fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
-    add_host_fakes(builder.add_suspension().add_storage())
+    add_host_fakes(builder.add_suspension())
 }
 
 #[component]
@@ -53,16 +49,9 @@ fn Root() -> impl IntoElement {
         AppState::Ready => {
             let root = app_services().unwrap();
             let suspension = root.required_service::<dyn SuspensionService>().unwrap();
-            let store = root.required_service::<dyn KeyValueStore>().unwrap();
             suspension
                 .events()
-                .subscribe(move |event| {
-                    HEARD.lock().unwrap().push(event.kind);
-                    // What an app saves as it quits.
-                    if event.kind == SuspensionEventKind::Destroying {
-                        store.set("draft", "text", b"unsaved".to_vec()).unwrap();
-                    }
-                })
+                .subscribe(move |event| HEARD.lock().unwrap().push(event.kind))
                 .detach();
             *ROOT.lock().unwrap() = Some(root);
             text("ready").into_element()
@@ -215,38 +204,13 @@ fn a_wake_from_sleep_reaches_the_suspension_service() {
     assert_eq!(woke, 3);
 }
 
-/// The device's storage.
-#[derive(Default)]
-struct Device(Mutex<BTreeMap<String, String>>);
-
-impl StorageBackend for Device {
-    fn load(&self) -> Result<BTreeMap<String, String>, String> {
-        Ok(self.0.lock().unwrap().clone())
-    }
-
-    fn write(&self, change: StorageChange) {
-        let mut entries = self.0.lock().unwrap();
-        match change {
-            StorageChange::Set(key, value) => {
-                entries.insert(key, value);
-            }
-            StorageChange::Remove(key) => {
-                entries.remove(&key);
-            }
-            StorageChange::Clear => entries.clear(),
-        }
-    }
-}
-
 #[test]
-fn the_app_hears_it_quit_and_what_it_saves_then_reaches_the_device() {
+fn the_app_hears_it_quit() {
     let _serial = serial();
-    let device = Arc::new(Device::default());
     let (tx, _rx) = crossbeam_channel::unbounded();
     let engine = Engine::start(
         EngineConfig {
             environment: desktop(0),
-            storage: Some(device.clone() as Arc<dyn StorageBackend>),
             ..EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>()))
         },
         || ApproxTextEngine,
@@ -287,14 +251,5 @@ fn the_app_hears_it_quit_and_what_it_saves_then_reaches_the_device() {
             SuspensionEventKind::Destroying,
             SuspensionEventKind::Destroyed
         ]
-    );
-    assert_eq!(
-        device
-            .0
-            .lock()
-            .unwrap()
-            .get("rayx/draft/text")
-            .map(String::as_str),
-        Some("tunsaved")
     );
 }

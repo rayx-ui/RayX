@@ -60,12 +60,6 @@ fn the_service_classes_carry_the_rust_services_names_and_their_members() {
             ],
         ),
         (
-            "KeyValueStore",
-            &[
-                "get(", "set(", "getJson(", "setJson(", "remove(", "keys(", "clear(",
-            ],
-        ),
-        (
             "ApplicationConfigurationService",
             &[
                 "current(",
@@ -119,7 +113,6 @@ fn the_old_api_is_gone_from_the_set() {
         "I18nService",
         "NavigationService",
         "NavigationRegion",
-        "KeyValueStore",
         "ApplicationConfigurationService",
     ] {
         assert!(names.contains(&name), "{name} is not in the set: {names:?}");

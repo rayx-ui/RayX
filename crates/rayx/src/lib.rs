@@ -3,7 +3,7 @@
 //!
 //! - [`app`] ([`rayx_app`]): the core: dependency injection, configuration, .NET's options model
 //!   and the [`RayXAppBuilder`](app::RayXAppBuilder), without NSH; service crates depend on it.
-//! - [`runtime`] ([`rayx_runtime`]): the app services (storage, operations and history,
+//! - [`runtime`] ([`rayx_runtime`]): the app services (operations and history,
 //!   navigation, input maps, platform and lifecycle state, configuration, assets, fonts and
 //!   translations), without NSH.
 //! - [`app_nsh`] ([`rayx_app_nsh`]): the NSH host: a root provider per surface, a scope per screen, the
@@ -30,7 +30,6 @@
 //! fn start() {
 //!     RayXAppBuilder::new()
 //!         .add_app_settings("my-app")
-//!         .add_storage()
 //!         .add_i18n(|options| {
 //!             options.default_language("en");
 //!         })

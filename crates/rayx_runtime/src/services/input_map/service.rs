@@ -94,7 +94,10 @@ impl InputMapService {
     pub async fn load(&self) -> Result<InputMapDocument, InputMapApplyError> {
         let document = match self
             .store
-            .get_async(INPUT_MAP_STORAGE_BUCKET, USER_DOCUMENT_KEY)
+            .get(
+                INPUT_MAP_STORAGE_BUCKET.to_owned(),
+                USER_DOCUMENT_KEY.to_owned(),
+            )
             .await?
         {
             Some(bytes) => {
@@ -156,7 +159,11 @@ impl InputMapService {
         let bytes = serde_json::to_vec(&candidate)
             .map_err(|error| InputMapApplyError::Serialize(error.to_string()))?;
         self.store
-            .set_async(INPUT_MAP_STORAGE_BUCKET, USER_DOCUMENT_KEY, bytes)
+            .set(
+                INPUT_MAP_STORAGE_BUCKET.to_owned(),
+                USER_DOCUMENT_KEY.to_owned(),
+                bytes,
+            )
             .await?;
         {
             let mut user = self.lock_user();
@@ -277,5 +284,10 @@ impl AsyncInitializable for InputMapService {
 impl StartupInitializable for InputMapService {
     fn startup_service_type(&self) -> Option<StartupServiceType> {
         Some(StartupServiceType::of::<Self>())
+    }
+
+    /// The user's document is read from the store once it is ready.
+    fn initialization_depends_on(&self) -> Vec<StartupServiceType> {
+        vec![StartupServiceType::of::<dyn KeyValueStore>()]
     }
 }
