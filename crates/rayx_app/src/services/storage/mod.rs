@@ -32,7 +32,7 @@ pub trait KeyValueStore {
     fn capabilities(&self) -> StorageCapabilities;
 
     /// The value at `key` in `bucket`, if there is one.
-    #[ts("(bucket: string, key: string): number[] | null")]
+    #[ts("(bucket: string, key: string): number[] | Uint8Array | null")]
     async fn get(&self, bucket: String, key: String) -> Result<Option<Vec<u8>>, StorageError>;
 
     /// Sets the value at `key` in `bucket`.

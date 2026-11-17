@@ -163,14 +163,17 @@ pub(crate) fn expand_mode(
                 let ok = result_ok(ret);
                 let unit =
                     ok.is_some_and(|ok| matches!(ok, Type::Tuple(tuple) if tuple.elems.is_empty()));
-                let ts = ts_signature(f, &m.params, ok.map(ts_of).as_deref());
+                let ts = ts_signature(f, &m.params, ok.map(ts_result_of).as_deref());
                 let ts_attrs = ts_attrs(f, &ts);
                 // A command answering nothing awaits JS's `void`; one answering a value takes it
-                // as JSON.
+                // as JSON, its bytes as they are (a `Uint8Array` as a `number[]`).
                 let (answer, to_json) = if unit {
                     (quote!(()), quote!(.map(|()| #nsh::JsonValue::Null)))
                 } else {
-                    (quote!(#nsh::JsonValue), quote!())
+                    (
+                        quote!(#private::ContractJson),
+                        quote!(.map(|__rayx_json| __rayx_json.0)),
+                    )
                 };
                 interface.push(quote! {
                     #(#docs)*
@@ -913,6 +916,40 @@ fn ts_of(ty: &Type) -> String {
     }
 }
 
+/// The TS type of a command's result, `ty`: as [`ts_of`], with bytes (`Vec<u8>`, also inside an
+/// `Option`) as `number[] | Uint8Array`, both of which the adapter takes.
+fn ts_result_of(ty: &Type) -> String {
+    fn is_bytes(ty: &Type) -> bool {
+        let Type::Path(path) = ty else {
+            return false;
+        };
+        let Some(last) = path.path.segments.last() else {
+            return false;
+        };
+        let syn::PathArguments::AngleBracketed(args) = &last.arguments else {
+            return false;
+        };
+        last.ident == "Vec"
+            && matches!(
+                args.args.first(),
+                Some(syn::GenericArgument::Type(Type::Path(item))) if item.path.is_ident("u8")
+            )
+    }
+    if is_bytes(ty) {
+        return "number[] | Uint8Array".to_owned();
+    }
+    if let Type::Path(path) = ty
+        && let Some(last) = path.path.segments.last()
+        && last.ident == "Option"
+        && let syn::PathArguments::AngleBracketed(args) = &last.arguments
+        && let Some(syn::GenericArgument::Type(inner)) = args.args.first()
+        && is_bytes(inner)
+    {
+        return "number[] | Uint8Array | null".to_owned();
+    }
+    ts_of(ty)
+}
+
 /// An array of `item`, parenthesized when it is a union.
 fn array(item: &str) -> String {
     if item.contains('|') {
@@ -1297,6 +1334,13 @@ mod tests {
         assert_eq!(ts(quote!(Vec<String>)), "string[]");
         assert_eq!(ts(quote!(Option<f64>)), "number | null");
         assert_eq!(ts(quote!(Vec<Option<u8>>)), "(number | null)[]");
+        let result = |ty: TokenStream| ts_result_of(&syn::parse2(ty).unwrap());
+        assert_eq!(result(quote!(Vec<u8>)), "number[] | Uint8Array");
+        assert_eq!(
+            result(quote!(Option<Vec<u8>>)),
+            "number[] | Uint8Array | null"
+        );
+        assert_eq!(result(quote!(Vec<u16>)), "number[]");
         assert_eq!(
             ts(quote!(BTreeMap<String, bool>)),
             "Record<string, boolean>"

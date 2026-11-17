@@ -614,8 +614,8 @@ class MyAssets {
     });
   }
   async loadBytes(path) {
-    // `number[]`, as the contract declares (the probe gives a `Uint8Array`).
-    if (path === "@app/fonts/Pacifico-Regular.woff2") return Array.from(AssetsProbe.pacifico());
+    // The probe's `Uint8Array`, as is (the contract takes it, or a `number[]`).
+    if (path === "@app/fonts/Pacifico-Regular.woff2") return AssetsProbe.pacifico();
     throw new Error(`no asset ${path}`);
   }
   async loadText(path) {

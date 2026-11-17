@@ -39,7 +39,7 @@ pub trait AssetService {
     async fn load_catalog(&self) -> Result<(), AssetError>;
 
     /// The bytes of the asset at `path`.
-    #[ts("(path: string): number[]")]
+    #[ts("(path: string): number[] | Uint8Array")]
     async fn load_bytes(&self, path: String) -> Result<Vec<u8>, AssetError>;
 
     /// The UTF-8 text of the asset at `path`.

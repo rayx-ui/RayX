@@ -87,7 +87,9 @@ suspension, asset, font, storage, navigation and i18n services are `rayx_service
 `I18nService` contract and the Rust-only `MessageFormatter`, which `add_i18n` registers too
 ([I18n](services/i18n.md)). A service that
 needs another resolves it by trait, so an app's own implementation, in Rust or TS, replaces RayX's anywhere;
-`rayx_app::testing` has a fake of each trait.
+`rayx_app::testing` has a fake of each trait. A TS implementation's values cross as JSON, bytes as they are: where a
+contract answers bytes (`number[] | Uint8Array`, as `loadBytes` and a store's `get`), TS may return a `Uint8Array`
+(any typed array, an `ArrayBuffer`) or a `number[]`.
 
 ## On NSH
 

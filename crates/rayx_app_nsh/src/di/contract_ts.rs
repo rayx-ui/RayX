@@ -327,9 +327,9 @@ pub struct ContractState {
 impl ContractState {
     /// State at `initial`.
     #[ts("(initial: T)")]
-    pub fn new(initial: JsonValue) -> Self {
+    pub fn new(initial: ContractJson) -> Self {
         Self {
-            value: RefCell::new(initial),
+            value: RefCell::new(initial.0),
             sinks: RefCell::default(),
         }
     }
@@ -337,9 +337,9 @@ impl ContractState {
     /// Replaces the value with `value` and tells Rust; throws, keeping the value, when it is not
     /// what the contract's state holds.
     #[ts("(value: T)")]
-    pub fn publish(&self, value: JsonValue) -> Result<(), String> {
-        publish_to(&self.sinks, &value)?;
-        *self.value.borrow_mut() = value;
+    pub fn publish(&self, value: ContractJson) -> Result<(), String> {
+        publish_to(&self.sinks, &value.0)?;
+        *self.value.borrow_mut() = value.0;
         Ok(())
     }
 
@@ -372,8 +372,111 @@ impl ContractEvents {
     /// Tells Rust about `event`; throws, telling nobody, when it is not what the contract's
     /// events are.
     #[ts("(event: E)")]
-    pub fn publish(&self, event: JsonValue) -> Result<(), String> {
-        publish_to(&self.sinks, &event)
+    pub fn publish(&self, event: ContractJson) -> Result<(), String> {
+        publish_to(&self.sinks, &event.0)
+    }
+}
+
+/// What a TS implementation of a core contract gives Rust, as JSON: what `JSON.stringify`
+/// makes of it, except bytes, which cross as they are wherever they are (a result, a field, an
+/// item): a `Uint8Array` (any typed array, a `DataView`) or an `ArrayBuffer` is the array of its
+/// byte values, which a `Vec<u8>` takes, as it takes a `number[]`.
+#[doc(hidden)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ContractJson(pub JsonValue);
+
+impl nsh_core::element::JsValue for ContractJson {
+    fn ts_type(_types: &mut nsh_core::element::TsTypes) -> String {
+        "unknown".into()
+    }
+
+    fn from_js(value: nsh_core::element::JsIn<'_>) -> Result<Self, nsh_core::element::PropError> {
+        json_of(value, 0).map(Self)
+    }
+
+    fn to_js<'a>(
+        &self,
+        host: &'a dyn nsh_core::element::JsHost,
+    ) -> Result<nsh_core::element::JsOwned<'a>, nsh_core::element::PropError> {
+        self.0.to_js(host)
+    }
+}
+
+/// How deep [`json_of`] walks before it leaves the rest to `JSON.stringify` (a cycle throws
+/// there, as it would).
+const MAX_JSON_DEPTH: usize = 64;
+
+/// `value` as JSON, bytes as arrays of their values.
+fn json_of(
+    value: nsh_core::element::JsIn<'_>,
+    depth: usize,
+) -> Result<JsonValue, nsh_core::element::PropError> {
+    use nsh_core::element::{JsClass, JsKind, JsPrimitive};
+    if depth > MAX_JSON_DEPTH {
+        return value.to_json();
+    }
+    match value.class() {
+        Some(JsClass::ArrayBuffer | JsClass::View(_)) => {
+            if let Some(bytes) = value.as_buffer() {
+                return Ok(JsonValue::from(bytes));
+            }
+        }
+        Some(JsClass::Array) => {
+            let Some(items) = value.primitives()? else {
+                return value.to_json();
+            };
+            let mut array = Vec::with_capacity(items.len());
+            for (index, item) in items.into_iter().enumerate() {
+                array.push(match item {
+                    JsPrimitive::Bool(value) => JsonValue::Bool(value),
+                    JsPrimitive::Number(number) => json_number(number),
+                    JsPrimitive::String(value) => JsonValue::String(value),
+                    // `undefined` in an array is `null`, as `JSON.stringify` has it.
+                    JsPrimitive::Date(_) | JsPrimitive::Other => {
+                        let item = value.index(index)?;
+                        match item.get().kind() {
+                            JsKind::Undefined | JsKind::Function => JsonValue::Null,
+                            _ => json_of(item.get(), depth + 1)?,
+                        }
+                    }
+                });
+            }
+            return Ok(JsonValue::Array(array));
+        }
+        Some(JsClass::Object) => {
+            // An object that says how it is JSON (`toJSON`) is left to `JSON.stringify`.
+            if value.field("toJSON")?.get().kind() == JsKind::Function {
+                return value.to_json();
+            }
+            let mut object = serde_json::Map::new();
+            for key in value.keys()? {
+                let field = value.field(&key)?;
+                // Skipped by `JSON.stringify`.
+                if matches!(field.get().kind(), JsKind::Undefined | JsKind::Function) {
+                    continue;
+                }
+                object.insert(key, json_of(field.get(), depth + 1)?);
+            }
+            return Ok(JsonValue::Object(object));
+        }
+        _ => {}
+    }
+    match value.kind() {
+        JsKind::Undefined => Ok(JsonValue::Null),
+        _ => value.to_json(),
+    }
+}
+
+/// A JS number as JSON: whole numbers as integers (what a Rust integer takes), `NaN` and the
+/// infinities as `null`, as `JSON.stringify` has them.
+fn json_number(number: f64) -> JsonValue {
+    const MAX_SAFE: f64 = 9_007_199_254_740_991.0;
+    if number.is_finite() && number.fract() == 0.0 && number.abs() <= MAX_SAFE {
+        // In range, and whole: exact.
+        #[allow(clippy::cast_possible_truncation)]
+        JsonValue::from(number as i64)
+    } else {
+        serde_json::Number::from_f64(number).map_or(JsonValue::Null, JsonValue::Number)
     }
 }
 
@@ -747,6 +850,8 @@ pub mod __private {
     }
 
     pub use futures::future::BoxFuture;
+
+    pub use super::ContractJson;
 
     /// A value of a core contract's member as JSON (`null` when it does not serialize).
     pub fn to_json<T: serde::Serialize + ?Sized>(value: &T) -> JsonValue {
