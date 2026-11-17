@@ -1,7 +1,7 @@
 //! The message formatter, split from the i18n service: RayX's formats messages, numbers, dates
-//! and plurals as the i18n service did, and over any `dyn I18nService` (a fake here) it compiles
-//! the published messages once per version, so a language change the service publishes shows
-//! on the next call.
+//! and plurals as the i18n service did, and over any `dyn I18nService` (a fake here) it follows
+//! every state the service publishes, whatever its version, so a language change the service
+//! publishes shows on the next call.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -214,17 +214,32 @@ fn the_formatter_over_another_i18n_service_follows_a_published_change_on_the_nex
     let formatter = services.required_service::<dyn MessageFormatter>().unwrap();
     assert_eq!(formatter.t("hello"), "Hello");
 
-    // A language change the service publishes, under a new version, shows on the next call.
+    // A language change the service publishes shows on the next call.
     fake.i18n.publish(state("hr", 2, "Hello"));
     assert_eq!(formatter.t("hello"), "Bok");
     assert_eq!(formatter.locale().to_string(), "hr");
 
-    // The messages are compiled once per version: the same version keeps them...
+    // Whatever its version says: an implementation that does not count (a TS one) is
+    // followed as well, its language, messages and time zone.
     fake.i18n.publish(state("en", 2, "Hi"));
-    assert_eq!(formatter.t("hello"), "Bok");
-    // ...and the next one drops them.
-    fake.i18n.publish(state("en", 3, "Hi"));
     assert_eq!(formatter.t("hello"), "Hi");
+    assert_eq!(formatter.locale().to_string(), "en");
+    fake.i18n.publish(state("hr", 2, "Hi"));
+    assert_eq!(formatter.t("hello"), "Bok");
+    fake.i18n.publish(I18nState {
+        time_zone: "Asia/Tokyo".into(),
+        ..state("hr", 2, "Hi")
+    });
+    assert_eq!(
+        formatter.local_time("2026-11-02T09:30:00Z").unwrap().hour,
+        18
+    );
+    fake.i18n.publish(state("en", 0, "Hey"));
+    assert_eq!(formatter.t("hello"), "Hey");
+    assert_eq!(
+        formatter.local_time("2026-11-02T09:30:00Z").unwrap().hour,
+        9
+    );
 }
 
 #[test]

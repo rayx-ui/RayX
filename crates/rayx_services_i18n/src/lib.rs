@@ -19,7 +19,7 @@
 //!
 //! Formatting is RayX's for any `I18nService` implementation, a TS one included: the service
 //! publishes its messages as resource bundles, which the formatter compiles per language and
-//! compiles again on each new version of the service's state.
+//! compiles again when the service publishes other messages (whatever the state's version).
 
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
@@ -51,8 +51,11 @@ rayx_app_nsh::contract_nsh!(rayx_app::services::i18n::I18nService as I18nContrac
 /// The i18n state in TS.
 pub const I18N_STATE: TsAlias = TsAlias {
     name: "I18nState",
-    ts: "Record<string, unknown>",
-    doc: "The languages, locale, time zone and messages: the JSON of Rust's `I18nState`.",
+    ts: "{ language?: string; chosen_language?: string | null; locale?: string; \
+         direction?: \"Ltr\" | \"Rtl\"; default_language?: string; fallback_languages?: string[]; \
+         available_languages?: string[]; time_zone?: string; \
+         messages?: { language: string; messages: Record<string, string> }[]; version?: number }",
+    doc: "The languages, locale, time zone and messages: the JSON of Rust's `I18nState` (a field left out is its default). `version` is optional: the formatter follows every state published, whatever its version.",
 };
 
 /// Adds the i18n service's TS side to an app's set: its class [`I18nService`], its options class

@@ -1,6 +1,6 @@
 //! RayX's message formatter: the [`I18nService`]'s messages compiled per language into a
 //! [`Translator`], formatted for its locale with [`dxn_i18n`] and [`dxn_intl`], compiled again
-//! when the service publishes a new version.
+//! when the service publishes other messages.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
@@ -22,15 +22,16 @@ use rayx_app::services::i18n::{I18nService, I18nServiceError, I18nState, Message
 
 use crate::options::{I18nOptions, MissingMessagePolicy};
 
-/// The messages of one version of the service's state, compiled.
+/// A state the service published, and its messages compiled at its locale.
 struct Compiled {
-    version: u64,
+    state: Arc<I18nState>,
     translator: Arc<Translator>,
-    time_zone: String,
 }
 
-/// RayX's [`MessageFormatter`] over whichever `dyn I18nService` is registered: it compiles the
-/// service's message bundles on the first call after each new version and formats with them.
+/// RayX's [`MessageFormatter`] over whichever `dyn I18nService` is registered: on the first
+/// call after the service publishes a state, it compiles the state's message bundles (or, when
+/// only the locale or the time zone changed, keeps them) and formats with them. It follows
+/// every publish, whatever the state's `version` says (a TS implementation may not count).
 pub(crate) struct RayxFormatter {
     i18n: Arc<dyn I18nService>,
     missing: MissingMessage,
@@ -64,33 +65,38 @@ impl RayxFormatter {
         &self.i18n
     }
 
-    /// The translator of the service's version now, and its time zone: the cached one, or one
-    /// compiled now when the service published a new version (the old one is dropped).
-    fn current(&self) -> (Arc<Translator>, String) {
-        let state = self.i18n.i18n().get();
+    /// The translator of the service's state now, and that state: the cached one while the
+    /// service publishes nothing new, else one made now (from the cached one when the messages
+    /// are the same, the old one dropped).
+    fn current(&self) -> (Arc<Translator>, Arc<I18nState>) {
         let mut compiled = self.compiled.lock().unwrap_or_else(PoisonError::into_inner);
-        match &*compiled {
-            Some(cached) if cached.version == state.version => {
-                (Arc::clone(&cached.translator), cached.time_zone.clone())
+        // Read under the lock, so a caller never caches an older state over a newer one.
+        let state = self.i18n.i18n().get();
+        let translator = match &*compiled {
+            Some(cached) if Arc::ptr_eq(&cached.state, &state) => {
+                return (Arc::clone(&cached.translator), state);
             }
-            _ => {
-                let translator = Arc::new(self.compile(&state));
-                *compiled = Some(Compiled {
-                    version: state.version,
-                    translator: Arc::clone(&translator),
-                    time_zone: state.time_zone.clone(),
-                });
-                (translator, state.time_zone.clone())
+            Some(cached) if same_messages(&cached.state, &state) => {
+                if cached.state.locale == state.locale {
+                    Arc::clone(&cached.translator)
+                } else {
+                    let mut translator = (*cached.translator).clone();
+                    translator.set_locale(locale_of(&state));
+                    Arc::new(translator)
+                }
             }
-        }
+            _ => Arc::new(self.compile(&state)),
+        };
+        *compiled = Some(Compiled {
+            state: Arc::clone(&state),
+            translator: Arc::clone(&translator),
+        });
+        (translator, state)
     }
 
     /// `state`'s bundles in a translator at its locale, with its fallbacks.
     fn compile(&self, state: &I18nState) -> Translator {
-        let default = parse_locale(&state.default_language)
-            .or_else(|_| parse_locale("en"))
-            .unwrap_or(Locale::UNKNOWN);
-        let mut translator = Translator::new(default.clone());
+        let mut translator = Translator::new(default_of(state));
         translator.set_fallbacks(
             state
                 .fallback_languages
@@ -111,9 +117,28 @@ impl RayxFormatter {
             }
             translator.add_bundle(bundle);
         }
-        translator.set_locale(parse_locale(&state.locale).unwrap_or(default));
+        translator.set_locale(locale_of(state));
         translator
     }
+}
+
+/// Whether `a` and `b` compile to the same translator but for its locale.
+fn same_messages(a: &I18nState, b: &I18nState) -> bool {
+    a.default_language == b.default_language
+        && a.fallback_languages == b.fallback_languages
+        && a.messages == b.messages
+}
+
+/// `state`'s default language (English if it does not read).
+fn default_of(state: &I18nState) -> Locale {
+    parse_locale(&state.default_language)
+        .or_else(|_| parse_locale("en"))
+        .unwrap_or(Locale::UNKNOWN)
+}
+
+/// The locale `state`'s messages are formatted for (its default language if it does not read).
+fn locale_of(state: &I18nState) -> Locale {
+    parse_locale(&state.locale).unwrap_or_else(|_| default_of(state))
 }
 
 impl MessageFormatter for RayxFormatter {
@@ -163,12 +188,12 @@ impl MessageFormatter for RayxFormatter {
     }
 
     fn local_time(&self, instant: &str) -> Result<DateTime, I18nServiceError> {
-        DateTime::from_instant(instant, &self.current().1)
+        DateTime::from_instant(instant, &self.current().1.time_zone)
             .map_err(|error| I18nServiceError::Format(error.to_string()))
     }
 
     fn local_time_from_millis(&self, millis: i64) -> Result<DateTime, I18nServiceError> {
-        DateTime::from_unix_millis_in(millis, &self.current().1)
+        DateTime::from_unix_millis_in(millis, &self.current().1.time_zone)
             .map_err(|error| I18nServiceError::Format(error.to_string()))
     }
 }

@@ -88,8 +88,8 @@ pub trait I18nAppBuilderExt: AppBuilder {
 
     /// Registers RayX's message formatter as the app's `dyn MessageFormatter`, replacing any
     /// other, over the app's `dyn I18nService` (which it requires): MessageFormat 2 messages,
-    /// numbers, dates and plurals formatted synchronously for the service's locale, compiled
-    /// again when the service publishes a new version. A startup service after the i18n
+    /// numbers, dates and plurals formatted synchronously for the service's locale, following
+    /// every state the service publishes. A startup service after the i18n
     /// service: on NSH, from then on, `tr!` follows the service's changes and NSH's locale the
     /// language the app picked. Its missing-message policy and bidi isolation are
     /// [`I18nOptions`]' (`add_i18n` sets them; over an app's own service,

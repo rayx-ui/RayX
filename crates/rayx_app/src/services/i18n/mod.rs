@@ -56,7 +56,8 @@ pub struct I18nState {
     pub time_zone: String,
     /// The messages, a bundle per language, in the order the languages came.
     pub messages: Vec<MessageBundle>,
-    /// Counts the changes: a formatter compiles the messages again when it moves.
+    /// Counts the changes (RayX's implementation does; a TS one may leave it out). A formatter
+    /// does not rely on it: it follows every state published.
     pub version: u64,
 }
 
