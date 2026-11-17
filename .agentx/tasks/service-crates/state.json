@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 7,
+  "epicId": "service-crates",
+  "revision": 0,
+  "planRevision": 1,
+  "specHashes": {
+    "requirements": "7f61a19d0a33b5696be1f2e11632bf0f87fe1b476b31d2bdb02d8d44ef477312",
+    "design": "7d678d8c7765142180a74d3632e715760f9213e0e0d15ed362dd05fc7a1befff",
+    "plan": "f28a25b79e7f49e4ab45a25b0b3550723e048a76a2fa6c6fe8b102f2fd38c755"
+  },
+  "tasks": {
+    "t01-crate-renames": {
+      "status": "pending"
+    },
+    "t02-layout": {
+      "status": "pending"
+    },
+    "t03-published-values": {
+      "status": "pending"
+    },
+    "t04-contract-kinds": {
+      "status": "pending"
+    },
+    "t05-any-thread": {
+      "status": "pending"
+    },
+    "t06-validation": {
+      "status": "pending"
+    },
+    "t07-contract-tokens": {
+      "status": "pending"
+    },
+    "t08-host-hooks": {
+      "status": "pending"
+    },
+    "t09-mandatory-services": {
+      "status": "pending"
+    },
+    "t10-storage-navigation": {
+      "status": "pending"
+    },
+    "t11-i18n": {
+      "status": "pending"
+    },
+    "t12-operations-history-selection": {
+      "status": "pending"
+    },
+    "t13-input-map-configuration": {
+      "status": "pending"
+    },
+    "t14-fakes-and-replacement": {
+      "status": "pending"
+    },
+    "t15-ts-implementations": {
+      "status": "pending"
+    },
+    "t16-umbrella": {
+      "status": "pending"
+    },
+    "t17-rayx-new": {
+      "status": "pending"
+    },
+    "t18-gallery": {
+      "status": "pending"
+    },
+    "t19-docs": {
+      "status": "pending"
+    },
+    "t20-root": {
+      "status": "pending"
+    },
+    "t21-memory": {
+      "status": "pending"
+    }
+  },
+  "validationBatches": {},
+  "checkResults": {},
+  "reviews": {},
+  "checkpoints": {},
+  "findings": [],
+  "handoffMarkdown": "",
+  "protectedPaths": {
+    "rayx": {
+      "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",
+      "rayx:.github/workflows/release-plz.yml": "31c80f3230202c16dd47f6cb29d683dfa92dd6a502e2ccecba9fdca96997feab",
+      "rayx:.github/workflows/release.yml": "3c495e29befb864e16b3035e5ed65f2527f0048ff06ce1a51e89927fcaeb8156",
+      "rayx:crates/rayx_components/**": "c013f01fe0f535f1a472dee49e9c8b439bb12180d09337f754e0ca51c4f42d77",
+      "rayx:crates/rayx_devtools_protocol/**": "37bb23a61b9c42bbaf1011f38acc13e6598c78706542083b57a51b15441bbc29"
+    },
+    "root": {
+      "root:.claude/skills/rayx-figma/**": "308ff84246b108bc4923deacf20849675b54cdbaef37cb557ebcc80f3e6149eb",
+      "root:.claude/skills/nsh/**": "d54379739c4fb7108ac45897d1fb9d649ba6c9e42e8e144f82e1fd51f099e209",
+      "root:.claude/skills/nsh-design-guides/**": "7c4a9ba53d638a83fba5f3a65a0e0ef3fe1d9d815a0a54503de601de475a9ccf"
+    }
+  }
+}
