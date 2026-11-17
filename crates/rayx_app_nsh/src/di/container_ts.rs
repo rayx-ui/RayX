@@ -195,7 +195,8 @@ impl rayx_app::di::StartupInitializable for Made {}
 
 /// Makes `service` (a TS singleton registered under a contract's token) in the startup run,
 /// then `made` (the contract's adapter), keyed `key` (the contract's startup key, so Rust
-/// startup services depending on the contract come after it).
+/// startup services depending on the contract come after it): before any other startup factory
+/// runs, so a Rust one that resolves the contract may read its state.
 pub(crate) fn make_on_start(
     provider: &mut rayx_app::ServiceProvider,
     service: SharedTsService,
@@ -203,7 +204,7 @@ pub(crate) fn make_on_start(
     made: crate::di::contract_ts::MakeAdapter,
 ) {
     use futures::FutureExt as _;
-    provider.add_startup_resolved_async(key.clone(), move |context| {
+    provider.add_startup_resolved_async_first(key.clone(), move |context| {
         let service = Arc::clone(&service);
         let root = context.services().clone();
         let key = key.clone();

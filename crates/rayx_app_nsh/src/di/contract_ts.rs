@@ -7,8 +7,9 @@
 //! on the engine thread ([`ContractSlot`]). Registering a TS implementation under the token
 //! (`addSingletonAs(weatherSourceToken(), () => new OpenMeteo())`, and the other forms) also
 //! registers the adapter as `dyn Trait`, with the same lifetime; a singleton (and every startup
-//! form) is made during `start()`, so Rust resolves it synchronously from then on, and Rust
-//! startup services depending on `dyn Trait` initialize after it.
+//! form) is made during `start()`, before any Rust startup service's factory runs, so Rust
+//! resolves it synchronously from then on (such a factory may read it), and Rust startup
+//! services depending on `dyn Trait` initialize after it.
 
 use std::any::TypeId;
 use std::cell::RefCell;

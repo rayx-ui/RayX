@@ -206,8 +206,9 @@ new RayXAppBuilder().addSingletonAs(weatherSourceToken(), () => new OpenMeteo())
 ```
 
 - TS gets the interface `WeatherSource` and the token function `weatherSourceToken()`; every registration form takes
-  the token, and Rust resolves the implementation with the same lifetime. Rust startup services that depend on
-  `dyn WeatherSource` initialize after it.
+  the token, and Rust resolves the implementation with the same lifetime. `start()` makes a singleton (and every
+  startup form) before any Rust startup service's factory runs, so such a factory may read its state; Rust startup
+  services that depend on `dyn WeatherSource` initialize after it.
 - An `async fn` returns `Result<T, E>`, where `E: From<ContractError> + From<Exception>` (`String` is one): what TS
   throws arrives as the `Exception`. A method returning nothing runs on the spot inside a call from JS and is posted, in
   order, otherwise.

@@ -238,6 +238,8 @@ type StartupServiceFactory =
 struct StartupRegistryFactory {
     service_type: StartupServiceType,
     factory: StartupServiceFactory,
+    /// Made before the other factories run ([`StartupRegistry::add_resolved_async_first`]).
+    first: bool,
 }
 
 /// A registered startup service with the key the run orders it by: its own
@@ -508,18 +510,22 @@ impl StartupRegistry {
         T: StartupInitializable + ?Sized,
     {
         let service_type = StartupServiceType::of::<T>();
-        self.add_factory(service_type.clone(), move |context| {
-            let resolved = context
-                .services()
-                .required_service::<T>()
-                .map(|service| -> StartupService { Arc::new(SharedStartupService { service }) })
-                .map_err(|error| StartupInitializationFailure {
-                    service: service_type.clone(),
-                    message: error.to_string(),
-                    timed_out: false,
-                });
-            futures::future::ready(resolved).boxed_local()
-        })
+        self.add_factory(
+            service_type.clone(),
+            move |context| {
+                let resolved = context
+                    .services()
+                    .required_service::<T>()
+                    .map(|service| -> StartupService { Arc::new(SharedStartupService { service }) })
+                    .map_err(|error| StartupInitializationFailure {
+                        service: service_type.clone(),
+                        message: error.to_string(),
+                        timed_out: false,
+                    });
+                futures::future::ready(resolved).boxed_local()
+            },
+            false,
+        )
     }
 
     /// Adds a startup service made by the asynchronous `factory` when startup runs, before any
@@ -533,7 +539,20 @@ impl StartupRegistry {
         service_type: impl Into<StartupServiceType>,
         factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
     ) -> &mut Self {
-        self.add_factory(service_type.into(), factory)
+        self.add_factory(service_type.into(), factory, false)
+    }
+
+    /// [`Self::add_resolved_async`] for a service the other factories may read: every factory
+    /// added this way is made (awaited together) before any other factory runs, so a factory
+    /// that resolves the service and reads it finds it made. What a TS implementation of a
+    /// contract is registered with (its object is made in JS's next turn): a Rust startup
+    /// service's factory may read its state. When one fails, no other factory runs.
+    pub fn add_resolved_async_first(
+        &mut self,
+        service_type: impl Into<StartupServiceType>,
+        factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
+    ) -> &mut Self {
+        self.add_factory(service_type.into(), factory, true)
     }
 
     pub fn with<T>(mut self, service: T) -> Self
@@ -588,11 +607,13 @@ impl StartupRegistry {
         &mut self,
         service_type: StartupServiceType,
         factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
+        first: bool,
     ) -> &mut Self {
         self.remove(service_type.clone());
         self.factories.push(StartupRegistryFactory {
             service_type,
             factory: Arc::new(factory),
+            first,
         });
         self
     }
@@ -822,8 +843,9 @@ impl StartupRegistry {
     }
 
     /// The services added already made, then the ones every factory makes (awaited together,
-    /// each within the default timeout when there is a timer); a made service replaces an
-    /// earlier one of its key.
+    /// each within the default timeout when there is a timer): first those added with
+    /// [`Self::add_resolved_async_first`], then the others; a made service replaces an earlier
+    /// one of its key.
     async fn resolved_services<F>(
         &self,
         context: &StartupInitializationContext,
@@ -833,56 +855,72 @@ impl StartupRegistry {
     where
         F: Future<Output = ()>,
     {
-        let made = join_all(self.factories.iter().map(|factory| {
-            let service_type = factory.service_type.clone();
-            let making = (factory.factory)(context);
-            let expired = timer.map(|timer| Box::pin(timer(default_timeout)));
-            async move {
-                let result = match expired {
-                    None => making.await,
-                    Some(expired) => match select(making, expired).await {
-                        Either::Left((result, _)) => result,
-                        Either::Right(_) => {
-                            return Err(StartupInitializationFailure {
-                                service: service_type,
-                                message: format!(
-                                    "was not made within {} ms",
-                                    default_timeout.as_millis()
-                                ),
-                                timed_out: true,
-                            });
-                        }
-                    },
-                };
+        let mut services = self.services.clone();
+        for first in [true, false] {
+            let making: Vec<_> = self
+                .factories
+                .iter()
+                .filter(|factory| factory.first == first)
+                .map(|factory| Self::make(factory, context, timer, default_timeout))
+                .collect();
+            let made = join_all(making).await;
+            let mut failures = Vec::new();
+            for result in made {
                 match result {
-                    Ok(service) => Ok(KeyedStartupService::new(service, service_type)),
-                    Err(failure) => Err(StartupInitializationFailure {
-                        service: service_type,
-                        ..failure
-                    }),
+                    Ok(service) => {
+                        services.retain(|existing| existing.key != service.key);
+                        services.push(service);
+                    }
+                    Err(failure) => failures.push(failure),
                 }
             }
-        }))
-        .await;
-
-        let mut services = self.services.clone();
-        let mut failures = Vec::new();
-        for result in made {
-            match result {
-                Ok(service) => {
-                    services.retain(|existing| existing.key != service.key);
-                    services.push(service);
-                }
-                Err(failure) => failures.push(failure),
+            if !failures.is_empty() {
+                return Err(StartupInitializationError::ServiceFailures {
+                    failures: StartupInitializationFailures::new(failures),
+                });
             }
         }
+        Ok(services)
+    }
 
-        if failures.is_empty() {
-            Ok(services)
-        } else {
-            Err(StartupInitializationError::ServiceFailures {
-                failures: StartupInitializationFailures::new(failures),
-            })
+    /// What `factory` makes (its factory called now, as every factory of a phase is before
+    /// any is awaited), within the default timeout when there is a timer.
+    fn make<F>(
+        factory: &StartupRegistryFactory,
+        context: &StartupInitializationContext,
+        timer: Option<&impl Fn(Duration) -> F>,
+        default_timeout: Duration,
+    ) -> impl Future<Output = Result<Arc<KeyedStartupService>, StartupInitializationFailure>>
+    where
+        F: Future<Output = ()>,
+    {
+        let service_type = factory.service_type.clone();
+        let making = (factory.factory)(context);
+        let expired = timer.map(|timer| Box::pin(timer(default_timeout)));
+        async move {
+            let result = match expired {
+                None => making.await,
+                Some(expired) => match select(making, expired).await {
+                    Either::Left((result, _)) => result,
+                    Either::Right(_) => {
+                        return Err(StartupInitializationFailure {
+                            service: service_type,
+                            message: format!(
+                                "was not made within {} ms",
+                                default_timeout.as_millis()
+                            ),
+                            timed_out: true,
+                        });
+                    }
+                },
+            };
+            match result {
+                Ok(service) => Ok(KeyedStartupService::new(service, service_type)),
+                Err(failure) => Err(StartupInitializationFailure {
+                    service: service_type,
+                    ..failure
+                }),
+            }
         }
     }
 }

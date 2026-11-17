@@ -910,6 +910,18 @@ impl ServiceProvider {
         self
     }
 
+    /// [`Self::add_startup_resolved_async`] for a service the other startup factories may read,
+    /// made before any of them runs ([`StartupRegistry::add_resolved_async_first`]): what a TS
+    /// implementation of a contract is registered with.
+    pub fn add_startup_resolved_async_first(
+        &mut self,
+        service_type: impl Into<StartupServiceType>,
+        factory: impl Fn(&StartupInitializationContext) -> StartupServiceFuture + Send + Sync + 'static,
+    ) -> &mut Self {
+        self.startup.add_resolved_async_first(service_type, factory);
+        self
+    }
+
     /// Creates a child scope: shared singletons, options registrations and startup registry,
     /// a fresh scoped-instance cache, and a snapshot of the registrations.
     pub fn create_scope(&self) -> Self {

@@ -144,7 +144,8 @@ impl StartupInitializationContext {
 
 /// Adds `service` (registered in the provider already) to `provider`'s startup run, keyed
 /// `registered_as` unless it names its own key: made by the run (its factory called in JS's
-/// next turn unless it is made; then `made` runs, for a contract's adapter) and then
+/// next turn unless it is made; then `made` runs, for a contract's adapter, before any other
+/// startup factory runs, so a Rust one that resolves the contract may read its state) and then
 /// initialized as a [`JsStartupService`].
 pub(crate) fn add(
     provider: &mut rayx_app::ServiceProvider,
@@ -153,7 +154,7 @@ pub(crate) fn add(
     made: Option<crate::di::contract_ts::MakeAdapter>,
 ) {
     let key = registered_as.clone();
-    provider.add_startup_resolved_async(registered_as, move |context| {
+    let factory = move |context: &rayx_app::di::StartupInitializationContext| {
         let service = Arc::clone(&service);
         let root = context.services().clone();
         let key = key.clone();
@@ -177,7 +178,12 @@ pub(crate) fn add(
             Ok(Arc::new(adapter) as StartupService)
         }
         .boxed_local() as StartupServiceFuture
-    });
+    };
+    if made.is_some() {
+        provider.add_startup_resolved_async_first(registered_as, factory);
+    } else {
+        provider.add_startup_resolved_async(registered_as, factory);
+    }
 }
 
 /// What a TS startup service's adapter keeps on the engine thread.

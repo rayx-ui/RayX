@@ -58,8 +58,9 @@ pub fn app_extension(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// - **constants**, `#[constant] fn m(&self) -> T`, read once.
 ///
 /// RayX links a TS implementation's state, events and constants once: a singleton's in
-/// `start()`, a scoped or transient one's when it is resolved on the engine thread, or on its
-/// first read when it was resolved on another thread, which then waits for the engine. So a
+/// `start()` (before any Rust startup service's factory runs, which may read it), a scoped or
+/// transient one's when it is resolved on the engine thread, or on its first read when it was
+/// resolved on another thread, which then waits for the engine. So a
 /// factory that runs off the engine thread (under the container's lock of the service it makes)
 /// must not read a TS contract's state, events or constants: resolve the contract there and
 /// read it afterwards, or the engine thread resolving that service at the same moment waits
