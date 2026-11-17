@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "ts-app-builder",
-  "revision": 16,
+  "revision": 18,
   "title": "One app builder API for Rust and TypeScript apps",
   "validationMode": "sprint",
   "repositories": [
@@ -27,9 +27,7 @@
       "root"
     ],
     "forbiddenPaths": [
-      "rayx:CHANGELOG.md",
       "rayx:rust-toolchain.toml",
-      "rayx:release-plz.toml",
       "rayx:.github/workflows/release-plz.yml",
       "rayx:.github/workflows/release.yml"
     ]
@@ -1176,6 +1174,97 @@
         "crates/rayx_app/**",
         "crates/rayx_app_macros/src/**"
       ]
+    },
+    {
+      "id": "c-nsh-pin-5",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "NSH-2"
+      ],
+      "descriptionMarkdown": "The CLI's pin groups at `nshx-0.5.0-5`: the default pin, and that dependencies come from tags.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-cli",
+        "--test",
+        "nsh_pin",
+        "--test",
+        "nsh_pin_rayx",
+        "--test",
+        "dependency_sources"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_cli/**",
+        "examples/gallery/.cargo/config.toml"
+      ]
+    },
+    {
+      "id": "c-tsx-options-order",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "TSS-5"
+      ],
+      "descriptionMarkdown": "TS options run every configure step before any validation, as Rust's options pipeline does: a later `configureOptions` or a `.configure` after `.validate` is validated, on resolve and on start (FR-3).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "nsh_tsx_options_order"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_core/src/**",
+        "crates/rayx_runtime/src/**",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/fixtures/**",
+        "crates/rayx_app/tests/nsh_tsx_options_order.rs",
+        "crates/rayx_app/tests/headless/**"
+      ]
+    },
+    {
+      "id": "c-no-start-app",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "DOC-4"
+      ],
+      "descriptionMarkdown": "No doc, example or crate names the removed `rayx_app::start_app` (`! git grep -w` exits 0; a match prints it and fails). The crate-private `start_app_with` is a different word (FR-4).",
+      "argv": [
+        "sh",
+        "-c",
+        "! git grep --untracked -n -w start_app -- docs crates examples README.md AGENTS.md"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "docs/**",
+        "crates/**",
+        "examples/**",
+        "README.md",
+        "AGENTS.md"
+      ]
     }
   ],
   "finalCheckIds": [
@@ -2022,6 +2111,123 @@
             {
               "repositoryId": "rayx",
               "path": "crates/rayx_core/src/di/registry.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/surface.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s6-nsh-pin",
+      "title": "Re-baseline: NSH at nshx-0.5.0-5, as shipped",
+      "dependsOn": [
+        "s5-release"
+      ],
+      "memoryScopes": [
+        "dependencies",
+        "app"
+      ],
+      "checkIds": [
+        "c-nsh-pin-5"
+      ],
+      "tasks": [
+        {
+          "id": "t29-nsh-pin-5",
+          "title": "Record NSH's nshx-0.5.0-5 pin as shipped",
+          "descriptionMarkdown": "Corrective task for the owner's re-baseline (2026-11-17). `2bd13e1` (`feat(nsh): Pin NSH to nshx-0.5.0-5`) moved every pin NSH-1 names to `nshx-0.5.0-5` (commit `ce14525bc`) after the epic's first closure, and switched RayX's TS container from NSH's hidden `in_call()` to `can_call_now()` (d-nsh-pin-5). The change is in source already: this task changes no code. It confirms that the workspace patch, `crates/rayx_cli/src/project/pins.rs` with its tests and fixtures, and `examples/gallery/.cargo/config.toml` name the tag, by tag only, and that the CLI's pin groups pass (c-nsh-pin-5).",
+          "criterionIds": [
+            "NSH-2"
+          ],
+          "designIds": [
+            "d-nsh-pin-5"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-nsh-pin-5"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "Cargo.toml"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/src/project/pins.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "examples/gallery/.cargo/config.toml"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/container.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s7-final-repairs",
+      "title": "Final-review repairs: TS options validate the configured value; no removed start in the docs",
+      "dependsOn": [
+        "s6-nsh-pin"
+      ],
+      "memoryScopes": [
+        "app"
+      ],
+      "checkIds": [
+        "c-tsx-options-order",
+        "c-no-start-app"
+      ],
+      "tasks": [
+        {
+          "id": "t30-ts-options-order",
+          "title": "TS options: every configure step, then every validation",
+          "descriptionMarkdown": "Final-review finding FR-3 (TSS-5). `TsOptions::made` and the `validateOnStart` startup run (`add_on_start`) in `crates/rayx_app/src/ts/app_options.rs` run the steps in the order they were added and check each validation where it stands, so a `configureOptions` added later, or a `.configure` after `.validate` in one builder, is never validated. Rust's `OptionsFactory::create` runs every configure (and post-configure) step, then every validation on the final value, and the module's own doc says the same. Both paths take the steps in one order, shared: binds, then every configure step in the order added, then every validation. New test group `crates/rayx_app/tests/nsh_tsx_options_order.rs`: a later `configureOptions` and a `.configure` after `.validate` that make the value invalid throw from `getOptions` and fail `start()` with `validateOnStart`; one that makes it valid passes.",
+          "criterionIds": [],
+          "supportingCriterionIds": [
+            "TSS-5"
+          ],
+          "designIds": [
+            "d-ts-options"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-tsx-options-order"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/app_options.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_core/src/options/pipeline.rs"
+            }
+          ]
+        },
+        {
+          "id": "t31-docs-start",
+          "title": "Application configuration doc: name the new start",
+          "descriptionMarkdown": "Final-review finding FR-4 (DOC-4). `docs/services/application-configuration.md` says the app builds with `RayXAppBuilder::build_async` \"(`rayx_app::start_app` does)\", but `start_app` was removed. Name what does it now: Rust's `.start()` / `.start_async()` and TSX's `await builder.start()` (all through `rayx_app`'s startup, which calls `build_async`). `c-no-start-app` keeps the removed name out.",
+          "criterionIds": [],
+          "supportingCriterionIds": [
+            "DOC-4"
+          ],
+          "designIds": [
+            "d-consumers"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-no-start-app"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "docs/services/application-configuration.md"
             },
             {
               "repositoryId": "rayx",

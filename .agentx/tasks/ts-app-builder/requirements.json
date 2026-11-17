@@ -67,6 +67,11 @@
           "id": "NSH-1",
           "verification": "automated",
           "descriptionMarkdown": "The workspace `[patch.crates-io]`, the CLI's default pin (`crates/rayx_cli/src/project/pins.rs`) with its tests and fixtures, and `examples/gallery/.cargo/config.toml` all name the fork's tag `nshx-0.5.0-4` (commit `55074d3f9`), which carries #262 and #265 (the typed TS signatures), by tag (no path, branch or commit), and the CLI's pin tests pass against it."
+        },
+        {
+          "id": "NSH-2",
+          "verification": "automated",
+          "descriptionMarkdown": "The workspace `[patch.crates-io]`, the CLI's default pin (`crates/rayx_cli/src/project/pins.rs`) with its tests and fixtures, and `examples/gallery/.cargo/config.toml` all name the fork's tag `nshx-0.5.0-5` (commit `ce14525bc`), which keeps everything `nshx-0.5.0-4` brought (#262, #264, #265) and adds #269 (`Callback::can_call_now`, `JsHandle::can_call_now`), by tag (no path, branch or commit), and the CLI's pin tests pass against it. Replaces NSH-1 (owner, 2026-11-17)."
         }
       ]
     },

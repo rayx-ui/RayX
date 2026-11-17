@@ -455,6 +455,39 @@
           "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
         }
       ]
+    },
+    {
+      "id": "d-nsh-pin-5",
+      "requirementIds": [
+        "R-NSH"
+      ],
+      "descriptionMarkdown": "RayX takes the NSH fork at `nshx-0.5.0-5` (commit `ce14525bc`), moved everywhere `nshx-0.5.0-4` was (`Cargo.toml` `[patch.crates-io]`, `crates/rayx_cli/src/project/pins.rs` with its tests and fixtures, `docs/cli/projects.md`, the CLI README, `examples/gallery/.cargo/config.toml`), as `2bd13e1` (`feat(nsh): Pin NSH to nshx-0.5.0-5`) did after the epic's first closure. The tag keeps what `-4` brought (#262, #264, #265) and adds #269 (`Callback::can_call_now`, `JsHandle::can_call_now`) and upstream NSH up to `a4f08d746`. RayX's TS container asks a TS factory's `can_call_now()` before calling it on the spot, in place of NSH's `#[doc(hidden)]` `JsHandle::handle().in_call()`, so a TS service's registration no longer keeps its token's handle (the VM's `ServiceTokens` keeps the token). No path, branch or commit dependency on the fork. Replaces d-nsh-pin's tag (owner, 2026-11-17); the theme move d-nsh-pin recorded is d-theme-documents' and stands.",
+      "invariantsMarkdown": "- The workspace patch, the CLI's default pin and the gallery's config name the same tag.\n- Only tags: never a path, branch or commit.",
+      "rationaleMarkdown": "Shipped in `2bd13e1` after the first closure (final review 2026-11-16, `284ad7a`); recorded so the epic describes what shipped (owner, 2026-11-17: \"Yes, re-baseline\").",
+      "sourceRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/project/pins.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/.cargo/config.toml"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/ts/container.rs"
+        }
+      ],
+      "memoryDecisionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md"
+        }
+      ]
     }
   ]
 }
