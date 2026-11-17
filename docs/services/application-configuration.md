@@ -31,7 +31,8 @@ builder
 - The name and description apply at startup only.
 - Unknown keys are ignored (as .NET does), so a shared `appsettings.json` may carry keys of other parts.
 - On NSH the settings come from the app's bundled `appsettings.json` (`add_app_settings`), read asynchronously, so the
-  app builds with `RayXAppBuilder::build_async` (`rayx_app::start_app` does).
+  app builds with `RayXAppBuilder::build_async`; starting it does that (Rust's `.start()` / `.start_async()`, TSX's
+  `await builder.start()`).
 
 ## Use
 
