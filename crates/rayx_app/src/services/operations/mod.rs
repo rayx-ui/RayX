@@ -87,8 +87,10 @@ pub trait OperationService {
     /// newest first, and publish nothing.
     async fn abort(&self, transaction_id: u64) -> Result<(), OperationError>;
 
-    /// Applies `record` from `origin` through its target, in the transaction `transaction_id`
-    /// when it is open (else alone, published at once). A failure publishes
+    /// Applies `record` from `origin` through its target: alone (published at once) with no
+    /// `transaction_id`, else in that transaction, which must be open
+    /// ([`OperationError::TransactionClosed`] otherwise, and the record is not applied, or is
+    /// undone when the transaction closed while it applied). A failure publishes
     /// [`OperationEvent::Failed`].
     #[ts(
         "(record: OperationRecord, origin: OperationOrigin, transactionId: number | null): OperationReceipt"

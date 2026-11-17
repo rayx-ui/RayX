@@ -796,7 +796,8 @@ pub fn add_host_fakes<B: AppBuilder>(mut builder: B) -> B {
 
 /// An operation service applying records through their targets' handlers as RayX's does
 /// (transactions queue their events until they commit and undo their operations, newest first,
-/// when they abort; a released target refuses operations), publishing its targets and every
+/// when they abort; a submission into a transaction that is not open fails with
+/// `TransactionClosed`; a released target refuses operations), publishing its targets and every
 /// event, without diagnostics. For testing what consumes operations (history) without RayX's.
 pub struct FakeOperations {
     instance_id: u64,
@@ -859,7 +860,12 @@ impl FakeOperations {
         origin: OperationOrigin,
         transaction_id: Option<u64>,
     ) -> Result<OperationReceipt, OperationError> {
+        let in_transaction = transaction_id.is_some();
         let transaction_id = transaction_id.unwrap_or_else(|| self.next_transaction_id());
+        // A submission names an open transaction, or none.
+        if in_transaction && !lock(&self.state).pending.contains_key(&transaction_id) {
+            return Err(OperationError::TransactionClosed);
+        }
         let target = self.target(&record.target_id)?;
         let result = match target.apply(&record, &origin) {
             Ok(result) => result,
@@ -887,16 +893,24 @@ impl FakeOperations {
             before_revision: result.before_revision,
             after_revision: result.after_revision,
         };
+        if !in_transaction {
+            self.events
+                .publish(OperationEvent::Committed(receipt.clone()));
+            return Ok(receipt);
+        }
         let queued = match lock(&self.state).pending.get_mut(&transaction_id) {
             Some(pending) => {
-                pending.push((receipt.clone(), target));
+                pending.push((receipt.clone(), target.clone()));
                 true
             }
             None => false,
         };
         if !queued {
-            self.events
-                .publish(OperationEvent::Committed(receipt.clone()));
+            // Closed while the record applied: undone, and failed.
+            if let Some(inverse) = &receipt.inverse {
+                target.apply(inverse, &OperationOrigin::HistoryUndo)?;
+            }
+            return Err(OperationError::TransactionClosed);
         }
         Ok(receipt)
     }

@@ -201,9 +201,14 @@ impl RayxOperations {
         transaction_id: Option<u64>,
     ) -> Result<OperationReceipt, OperationError> {
         let target_id = record.target_id.clone();
+        let in_transaction = transaction_id.is_some();
         let transaction_id = transaction_id.unwrap_or_else(|| self.next_transaction_id());
         let target = {
             let targets = self.lock()?;
+            // A submission names an open transaction, or none.
+            if in_transaction && !targets.pending.contains_key(&transaction_id) {
+                return Err(OperationError::TransactionClosed);
+            }
             match targets.registered.get(&target_id) {
                 Some(target) => target.clone(),
                 None => return Err(Self::missing(&targets, &target_id)),
@@ -231,15 +236,29 @@ impl RayxOperations {
             before_revision: result.before_revision,
             after_revision: result.after_revision,
         };
+        if !in_transaction {
+            self.emit(OperationEvent::Committed(receipt.clone()))?;
+            return Ok(receipt);
+        }
         let queued = match self.lock()?.pending.get_mut(&transaction_id) {
             Some(pending) => {
-                pending.push((receipt.clone(), target.handler));
+                pending.push((receipt.clone(), target.handler.clone()));
                 true
             }
             None => false,
         };
         if !queued {
-            self.emit(OperationEvent::Committed(receipt.clone()))?;
+            // The transaction closed while the record applied: it is undone, as the
+            // transaction's abort would have, and fails.
+            if let Some(inverse) = receipt.inverse.as_ref() {
+                let _gate = target.gate.lock().map_err(|_| OperationError::Poisoned)?;
+                target
+                    .handler
+                    .apply(inverse, &OperationOrigin::HistoryUndo)?;
+            }
+            let error = OperationError::TransactionClosed;
+            self.emit_failed(transaction_id, &receipt.forward, receipt.origin, &error);
+            return Err(error);
         }
         Ok(receipt)
     }
