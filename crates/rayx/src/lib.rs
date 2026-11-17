@@ -3,14 +3,16 @@
 //!
 //! - [`app`] ([`rayx_app`]): the core: dependency injection, configuration, .NET's options model
 //!   and the [`RayXAppBuilder`](app::RayXAppBuilder), without NSH; service crates depend on it.
-//! - [`runtime`] ([`rayx_runtime`]): the app services (history, input maps, platform and
-//!   lifecycle state, configuration, assets, fonts and translations), without NSH.
+//! - [`runtime`] ([`rayx_runtime`]): the app services not yet in crates of their own (input
+//!   maps, selection, configuration), without NSH.
 //! - [`navigation`] ([`rayx_services_navigation`]): RayX's navigation service (routes, regions
 //!   as NSH navigation stacks, the app's location as NSH's app address); its builder extension
 //!   and `navigation_region`/`navigation_view` are in the prelude.
 //! - [`operations`] ([`rayx_services_operations`]): RayX's operation service (targets'
 //!   handlers, transactions, the operations history undoes); its builder extension is in the
 //!   prelude.
+//! - [`history`] ([`rayx_services_history`]): RayX's history (undo and redo per scope, in memory
+//!   or in the app's key-value store); its builder extension is in the prelude.
 //! - [`app_nsh`] ([`rayx_app_nsh`]): the NSH host: a root provider per surface, a scope per screen, the
 //!   app's start (`RayXAppBuilder::start`), the TSX classes (`rayx::app_nsh::ts`: `RayXAppBuilder`,
 //!   `ServiceProvider` and the services' classes under their Rust names) and the services' NSH
@@ -49,6 +51,7 @@ pub use rayx_app_nsh as app_nsh;
 pub use rayx_components as components;
 pub use rayx_devtools_protocol as devtools_protocol;
 pub use rayx_runtime as runtime;
+pub use rayx_services_history as history;
 pub use rayx_services_navigation as navigation;
 pub use rayx_services_operations as operations;
 
@@ -112,6 +115,7 @@ pub mod prelude {
         use_two_way, use_view_model,
     };
     pub use rayx_app_nsh::{DevLayer, DevTools, dev_layer};
+    pub use rayx_services_history::HistoryAppBuilderExt;
     pub use rayx_services_i18n::{Args, I18nAppBuilderExt, tr};
     pub use rayx_services_navigation::{
         NavigationAppBuilderExt, navigation_region, navigation_view,

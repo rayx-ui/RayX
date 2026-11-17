@@ -1,7 +1,7 @@
 //! The app's key-value store on NSH (`add_storage()`), headless: it loads what the device's
 //! storage held at startup, writes through NSH's storage on the engine thread, and a write made
 //! outside the engine reaches the device once the engine runs again (through the engine
-//! runner). History persists through it.
+//! runner).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -19,8 +19,6 @@ use nsh_core::storage::{StorageBackend, StorageChange};
 use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
 use rayx_app::services::storage::KeyValueStore;
-use rayx_app_nsh::rayx_runtime::prelude::*;
-use rayx_app_nsh::rayx_runtime::services::history::{HISTORY_BUCKET, HistoryStore};
 use rayx_app_nsh::{
     AppState, RayXAppBuilder, ServiceProvider, StartAppBuilderExt as _, app_services, app_state,
 };
@@ -61,14 +59,8 @@ impl StorageBackend for Device {
     }
 }
 
-fn build_app(mut builder: RayXAppBuilder) -> RayXAppBuilder {
-    // The operation service persistent history observes.
-    rayx_app_nsh::AppBuilder::services_mut(&mut builder)
-        .add_singleton_as::<dyn rayx_app::services::operations::OperationService>(
-        rayx_app::testing::FakeOperations::new()
-            as std::sync::Arc<dyn rayx_app::services::operations::OperationService>,
-    );
-    builder.add_storage().add_persistent_history()
+fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
+    builder.add_storage()
 }
 
 /// Starts the app and, once it is ready, reads what the device held and writes on the engine
@@ -178,30 +170,4 @@ fn the_store_keeps_the_app_s_values_in_nsh_s_storage() {
         std::thread::sleep(Duration::from_millis(5));
     }
     assert_eq!(written().as_deref(), Some("t1"));
-
-    // History is kept in the same store (saved here on another thread), so on the device.
-    let history = services.required_service::<dyn HistoryStore>().unwrap();
-    std::thread::spawn(move || {
-        let scope =
-            rayx_app_nsh::rayx_runtime::services::history::HistoryScopeId::new("doc").unwrap();
-        history
-            .save(
-                rayx_app_nsh::rayx_runtime::services::history::HistoryJournalV2::new(
-                    1,
-                    scope,
-                    Vec::new(),
-                ),
-                None,
-            )
-            .unwrap();
-    })
-    .join()
-    .unwrap();
-    let key = format!("rayx/{HISTORY_BUCKET}/doc");
-    let deadline = std::time::Instant::now() + Duration::from_secs(10);
-    while !device.0.lock().unwrap().contains_key(&key) && std::time::Instant::now() < deadline {
-        engine.pump();
-        std::thread::sleep(Duration::from_millis(5));
-    }
-    assert!(device.0.lock().unwrap().contains_key(&key));
 }

@@ -1,17 +1,12 @@
 [package]
 name = "rayx_runtime"
-description = "RayX's NSH-free app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets, fonts and translations."
+description = "RayX's NSH-free app services not yet in crates of their own: input maps, selection and app configuration."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 repository.workspace = true
-
-[features]
-default = []
-# Read-only diagnostics of the operation and history services.
-diagnostics = []
 
 [dependencies]
 futures = { workspace = true, features = ["alloc", "std"] }

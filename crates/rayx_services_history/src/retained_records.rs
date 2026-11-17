@@ -1,7 +1,11 @@
-use super::{HistoryError, HistoryScopeId, HistoryService};
-use crate::services::operations::OperationRecord;
+//! The records a scope retains.
 
-impl HistoryService {
+use rayx_app::services::history::{HistoryError, HistoryScopeId};
+use rayx_app::services::operations::OperationRecord;
+
+use crate::service::RayxHistory;
+
+impl RayxHistory {
     /// Snapshots the currently retained semantic records, newest undo entries
     /// first, followed by newest redo entries. Each entry contributes its inverse
     /// records then forward records in stored order. Immutable payload bytes are
@@ -10,7 +14,7 @@ impl HistoryService {
     /// The snapshot does not change history. A caller may inspect domain-owned
     /// resources without maintaining a second registry; release the snapshot when
     /// the inspection finishes so evicted payloads can be reclaimed.
-    pub fn retained_records(
+    pub(crate) fn retained_records_now(
         &self,
         scope_id: &HistoryScopeId,
     ) -> Result<Vec<OperationRecord>, HistoryError> {

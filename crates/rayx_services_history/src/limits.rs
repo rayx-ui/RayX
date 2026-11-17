@@ -1,4 +1,4 @@
-use super::HistoryEntry;
+use rayx_app::services::history::HistoryEntry;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct HistoryLimits {

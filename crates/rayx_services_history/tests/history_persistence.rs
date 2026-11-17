@@ -1,5 +1,7 @@
 //! History kept in the app's key-value store (`add_persistent_history`): a second app over the
-//! same store undoes what the first one did, and the store's journals are revision-checked.
+//! same store undoes what the first one did, and the store's journals are revision-checked. It
+//! requires a key-value store and registers none: without one the build names how to add one,
+//! and over the app's own (no startup service) it starts, after it.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -9,17 +11,18 @@ use futures::FutureExt as _;
 use futures::executor::block_on;
 use rayx_app::AppBuilder as _;
 use rayx_app::di::StartupInitializationContext;
-use rayx_app::testing::{FakeKeyValueStore, FakeOperations};
-use rayx_app::{RayXAppBuilder, ServiceProvider};
-use rayx_runtime::services::history::{
-    HISTORY_BUCKET, HistoryAppBuilderExt, HistoryJournalV2, HistoryScopeId, HistoryService,
-    HistoryStore, HistoryStoreError, KeyValueHistoryStore,
-};
-use rayx_runtime::services::operations::{
+use rayx_app::services::history::{HistoryScopeId, HistoryService};
+use rayx_app::services::operations::{
     DomainOperation, OperationApplyResult, OperationOrigin, OperationService,
     OperationTargetHandler, OperationTargetId,
 };
-use rayx_runtime::services::storage::KeyValueStore;
+use rayx_app::services::storage::KeyValueStore;
+use rayx_app::testing::{FakeKeyValueStore, FakeOperations};
+use rayx_app::{RayXAppBuilder, ServiceProvider};
+use rayx_services_history::{
+    HISTORY_BUCKET, HistoryAppBuilderExt, HistoryJournalV2, HistoryStore, HistoryStoreError,
+    KeyValueHistoryStore,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -71,7 +74,7 @@ impl OperationTargetHandler<Set> for Target {
 struct App {
     _services: ServiceProvider,
     operations: Arc<dyn OperationService>,
-    history: HistoryService,
+    history: Arc<dyn HistoryService>,
     target: Arc<Target>,
     target_id: OperationTargetId,
     scope: HistoryScopeId,
@@ -90,18 +93,12 @@ impl App {
         )
         .unwrap();
         let operations = services.required_service::<dyn OperationService>().unwrap();
-        let history = services
-            .required_service::<HistoryService>()
-            .unwrap()
-            .as_ref()
-            .clone();
+        let history = services.required_service::<dyn HistoryService>().unwrap();
         let target = Arc::new(Target(Mutex::new(value)));
         let target_id = OperationTargetId::new("persistence:target").unwrap();
         let scope = HistoryScopeId::new("persistence:scope").unwrap();
         now(operations.register_handler(target_id.clone(), target.clone())).unwrap();
-        history
-            .bind_target_scope(target_id.clone(), scope.clone())
-            .unwrap();
+        now(history.bind_target_scope(target_id.clone(), scope.clone())).unwrap();
         Self {
             _services: services,
             operations,
@@ -130,7 +127,7 @@ fn a_second_app_over_the_same_store_undoes_the_first_app_s_edits() {
     let first = App::start(&store, 0);
     first.set(1);
     first.set(2);
-    assert_eq!(first.history.stack_depths(&first.scope).unwrap(), (2, 0));
+    assert_eq!(first.history.stack_depths(&first.scope), (2, 0));
     assert!(
         block_on(store.get(HISTORY_BUCKET.into(), first.scope.as_str().into()))
             .unwrap()
@@ -141,12 +138,12 @@ fn a_second_app_over_the_same_store_undoes_the_first_app_s_edits() {
 
     // The app runs again (its document restored at 2): the history came back with the store.
     let second = App::start(&store, 2);
-    assert_eq!(second.history.stack_depths(&second.scope).unwrap(), (2, 0));
-    assert!(second.history.undo(&second.scope).unwrap());
+    assert_eq!(second.history.stack_depths(&second.scope), (2, 0));
+    assert!(now(second.history.undo(second.scope.clone())).unwrap());
     assert_eq!(second.value(), 1);
-    assert!(second.history.undo(&second.scope).unwrap());
+    assert!(now(second.history.undo(second.scope.clone())).unwrap());
     assert_eq!(second.value(), 0);
-    assert!(!second.history.undo(&second.scope).unwrap());
+    assert!(!now(second.history.undo(second.scope.clone())).unwrap());
 }
 
 #[test]
@@ -205,4 +202,48 @@ fn persistent_history_registers_the_store_over_the_app_s_key_value_store() {
             .unwrap()
             .is_some()
     );
+}
+
+#[test]
+fn without_a_store_the_build_names_what_to_add() {
+    let mut builder = RayXAppBuilder::new();
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn OperationService>(
+            FakeOperations::new() as Arc<dyn OperationService>
+        );
+    let Err(error) = builder.add_persistent_history().build() else {
+        panic!("the build fails");
+    };
+    let error = error.to_string();
+    assert!(error.contains("HistoryStore"), "{error}");
+    assert!(error.contains("KeyValueStore"), "{error}");
+    assert!(error.contains("add_storage()"), "{error}");
+    assert!(error.contains("rayx_services_storage"), "{error}");
+}
+
+#[test]
+fn persistent_history_registers_no_store() {
+    let mut builder = RayXAppBuilder::new().add_persistent_history();
+    assert!(
+        !builder
+            .services_mut()
+            .contains_service::<dyn KeyValueStore>()
+    );
+}
+
+#[test]
+fn over_the_app_s_own_store_it_starts() {
+    let services = with_store(RayXAppBuilder::new(), FakeKeyValueStore::new())
+        .add_persistent_history()
+        .build()
+        .unwrap();
+    block_on(
+        services
+            .startup_registry()
+            .initialize(StartupInitializationContext::new(services.clone())),
+    )
+    .unwrap();
+    assert!(services.required_service::<dyn HistoryStore>().is_ok());
+    assert!(services.required_service::<dyn HistoryService>().is_ok());
 }

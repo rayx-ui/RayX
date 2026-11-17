@@ -1,6 +1,6 @@
 //! RayX's app services, without NSH or GPUI (ported from RayX's `rayx_runtime::services`). Each
 //! service is registered on a [`RayXAppBuilder`](rayx_app::RayXAppBuilder) through an
-//! `AppBuilder` extension trait (`add_history()`, `add_i18n(..)`, …) and reads its options
+//! `AppBuilder` extension trait (`add_input_map(..)`, `add_selection()`, …) and reads its options
 //! from the configuration under `RayX:Services:<Name>` through [`rayx_app`]'s options model.
 //! What a service needs from the platform (reading the app's files, registering fonts, the
 //! device's state) is a trait here that the NSH layer, `rayx_app_nsh`, implements. It builds for
@@ -16,7 +16,6 @@ pub mod services;
 /// The services' builder extensions: `use rayx_runtime::prelude::*;` to register them.
 pub mod prelude {
     pub use crate::services::application_configuration::ApplicationConfigurationAppBuilderExt;
-    pub use crate::services::history::HistoryAppBuilderExt;
     pub use crate::services::input_map::InputMapAppBuilderExt;
     pub use crate::services::selection::SelectionAppBuilderExt;
 }

@@ -1,4 +1,4 @@
-use super::{HistoryJournalV2, HistoryScopeId};
+use crate::journal::HistoryJournalV2;
 use futures::{
     FutureExt as _,
     future::{BoxFuture, LocalBoxFuture},
@@ -7,6 +7,7 @@ use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };
+use rayx_app::services::history::{HistoryError, HistoryScopeId};
 use std::{
     collections::BTreeMap,
     sync::{Arc, Mutex},
@@ -22,6 +23,15 @@ pub enum HistoryStoreError {
     Poisoned,
 }
 
+impl From<HistoryStoreError> for HistoryError {
+    fn from(error: HistoryStoreError) -> Self {
+        Self::Store(error.to_string())
+    }
+}
+
+/// Where RayX's history keeps each scope's journal: its extension point (`add_history_with_store`
+/// registers one, `add_persistent_history` the app's key-value store's). It answers
+/// synchronously, and is a startup service keyed by `dyn HistoryStore` the history waits for.
 pub trait HistoryStore: StartupInitializable {
     fn load(&self, scope: &HistoryScopeId) -> Result<Option<HistoryJournalV2>, HistoryStoreError>;
     fn save(
@@ -54,6 +64,7 @@ pub trait HistoryStore: StartupInitializable {
     }
 }
 
+/// A [`HistoryStore`] in memory, for the app's life (and tests).
 #[derive(Clone, Default)]
 pub struct InMemoryHistoryStore {
     journals: Arc<Mutex<BTreeMap<HistoryScopeId, HistoryJournalV2>>>,

@@ -13,6 +13,9 @@ use crate::published::{EventStream, StateCell};
 use crate::services::app::AppBuilder;
 use crate::services::assets::{AssetCatalog, AssetError, AssetService};
 use crate::services::fonts::{FontService, FontServiceError, FontState, RegisteredFontFace};
+use crate::services::history::{
+    HistoryError, HistoryEvent, HistoryScopeId, HistoryScopeState, HistoryService, HistoryState,
+};
 use crate::services::navigation::{
     LocationChangedEvent, NavigationDirection, NavigationError, NavigationEvent,
     NavigationHistoryMode, NavigationJournal, NavigationLifecycleData, NavigationRegion,
@@ -888,5 +891,161 @@ impl OperationService for FakeOperations {
         self.events
             .publish(OperationEvent::Committed(receipt.clone()));
         ready(Ok(receipt))
+    }
+}
+
+/// A history whose scopes' depths the test sets ([`FakeHistory::set_depths`]): undo and redo
+/// move one entry between a scope's stacks (replaying nothing), clearing and bounding a scope
+/// change its depths, each publishing its state and event as RayX's history does; it records
+/// the bindings it is asked. For testing what consumes the history (an undo button) without
+/// RayX's.
+#[derive(Default)]
+pub struct FakeHistory {
+    state: Mutex<HistoryState>,
+    history: StateCell<HistoryState>,
+    events: EventStream<HistoryEvent>,
+    /// Held while the state is published; a change meanwhile marks it stale.
+    publishing: Mutex<()>,
+    stale: AtomicBool,
+    bindings: Mutex<Vec<(OperationTargetId, HistoryScopeId)>>,
+}
+
+impl FakeHistory {
+    pub fn new() -> Arc<Self> {
+        Arc::default()
+    }
+
+    /// Sets the depths of `scope` (a step of the user's elsewhere), publishing them.
+    pub fn set_depths(&self, scope: &HistoryScopeId, undo: usize, redo: usize) {
+        self.change(scope, |state| {
+            state.undo_depth = undo;
+            state.redo_depth = redo;
+        });
+    }
+
+    /// The targets bound to scopes, in the order they were.
+    pub fn bindings(&self) -> Vec<(OperationTargetId, HistoryScopeId)> {
+        lock(&self.bindings).clone()
+    }
+
+    /// Changes `scope`'s state with `change`, then publishes the state.
+    fn change(&self, scope: &HistoryScopeId, change: impl FnOnce(&mut HistoryScopeState)) {
+        {
+            let mut state = lock(&self.state);
+            let entry = state.scopes.entry(scope.clone()).or_default();
+            change(entry);
+            entry.revision += 1;
+        }
+        self.publish_state();
+    }
+
+    /// Publishes the state unless it is the one published: a change made meanwhile is published
+    /// right after, by whoever is publishing.
+    fn publish_state(&self) {
+        self.stale.store(true, Ordering::SeqCst);
+        loop {
+            let publishing = match self.publishing.try_lock() {
+                Ok(guard) => guard,
+                Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
+                Err(std::sync::TryLockError::WouldBlock) => return,
+            };
+            self.stale.store(false, Ordering::SeqCst);
+            let state = lock(&self.state).clone();
+            if *self.history.get() != state {
+                self.history.publish(state);
+            }
+            drop(publishing);
+            if !self.stale.load(Ordering::SeqCst) {
+                return;
+            }
+        }
+    }
+
+    /// Moves one entry of `scope` from one stack to the other; whether there was one.
+    fn step(&self, scope: HistoryScopeId, undo: bool) -> bool {
+        let mut stepped = false;
+        self.change(&scope, |state| {
+            let (from, to) = if undo {
+                (&mut state.undo_depth, &mut state.redo_depth)
+            } else {
+                (&mut state.redo_depth, &mut state.undo_depth)
+            };
+            if *from > 0 {
+                *from -= 1;
+                *to += 1;
+                stepped = true;
+            }
+        });
+        if stepped {
+            self.events.publish(if undo {
+                HistoryEvent::UndoCompleted(scope)
+            } else {
+                HistoryEvent::RedoCompleted(scope)
+            });
+        }
+        stepped
+    }
+}
+
+impl HistoryService for FakeHistory {
+    fn history(&self) -> &StateCell<HistoryState> {
+        &self.history
+    }
+
+    fn events(&self) -> &EventStream<HistoryEvent> {
+        &self.events
+    }
+
+    fn bind_target_scope(
+        &self,
+        target_id: OperationTargetId,
+        scope_id: HistoryScopeId,
+    ) -> BoxFuture<'_, Result<(), HistoryError>> {
+        lock(&self.bindings).push((target_id, scope_id));
+        ready(Ok(()))
+    }
+
+    fn undo(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<bool, HistoryError>> {
+        ready(Ok(self.step(scope_id, true)))
+    }
+
+    fn redo(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<bool, HistoryError>> {
+        ready(Ok(self.step(scope_id, false)))
+    }
+
+    fn clear_scope(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<(), HistoryError>> {
+        self.change(&scope_id, |state| {
+            state.undo_depth = 0;
+            state.redo_depth = 0;
+        });
+        self.events.publish(HistoryEvent::ScopeCleared(scope_id));
+        ready(Ok(()))
+    }
+
+    fn set_scope_entry_limit(
+        &self,
+        scope_id: HistoryScopeId,
+        limit: usize,
+    ) -> BoxFuture<'_, Result<(), HistoryError>> {
+        if limit == 0 {
+            return ready(Err(HistoryError::InvalidEntryLimit));
+        }
+        self.change(&scope_id, |state| {
+            state.entry_limit = Some(limit);
+            let excess = (state.undo_depth + state.redo_depth).saturating_sub(limit);
+            let undo_excess = excess.min(state.undo_depth);
+            state.undo_depth -= undo_excess;
+            state.redo_depth -= excess - undo_excess;
+        });
+        self.events
+            .publish(HistoryEvent::AvailabilityChanged(scope_id));
+        ready(Ok(()))
+    }
+
+    fn retained_records(
+        &self,
+        _scope_id: HistoryScopeId,
+    ) -> BoxFuture<'_, Result<Vec<OperationRecord>, HistoryError>> {
+        ready(Ok(Vec::new()))
     }
 }

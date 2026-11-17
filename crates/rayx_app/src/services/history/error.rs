@@ -1,16 +1,27 @@
-use super::{HistoryScopeId, HistoryStoreError};
+use crate::services::ContractFailure;
 use crate::services::operations::{OperationApplyStatus, OperationError};
 
+/// Why a history call failed.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum HistoryError {
+    /// A scope id was blank or longer than 256 bytes.
     InvalidScopeId,
+    /// An entry limit of 0.
     InvalidEntryLimit,
+    /// The scope is replaying, or a transaction is open on the thread.
     ScopeBusy,
+    /// The scope's stacks changed during the call.
     StackChanged,
+    /// The operation service failed.
     Operation(OperationError),
+    /// A replayed operation was not applied.
     ApplyStatus(OperationApplyStatus),
-    Store(HistoryStoreError),
+    /// The history's store failed (its message).
+    Store(String),
+    /// The history's state is poisoned (a thread panicked while it held it).
     Poisoned,
+    /// The call failed (a TS implementation threw, the engine is gone).
+    Failed(ContractFailure),
 }
 
 impl From<OperationError> for HistoryError {
@@ -19,9 +30,9 @@ impl From<OperationError> for HistoryError {
     }
 }
 
-impl From<HistoryStoreError> for HistoryError {
-    fn from(value: HistoryStoreError) -> Self {
-        Self::Store(value)
+impl From<ContractFailure> for HistoryError {
+    fn from(failure: ContractFailure) -> Self {
+        Self::Failed(failure)
     }
 }
 
@@ -36,14 +47,9 @@ impl std::fmt::Display for HistoryError {
             Self::ApplyStatus(status) => write!(formatter, "history_apply_status_{status:?}"),
             Self::Store(error) => write!(formatter, "history_store_{error}"),
             Self::Poisoned => formatter.write_str("history_state_poisoned"),
+            Self::Failed(failure) => write!(formatter, "history_call_failed: {failure}"),
         }
     }
 }
 
 impl std::error::Error for HistoryError {}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct HistoryNavigationFailure {
-    pub scope_id: HistoryScopeId,
-    pub error_code: String,
-}

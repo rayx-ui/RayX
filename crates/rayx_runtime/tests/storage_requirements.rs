@@ -1,6 +1,7 @@
 //! The services kept in the app's key-value store require one and register none: the input map
-//! and persistent history fail the build without a `dyn KeyValueStore`, naming how to add one,
-//! and start over the app's own store (no startup service), after it.
+//! fails the build without a `dyn KeyValueStore`, naming how to add one, and starts over the
+//! app's own store (no startup service), after it. (Persistent history's are its crate's
+//! `history_persistence` group's.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -10,26 +11,19 @@ use futures::executor::block_on;
 use rayx_app::di::StartupInitializationContext;
 use rayx_app::testing::FakeKeyValueStore;
 use rayx_app::{AppBuilder as _, RayXAppBuilder};
-use rayx_runtime::services::history::{HistoryAppBuilderExt as _, HistoryStore};
 use rayx_runtime::services::input_map::{
     INPUT_MAP_STORAGE_BUCKET, InputMapAppBuilderExt as _, InputMapDocument, InputMapService,
     InputMapSource,
 };
-use rayx_runtime::services::operations::OperationService;
 use rayx_runtime::services::storage::KeyValueStore;
 
 #[test]
 fn without_a_store_the_build_names_what_to_add() {
-    let Err(error) = RayXAppBuilder::new()
-        .add_input_map(|_| {})
-        .add_persistent_history()
-        .build()
-    else {
+    let Err(error) = RayXAppBuilder::new().add_input_map(|_| {}).build() else {
         panic!("the build fails");
     };
     let error = error.to_string();
     assert!(error.contains("InputMapService"), "{error}");
-    assert!(error.contains("HistoryStore"), "{error}");
     assert!(error.contains("KeyValueStore"), "{error}");
     assert!(error.contains("add_storage()"), "{error}");
     assert!(error.contains("rayx_services_storage"), "{error}");
@@ -37,9 +31,7 @@ fn without_a_store_the_build_names_what_to_add() {
 
 #[test]
 fn neither_registers_a_store() {
-    let mut builder = RayXAppBuilder::new()
-        .add_input_map(|_| {})
-        .add_persistent_history();
+    let mut builder = RayXAppBuilder::new().add_input_map(|_| {});
     assert!(
         !builder
             .services_mut()
@@ -57,17 +49,10 @@ fn over_the_app_s_own_store_they_start() {
     ))
     .unwrap();
     let mut builder = RayXAppBuilder::new();
-    let services = builder.services_mut();
-    services.add_singleton_as::<dyn KeyValueStore>(Arc::clone(&store) as Arc<dyn KeyValueStore>);
-    // What history requires besides the store.
-    services.add_singleton_as::<dyn OperationService>(
-        rayx_app::testing::FakeOperations::new() as Arc<dyn OperationService>
-    );
-    let services = builder
-        .add_input_map(|_| {})
-        .add_persistent_history()
-        .build()
-        .unwrap();
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn KeyValueStore>(Arc::clone(&store) as Arc<dyn KeyValueStore>);
+    let services = builder.add_input_map(|_| {}).build().unwrap();
     block_on(
         services
             .startup_registry()
@@ -76,5 +61,4 @@ fn over_the_app_s_own_store_they_start() {
     .unwrap();
     let input_map = services.required_service::<InputMapService>().unwrap();
     assert_eq!(input_map.revision(), 3, "read from the app's store");
-    assert!(services.required_service::<dyn HistoryStore>().is_ok());
 }

@@ -8,7 +8,6 @@ use rayx_app::{
     ConfigurationAppBuilderExt as _, RayXAppBuilder as AppBuilder, ServiceAppBuilderExt as _,
 };
 use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
-use rayx_runtime::services::history::HistoryAppBuilderExt as _;
 use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
 use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 
@@ -111,19 +110,6 @@ impl RayXAppBuilder {
                 }
             })
         })
-    }
-
-    /// Registers the app's history (undo and redo of operations, kept in memory); it needs an
-    /// operation service (`addOperations`).
-    pub fn add_history(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_history())
-    }
-
-    /// Registers the app's history kept in its key-value store (so on NSH in the device's
-    /// storage); it needs an operation service (`addOperations`) and a key-value store
-    /// (`addStorage`).
-    pub fn add_persistent_history(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_persistent_history())
     }
 
     /// Registers the app's input map (it keeps the user's bindings in the app's key-value store:

@@ -30,7 +30,7 @@ fn the_prelude_builds_an_app_with_the_services() {
     assert_eq!(tr!("hi", name = "Ana"), "hi");
     assert!(
         services
-            .service::<rayx::runtime::services::history::HistoryService>()
+            .service::<dyn rayx::app::services::history::HistoryService>()
             .is_some()
     );
     assert!(

@@ -4880,6 +4880,7 @@ dependencies = [
  "rayx_components",
  "rayx_devtools_protocol",
  "rayx_runtime",
+ "rayx_services_history",
  "rayx_services_i18n",
  "rayx_services_navigation",
  "rayx_services_operations",
@@ -5022,6 +5023,21 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_fonts"
+version = "0.11.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "rayx_services_history"
 version = "0.11.0"
 dependencies = [
  "crossbeam-channel",

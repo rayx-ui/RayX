@@ -10,7 +10,7 @@ follow the same pattern.
 | --- | --- | --- | --- |
 | [I18n](services/i18n.md) | MessageFormat 2 translations; numbers, dates and plurals for the user's locale | `add_i18n(..)` | `RayX:Services:I18N` |
 | [Operations](services/operations.md) | Typed domain operations applied to targets, with inverses | `add_operations()` (`rayx_services_operations`) | |
-| [History](services/history.md) | Undo and redo per scope, in memory or persisted | `add_history()`, `add_persistent_history()` | |
+| [History](services/history.md) | Undo and redo per scope, in memory or persisted | `add_history()`, `add_persistent_history()` (`rayx_services_history`) | |
 | [Storage](services/storage.md) | Values by bucket and key, persisted on NSH | `add_storage()`, `add_in_memory_storage()` | |
 | [Navigation](services/navigation.md) | Routes, regions with journals, one location for the app | `add_navigation(..)` | `RayX:Services:Navigation` |
 | [Selection](services/selection.md) | The active selection area and its status | `add_selection()` | |

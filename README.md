@@ -39,7 +39,7 @@ An app builds its services with `RayXAppBuilder` and starts them, the same way i
 use rayx::prelude::*;
 
 // In the root component.
-RayXAppBuilder::new().add_app_settings("my-app").add_storage().add_history().start();
+RayXAppBuilder::new().add_app_settings("my-app").add_storage().add_operations().add_history().start();
 ```
 
 ```tsx
@@ -49,6 +49,7 @@ import { KeyValueStore, RayXAppBuilder } from "my-app";
 const services = await new RayXAppBuilder() // resolves once every startup service is ready
   .addAppSettings("my-app")
   .addStorage()
+  .addOperations()
   .addHistory()
   .start();
 const store = services.getRequiredService(KeyValueStore);

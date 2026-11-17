@@ -1,4 +1,4 @@
-use super::{HistoryEntry, HistoryScopeId};
+use rayx_app::services::history::{HistoryEntry, HistoryScopeId};
 use serde::{Deserialize, Serialize};
 
 pub const HISTORY_JOURNAL_VERSION: u32 = 2;

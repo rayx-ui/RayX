@@ -6,6 +6,7 @@
 pub mod app;
 pub mod assets;
 pub mod fonts;
+pub mod history;
 pub mod i18n;
 pub mod navigation;
 pub mod operations;

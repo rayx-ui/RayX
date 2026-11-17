@@ -1,11 +1,10 @@
 //! TS `RayXAppBuilder` through NSH's engine, headless: every Rust builder method an app calls
 //! has a chaining camelCase twin that registers what the Rust method does, with the same implied
 //! services, and the set declares each with a doc comment. (The service crates' methods,
-//! `addPlatform`, `addAssets`, `addStorage`, `addNavigation`, `addOperations`, `addI18n` and the
-//! others, are their crates' groups'; the services the host requires come from `addHostFakes()`
-//! here, a key-value store from the test's `addFakeStorage()`, the operation service history
-//! observes from `addFakeOperations()`, and the navigation `addSelection()` follows from
-//! `addTestNavigation()`, a fake.)
+//! `addPlatform`, `addAssets`, `addStorage`, `addNavigation`, `addOperations`, `addHistory`,
+//! `addI18n` and the others, are their crates' groups'; the services the host requires come from
+//! `addHostFakes()` here, a key-value store from the test's `addFakeStorage()`, and the
+//! navigation `addSelection()` follows from `addTestNavigation()`, a fake.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -17,9 +16,8 @@ use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::{
-    application_configuration::ApplicationConfigurationService, history::HistoryService,
-    history::HistoryStore, input_map::InputMapService, navigation::NavigationService,
-    operations::OperationService, selection::SelectionService, storage::KeyValueStore,
+    application_configuration::ApplicationConfigurationService, input_map::InputMapService,
+    navigation::NavigationService, selection::SelectionService, storage::KeyValueStore,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, RayXAppBuilder, ServiceProvider as Services};
@@ -32,18 +30,6 @@ fn add_fake_storage(mut builder: RayXAppBuilder) -> RayXAppBuilder {
         .services_mut()
         .add_singleton_as::<dyn KeyValueStore>(
             rayx_app::testing::FakeKeyValueStore::new() as Arc<dyn KeyValueStore>
-        );
-    builder
-}
-
-/// Registers a fake operation service, which history needs.
-#[rayx_app_nsh::app_extension]
-fn add_fake_operations(mut builder: RayXAppBuilder) -> RayXAppBuilder {
-    use rayx_app_nsh::AppBuilder as _;
-    builder
-        .services_mut()
-        .add_singleton_as::<dyn OperationService>(
-            rayx_app::testing::FakeOperations::new() as Arc<dyn OperationService>
         );
     builder
 }
@@ -80,11 +66,8 @@ impl Probe {
     pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
         services.with(|services| {
             let services = services.services();
-            let checks: [(&str, Resolves); 8] = [
+            let checks: [(&str, Resolves); 5] = [
                 ("KeyValueStore", resolves::<dyn KeyValueStore>),
-                ("OperationService", resolves::<dyn OperationService>),
-                ("HistoryService", resolves::<HistoryService>),
-                ("HistoryStore", resolves::<dyn HistoryStore>),
                 ("NavigationService", resolves::<dyn NavigationService>),
                 ("InputMapService", resolves::<InputMapService>),
                 ("SelectionService", resolves::<SelectionService>),
@@ -152,7 +135,6 @@ fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
         set.module::<Probe>()
             .class_extension::<add_fake_storage>()
-            .class_extension::<add_fake_operations>()
             .class_extension::<TestNavigation>();
     })
 }
@@ -175,8 +157,6 @@ setTimeout(async () => {
           .addValue({ Feed: { Mode: "live" } });
       })
       .addFakeStorage()
-      .addFakeOperations()
-      .addHistory()
       .addTestNavigation()
       .addInputMap()
       .addSelection()
@@ -202,7 +182,7 @@ fn each_builder_method_registers_its_service() {
     assert_eq!(
         shown,
         "done true\
-         |KeyValueStore,OperationService,HistoryService,NavigationService,\
+         |KeyValueStore,NavigationService,\
          InputMapService,SelectionService,ApplicationConfigurationService\
          |json,appsettings,3,live|1234"
     );
@@ -231,17 +211,8 @@ mount(() => <Text>{shown()}</Text>);
 
 #[test]
 fn builder_methods_add_the_services_they_imply_as_in_rust() {
-    // No method registers another service: those kept in a key-value store require one, and
-    // history requires an operation service.
+    // No method registers a key-value store: those kept in one require it.
     for (chain, registered) in [
-        (
-            ".addFakeOperations().addHistory()",
-            "OperationService,HistoryService",
-        ),
-        (
-            ".addFakeStorage().addFakeOperations().addPersistentHistory()",
-            "KeyValueStore,OperationService,HistoryService,HistoryStore",
-        ),
         (
             ".addFakeStorage().addInputMap()",
             "KeyValueStore,InputMapService",
@@ -254,21 +225,10 @@ fn builder_methods_add_the_services_they_imply_as_in_rust() {
         let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
         assert_eq!(shown, format!("done {registered}"), "{chain}");
     }
-    for chain in [
-        ".addInputMap()",
-        ".addFakeOperations().addPersistentHistory()",
-    ] {
-        let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
-        assert!(shown.starts_with("done threw"), "{chain}: {shown}");
-        assert!(shown.contains("KeyValueStore"), "{chain}: {shown}");
-        assert!(shown.contains("addStorage"), "{chain}: {shown}");
-    }
-    for chain in [".addHistory()", ".addFakeStorage().addPersistentHistory()"] {
-        let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
-        assert!(shown.starts_with("done threw"), "{chain}: {shown}");
-        assert!(shown.contains("OperationService"), "{chain}: {shown}");
-        assert!(shown.contains("addOperations"), "{chain}: {shown}");
-    }
+    let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", ".addInputMap()"));
+    assert!(shown.starts_with("done threw"), "{shown}");
+    assert!(shown.contains("KeyValueStore"), "{shown}");
+    assert!(shown.contains("addStorage"), "{shown}");
 }
 
 #[test]
@@ -286,8 +246,6 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addAppSettings(package: string): RayXAppBuilder;",
         "addOptionalAppSettings(uri: string): RayXAppBuilder;",
         "configureAppConfiguration(configure: (configuration: ConfigurationBuilder) => void): RayXAppBuilder;",
-        "addHistory(): RayXAppBuilder;",
-        "addPersistentHistory(): RayXAppBuilder;",
         "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
         "addSelection(): RayXAppBuilder;",
         "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",

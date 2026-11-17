@@ -58,6 +58,7 @@ import { I18nService, RayXAppBuilder } from "my-app";
 const services = await new RayXAppBuilder()
   .addAppSettings("my-app") // assets/appsettings.json
   .addStorage()
+  .addOperations()
   .addHistory()
   .addI18n((options) => options.defaultLanguage("en"))
   .start();                 // rejects if a startup service failed
@@ -75,6 +76,7 @@ pub fn App() -> impl IntoElement {
     RayXAppBuilder::new()
         .add_app_settings("my-app")
         .add_storage()
+        .add_operations()
         .add_history()
         .add_i18n(|options| {
             options.default_language("en");

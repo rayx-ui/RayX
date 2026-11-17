@@ -1,11 +1,13 @@
-use super::{HistoryJournalV2, HistoryScopeId, HistoryStore, HistoryStoreError};
-use crate::services::storage::{KeyValueStore, StorageError};
+use crate::journal::HistoryJournalV2;
+use crate::store::{HistoryStore, HistoryStoreError};
 use futures::FutureExt as _;
 use futures::future::{BoxFuture, LocalBoxFuture};
 use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };
+use rayx_app::services::history::HistoryScopeId;
+use rayx_app::services::storage::{KeyValueStore, StorageError};
 use std::sync::{Arc, Mutex};
 
 /// The bucket of the app's [`KeyValueStore`] that [`KeyValueHistoryStore`] keeps journals in.
