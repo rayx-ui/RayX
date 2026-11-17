@@ -190,7 +190,10 @@ fn release_plz_names_every_package_as_it_is() {
 }
 
 /// The packages the last release's tag does not have, under their names now.
-const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &["rayx_app_nsh"];
+const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
+    "rayx_app_nsh",
+    "rayx_services_platform",
+];
 
 #[test]
 fn changelog_groups_commit_types_and_drops_housekeeping() {
