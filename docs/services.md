@@ -1,8 +1,8 @@
 # App services
 
 An app service is one piece of what an app needs (storage, navigation, translations, …) living in the app's
-[dependency injection](dependency-injection.md) container. RayX's services are in `rayx_runtime`; an app's own services
-follow the same pattern.
+[dependency injection](dependency-injection.md) container. RayX's services are crates of their own (`rayx_services_<name>`) on
+the core's contracts; an app's own services follow the same pattern.
 
 ## The services
 
@@ -87,7 +87,7 @@ suspension, asset, font, storage, navigation and i18n services are `rayx_service
 `I18nService` contract and the Rust-only `MessageFormatter`, which `add_i18n` registers too
 ([I18n](services/i18n.md)). A service that
 needs another resolves it by trait, so an app's own implementation, in Rust or TS, replaces RayX's anywhere;
-`rayx_app::testing` has a fake of each trait. `rayx_runtime` still holds the services not yet moved.
+`rayx_app::testing` has a fake of each trait.
 
 ## On NSH
 

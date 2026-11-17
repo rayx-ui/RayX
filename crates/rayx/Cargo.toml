@@ -13,18 +13,53 @@ workspace = true
 
 [dependencies]
 rayx_app.workspace = true
-rayx_runtime.workspace = true
 rayx_app_nsh.workspace = true
 rayx_components.workspace = true
 rayx_devtools_protocol.workspace = true
-# Until the umbrella's service features: `tr!`, `checked::tr!` and `add_i18n` in the prelude.
-rayx_services_i18n.workspace = true
-rayx_services_history.workspace = true
-rayx_services_navigation.workspace = true
-rayx_services_operations.workspace = true
-rayx_services_selection.workspace = true
+# RayX's services, one feature each.
+rayx_services_application_configuration = { workspace = true, optional = true }
+rayx_services_assets = { workspace = true, optional = true }
+rayx_services_fonts = { workspace = true, optional = true }
+rayx_services_history = { workspace = true, optional = true }
+rayx_services_i18n = { workspace = true, optional = true }
+rayx_services_input_map = { workspace = true, optional = true }
+rayx_services_navigation = { workspace = true, optional = true }
+rayx_services_operations = { workspace = true, optional = true }
+rayx_services_platform = { workspace = true, optional = true }
+rayx_services_selection = { workspace = true, optional = true }
+rayx_services_storage = { workspace = true, optional = true }
+rayx_services_suspension = { workspace = true, optional = true }
 dxn_i18n.workspace = true
 dxn_intl.workspace = true
+
+[features]
+# Every service for now; `t16` narrows the defaults to the four the host requires.
+default = [
+    "application_configuration",
+    "assets",
+    "fonts",
+    "history",
+    "i18n",
+    "input_map",
+    "navigation",
+    "operations",
+    "platform",
+    "selection",
+    "storage",
+    "suspension",
+]
+application_configuration = ["dep:rayx_services_application_configuration"]
+assets = ["dep:rayx_services_assets"]
+fonts = ["dep:rayx_services_fonts"]
+history = ["dep:rayx_services_history"]
+i18n = ["dep:rayx_services_i18n"]
+input_map = ["dep:rayx_services_input_map"]
+navigation = ["dep:rayx_services_navigation"]
+operations = ["dep:rayx_services_operations"]
+platform = ["dep:rayx_services_platform"]
+selection = ["dep:rayx_services_selection"]
+storage = ["dep:rayx_services_storage"]
+suspension = ["dep:rayx_services_suspension"]
 
 [dev-dependencies]
 # A headless TSX app on NSH's engine (`tests/native_module.rs`, through `rayx_app_nsh`'s harness).

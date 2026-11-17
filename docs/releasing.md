@@ -2,8 +2,8 @@
 
 A release is a version tag `vX.Y.Z` on `main` plus a GitHub Release whose notes are that version's
 `CHANGELOG.md` section and whose assets are the `rayx` command-line tool for six targets, with its
-installers. The crates, `rayx` (the umbrella), `rayx_app_nsh`, `rayx_app`, `rayx_runtime`,
-`rayx_app_macros` and `rayx-cli` (the `rayx` binary), share one version, one tag, one GitHub
+installers. The crates, `rayx` (the umbrella), `rayx_app_nsh`, `rayx_app`, the service crates
+(`rayx_services_*`), `rayx_app_macros` and `rayx-cli` (the `rayx` binary), share one version, one tag, one GitHub
 Release and one root `CHANGELOG.md`; none of them gets a tag or a Release of its own. Nothing is
 published to crates.io (`publish = false`).
 
@@ -113,7 +113,7 @@ header must stay identical to `[changelog] header`.
 
 A release pull request runs `ci.yml`, like any other pull request: one `ubuntu-24.04` job with
 `cargo fmt --all --check`, Clippy, `cargo test --workspace` and the `wasm32-unknown-unknown` check
-of `rayx_app` and `rayx_runtime`, and the `rayx-cli` job, which formats, lints and tests the CLI on
+of `rayx_app` and `rayx_devtools_protocol`, and the `rayx-cli` job, which formats, lints and tests the CLI on
 Linux, macOS and Windows. It also runs dist's Release workflow, which plans the release and
 builds the binaries without publishing anything. `ci.yml` also runs on every push to `main`;
 `release-plz.yml` runs no tests.
@@ -187,7 +187,6 @@ crates.io, and install the `rayx` of the same release:
 [dependencies]
 rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
-rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's app services
 rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
 ```
 

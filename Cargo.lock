@@ -4879,12 +4879,18 @@ dependencies = [
  "rayx_app_nsh",
  "rayx_components",
  "rayx_devtools_protocol",
- "rayx_runtime",
+ "rayx_services_application_configuration",
+ "rayx_services_assets",
+ "rayx_services_fonts",
  "rayx_services_history",
  "rayx_services_i18n",
+ "rayx_services_input_map",
  "rayx_services_navigation",
  "rayx_services_operations",
+ "rayx_services_platform",
  "rayx_services_selection",
+ "rayx_services_storage",
+ "rayx_services_suspension",
  "serde_json",
 ]
 
@@ -4967,7 +4973,6 @@ dependencies = [
  "rayx_app",
  "rayx_app_macros",
  "rayx_devtools_protocol",
- "rayx_runtime",
  "serde",
  "serde_json",
  "tokio",
@@ -4994,18 +4999,6 @@ version = "0.11.0"
 dependencies = [
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "rayx_runtime"
-version = "0.11.0"
-dependencies = [
- "futures",
- "rayx_app",
- "serde",
- "serde_json",
- "thiserror",
- "toml 0.9.12+spec-1.1.0",
 ]
 
 [[package]]

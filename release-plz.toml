@@ -24,7 +24,7 @@ semver_check = false
 release_commits = "^(feat|fix|perf)"
 
 # One release unit: the crates inherit `[workspace.package] version`, `rayx_app_nsh` builds on
-# `rayx_app` and `rayx_runtime`, the layers re-export `rayx_app_macros`' derive, the `rayx`
+# `rayx_app`, the service crates (`rayx_services_*`) build on both, the layers re-export `rayx_app_macros`' derive, the `rayx`
 # umbrella re-exports them all and `rayx-cli` scaffolds apps on the same tag, so they share one
 # version (the version group), one tag `vX.Y.Z`, one GitHub Release and one root CHANGELOG.md,
 # all owned by `rayx_app`, the core.
@@ -34,7 +34,6 @@ changelog_path = "./CHANGELOG.md"
 changelog_include = [
     "rayx",
     "rayx_app_nsh",
-    "rayx_runtime",
     "rayx_app_macros",
     "rayx-cli",
     "rayx_components",
@@ -70,14 +69,6 @@ version_group = "rayx"
 # `rayx_app_nsh`: this name, which matches no tag, makes its first release a new crate's
 # (docs/releasing.md). Remove it in the first commit after that release's tag.
 git_tag_name = "rayx_app_nsh-v{{ version }}"
-git_tag_enable = false
-git_release_enable = false
-changelog_update = false
-
-[[package]]
-name = "rayx_runtime"
-version_group = "rayx"
-# Like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false

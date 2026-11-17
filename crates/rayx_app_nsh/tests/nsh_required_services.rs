@@ -168,10 +168,7 @@ fn a_new_rust_builder_is_empty() {
     assert!(!services.contains_service::<dyn SuspensionService>());
     assert!(!services.contains_service::<dyn AssetService>());
     assert!(!services.contains_service::<dyn FontService>());
-    assert!(
-        !services
-            .contains_service::<dyn rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore>()
-    );
+    assert!(!services.contains_service::<dyn rayx_app::services::storage::KeyValueStore>());
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";

@@ -51,10 +51,13 @@ pub use rayx_app as app;
 pub use rayx_app_nsh as app_nsh;
 pub use rayx_components as components;
 pub use rayx_devtools_protocol as devtools_protocol;
-pub use rayx_runtime as runtime;
+#[cfg(feature = "history")]
 pub use rayx_services_history as history;
+#[cfg(feature = "navigation")]
 pub use rayx_services_navigation as navigation;
+#[cfg(feature = "operations")]
 pub use rayx_services_operations as operations;
+#[cfg(feature = "selection")]
 pub use rayx_services_selection as selection;
 
 pub use dxn_i18n as i18n;
@@ -96,6 +99,7 @@ pub use rayx_app_nsh::native_module;
 
 /// `tr!` with the call checked against the app's messages when it builds: `use
 /// rayx::checked::tr;` after the prelude's glob import uses it in place of the prelude's.
+#[cfg(feature = "i18n")]
 pub use rayx_services_i18n::checked;
 
 /// What an app uses most: the core's prelude, the services' builder extensions, the NSH layer's
@@ -104,6 +108,7 @@ pub use rayx_services_i18n::checked;
 pub mod prelude {
     pub use rayx_app::prelude::*;
 
+    #[cfg(feature = "i18n")]
     pub use rayx_app::services::i18n::{I18nService, MessageFormatter};
     /// The registry a [`native_module`](crate::native_module) function adds the app's exports to.
     pub use rayx_app_nsh::__private::nsh_core::element::Registry;
@@ -116,11 +121,16 @@ pub mod prelude {
         use_two_way, use_view_model,
     };
     pub use rayx_app_nsh::{DevLayer, DevTools, dev_layer};
+    #[cfg(feature = "history")]
     pub use rayx_services_history::HistoryAppBuilderExt;
+    #[cfg(feature = "i18n")]
     pub use rayx_services_i18n::{Args, I18nAppBuilderExt, tr};
+    #[cfg(feature = "navigation")]
     pub use rayx_services_navigation::{
         NavigationAppBuilderExt, navigation_region, navigation_view,
     };
+    #[cfg(feature = "operations")]
     pub use rayx_services_operations::OperationsAppBuilderExt;
+    #[cfg(feature = "selection")]
     pub use rayx_services_selection::SelectionAppBuilderExt;
 }

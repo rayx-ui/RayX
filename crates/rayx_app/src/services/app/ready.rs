@@ -189,7 +189,7 @@ pub trait ReadyAppBuilderExt: AppBuilder {
     }
 
     /// [`Self::on_ready`], run only when `predicate` holds for the app's root provider then
-    /// (`rayx_runtime`'s `on_ready_when_platform` asks the platform service).
+    /// (`on_ready_when_platform` asks the platform service).
     fn on_ready_when<P, F, Fut>(mut self, predicate: P, hook: F) -> Self
     where
         P: Fn(&ServiceProvider) -> bool + Send + Sync + 'static,

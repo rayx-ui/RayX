@@ -5,7 +5,6 @@ members = [
     "crates/rayx_app_nsh",
     "crates/rayx_app",
     "crates/rayx_services_application_configuration",
-    "crates/rayx_runtime",
     "crates/rayx_services_assets",
     "crates/rayx_services_fonts",
     "crates/rayx_services_history",
@@ -35,7 +34,6 @@ repository = "https://github.com/rayx-ui/RayX"
 [workspace.dependencies]
 rayx = { path = "crates/rayx" }
 rayx_app = { path = "crates/rayx_app" }
-rayx_runtime = { path = "crates/rayx_runtime" }
 rayx_app_nsh = { path = "crates/rayx_app_nsh" }
 rayx_app_macros = { path = "crates/rayx_app_macros" }
 rayx_components = { path = "crates/rayx_components" }

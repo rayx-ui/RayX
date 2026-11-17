@@ -28,7 +28,6 @@ Depend on a tag, the same one for every RayX crate:
 [dependencies]
 rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
 rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
-rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services
 rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
 ```
 

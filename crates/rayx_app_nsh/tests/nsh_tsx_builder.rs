@@ -15,7 +15,7 @@ use std::sync::Arc;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
-use rayx_app_nsh::rayx_runtime::services::storage::KeyValueStore;
+use rayx_app::services::storage::KeyValueStore;
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, RayXAppBuilder, ServiceProvider as Services};
 
@@ -169,12 +169,13 @@ mount(() => <Text>{shown()}</Text>);
 "#;
 
 #[test]
-fn builder_methods_add_the_services_they_imply_as_in_rust() {
-    // No method registers a key-value store: those kept in one require it.
-    for (chain, registered) in [("", "")] {
-        let shown = headless::run(set(), &IMPLIED.replace("@CHAIN@", chain));
-        assert_eq!(shown, format!("done {registered}"), "{chain}");
-    }
+fn the_host_s_builder_registers_none_of_rayx_s_services() {
+    // Every service is a crate's; the host's builder methods add none of them.
+    let shown = headless::run(
+        set(),
+        &IMPLIED.replace("@CHAIN@", ".defaultInitializationTimeout(1000)"),
+    );
+    assert_eq!(shown, "done ");
 }
 
 #[test]

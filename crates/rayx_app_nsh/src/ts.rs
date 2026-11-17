@@ -29,7 +29,7 @@
 //! come with its set).
 //!
 //! The structs live beside what they wrap (`di/`, `app/`, `configuration/`, `services/`) and are
-//! re-exported here, not at the crate root, so their names do not clash with [`rayx_runtime`]'s
+//! re-exported here, not at the crate root, so their names do not clash with the services'
 //! types. [`register`] adds them all to a UI set.
 
 use nsh_core::element::{Registry, TsAlias};

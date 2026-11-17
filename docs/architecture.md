@@ -16,10 +16,10 @@ depends on `rayx_app` alone.
 
 ## Two layers
 
-The core and the services have no NSH dependency. They build for every target, `wasm32-unknown-unknown` included, and
-service crates stay testable with plain `cargo test`. What a service needs from the platform is a trait in
-`rayx_runtime` that `rayx_app_nsh` implements on NSH: reading the app's assets, registering fonts, the device's state, the
-bundled `appsettings.json`.
+The core has no NSH dependency: it builds for every target, `wasm32-unknown-unknown` included, and holds each service's
+contract (a `#[contract]` trait in `rayx_app::services`) with a fake of each in `rayx_app::testing`. RayX's
+implementations are the service crates, one per service, on NSH; an app registers its own implementation of any
+contract, in Rust or TS, in place of RayX's.
 
 `rayx_app_nsh` and `rayx_components` are the crates that depend on NSH. `rayx_app_nsh` ties the core's lifetimes to what NSH runs (see
 [Dependency injection](dependency-injection.md#lifetimes-on-nsh)) and gives TSX the same builder and container (see
@@ -31,7 +31,6 @@ Rust reaches them through contracts.
 `rayx` re-exports:
 
 - `rayx::app`: `rayx_app`
-- `rayx::runtime`: `rayx_runtime`
 - `rayx::app_nsh`: `rayx_app_nsh`
 - `rayx::components`: `rayx_components` (not in the prelude: its names, `Button`, `Density`, would clash)
 - `rayx::devtools_protocol`: `rayx_devtools_protocol`

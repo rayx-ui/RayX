@@ -30,7 +30,7 @@ use rayx_app::di::{ServiceLifetime, StartupServiceType};
 /// ```ts
 /// const services = await new RayXAppBuilder()
 ///   .addAppSettings("my-app")
-///   .addApplicationConfiguration()
+///   .defaultInitializationTimeout(5000)
 ///   .start();
 /// ```
 ///

@@ -59,8 +59,7 @@
 //!
 //! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
 //! on [`rayx_app`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
-//! re-export it, so `#[derive(AppService)]` works in a crate that depends on `rayx_app_nsh` alone,
-//! and [`rayx_runtime`] is re-exported whole.
+//! re-export it, so `#[derive(AppService)]` works in a crate that depends on `rayx_app_nsh` alone.
 
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
@@ -113,7 +112,6 @@ pub use devtools::{
     devtools_hook_calls, start_devtools,
 };
 pub use di::screen::{ScreenScope, services, use_screen_scope, use_view_model};
-pub use rayx_runtime;
 
 /// What the macros use; not part of the API: NSH's core for the code `#[rayx::native_module]`,
 /// `#[app_extension]` and `#[contract]` generate (an app crate may take NSH through RayX).

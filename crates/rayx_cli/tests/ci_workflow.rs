@@ -78,7 +78,7 @@ fn the_workspace_job_stays_on_ubuntu() {
             "cargo fmt --all --check",
             "cargo clippy --workspace --all-targets -- -D warnings",
             "cargo test --workspace",
-            "cargo check -p rayx_app -p rayx_runtime -p rayx_devtools_protocol --target wasm32-unknown-unknown"
+            "cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown"
         ]
     );
 }
