@@ -161,18 +161,20 @@ mod service_contracts {
         let transaction = now(operations
             .begin_transaction(rayx_app::services::operations::OperationTransactionMode::New))
         .unwrap();
-        now(operations.submit(
-            &target_id,
-            SetValue { value: 2 },
-            OperationOrigin::LocalUser,
-        ))
-        .unwrap();
-        now(operations.submit(
-            &target_id,
-            SetValue { value: 3 },
-            OperationOrigin::LocalUser,
-        ))
-        .unwrap();
+        transaction.enter(|| {
+            now(operations.submit(
+                &target_id,
+                SetValue { value: 2 },
+                OperationOrigin::LocalUser,
+            ))
+            .unwrap();
+            now(operations.submit(
+                &target_id,
+                SetValue { value: 3 },
+                OperationOrigin::LocalUser,
+            ))
+            .unwrap();
+        });
         now(transaction.commit()).unwrap();
 
         assert!(history.can_undo(&scope));
@@ -203,7 +205,8 @@ mod scope_lifecycle {
     };
     use std::time::{Duration, Instant};
 
-    use futures::future::LocalBoxFuture;
+    use futures::FutureExt as _;
+    use futures::future::{BoxFuture, LocalBoxFuture};
     use rayx_app::di::{
         AsyncInitializable, StartupInitializable, StartupInitializationContext,
         StartupInitializationResult, StartupServiceType,
@@ -431,8 +434,10 @@ mod scope_lifecycle {
             .operations
             .begin_transaction(OperationTransactionMode::New))
         .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        f.set(1);
-        f.set(2);
+        transaction.enter(|| {
+            f.set(1);
+            f.set(2);
+        });
         now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         assert_eq!(f.depths(), (1, 0));
@@ -566,25 +571,25 @@ mod scope_lifecycle {
             .on_replay
             .lock()
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}")) = None;
+        // An app's open transaction does not make the scope busy (the history knows its own
+        // replays only): the clear discards what the transaction commits after it.
         let transaction = now(f
             .operations
             .begin_transaction(OperationTransactionMode::New))
         .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        assert!(matches!(
-            now(f.history.clear_scope(f.scope.clone())),
-            Err(HistoryError::ScopeBusy)
-        ));
-        assert!(matches!(
-            now(f.history.set_scope_entry_limit(f.scope.clone(), 1)),
-            Err(HistoryError::ScopeBusy)
-        ));
+        transaction.enter(|| f.set(5));
+        now(f.history.clear_scope(f.scope.clone()))
+            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+        now(f.history.set_scope_entry_limit(f.scope.clone(), 1))
+            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        assert_eq!(f.depths(), (1, 0));
+        assert_eq!(f.depths(), (0, 0));
+        assert_eq!(f.value(), 5);
     }
 
     #[test]
-    fn grouped_record_notification_cannot_clear_a_still_pending_group() {
+    fn a_clear_from_a_grouped_record_notification_discards_the_whole_group() {
         let f = Fixture::new(None);
         let history = f.history.clone();
         let scope = f.scope.clone();
@@ -599,19 +604,23 @@ mod scope_lifecycle {
             .operations
             .begin_transaction(OperationTransactionMode::New))
         .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        f.set(1);
-        f.set(2);
+        transaction.enter(|| {
+            f.set(1);
+            f.set(2);
+        });
         now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        assert!(matches!(
-            rx.recv_timeout(WAIT)
-                .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}")),
-            Err(HistoryError::ScopeBusy)
-        ));
-        assert_eq!(f.depths(), (1, 0));
-        now(f.history.undo(f.scope.clone()))
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        assert_eq!(f.value(), 0);
+        // Cleared after the group's first operation: the rest of the group, committed before
+        // the clear's boundary, is not recorded either, so no half group is left.
+        rx.recv_timeout(WAIT)
+            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
+            .unwrap_or_else(|error| panic!("the clear failed: {error:?}"));
+        assert_eq!(f.depths(), (0, 0));
+        assert!(
+            !now(f.history.undo(f.scope.clone()))
+                .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
+        );
+        assert_eq!(f.value(), 2);
     }
 
     #[derive(Default)]
@@ -639,14 +648,8 @@ mod scope_lifecycle {
         }
     }
 
-    impl HistoryStore for ControlledStore {
-        fn load(
-            &self,
-            scope: &HistoryScopeId,
-        ) -> Result<Option<HistoryJournalV2>, HistoryStoreError> {
-            self.inner.load(scope)
-        }
-        fn save(
+    impl ControlledStore {
+        fn save_now(
             &self,
             journal: HistoryJournalV2,
             expected_revision: Option<u64>,
@@ -667,9 +670,29 @@ mod scope_lifecycle {
             if self.fail.load(Ordering::SeqCst) {
                 return Err(HistoryStoreError::Backend("injected save failure".into()));
             }
-            self.inner.save(journal, expected_revision)
+            now(self.inner.save(journal, expected_revision))
         }
-        fn delete_scope(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError> {
+    }
+
+    impl HistoryStore for ControlledStore {
+        fn load<'a>(
+            &'a self,
+            scope: &'a HistoryScopeId,
+        ) -> BoxFuture<'a, Result<Option<HistoryJournalV2>, HistoryStoreError>> {
+            self.inner.load(scope)
+        }
+        fn save(
+            &self,
+            journal: HistoryJournalV2,
+            expected_revision: Option<u64>,
+        ) -> BoxFuture<'_, Result<(), HistoryStoreError>> {
+            // Blocks the thread that saves while the test holds it.
+            futures::future::ready(self.save_now(journal, expected_revision)).boxed()
+        }
+        fn delete_scope<'a>(
+            &'a self,
+            scope: &'a HistoryScopeId,
+        ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
             self.inner.delete_scope(scope)
         }
     }
@@ -690,8 +713,7 @@ mod scope_lifecycle {
         now(f.history.clear_scope(f.scope.clone()))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         assert!(
-            store
-                .load(&f.scope)
+            now(store.load(&f.scope))
                 .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
                 .unwrap_or_else(|| panic!("expected persisted history journal"))
                 .entries
@@ -751,8 +773,7 @@ mod scope_lifecycle {
         clearer
             .join()
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        let journal = store
-            .load(&f.scope)
+        let journal = now(store.load(&f.scope))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
             .unwrap_or_else(|| panic!("expected persisted history journal"));
         assert!(journal.entries.is_empty());
@@ -828,7 +849,7 @@ mod scope_lifecycle {
             let transaction = now(operations.begin_transaction(OperationTransactionMode::New))
                 .unwrap_or_else(|error| panic!("begin transaction failed: {error:?}"));
             for value in [1, 2] {
-                now(operations.submit(&target_id, Set(value), OperationOrigin::LocalUser))
+                now(transaction.submit(&target_id, Set(value), OperationOrigin::LocalUser))
                     .unwrap_or_else(|error| panic!("transaction edit failed: {error:?}"));
             }
             ready_tx
@@ -895,8 +916,10 @@ mod scope_lifecycle {
             .operations
             .begin_transaction(OperationTransactionMode::New))
         .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        f.set(2);
-        f.set(3);
+        transaction.enter(|| {
+            f.set(2);
+            f.set(3);
+        });
         now(transaction.commit())
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         f.set(4);
@@ -1276,12 +1299,8 @@ mod persistence {
         let scope = HistoryScopeId::new("history:store").unwrap();
         let store = InMemoryHistoryStore::default();
         let first = HistoryJournalV2::new(1, scope.clone(), vec![]);
-        store.save(first, None).unwrap();
-        assert!(
-            store
-                .save(HistoryJournalV2::new(2, scope.clone(), vec![]), None)
-                .is_err()
-        );
+        now(store.save(first, None)).unwrap();
+        assert!(now(store.save(HistoryJournalV2::new(2, scope.clone(), vec![]), None)).is_err());
         let target = OperationTargetId::new("history:target").unwrap();
         let record = OperationRecord::from_operation(target.clone(), &Set { value: 1 }).unwrap();
         let entry = rayx_app::services::history::HistoryEntry {
@@ -1408,8 +1427,8 @@ mod receipt_admission {
         assert!(!history.can_undo(&scope));
 
         let transaction = now(operations.begin_transaction(OperationTransactionMode::New)).unwrap();
-        now(operations.submit(&target_id, SetValue(2), OperationOrigin::LocalUser)).unwrap();
-        now(operations.submit(&target_id, SetValue(3), OperationOrigin::LocalUser)).unwrap();
+        now(transaction.submit(&target_id, SetValue(2), OperationOrigin::LocalUser)).unwrap();
+        now(transaction.submit(&target_id, SetValue(3), OperationOrigin::LocalUser)).unwrap();
         now(transaction.commit()).unwrap();
 
         assert!(history.can_undo(&scope));
@@ -1708,8 +1727,7 @@ mod registration {
             start(with_operations().add_history_with_store(InMemoryHistoryStore::default()));
         let store = services.required_service::<dyn HistoryStore>().unwrap();
         let scope = edit(&services);
-        let journal = store
-            .load(&scope)
+        let journal = now(store.load(&scope))
             .unwrap()
             .expect("the scope's journal is in the store");
         assert_eq!(journal.entries.len(), 1);
@@ -1725,7 +1743,7 @@ mod registration {
         );
         let store = services.required_service::<dyn HistoryStore>().unwrap();
         let scope = edit(&services);
-        assert!(store.load(&scope).unwrap().is_some());
+        assert!(now(store.load(&scope)).unwrap().is_some());
 
         // RayX's, then the app's own: the app's.
         let mut builder = with_operations().add_history();

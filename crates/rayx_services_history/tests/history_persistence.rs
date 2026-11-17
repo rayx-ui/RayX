@@ -151,26 +151,26 @@ fn the_store_checks_revisions_and_deletes_scopes() {
     let values: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
     let store = KeyValueHistoryStore::new(values.clone());
     let scope = HistoryScopeId::new("persistence:direct").unwrap();
-    assert_eq!(store.load(&scope).unwrap(), None);
+    assert_eq!(now(store.load(&scope)).unwrap(), None);
 
     let first = HistoryJournalV2::new(1, scope.clone(), Vec::new());
-    store.save(first.clone(), None).unwrap();
-    assert_eq!(store.load(&scope).unwrap(), Some(first));
+    now(store.save(first.clone(), None)).unwrap();
+    assert_eq!(now(store.load(&scope)).unwrap(), Some(first));
     // A save that expects another revision than the store holds is refused.
     let second = HistoryJournalV2::new(2, scope.clone(), Vec::new());
     assert_eq!(
-        store.save(second.clone(), None),
+        now(store.save(second.clone(), None)),
         Err(HistoryStoreError::Conflict)
     );
     assert_eq!(
-        store.save(second.clone(), Some(7)),
+        now(store.save(second.clone(), Some(7))),
         Err(HistoryStoreError::Conflict)
     );
-    store.save(second.clone(), Some(1)).unwrap();
-    assert_eq!(store.load(&scope).unwrap(), Some(second));
+    now(store.save(second.clone(), Some(1))).unwrap();
+    assert_eq!(now(store.load(&scope)).unwrap(), Some(second));
 
-    store.delete_scope(&scope).unwrap();
-    assert_eq!(store.load(&scope).unwrap(), None);
+    now(store.delete_scope(&scope)).unwrap();
+    assert_eq!(now(store.load(&scope)).unwrap(), None);
     assert!(
         block_on(values.keys(HISTORY_BUCKET.into()))
             .unwrap()
@@ -180,7 +180,7 @@ fn the_store_checks_revisions_and_deletes_scopes() {
     // A value that is no journal is an error, not an empty history.
     block_on(values.set(HISTORY_BUCKET.into(), scope.as_str().into(), b"{]".to_vec())).unwrap();
     assert!(matches!(
-        store.load(&scope),
+        now(store.load(&scope)),
         Err(HistoryStoreError::Backend(_))
     ));
 }
@@ -194,9 +194,7 @@ fn persistent_history_registers_the_store_over_the_app_s_key_value_store() {
     let values = services.required_service::<dyn KeyValueStore>().unwrap();
     let store = services.required_service::<dyn HistoryStore>().unwrap();
     let scope = HistoryScopeId::new("persistence:registered").unwrap();
-    store
-        .save(HistoryJournalV2::new(1, scope.clone(), Vec::new()), None)
-        .unwrap();
+    now(store.save(HistoryJournalV2::new(1, scope.clone(), Vec::new()), None)).unwrap();
     assert!(
         block_on(values.get(HISTORY_BUCKET.into(), scope.as_str().into()))
             .unwrap()

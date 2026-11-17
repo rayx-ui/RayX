@@ -1,6 +1,6 @@
 //! RayX's history service.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError, TryLockError, Weak};
 
@@ -17,7 +17,7 @@ use rayx_app::services::history::{
 };
 use rayx_app::services::operations::{
     OperationApplyStatus, OperationEvent, OperationOrigin, OperationReceipt, OperationRecord,
-    OperationService, OperationTargetId, OperationTransactionMode,
+    OperationService, OperationTargetId,
 };
 use rayx_app::{ChangeSubscription, EventStream, StateCell};
 
@@ -67,6 +67,10 @@ impl ScopeHistory {
 pub(crate) struct Scopes {
     pub(crate) scopes: BTreeMap<HistoryScopeId, ScopeHistory>,
     target_scopes: BTreeMap<OperationTargetId, HistoryScopeId>,
+    /// The scopes changed since their last save.
+    pub(crate) unsaved: BTreeSet<HistoryScopeId>,
+    /// Whether a writer is saving them.
+    pub(crate) writing: bool,
     #[cfg(feature = "diagnostics")]
     pub(crate) recent_failure_codes: std::collections::VecDeque<String>,
     #[cfg(feature = "diagnostics")]
@@ -74,17 +78,16 @@ pub(crate) struct Scopes {
 }
 
 /// RayX's history: records the local user's applied operations the app's operation service
-/// publishes, per scope (a transaction is one entry), replays them through it, keeps each
-/// scope's history in its store when it has one, and publishes the scopes' depths and each
-/// step. Its commands answer at once when the operation service does (RayX's does), on any
-/// thread.
+/// publishes, per scope (a transaction is one entry), replays them through it (in a transaction
+/// of its own, carried by id), keeps each scope's history in its store when it has one, and
+/// publishes the scopes' depths and each step. Its commands answer at once when the operation
+/// service and the store do (RayX's do), on any thread; with services answering later (TS
+/// implementations), its commands await them and its saves follow its changes.
 pub(crate) struct RayxHistory {
     pub(crate) operations: Arc<dyn OperationService>,
     pub(crate) store: Mutex<Option<Arc<dyn HistoryStore>>>,
     store_configured: bool,
     pub(crate) scopes: Mutex<Scopes>,
-    /// Held while a scope is loaded or saved.
-    pub(crate) persistence: Mutex<()>,
     subscription: Mutex<Option<ChangeSubscription>>,
     history: StateCell<HistoryState>,
     events: EventStream<HistoryEvent>,
@@ -108,7 +111,6 @@ impl RayxHistory {
             store_configured: store_configured || store.is_some(),
             store: Mutex::new(store),
             scopes: Mutex::default(),
-            persistence: Mutex::new(()),
             subscription: Mutex::new(None),
             history: StateCell::new(HistoryState::default()),
             events: EventStream::new(),
@@ -184,26 +186,30 @@ impl RayxHistory {
         self.lock_state()?
             .target_scopes
             .insert(target_id, scope_id.clone());
-        self.ensure_scope_loaded(&scope_id)
+        self.ensure_scope_loaded(&scope_id).await
     }
 
     /// Undoes (`undo`) or redoes the scope's latest entry: its records resubmitted in a
     /// transaction of their own, recorded on the other stack with the inverses they answered.
+    /// The scope is busy meanwhile (until the replay ends, fails or is dropped); an operation
+    /// recorded meanwhile is kept, the replayed entry removed by identity.
     pub(crate) async fn replay(
         &self,
         scope_id: &HistoryScopeId,
         undo: bool,
     ) -> Result<bool, HistoryError> {
-        self.ensure_scope_loaded(scope_id)?;
+        self.ensure_scope_loaded(scope_id).await?;
         let Some(entry) = self.peek_entry(scope_id, undo)? else {
             return Ok(false);
+        };
+        let mut replaying = Replaying {
+            history: self,
+            scope_id: Some(scope_id),
         };
         let replayed = match self.resubmit(&entry, undo).await {
             Ok(entry) => entry,
             Err(error) => {
-                if let Some(scope) = self.lock_state()?.scopes.get_mut(scope_id) {
-                    scope.replaying = false;
-                }
+                drop(replaying);
                 self.record_failure(scope_id.clone(), &error);
                 return Err(error);
             }
@@ -211,18 +217,23 @@ impl RayxHistory {
         {
             let mut state = self.lock_state()?;
             let scope = state.scopes.entry(scope_id.clone()).or_default();
+            scope.replaying = false;
+            replaying.scope_id = None;
             let (from, to) = if undo {
                 (&mut scope.undo, &mut scope.redo)
             } else {
                 (&mut scope.redo, &mut scope.undo)
             };
-            from.pop().ok_or(HistoryError::StackChanged)?;
+            let position = from
+                .iter()
+                .rposition(|candidate| *candidate == entry)
+                .ok_or(HistoryError::StackChanged)?;
+            from.remove(position);
             to.push(replayed);
-            scope.replaying = false;
             scope.revision += 1;
         }
         self.publish_state();
-        self.persist_scope(scope_id)?;
+        self.persist_scope(scope_id).await?;
         self.emit(if undo {
             HistoryEvent::UndoCompleted(scope_id.clone())
         } else {
@@ -231,7 +242,7 @@ impl RayxHistory {
         Ok(true)
     }
 
-    fn observe_operation(&self, event: &OperationEvent) {
+    fn observe_operation(self: &Arc<Self>, event: &OperationEvent) {
         let OperationEvent::Committed(receipt) = event else {
             return;
         };
@@ -248,7 +259,9 @@ impl RayxHistory {
         }
     }
 
-    fn record_receipt(&self, receipt: &OperationReceipt) -> Result<(), HistoryError> {
+    /// Records `receipt` (synchronously: it is heard inside the operation service's publish),
+    /// then saves its scope behind it, without waiting.
+    fn record_receipt(self: &Arc<Self>, receipt: &OperationReceipt) -> Result<(), HistoryError> {
         let Some(inverse) = receipt.inverse.clone() else {
             return Ok(());
         };
@@ -261,7 +274,6 @@ impl RayxHistory {
             Some(scope_id) => scope_id.clone(),
             None => HistoryScopeId::new(receipt.target_id.as_str())?,
         };
-        self.ensure_scope_loaded(&scope_id)?;
 
         let recorded = {
             let mut state = self.lock_state()?;
@@ -298,11 +310,27 @@ impl RayxHistory {
             recorded
         };
         self.publish_state();
-        self.persist_scope(&scope_id)?;
+        self.persist_behind(&scope_id);
         if let Some(entry) = recorded {
             self.emit(HistoryEvent::Recorded(entry));
         }
         Ok(())
+    }
+
+    /// Saves `scope_id` (when the history has a store) where nothing awaits it: at once with a
+    /// store that answers at once, else when the store answers; a failure is a failed step of
+    /// the scope.
+    fn persist_behind(self: &Arc<Self>, scope_id: &HistoryScopeId) {
+        if !self.store_configured {
+            return;
+        }
+        let history = Arc::clone(self);
+        let scope_id = scope_id.clone();
+        crate::detached::spawn(Box::pin(async move {
+            if let Err(error) = history.persist_scope(&scope_id).await {
+                history.record_failure(scope_id, &error);
+            }
+        }));
     }
 
     async fn resubmit(
@@ -310,10 +338,10 @@ impl RayxHistory {
         entry: &HistoryEntry,
         undo: bool,
     ) -> Result<HistoryEntry, HistoryError> {
-        let transaction = self
-            .operations
-            .begin_transaction(OperationTransactionMode::New)
-            .await?;
+        let transaction = OpenTransaction {
+            operations: &*self.operations,
+            id: Some(self.operations.begin().await?),
+        };
         let records: Vec<OperationRecord> = if undo {
             entry.inverse.iter().rev().cloned().collect()
         } else {
@@ -328,7 +356,7 @@ impl RayxHistory {
         for record in records.iter().cloned() {
             let receipt = match self
                 .operations
-                .submit_record(record, origin.clone(), Some(transaction.id()))
+                .submit_record(record, origin.clone(), transaction.id)
                 .await
             {
                 Ok(receipt) => receipt,
@@ -387,7 +415,7 @@ impl RayxHistory {
         Ok(entry)
     }
 
-    fn record_failure(&self, scope_id: HistoryScopeId, error: &HistoryError) {
+    pub(crate) fn record_failure(&self, scope_id: HistoryScopeId, error: &HistoryError) {
         if let Ok(mut state) = self.lock_state() {
             #[cfg(feature = "diagnostics")]
             {
@@ -418,6 +446,59 @@ impl RayxHistory {
     /// Publishes `event` (after the state it follows).
     pub(crate) fn emit(&self, event: HistoryEvent) {
         self.events.publish(event);
+    }
+}
+
+/// A scope being replayed: dropped before the replay finished (it failed, or its caller gave
+/// up on it), it frees the scope.
+struct Replaying<'a> {
+    history: &'a RayxHistory,
+    scope_id: Option<&'a HistoryScopeId>,
+}
+
+impl Drop for Replaying<'_> {
+    fn drop(&mut self) {
+        if let Some(scope_id) = self.scope_id {
+            let mut state = self
+                .history
+                .scopes
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner);
+            if let Some(scope) = state.scopes.get_mut(scope_id) {
+                scope.replaying = false;
+            }
+        }
+    }
+}
+
+/// A transaction the history opened, by id: committed or aborted explicitly, and aborted (at
+/// once when the operation service answers at once, else started) when dropped open.
+pub(crate) struct OpenTransaction<'a> {
+    pub(crate) operations: &'a dyn OperationService,
+    pub(crate) id: Option<u64>,
+}
+
+impl OpenTransaction<'_> {
+    pub(crate) async fn commit(mut self) -> Result<(), HistoryError> {
+        match self.id.take() {
+            Some(id) => Ok(self.operations.commit(id).await?),
+            None => Ok(()),
+        }
+    }
+
+    pub(crate) async fn abort(mut self) -> Result<(), HistoryError> {
+        match self.id.take() {
+            Some(id) => Ok(self.operations.abort(id).await?),
+            None => Ok(()),
+        }
+    }
+}
+
+impl Drop for OpenTransaction<'_> {
+    fn drop(&mut self) {
+        if let Some(id) = self.id.take() {
+            let _ = self.operations.abort(id).now_or_never();
+        }
     }
 }
 
@@ -469,7 +550,7 @@ impl HistoryService for RayxHistory {
         &self,
         scope_id: HistoryScopeId,
     ) -> BoxFuture<'_, Result<Vec<OperationRecord>, HistoryError>> {
-        boxed(futures::future::ready(self.retained_records_now(&scope_id)))
+        boxed(async move { self.retained_records_now(&scope_id).await })
     }
 }
 

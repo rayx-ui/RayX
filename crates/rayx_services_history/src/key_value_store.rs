@@ -7,25 +7,22 @@ use rayx_app::di::{
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };
 use rayx_app::services::history::HistoryScopeId;
-use rayx_app::services::storage::{KeyValueStore, StorageError};
-use std::sync::{Arc, Mutex};
+use rayx_app::services::storage::KeyValueStore;
+use std::sync::Arc;
 
 /// The bucket of the app's [`KeyValueStore`] that [`KeyValueHistoryStore`] keeps journals in.
 pub const HISTORY_BUCKET: &str = "rayx.history";
 
 /// A [`HistoryStore`] over the app's `dyn KeyValueStore`: each scope's journal is one JSON value
 /// in [`HISTORY_BUCKET`], keyed by the scope's id, so history persists wherever the store keeps
-/// its values (NSH's storage on a device, through `rayx_services_storage`).
-///
-/// A history store answers synchronously, so the key-value store must answer its calls at once,
-/// as RayX's stores do (from their mirror or memory); a call it leaves pending (a TS
-/// implementation's, through the engine) fails with [`HistoryStoreError::Backend`]. It
-/// initializes after the key-value store.
+/// its values (NSH's storage on a device, through `rayx_services_storage`, or a TS
+/// implementation's, which answers in JS's next turn). It initializes after the key-value
+/// store.
 #[derive(Clone)]
 pub struct KeyValueHistoryStore {
     store: Arc<dyn KeyValueStore>,
-    /// Holds a save's revision check and its write together.
-    saving: Arc<Mutex<()>>,
+    /// Holds a save's revision check and its write together, across their awaits.
+    saving: Arc<futures::lock::Mutex<()>>,
     initialization: StartupInitializationState,
 }
 
@@ -38,61 +35,77 @@ impl KeyValueHistoryStore {
             initialization: StartupInitializationState::default(),
         }
     }
+
+    async fn load_journal(
+        &self,
+        scope: &HistoryScopeId,
+    ) -> Result<Option<HistoryJournalV2>, HistoryStoreError> {
+        self.store
+            .get(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned())
+            .await
+            .map_err(backend)?
+            .map(|bytes| {
+                HistoryJournalV2::decode(&bytes).map_err(|error| {
+                    backend(format!("the journal of {} is {error:?}", scope.as_str()))
+                })
+            })
+            .transpose()
+    }
 }
 
 fn backend(error: impl std::fmt::Display) -> HistoryStoreError {
     HistoryStoreError::Backend(error.to_string())
 }
 
-/// What the store answered, at once.
-fn now<T>(call: BoxFuture<'_, Result<T, StorageError>>) -> Result<T, HistoryStoreError> {
-    call.now_or_never()
-        .ok_or_else(|| backend("the key-value store did not answer at once"))?
-        .map_err(backend)
-}
-
 impl HistoryStore for KeyValueHistoryStore {
-    fn load(&self, scope: &HistoryScopeId) -> Result<Option<HistoryJournalV2>, HistoryStoreError> {
-        now(self
-            .store
-            .get(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned()))?
-        .map(|bytes| {
-            HistoryJournalV2::decode(&bytes)
-                .map_err(|error| backend(format!("the journal of {} is {error:?}", scope.as_str())))
-        })
-        .transpose()
+    fn load<'a>(
+        &'a self,
+        scope: &'a HistoryScopeId,
+    ) -> BoxFuture<'a, Result<Option<HistoryJournalV2>, HistoryStoreError>> {
+        self.load_journal(scope).boxed()
     }
 
     fn save(
         &self,
         journal: HistoryJournalV2,
         expected: Option<u64>,
-    ) -> Result<(), HistoryStoreError> {
-        let _saving = self
-            .saving
-            .lock()
-            .map_err(|_| HistoryStoreError::Poisoned)?;
-        let current = self
-            .load(&journal.scope_id)?
-            .map(|journal| journal.revision);
-        if current != expected {
-            return Err(HistoryStoreError::Conflict);
+    ) -> BoxFuture<'_, Result<(), HistoryStoreError>> {
+        async move {
+            let _saving = self.saving.lock().await;
+            let current = self
+                .load_journal(&journal.scope_id)
+                .await?
+                .map(|journal| journal.revision);
+            if current != expected {
+                return Err(HistoryStoreError::Conflict);
+            }
+            let bytes = journal
+                .encode()
+                .map_err(|error| backend(format!("the journal did not encode: {error:?}")))?;
+            self.store
+                .set(
+                    HISTORY_BUCKET.to_owned(),
+                    journal.scope_id.as_str().to_owned(),
+                    bytes,
+                )
+                .await
+                .map_err(backend)
         }
-        let bytes = journal
-            .encode()
-            .map_err(|error| backend(format!("the journal did not encode: {error:?}")))?;
-        now(self.store.set(
-            HISTORY_BUCKET.to_owned(),
-            journal.scope_id.as_str().to_owned(),
-            bytes,
-        ))
+        .boxed()
     }
 
-    fn delete_scope(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError> {
-        now(self
-            .store
-            .remove(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned()))
-        .map(|_| ())
+    fn delete_scope<'a>(
+        &'a self,
+        scope: &'a HistoryScopeId,
+    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
+        async move {
+            self.store
+                .remove(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned())
+                .await
+                .map(|_| ())
+                .map_err(backend)
+        }
+        .boxed()
     }
 }
 

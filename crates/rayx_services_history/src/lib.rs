@@ -18,6 +18,7 @@
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 
 mod builder;
+mod detached;
 mod history_ts;
 mod journal;
 mod key_value_store;

@@ -30,49 +30,44 @@ impl From<HistoryStoreError> for HistoryError {
 }
 
 /// Where RayX's history keeps each scope's journal: its extension point (`add_history_with_store`
-/// registers one, `add_persistent_history` the app's key-value store's). It answers
-/// synchronously, and is a startup service keyed by `dyn HistoryStore` the history waits for.
+/// registers one, `add_persistent_history` the app's key-value store's). Its calls answer
+/// asynchronously, at once or later (a store over a TS `KeyValueStore` answers in JS's next
+/// turn): the history loads a scope when it is first used and saves it behind its changes, one
+/// save at a time. It is a startup service keyed by `dyn HistoryStore` the history waits for.
 pub trait HistoryStore: StartupInitializable {
-    fn load(&self, scope: &HistoryScopeId) -> Result<Option<HistoryJournalV2>, HistoryStoreError>;
+    /// The journal of `scope`, if one was saved.
+    fn load<'a>(
+        &'a self,
+        scope: &'a HistoryScopeId,
+    ) -> BoxFuture<'a, Result<Option<HistoryJournalV2>, HistoryStoreError>>;
+
+    /// Saves `journal` when the saved one is at `expected_revision` (`None`: there is none),
+    /// else fails with [`HistoryStoreError::Conflict`].
     fn save(
         &self,
         journal: HistoryJournalV2,
         expected_revision: Option<u64>,
-    ) -> Result<(), HistoryStoreError>;
-    fn delete_scope(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError>;
+    ) -> BoxFuture<'_, Result<(), HistoryStoreError>>;
 
-    fn load_async<'a>(
+    /// Forgets the journal of `scope`.
+    fn delete_scope<'a>(
         &'a self,
         scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<Option<HistoryJournalV2>, HistoryStoreError>> {
-        async move { self.load(scope) }.boxed()
-    }
-
-    fn save_async(
-        &self,
-        journal: HistoryJournalV2,
-        expected_revision: Option<u64>,
-    ) -> BoxFuture<'_, Result<(), HistoryStoreError>> {
-        async move { self.save(journal, expected_revision) }.boxed()
-    }
-
-    fn delete_scope_async<'a>(
-        &'a self,
-        scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
-        async move { self.delete_scope(scope) }.boxed()
-    }
+    ) -> BoxFuture<'a, Result<(), HistoryStoreError>>;
 }
 
-/// A [`HistoryStore`] in memory, for the app's life (and tests).
+/// A [`HistoryStore`] in memory, for the app's life (and tests); it answers at once.
 #[derive(Clone, Default)]
 pub struct InMemoryHistoryStore {
     journals: Arc<Mutex<BTreeMap<HistoryScopeId, HistoryJournalV2>>>,
     initialization: StartupInitializationState,
 }
 
-impl HistoryStore for InMemoryHistoryStore {
-    fn load(&self, scope: &HistoryScopeId) -> Result<Option<HistoryJournalV2>, HistoryStoreError> {
+impl InMemoryHistoryStore {
+    fn load_now(
+        &self,
+        scope: &HistoryScopeId,
+    ) -> Result<Option<HistoryJournalV2>, HistoryStoreError> {
         Ok(self
             .journals
             .lock()
@@ -80,7 +75,8 @@ impl HistoryStore for InMemoryHistoryStore {
             .get(scope)
             .cloned())
     }
-    fn save(
+
+    fn save_now(
         &self,
         journal: HistoryJournalV2,
         expected: Option<u64>,
@@ -95,12 +91,37 @@ impl HistoryStore for InMemoryHistoryStore {
         journals.insert(journal.scope_id.clone(), journal);
         Ok(())
     }
-    fn delete_scope(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError> {
+
+    fn delete_now(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError> {
         self.journals
             .lock()
             .map_err(|_| HistoryStoreError::Poisoned)?
             .remove(scope);
         Ok(())
+    }
+}
+
+impl HistoryStore for InMemoryHistoryStore {
+    fn load<'a>(
+        &'a self,
+        scope: &'a HistoryScopeId,
+    ) -> BoxFuture<'a, Result<Option<HistoryJournalV2>, HistoryStoreError>> {
+        futures::future::ready(self.load_now(scope)).boxed()
+    }
+
+    fn save(
+        &self,
+        journal: HistoryJournalV2,
+        expected: Option<u64>,
+    ) -> BoxFuture<'_, Result<(), HistoryStoreError>> {
+        futures::future::ready(self.save_now(journal, expected)).boxed()
+    }
+
+    fn delete_scope<'a>(
+        &'a self,
+        scope: &'a HistoryScopeId,
+    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
+        futures::future::ready(self.delete_now(scope)).boxed()
     }
 }
 

@@ -24,10 +24,13 @@ it when it is missing.
 
 `add_persistent_history()` keeps each scope's journal as JSON in the `rayx.history` bucket of the app's
 [key-value store](storage.md), which it requires (`add_storage()` from `rayx_services_storage`, or the app's own
-`dyn KeyValueStore`) and registers none, so it persists wherever the store does: on NSH, in the device's storage.
-`HistoryStore` (in `rayx_services_history`) is the implementation's extension point: where it keeps each scope's
-journal (`HistoryJournalV2`), with `InMemoryHistoryStore` and `KeyValueHistoryStore`. Its `diagnostics` feature keeps
-the replays that failed in the published state.
+`dyn KeyValueStore`) and registers none, so it persists wherever the store does: on NSH, in the device's storage, or
+in a TS implementation's, which answers in JS's next turn. `HistoryStore` (in `rayx_services_history`) is the
+implementation's extension point: where it keeps each scope's journal (`HistoryJournalV2`), with
+`InMemoryHistoryStore` and `KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at
+once or later: the history loads a scope when a command first awaits it and saves each change behind it, one save at a
+time (a save nothing awaits that fails is a `NavigationFailed` event of the scope). Its `diagnostics` feature keeps the
+replays that failed in the published state.
 
 ## Use
 
@@ -45,7 +48,12 @@ history.redo(editor).await?;
 
 - The history records the operations the local user commits through the app's operation service (a transaction is
   one entry) in the scope their target is bound to, else in the scope of the target's id, and undoes and redoes them
-  by resubmitting their inverse operations (or the operations), keeping the inverses the replay answered.
+  by resubmitting their inverse operations (or the operations) in a transaction of its own, carried by its id, keeping
+  the inverses the replay answered. It works over any `dyn OperationService`, one answering later (a TS one) included,
+  from any task or thread.
+- A scope is busy (`ScopeBusy`) while it is replayed: another undo, redo, `clear_scope` or `set_scope_entry_limit` of
+  it fails meanwhile. An operation recorded meanwhile is kept; a replay that fails or whose future is dropped frees the
+  scope. `clear_scope` discards the operations of transactions begun before it and committed after it.
 - `can_undo`, `can_redo`, `stack_depths` and `diagnostics` read the published state (`history()`), synchronously; a
   persisted scope shows once it is loaded (bound, replayed or recorded in).
 - `clear_scope`, `set_scope_entry_limit` and `retained_records` keep the scopes' lifecycles; `subscribe(..)` (or

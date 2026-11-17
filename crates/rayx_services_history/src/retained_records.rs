@@ -14,11 +14,11 @@ impl RayxHistory {
     /// The snapshot does not change history. A caller may inspect domain-owned
     /// resources without maintaining a second registry; release the snapshot when
     /// the inspection finishes so evicted payloads can be reclaimed.
-    pub(crate) fn retained_records_now(
+    pub(crate) async fn retained_records_now(
         &self,
         scope_id: &HistoryScopeId,
     ) -> Result<Vec<OperationRecord>, HistoryError> {
-        self.ensure_scope_loaded(scope_id)?;
+        self.ensure_scope_loaded(scope_id).await?;
         let state = self.lock_state()?;
         let Some(scope) = state.scopes.get(scope_id) else {
             return Ok(Vec::new());
