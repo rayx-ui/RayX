@@ -1,6 +1,13 @@
-//! Fakes of the core's service contracts, NSH-free, for tests: each implements its trait over
-//! what the test gives it and records what it is asked, and [`add_host_fakes`] registers the
-//! services an NSH host requires.
+//! Fakes of the core's service contracts, NSH-free, for tests: a fake per trait (and of the
+//! Rust-only [`MessageFormatter`]), each implementing it over what the test gives it, publishing
+//! its state through the trait's cells and recording or answering the commands it is asked;
+//! [`add_host_fakes`] registers the services an NSH host requires. Register one as the trait
+//! (`services.add_singleton_as::<dyn PlatformInfoService>(fake as Arc<dyn PlatformInfoService>)`)
+//! and every consumer of the trait uses it.
+//!
+//! A fake changes its state under a lock of its own and publishes it after, outside the lock (a
+//! subscriber may call the fake back), one thread at a time: a change made meanwhile is published
+//! right after, by whichever thread is publishing, and only a real change is published.
 
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -20,6 +27,9 @@ use crate::services::fonts::{FontService, FontServiceError, FontState, Registere
 use crate::services::history::{
     HistoryError, HistoryEvent, HistoryScopeId, HistoryScopeState, HistoryService, HistoryState,
 };
+use crate::services::i18n::{
+    I18nService, I18nServiceError, I18nState, MessageBundle, MessageFormatter,
+};
 use crate::services::input_map::{
     InputMapApplyError, InputMapDocument, InputMapError, InputMapService, InputMapSource,
     InputMapState,
@@ -35,7 +45,7 @@ use crate::services::operations::{
     OperationReceipt, OperationRecord, OperationService, OperationState, OperationTargetHandle,
     OperationTargetId,
 };
-use crate::services::platform::{PlatformInfoService, PlatformSnapshot};
+use crate::services::platform::{PlatformInfoService, PlatformSnapshot, TextDirection};
 use crate::services::selection::{
     SelectionAreaId, SelectionError, SelectionService, SelectionState, SelectionStatus,
 };
@@ -49,28 +59,98 @@ fn lock<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     mutex.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
+/// A fake's published state: the value changed under its lock, then published outside it.
+struct FakeState<T> {
+    value: Mutex<T>,
+    cell: StateCell<T>,
+    /// Held while the value is published; a change meanwhile marks it stale.
+    publishing: Mutex<()>,
+    stale: AtomicBool,
+}
+
+impl<T: Clone + PartialEq + Send + Sync + 'static> FakeState<T> {
+    fn new(value: T) -> Self {
+        Self {
+            cell: StateCell::new(value.clone()),
+            value: Mutex::new(value),
+            publishing: Mutex::new(()),
+            stale: AtomicBool::new(false),
+        }
+    }
+
+    fn cell(&self) -> &StateCell<T> {
+        &self.cell
+    }
+
+    /// Changes the value with `change` (under the lock, so changes never overwrite each
+    /// other), then publishes it; what `change` returns.
+    fn change<R>(&self, change: impl FnOnce(&mut T) -> R) -> R {
+        let result = change(&mut lock(&self.value));
+        self.publish();
+        result
+    }
+
+    /// Replaces the value with `value` and publishes it.
+    fn set(&self, value: T) {
+        self.change(|current| *current = value);
+    }
+
+    /// Publishes the value unless it is the one published: a change made meanwhile is published
+    /// right after, by whoever is publishing.
+    fn publish(&self) {
+        self.stale.store(true, Ordering::SeqCst);
+        loop {
+            let publishing = match self.publishing.try_lock() {
+                Ok(guard) => guard,
+                Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
+                Err(std::sync::TryLockError::WouldBlock) => return,
+            };
+            self.stale.store(false, Ordering::SeqCst);
+            let value = lock(&self.value).clone();
+            if *self.cell.get() != value {
+                self.cell.publish(value);
+            }
+            drop(publishing);
+            if !self.stale.load(Ordering::SeqCst) {
+                return;
+            }
+        }
+    }
+}
+
+impl<T: Clone + Default + PartialEq + Send + Sync + 'static> Default for FakeState<T> {
+    fn default() -> Self {
+        Self::new(T::default())
+    }
+}
+
 /// A platform service publishing the snapshot the test gives it.
 pub struct FakePlatform {
-    platform: StateCell<PlatformSnapshot>,
+    platform: FakeState<PlatformSnapshot>,
 }
 
 impl FakePlatform {
     /// A platform at `snapshot`.
     pub fn new(snapshot: PlatformSnapshot) -> Arc<Self> {
         Arc::new(Self {
-            platform: StateCell::new(snapshot),
+            platform: FakeState::new(snapshot),
         })
     }
 
     /// Publishes `snapshot`, as a platform change would.
     pub fn publish(&self, snapshot: PlatformSnapshot) {
-        self.platform.publish(snapshot);
+        self.platform.set(snapshot);
+    }
+
+    /// Changes the snapshot with `change` and publishes it.
+    pub fn modify(&self, change: impl FnOnce(&mut PlatformSnapshot)) {
+        self.platform.change(change);
     }
 }
 
 impl PlatformInfoService for FakePlatform {
     fn platform(&self) -> &StateCell<PlatformSnapshot> {
-        &self.platform
+        self.platform.cell()
     }
 }
 
@@ -78,7 +158,7 @@ impl PlatformInfoService for FakePlatform {
 /// asked of it, and asking before quitting changes its state.
 #[derive(Default)]
 pub struct FakeSuspension {
-    suspension: StateCell<SuspensionSnapshot>,
+    suspension: FakeState<SuspensionSnapshot>,
     events: EventStream<SuspensionEvent>,
     quits: Mutex<usize>,
 }
@@ -88,10 +168,18 @@ impl FakeSuspension {
         Arc::default()
     }
 
-    /// Publishes `event` and the state it leads to.
+    /// Publishes the state `event` leads to, then `event`.
     pub fn emit(&self, event: SuspensionEvent) {
-        self.suspension.publish(self.suspension.get().apply(&event));
+        self.suspension.change(|state| *state = state.apply(&event));
         self.events.publish(event);
+    }
+
+    /// Publishes that the app started.
+    pub fn start(&self) {
+        self.emit(SuspensionEvent::new(
+            SuspensionEventKind::Started,
+            SuspensionEventReason::HostStarted,
+        ));
     }
 
     /// How many times the app asked to quit.
@@ -102,7 +190,7 @@ impl FakeSuspension {
 
 impl SuspensionService for FakeSuspension {
     fn suspension(&self) -> &StateCell<SuspensionSnapshot> {
-        &self.suspension
+        self.suspension.cell()
     }
 
     fn events(&self) -> &EventStream<SuspensionEvent> {
@@ -115,29 +203,19 @@ impl SuspensionService for FakeSuspension {
     }
 
     fn ask_before_quit(&self, ask: bool) -> BoxFuture<'_, Result<(), SuspensionError>> {
-        self.suspension.publish(SuspensionSnapshot {
-            asks_before_quit: ask,
-            ..*self.suspension.get()
-        });
+        self.suspension.change(|state| state.asks_before_quit = ask);
         futures::future::ready(Ok(())).boxed()
     }
 }
 
-impl FakeSuspension {
-    /// Publishes that the app started.
-    pub fn start(&self) {
-        self.emit(SuspensionEvent::new(
-            SuspensionEventKind::Started,
-            SuspensionEventReason::HostStarted,
-        ));
-    }
-}
-
 /// An asset service over a catalog and files the test gives it (by logical path,
-/// `@<package>/<path>`); its catalog is loaded from the start.
+/// `@<package>/<path>`); its catalog is loaded from the start. It records the paths it is asked
+/// to load and counts the catalog's loads and the cache's clears.
 pub struct FakeAssets {
-    catalog: StateCell<Option<AssetCatalog>>,
+    catalog: FakeState<Option<AssetCatalog>>,
     files: Mutex<BTreeMap<String, Vec<u8>>>,
+    loads: Mutex<Vec<String>>,
+    catalog_loads: Mutex<usize>,
     cleared: Mutex<usize>,
 }
 
@@ -145,8 +223,10 @@ impl FakeAssets {
     /// Assets with `catalog` and no files.
     pub fn new(catalog: AssetCatalog) -> Arc<Self> {
         Arc::new(Self {
-            catalog: StateCell::new(Some(catalog)),
+            catalog: FakeState::new(Some(catalog)),
             files: Mutex::default(),
+            loads: Mutex::default(),
+            catalog_loads: Mutex::default(),
             cleared: Mutex::default(),
         })
     }
@@ -157,17 +237,33 @@ impl FakeAssets {
         self
     }
 
+    /// Publishes `catalog`, as a catalog loaded again would.
+    pub fn publish(&self, catalog: AssetCatalog) {
+        self.catalog.set(Some(catalog));
+    }
+
+    /// The paths asked of `load_bytes` and `load_text`, in order.
+    pub fn loads(&self) -> Vec<String> {
+        lock(&self.loads).clone()
+    }
+
+    /// How many times the catalog was loaded.
+    pub fn catalog_loads(&self) -> usize {
+        *lock(&self.catalog_loads)
+    }
+
     /// How many times the cache was cleared.
     pub fn cleared(&self) -> usize {
         *lock(&self.cleared)
     }
 
     fn bytes(&self, path: &str) -> Result<Vec<u8>, AssetError> {
+        lock(&self.loads).push(path.to_owned());
         let files = lock(&self.files);
         if let Some(bytes) = files.get(path) {
             return Ok(bytes.clone());
         }
-        let logical = (*self.catalog.get())
+        let logical = (*self.catalog.cell().get())
             .as_ref()
             .and_then(|catalog| catalog.get(path).map(|asset| asset.logical_path()));
         logical
@@ -178,10 +274,11 @@ impl FakeAssets {
 
 impl AssetService for FakeAssets {
     fn catalog(&self) -> &StateCell<Option<AssetCatalog>> {
-        &self.catalog
+        self.catalog.cell()
     }
 
     fn load_catalog(&self) -> BoxFuture<'_, Result<(), AssetError>> {
+        *lock(&self.catalog_loads) += 1;
         futures::future::ready(Ok(())).boxed()
     }
 
@@ -208,18 +305,30 @@ impl AssetService for FakeAssets {
 /// A font service publishing the state the test gives it; a registered font's family is the
 /// one the test names with [`FakeFonts::family`], `Font <n>` otherwise.
 pub struct FakeFonts {
-    fonts: StateCell<FontState>,
+    fonts: FakeState<FontState>,
     families: Mutex<Vec<String>>,
     registered: Mutex<Vec<Vec<u8>>>,
+    asset_registrations: Mutex<usize>,
 }
 
 impl FakeFonts {
     pub fn new(state: FontState) -> Arc<Self> {
         Arc::new(Self {
-            fonts: StateCell::new(state),
+            fonts: FakeState::new(state),
             families: Mutex::default(),
             registered: Mutex::default(),
+            asset_registrations: Mutex::default(),
         })
+    }
+
+    /// Publishes `state`, as fonts registered elsewhere would.
+    pub fn publish(&self, state: FontState) {
+        self.fonts.set(state);
+    }
+
+    /// How many times the app asked to register the catalog's fonts.
+    pub fn asset_registrations(&self) -> usize {
+        *lock(&self.asset_registrations)
     }
 
     /// The family the next registered font has.
@@ -236,7 +345,7 @@ impl FakeFonts {
 
 impl FontService for FakeFonts {
     fn fonts(&self) -> &StateCell<FontState> {
-        &self.fonts
+        self.fonts.cell()
     }
 
     fn register_font(&self, data: Vec<u8>) -> BoxFuture<'_, Result<String, FontServiceError>> {
@@ -253,16 +362,17 @@ impl FontService for FakeFonts {
                 families.remove(0)
             }
         };
-        let mut state = (*self.fonts.get()).clone();
-        state.faces.push(RegisteredFontFace {
-            logical_path: None,
-            family: family.clone(),
+        self.fonts.change(|state| {
+            state.faces.push(RegisteredFontFace {
+                logical_path: None,
+                family: family.clone(),
+            });
         });
-        self.fonts.publish(state);
         futures::future::ready(Ok(family)).boxed()
     }
 
     fn register_font_assets(&self) -> BoxFuture<'_, Result<(), FontServiceError>> {
+        *lock(&self.asset_registrations) += 1;
         futures::future::ready(Ok(())).boxed()
     }
 }
@@ -357,7 +467,7 @@ impl KeyValueStore for FakeKeyValueStore {
 /// events, and records the navigations it is asked. Its location is the root region's route;
 /// the root region, `root`, is the URL region.
 pub struct FakeNavigation {
-    navigation: StateCell<NavigationState>,
+    navigation: FakeState<NavigationState>,
     events: EventStream<NavigationEvent>,
     requests: Mutex<Vec<NavigationRequest>>,
 }
@@ -373,7 +483,7 @@ impl FakeNavigation {
             .regions
             .insert("root".to_owned(), NavigationRegion::new("root", 40));
         Arc::new(Self {
-            navigation: StateCell::new(state),
+            navigation: FakeState::new(state),
             events: EventStream::new(),
             requests: Mutex::default(),
         })
@@ -407,16 +517,16 @@ impl FakeNavigation {
         }
     }
 
-    /// Takes `region` to `route` (recorded in its journal with `mode`), publishing the state,
-    /// then the events.
+    /// Takes `region` to `route` in `state` (recorded in its journal with `mode`): the result
+    /// and the events to publish once the state is.
     fn go(
-        &self,
+        state: &mut NavigationState,
         region: &str,
         route: Route,
         mode: NavigationHistoryMode,
         direction: NavigationDirection,
-    ) -> NavigationResult {
-        let mut state = (*self.navigation.get()).clone();
+    ) -> (NavigationResult, Vec<NavigationEvent>) {
+        let is_root = region == state.root_region;
         let entry = state
             .regions
             .entry(region.to_owned())
@@ -426,12 +536,13 @@ impl FakeNavigation {
                 .current_route()
                 .is_some_and(|current| current.uri == route.uri)
         {
-            return NavigationResult {
+            let result = NavigationResult {
                 region: region.to_owned(),
                 direction,
                 status: RoutingStatus::SkippedSameRoute,
                 route,
             };
+            return (result, Vec::new());
         }
         let data = RoutingData {
             status: RoutingStatus::Success,
@@ -439,38 +550,49 @@ impl FakeNavigation {
         };
         let previous = entry.current.replace(data.clone());
         entry.journal.record(route.clone(), mode);
-        if region == state.root_region {
+        if is_root {
             state.location = route.location.clone();
         }
-        self.navigation.publish(state);
         let lifecycle = NavigationLifecycleData {
             region: region.to_owned(),
             direction,
             from: previous.clone(),
             to: data.clone(),
         };
+        let mut events = Vec::new();
         if previous.is_some() {
-            self.events
-                .publish(NavigationEvent::NavigatedFrom(lifecycle.clone()));
+            events.push(NavigationEvent::NavigatedFrom(lifecycle.clone()));
         }
-        self.events.publish(NavigationEvent::NavigatedTo(lifecycle));
-        self.events
-            .publish(NavigationEvent::RouteChanged(RouteChangedEvent {
-                region: region.to_owned(),
-                from: previous.map(|previous| previous.route),
-                to: route.clone(),
-            }));
-        self.events
-            .publish(NavigationEvent::LocationChanged(LocationChangedEvent {
-                region: region.to_owned(),
-                data,
-            }));
-        NavigationResult {
+        events.push(NavigationEvent::NavigatedTo(lifecycle));
+        events.push(NavigationEvent::RouteChanged(RouteChangedEvent {
+            region: region.to_owned(),
+            from: previous.map(|previous| previous.route),
+            to: route.clone(),
+        }));
+        events.push(NavigationEvent::LocationChanged(LocationChangedEvent {
+            region: region.to_owned(),
+            data,
+        }));
+        let result = NavigationResult {
             region: region.to_owned(),
             direction,
             status: RoutingStatus::Success,
             route,
+        };
+        (result, events)
+    }
+
+    /// Changes the state with `change`, publishes it, then the events `change` gave; the
+    /// result `change` gave.
+    fn navigate_with<R>(
+        &self,
+        change: impl FnOnce(&mut NavigationState) -> (R, Vec<NavigationEvent>),
+    ) -> R {
+        let (result, events) = self.navigation.change(change);
+        for event in events {
+            self.events.publish(event);
         }
+        result
     }
 
     /// Moves `region`'s journal with `step` and goes to the entry it gives.
@@ -480,24 +602,28 @@ impl FakeNavigation {
         direction: NavigationDirection,
         step: impl FnOnce(&mut NavigationJournal) -> Option<Route>,
     ) -> Result<NavigationResult, NavigationError> {
-        let mut state = (*self.navigation.get()).clone();
-        let Some(entry) = state.regions.get_mut(region) else {
-            return Err(NavigationError::Location(format!("no region {region}")));
-        };
-        let Some(route) = step(&mut entry.journal) else {
-            let route = entry
-                .current_route()
-                .cloned()
-                .unwrap_or_else(|| Self::route("/"));
-            return Ok(NavigationResult {
-                region: region.to_owned(),
-                direction,
-                status: RoutingStatus::SkippedNoHistory,
-                route,
-            });
-        };
-        self.navigation.publish(state);
-        Ok(self.go(region, route, NavigationHistoryMode::None, direction))
+        self.navigate_with(|state| {
+            let Some(entry) = state.regions.get_mut(region) else {
+                let error = NavigationError::Location(format!("no region {region}"));
+                return (Err(error), Vec::new());
+            };
+            let Some(route) = step(&mut entry.journal) else {
+                let route = entry
+                    .current_route()
+                    .cloned()
+                    .unwrap_or_else(|| Self::route("/"));
+                let result = NavigationResult {
+                    region: region.to_owned(),
+                    direction,
+                    status: RoutingStatus::SkippedNoHistory,
+                    route,
+                };
+                return (Ok(result), Vec::new());
+            };
+            let (result, events) =
+                Self::go(state, region, route, NavigationHistoryMode::None, direction);
+            (Ok(result), events)
+        })
     }
 }
 
@@ -507,7 +633,7 @@ fn ready<T: Send + 'static>(value: T) -> BoxFuture<'static, T> {
 
 impl NavigationService for FakeNavigation {
     fn navigation(&self) -> &StateCell<NavigationState> {
-        &self.navigation
+        self.navigation.cell()
     }
 
     fn events(&self) -> &EventStream<NavigationEvent> {
@@ -532,12 +658,15 @@ impl NavigationService for FakeNavigation {
     ) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
         lock(&self.requests).push(request.clone());
         let route = Self::route(&request.args.uri);
-        ready(Ok(self.go(
-            &request.region,
-            route,
-            request.args.history_mode,
-            NavigationDirection::New,
-        )))
+        ready(Ok(self.navigate_with(|state| {
+            Self::go(
+                state,
+                &request.region,
+                route,
+                request.args.history_mode,
+                NavigationDirection::New,
+            )
+        })))
     }
 
     fn back(&self, region: String) -> BoxFuture<'_, Result<NavigationResult, NavigationError>> {
@@ -582,38 +711,39 @@ impl NavigationService for FakeNavigation {
     }
 
     fn ensure_region(&self, region: String) -> BoxFuture<'_, Result<(), NavigationError>> {
-        if self.navigation.get().region(&region).is_none() {
-            let mut state = (*self.navigation.get()).clone();
+        self.navigation.change(|state| {
             state
                 .regions
-                .insert(region.clone(), NavigationRegion::new(region, 40));
-            self.navigation.publish(state);
-        }
+                .entry(region.clone())
+                .or_insert_with(|| NavigationRegion::new(region, 40));
+        });
         ready(Ok(()))
     }
 
     fn close_region(&self, region: String) -> BoxFuture<'_, Result<bool, NavigationError>> {
-        let mut state = (*self.navigation.get()).clone();
-        let open = region != state.root_region
-            && state.regions.get_mut(&region).is_some_and(|entry| {
-                let open = entry.current.take().is_some();
-                entry.journal.clear();
-                open
-            });
-        if open {
-            self.navigation.publish(state);
-            self.events
-                .publish(NavigationEvent::RegionClosed { region });
-        }
+        let open = self.navigate_with(|state| {
+            let open = region != state.root_region
+                && state.regions.get_mut(&region).is_some_and(|entry| {
+                    let open = entry.current.take().is_some();
+                    entry.journal.clear();
+                    open
+                });
+            let events = if open {
+                vec![NavigationEvent::RegionClosed {
+                    region: region.clone(),
+                }]
+            } else {
+                Vec::new()
+            };
+            (open, events)
+        });
         ready(Ok(open))
     }
 
     fn remove_region(&self, region: String) -> BoxFuture<'_, Result<bool, NavigationError>> {
-        let mut state = (*self.navigation.get()).clone();
-        let removed = region != state.root_region && state.regions.remove(&region).is_some();
-        if removed {
-            self.navigation.publish(state);
-        }
+        let removed = self
+            .navigation
+            .change(|state| region != state.root_region && state.regions.remove(&region).is_some());
         ready(Ok(removed))
     }
 
@@ -622,12 +752,17 @@ impl NavigationService for FakeNavigation {
         location: String,
     ) -> BoxFuture<'_, Result<Vec<NavigationResult>, NavigationError>> {
         let route = Self::route(&location);
-        ready(Ok(vec![self.go(
-            "root",
-            route,
-            NavigationHistoryMode::Push,
-            NavigationDirection::New,
-        )]))
+        let result = self.navigate_with(|state| {
+            let root = state.root_region.clone();
+            Self::go(
+                state,
+                &root,
+                route,
+                NavigationHistoryMode::Push,
+                NavigationDirection::New,
+            )
+        });
+        ready(Ok(vec![result]))
     }
 }
 
@@ -667,11 +802,8 @@ pub struct FakeOperations {
     instance_id: u64,
     next_transaction: AtomicU64,
     state: Mutex<FakeOperationState>,
-    operations: StateCell<OperationState>,
+    operations: FakeState<OperationState>,
     events: EventStream<OperationEvent>,
-    /// Held while the targets are published; a change meanwhile marks them stale.
-    publishing: Mutex<()>,
-    stale: AtomicBool,
 }
 
 #[derive(Default)]
@@ -690,10 +822,8 @@ impl FakeOperations {
             instance_id: NEXT_INSTANCE.fetch_add(1, Ordering::Relaxed),
             next_transaction: AtomicU64::new(0),
             state: Mutex::default(),
-            operations: StateCell::new(OperationState::default()),
+            operations: FakeState::default(),
             events: EventStream::new(),
-            publishing: Mutex::new(()),
-            stale: AtomicBool::new(false),
         })
     }
 
@@ -701,30 +831,12 @@ impl FakeOperations {
         self.next_transaction.fetch_add(1, Ordering::SeqCst) + 1
     }
 
-    /// Publishes the targets unless they are the ones published: a change made meanwhile is
-    /// published right after, by whoever is publishing.
+    /// Publishes the targets registered now (read under the state's lock, so the last change
+    /// published has the latest).
     fn publish_targets(&self) {
-        self.stale.store(true, Ordering::SeqCst);
-        loop {
-            let publishing = match self.publishing.try_lock() {
-                Ok(guard) => guard,
-                Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
-                Err(std::sync::TryLockError::WouldBlock) => return,
-            };
-            self.stale.store(false, Ordering::SeqCst);
-            let targets: Vec<OperationTargetId> =
-                lock(&self.state).targets.keys().cloned().collect();
-            if self.operations.get().targets != targets {
-                self.operations.publish(OperationState {
-                    targets,
-                    ..OperationState::default()
-                });
-            }
-            drop(publishing);
-            if !self.stale.load(Ordering::SeqCst) {
-                return;
-            }
-        }
+        self.operations.change(|published| {
+            published.targets = lock(&self.state).targets.keys().cloned().collect();
+        });
     }
 
     fn target(
@@ -792,7 +904,7 @@ impl FakeOperations {
 
 impl OperationService for FakeOperations {
     fn operations(&self) -> &StateCell<OperationState> {
-        &self.operations
+        self.operations.cell()
     }
 
     fn events(&self) -> &EventStream<OperationEvent> {
@@ -912,12 +1024,8 @@ impl OperationService for FakeOperations {
 /// RayX's.
 #[derive(Default)]
 pub struct FakeHistory {
-    state: Mutex<HistoryState>,
-    history: StateCell<HistoryState>,
+    history: FakeState<HistoryState>,
     events: EventStream<HistoryEvent>,
-    /// Held while the state is published; a change meanwhile marks it stale.
-    publishing: Mutex<()>,
-    stale: AtomicBool,
     bindings: Mutex<Vec<(OperationTargetId, HistoryScopeId)>>,
 }
 
@@ -939,43 +1047,24 @@ impl FakeHistory {
         lock(&self.bindings).clone()
     }
 
-    /// Changes `scope`'s state with `change`, then publishes the state.
-    fn change(&self, scope: &HistoryScopeId, change: impl FnOnce(&mut HistoryScopeState)) {
-        {
-            let mut state = lock(&self.state);
+    /// Changes `scope`'s state with `change`, then publishes the state; what `change`
+    /// returns.
+    fn change<R>(
+        &self,
+        scope: &HistoryScopeId,
+        change: impl FnOnce(&mut HistoryScopeState) -> R,
+    ) -> R {
+        self.history.change(|state| {
             let entry = state.scopes.entry(scope.clone()).or_default();
-            change(entry);
+            let result = change(entry);
             entry.revision += 1;
-        }
-        self.publish_state();
-    }
-
-    /// Publishes the state unless it is the one published: a change made meanwhile is published
-    /// right after, by whoever is publishing.
-    fn publish_state(&self) {
-        self.stale.store(true, Ordering::SeqCst);
-        loop {
-            let publishing = match self.publishing.try_lock() {
-                Ok(guard) => guard,
-                Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
-                Err(std::sync::TryLockError::WouldBlock) => return,
-            };
-            self.stale.store(false, Ordering::SeqCst);
-            let state = lock(&self.state).clone();
-            if *self.history.get() != state {
-                self.history.publish(state);
-            }
-            drop(publishing);
-            if !self.stale.load(Ordering::SeqCst) {
-                return;
-            }
-        }
+            result
+        })
     }
 
     /// Moves one entry of `scope` from one stack to the other; whether there was one.
     fn step(&self, scope: HistoryScopeId, undo: bool) -> bool {
-        let mut stepped = false;
-        self.change(&scope, |state| {
+        let stepped = self.change(&scope, |state| {
             let (from, to) = if undo {
                 (&mut state.undo_depth, &mut state.redo_depth)
             } else {
@@ -984,7 +1073,9 @@ impl FakeHistory {
             if *from > 0 {
                 *from -= 1;
                 *to += 1;
-                stepped = true;
+                true
+            } else {
+                false
             }
         });
         if stepped {
@@ -1000,7 +1091,7 @@ impl FakeHistory {
 
 impl HistoryService for FakeHistory {
     fn history(&self) -> &StateCell<HistoryState> {
-        &self.history
+        self.history.cell()
     }
 
     fn events(&self) -> &EventStream<HistoryEvent> {
@@ -1075,7 +1166,7 @@ pub enum SelectionCall {
 /// active area publishes or deactivates), leaving the revisions to the test.
 #[derive(Default)]
 pub struct FakeSelection {
-    selection: StateCell<SelectionState>,
+    selection: FakeState<SelectionState>,
     calls: Mutex<Vec<SelectionCall>>,
 }
 
@@ -1086,7 +1177,7 @@ impl FakeSelection {
 
     /// Publishes `state`, as a selection change would.
     pub fn publish(&self, state: SelectionState) {
-        self.selection.publish(state);
+        self.selection.set(state);
     }
 
     /// The commands asked so far, in order.
@@ -1103,21 +1194,19 @@ impl FakeSelection {
         status: SelectionStatus,
     ) -> BoxFuture<'_, Result<(), SelectionError>> {
         lock(&self.calls).push(call);
-        let state = self.selection.get();
-        if applies(&state) {
-            self.selection.publish(SelectionState {
-                active_area: area,
-                status,
-                ..*state
-            });
-        }
+        self.selection.change(|state| {
+            if applies(state) {
+                state.active_area = area;
+                state.status = status;
+            }
+        });
         ready(Ok(()))
     }
 }
 
 impl SelectionService for FakeSelection {
     fn selection(&self) -> &StateCell<SelectionState> {
-        &self.selection
+        self.selection.cell()
     }
 
     fn publish_status(
@@ -1172,17 +1261,29 @@ impl SelectionService for FakeSelection {
 /// answers the user's document as it is, and `apply_user_document` replaces it in memory, as
 /// RayX's does (the revision checked, the candidate validated and given the next revision).
 pub struct FakeInputMap {
-    input_map: StateCell<InputMapState>,
+    input_map: FakeState<InputMapState>,
     applied: Mutex<Vec<InputMapDocument>>,
+    loads: Mutex<usize>,
 }
 
 impl FakeInputMap {
     /// An input map at `state`.
     pub fn new(state: InputMapState) -> Arc<Self> {
         Arc::new(Self {
-            input_map: StateCell::new(state),
+            input_map: FakeState::new(state),
             applied: Mutex::default(),
+            loads: Mutex::default(),
         })
+    }
+
+    /// Publishes `state`, as documents loaded elsewhere would.
+    pub fn publish(&self, state: InputMapState) {
+        self.input_map.set(state);
+    }
+
+    /// How many times the user's document was loaded.
+    pub fn loads(&self) -> usize {
+        *lock(&self.loads)
     }
 
     /// The user's documents applied so far, in order.
@@ -1193,11 +1294,12 @@ impl FakeInputMap {
 
 impl InputMapService for FakeInputMap {
     fn input_map(&self) -> &StateCell<InputMapState> {
-        &self.input_map
+        self.input_map.cell()
     }
 
     fn load(&self) -> BoxFuture<'_, Result<InputMapDocument, InputMapApplyError>> {
-        futures::future::ready(Ok(self.input_map.get().user.clone())).boxed()
+        *lock(&self.loads) += 1;
+        futures::future::ready(Ok(self.input_map.cell().get().user.clone())).boxed()
     }
 
     fn apply_user_document(
@@ -1205,27 +1307,25 @@ impl InputMapService for FakeInputMap {
         expected_revision: u64,
         mut candidate: InputMapDocument,
     ) -> BoxFuture<'_, Result<InputMapDocument, InputMapApplyError>> {
-        let state = self.input_map.get();
-        let result = if candidate.source != InputMapSource::User {
-            Err(InputMapError::UserDocumentRequired.into())
-        } else if state.revision != expected_revision {
-            Err(InputMapApplyError::RevisionConflict {
-                expected: expected_revision,
-                actual: state.revision,
-            })
-        } else {
+        // Checked and applied under the state's lock, so two applications of one revision
+        // never both succeed.
+        let result = self.input_map.change(|state| {
+            if candidate.source != InputMapSource::User {
+                return Err(InputMapError::UserDocumentRequired.into());
+            }
+            if state.revision != expected_revision {
+                return Err(InputMapApplyError::RevisionConflict {
+                    expected: expected_revision,
+                    actual: state.revision,
+                });
+            }
             candidate.revision = expected_revision + 1;
-            candidate.validate().map_err(Into::into).map(|()| candidate)
-        };
-        if let Ok(candidate) = &result {
+            candidate.validate()?;
+            state.user = candidate.clone();
+            state.revision = candidate.revision;
             lock(&self.applied).push(candidate.clone());
-            // Published outside the lock: a subscriber may call the fake.
-            self.input_map.publish(InputMapState {
-                user: candidate.clone(),
-                revision: candidate.revision,
-                ..(*state).clone()
-            });
-        }
+            Ok(candidate)
+        });
         futures::future::ready(result).boxed()
     }
 }
@@ -1234,54 +1334,377 @@ impl InputMapService for FakeInputMap {
 /// ([`FakeApplicationConfiguration::new`]); `replace_options` takes valid settings as RayX's does
 /// (refusing a changed name or description) and publishes them at the next revision.
 pub struct FakeApplicationConfiguration {
-    configuration: StateCell<ApplicationConfigurationSnapshot>,
+    configuration: FakeState<ApplicationConfigurationSnapshot>,
+    replaced: Mutex<Vec<ApplicationConfiguration>>,
 }
 
 impl FakeApplicationConfiguration {
     /// A configuration at `snapshot`.
     pub fn new(snapshot: ApplicationConfigurationSnapshot) -> Arc<Self> {
         Arc::new(Self {
-            configuration: StateCell::new(snapshot),
+            configuration: FakeState::new(snapshot),
+            replaced: Mutex::default(),
         })
     }
 
     /// Publishes `snapshot`, as a change of the settings or the platform would.
     pub fn publish(&self, snapshot: ApplicationConfigurationSnapshot) {
-        self.configuration.publish(snapshot);
+        self.configuration.set(snapshot);
+    }
+
+    /// The settings `replace_options` was asked to take, in order.
+    pub fn replaced(&self) -> Vec<ApplicationConfiguration> {
+        lock(&self.replaced).clone()
     }
 }
 
 impl ApplicationConfigurationService for FakeApplicationConfiguration {
     fn configuration(&self) -> &StateCell<ApplicationConfigurationSnapshot> {
-        &self.configuration
+        self.configuration.cell()
     }
 
     fn replace_options(
         &self,
         options: ApplicationConfiguration,
     ) -> BoxFuture<'_, Result<bool, ApplicationConfigurationError>> {
-        let snapshot = self.configuration.get();
-        let result = if let Err(reason) = options.validate() {
-            Err(ApplicationConfigurationError::InvalidOptions(reason))
-        } else if snapshot.options.name != options.name {
-            Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
-                "name",
-            ))
-        } else if snapshot.options.description != options.description {
-            Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
-                "description",
-            ))
-        } else if snapshot.options == options {
-            Ok(false)
-        } else {
-            self.configuration
-                .publish(ApplicationConfigurationSnapshot {
-                    options,
-                    revision: snapshot.revision + 1,
-                    ..(*snapshot).clone()
-                });
-            Ok(true)
-        };
+        lock(&self.replaced).push(options.clone());
+        let result = self.configuration.change(|snapshot| {
+            if let Err(reason) = options.validate() {
+                Err(ApplicationConfigurationError::InvalidOptions(reason))
+            } else if snapshot.options.name != options.name {
+                Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
+                    "name",
+                ))
+            } else if snapshot.options.description != options.description {
+                Err(ApplicationConfigurationError::StartupOnlyOptionChanged(
+                    "description",
+                ))
+            } else if snapshot.options == options {
+                Ok(false)
+            } else {
+                snapshot.options = options;
+                snapshot.revision += 1;
+                Ok(true)
+            }
+        });
         futures::future::ready(result).boxed()
+    }
+}
+
+/// An i18n command a [`FakeI18n`] was asked.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum I18nCall {
+    SetLanguage(String),
+    FollowPlatform,
+    LoadMessages,
+    AddResource {
+        language: String,
+        namespace: Option<String>,
+        json: String,
+    },
+    SetTimeZone(String),
+}
+
+/// An i18n service publishing the state the test gives it ([`FakeI18n::new`],
+/// [`FakeI18n::publish`]); it records the commands asked of it and applies them to its state as
+/// RayX's does, under the next version: `set_language` picks a language that reads (its locale
+/// and direction with it), `follow_platform` goes back to the default language (the fake follows
+/// no platform), `add_resource` adds a JSON resource's messages (nested objects making dotted
+/// ids, a namespace other than `translation` prefixing them) and `set_time_zone` takes any name.
+/// `load_messages` loads nothing.
+pub struct FakeI18n {
+    i18n: FakeState<I18nState>,
+    calls: Mutex<Vec<I18nCall>>,
+}
+
+impl FakeI18n {
+    /// An i18n service at `state`.
+    pub fn new(state: I18nState) -> Arc<Self> {
+        Arc::new(Self {
+            i18n: FakeState::new(state),
+            calls: Mutex::default(),
+        })
+    }
+
+    /// An i18n service in `language` (also its default), with no messages, in UTC.
+    pub fn in_language(language: &str) -> Arc<Self> {
+        let mut state = I18nState {
+            default_language: language.to_owned(),
+            time_zone: "UTC".to_owned(),
+            ..I18nState::default()
+        };
+        if let Ok(locale) = dxn_intl::parse_locale(language) {
+            show_in(&mut state, &locale);
+        }
+        Self::new(state)
+    }
+
+    /// Publishes `state`, as a change of the user's languages would.
+    pub fn publish(&self, state: I18nState) {
+        self.i18n.set(state);
+    }
+
+    /// The commands asked so far, in order.
+    pub fn calls(&self) -> Vec<I18nCall> {
+        lock(&self.calls).clone()
+    }
+
+    /// Records `call`, then changes the state with `change` under the next version, unless it
+    /// fails.
+    fn answer(
+        &self,
+        call: I18nCall,
+        change: impl FnOnce(&mut I18nState) -> Result<(), I18nServiceError>,
+    ) -> BoxFuture<'_, Result<(), I18nServiceError>> {
+        lock(&self.calls).push(call);
+        let result = self.i18n.change(|state| {
+            let mut changed = state.clone();
+            change(&mut changed)?;
+            if changed != *state {
+                changed.version = state.version + 1;
+                *state = changed;
+            }
+            Ok(())
+        });
+        ready(result)
+    }
+}
+
+/// `state` shown in `locale`: its language, locale tag and direction.
+fn show_in(state: &mut I18nState, locale: &dxn_intl::Locale) {
+    state.language = locale.id.to_string();
+    state.locale = locale.to_string();
+    state.direction = match dxn_intl::direction(locale) {
+        dxn_intl::Direction::Rtl => TextDirection::Rtl,
+        _ => TextDirection::Ltr,
+    };
+}
+
+impl I18nService for FakeI18n {
+    fn i18n(&self) -> &StateCell<I18nState> {
+        self.i18n.cell()
+    }
+
+    fn set_language(&self, language: String) -> BoxFuture<'_, Result<(), I18nServiceError>> {
+        self.answer(I18nCall::SetLanguage(language.clone()), |state| {
+            let locale = dxn_intl::parse_locale(&language)
+                .map_err(|_| I18nServiceError::InvalidLanguage(language.clone()))?;
+            show_in(state, &locale);
+            state.chosen_language = Some(state.language.clone());
+            Ok(())
+        })
+    }
+
+    fn follow_platform(&self) -> BoxFuture<'_, Result<(), I18nServiceError>> {
+        self.answer(I18nCall::FollowPlatform, |state| {
+            state.chosen_language = None;
+            if let Ok(locale) = dxn_intl::parse_locale(&state.default_language) {
+                show_in(state, &locale);
+            }
+            Ok(())
+        })
+    }
+
+    fn load_messages(&self) -> BoxFuture<'_, Result<(), I18nServiceError>> {
+        self.answer(I18nCall::LoadMessages, |_| Ok(()))
+    }
+
+    fn add_resource(
+        &self,
+        language: String,
+        namespace: Option<String>,
+        json: String,
+    ) -> BoxFuture<'_, Result<(), I18nServiceError>> {
+        let call = I18nCall::AddResource {
+            language: language.clone(),
+            namespace: namespace.clone(),
+            json: json.clone(),
+        };
+        self.answer(call, |state| {
+            let failed = |reason: String| I18nServiceError::Resource {
+                path: format!(
+                    "{language}/{}",
+                    namespace.as_deref().unwrap_or("translation")
+                ),
+                reason,
+            };
+            let locale = dxn_intl::parse_locale(&language)
+                .map_err(|_| I18nServiceError::InvalidLanguage(language.clone()))?;
+            let prefix = match namespace.as_deref() {
+                Some(namespace) if namespace != "translation" => namespace,
+                _ => "",
+            };
+            let mut bundle = dxn_i18n::Bundle::new(locale.clone());
+            let loaded = bundle.add_json_with_prefix(prefix, &json);
+            let tag = locale.to_string();
+            let index = match state.messages.iter().position(|b| b.language == tag) {
+                Some(index) => index,
+                None => {
+                    state.messages.push(MessageBundle {
+                        language: tag.clone(),
+                        messages: BTreeMap::new(),
+                    });
+                    state.available_languages.push(tag);
+                    state.messages.len() - 1
+                }
+            };
+            // The messages that parse are added even when others do not.
+            state.messages[index]
+                .messages
+                .extend(bundle.ids().filter_map(|id| {
+                    bundle
+                        .get(id)
+                        .map(|message| (id.to_owned(), message.source().to_owned()))
+                }));
+            loaded.map_err(|error| failed(error.to_string()))
+        })
+    }
+
+    fn set_time_zone(&self, time_zone: String) -> BoxFuture<'_, Result<(), I18nServiceError>> {
+        self.answer(I18nCall::SetTimeZone(time_zone.clone()), |state| {
+            state.time_zone = time_zone;
+            Ok(())
+        })
+    }
+}
+
+/// A message formatter over the messages the test gives it ([`FakeMessageFormatter::message`],
+/// MessageFormat 2 sources) in one locale, formatting them, numbers, dates and plurals with
+/// [`dxn_i18n`] and [`dxn_intl`] as RayX's does, with no i18n service behind it (a missing
+/// message shows its id); it records the message ids it is asked. Its wall times are the ones
+/// the test gives it ([`FakeMessageFormatter::local_time_at`]), as it has no time zone database.
+pub struct FakeMessageFormatter {
+    translator: Mutex<dxn_i18n::Translator>,
+    local_times: Mutex<BTreeMap<String, dxn_intl::DateTime>>,
+    asked: Mutex<Vec<String>>,
+}
+
+impl FakeMessageFormatter {
+    /// A formatter in `locale` (English if it does not read), with no messages.
+    pub fn new(locale: &str) -> Arc<Self> {
+        let locale = dxn_intl::parse_locale(locale)
+            .or_else(|_| dxn_intl::parse_locale("en"))
+            .unwrap_or(dxn_intl::Locale::UNKNOWN);
+        Arc::new(Self {
+            translator: Mutex::new(dxn_i18n::Translator::new(locale)),
+            local_times: Mutex::default(),
+            asked: Mutex::default(),
+        })
+    }
+
+    /// Adds the message `id` with the MessageFormat 2 `source`, in the formatter's locale.
+    ///
+    /// # Panics
+    ///
+    /// When `source` is not a MessageFormat 2 message: a broken fixture.
+    pub fn message(self: Arc<Self>, id: &str, source: &str) -> Arc<Self> {
+        {
+            let mut translator = lock(&self.translator);
+            let mut bundle = dxn_i18n::Bundle::new(translator.locale().clone());
+            if let Err(error) = bundle.add(id, source) {
+                panic!("the message `{id}` does not parse: {error}");
+            }
+            translator.add_bundle(bundle);
+        }
+        self
+    }
+
+    /// Answers `local_time(instant)` (an RFC 3339 timestamp, or milliseconds after the Unix
+    /// epoch as `local_time_from_millis` asks, written in decimal) with `wall_time`.
+    pub fn local_time_at(
+        self: Arc<Self>,
+        instant: &str,
+        wall_time: dxn_intl::DateTime,
+    ) -> Arc<Self> {
+        lock(&self.local_times).insert(instant.to_owned(), wall_time);
+        self
+    }
+
+    /// The wall time the test gave `instant`.
+    fn wall_time(&self, instant: &str) -> Result<dxn_intl::DateTime, I18nServiceError> {
+        lock(&self.local_times)
+            .get(instant)
+            .copied()
+            .ok_or_else(|| {
+                I18nServiceError::Format(format!(
+                    "the fake formatter has no wall time for {instant}"
+                ))
+            })
+    }
+
+    /// The message ids asked so far (`contains`, `t`, `format` and the like), in order.
+    pub fn asked(&self) -> Vec<String> {
+        lock(&self.asked).clone()
+    }
+
+    /// Records `id` and runs `f` with the translator.
+    fn with<R>(&self, id: &str, f: impl FnOnce(&dxn_i18n::Translator) -> R) -> R {
+        lock(&self.asked).push(id.to_owned());
+        f(&lock(&self.translator))
+    }
+}
+
+impl MessageFormatter for FakeMessageFormatter {
+    fn locale(&self) -> dxn_intl::Locale {
+        lock(&self.translator).locale().clone()
+    }
+
+    fn contains(&self, id: &str) -> bool {
+        self.with(id, |translator| translator.contains(id))
+    }
+
+    fn format(&self, id: &str, args: &dxn_i18n::Args) -> String {
+        self.with(id, |translator| translator.format(id, args))
+    }
+
+    fn try_format(
+        &self,
+        id: &str,
+        args: &dxn_i18n::Args,
+    ) -> Result<String, dxn_i18n::TranslateError> {
+        self.with(id, |translator| translator.try_format(id, args))
+    }
+
+    fn format_to_parts(
+        &self,
+        id: &str,
+        args: &dxn_i18n::Args,
+    ) -> Option<dxn_i18n::Formatted<Vec<dxn_i18n::Part>>> {
+        self.with(id, |translator| translator.format_to_parts(id, args))
+    }
+
+    fn format_number(
+        &self,
+        number: dxn_intl::Number,
+        options: dxn_intl::NumberOptions,
+    ) -> Result<String, I18nServiceError> {
+        dxn_intl::NumberFormatter::new(&self.locale(), options)
+            .and_then(|formatter| formatter.format(number))
+            .map_err(|error| I18nServiceError::Format(error.to_string()))
+    }
+
+    fn format_date_time(
+        &self,
+        value: &dxn_intl::DateTime,
+        options: dxn_intl::DateTimeOptions,
+    ) -> Result<String, I18nServiceError> {
+        dxn_intl::DateTimeFormatter::new(&self.locale(), options)
+            .and_then(|formatter| formatter.format(value))
+            .map_err(|error| I18nServiceError::Format(error.to_string()))
+    }
+
+    fn plural_category(&self, number: dxn_intl::Number) -> dxn_intl::PluralCategory {
+        dxn_intl::PluralRules::new(&self.locale(), dxn_intl::PluralKind::Cardinal)
+            .map_or(dxn_intl::PluralCategory::Other, |rules| {
+                rules.category(number)
+            })
+    }
+
+    fn local_time(&self, instant: &str) -> Result<dxn_intl::DateTime, I18nServiceError> {
+        self.wall_time(instant)
+    }
+
+    fn local_time_from_millis(&self, millis: i64) -> Result<dxn_intl::DateTime, I18nServiceError> {
+        self.wall_time(&millis.to_string())
     }
 }
