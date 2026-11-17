@@ -1,0 +1,25 @@
+[package]
+name = "rayx_services_selection"
+description = "RayX's selection service: the app-wide summary of the active selection area, cleared on every route change of the app's navigation, for Rust and TSX."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+rayx_app.workspace = true
+rayx_app_nsh.workspace = true
+nsh-core.workspace = true
+futures = { workspace = true, features = ["std"] }
+serde_json.workspace = true
+
+[dev-dependencies]
+rayx_app_nsh = { workspace = true, features = ["testing"] }
+nsh-core = { workspace = true, features = ["declarations"] }
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
+futures = { workspace = true, features = ["std", "executor"] }

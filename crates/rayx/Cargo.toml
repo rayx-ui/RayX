@@ -22,6 +22,7 @@ rayx_services_i18n.workspace = true
 rayx_services_history.workspace = true
 rayx_services_navigation.workspace = true
 rayx_services_operations.workspace = true
+rayx_services_selection.workspace = true
 dxn_i18n.workspace = true
 dxn_intl.workspace = true
 

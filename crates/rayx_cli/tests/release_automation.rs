@@ -199,6 +199,7 @@ const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
     "rayx_services_navigation",
     "rayx_services_operations",
     "rayx_services_platform",
+    "rayx_services_selection",
     "rayx_services_storage",
     "rayx_services_suspension",
 ];

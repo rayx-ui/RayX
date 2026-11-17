@@ -28,6 +28,9 @@ use crate::services::operations::{
     OperationTargetId,
 };
 use crate::services::platform::{PlatformInfoService, PlatformSnapshot};
+use crate::services::selection::{
+    SelectionAreaId, SelectionError, SelectionService, SelectionState, SelectionStatus,
+};
 use crate::services::storage::{KeyValueStore, StorageCapabilities, StorageError};
 use crate::services::suspension::{
     SuspensionError, SuspensionEvent, SuspensionEventKind, SuspensionEventReason,
@@ -1047,5 +1050,112 @@ impl HistoryService for FakeHistory {
         _scope_id: HistoryScopeId,
     ) -> BoxFuture<'_, Result<Vec<OperationRecord>, HistoryError>> {
         ready(Ok(Vec::new()))
+    }
+}
+
+/// A selection command a [`FakeSelection`] was asked.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SelectionCall {
+    PublishStatus(SelectionAreaId, SelectionStatus),
+    Activate(SelectionAreaId, SelectionStatus),
+    Deactivate(SelectionAreaId),
+    Clear,
+}
+
+/// A selection service publishing the state the test gives it ([`FakeSelection::publish`]); it
+/// records the commands asked of it and applies them to its state's area and status (only the
+/// active area publishes or deactivates), leaving the revisions to the test.
+#[derive(Default)]
+pub struct FakeSelection {
+    selection: StateCell<SelectionState>,
+    calls: Mutex<Vec<SelectionCall>>,
+}
+
+impl FakeSelection {
+    pub fn new() -> Arc<Self> {
+        Arc::default()
+    }
+
+    /// Publishes `state`, as a selection change would.
+    pub fn publish(&self, state: SelectionState) {
+        self.selection.publish(state);
+    }
+
+    /// The commands asked so far, in order.
+    pub fn calls(&self) -> Vec<SelectionCall> {
+        lock(&self.calls).clone()
+    }
+
+    /// Records `call` and publishes `area` and `status` when `applies` holds for the state.
+    fn answer(
+        &self,
+        call: SelectionCall,
+        applies: impl FnOnce(&SelectionState) -> bool,
+        area: Option<SelectionAreaId>,
+        status: SelectionStatus,
+    ) -> BoxFuture<'_, Result<(), SelectionError>> {
+        lock(&self.calls).push(call);
+        let state = self.selection.get();
+        if applies(&state) {
+            self.selection.publish(SelectionState {
+                active_area: area,
+                status,
+                ..*state
+            });
+        }
+        ready(Ok(()))
+    }
+}
+
+impl SelectionService for FakeSelection {
+    fn selection(&self) -> &StateCell<SelectionState> {
+        &self.selection
+    }
+
+    fn publish_status(
+        &self,
+        active_area: SelectionAreaId,
+        status: SelectionStatus,
+    ) -> BoxFuture<'_, Result<(), SelectionError>> {
+        self.answer(
+            SelectionCall::PublishStatus(active_area, status),
+            |state| state.active_area == Some(active_area),
+            Some(active_area),
+            status,
+        )
+    }
+
+    fn activate(
+        &self,
+        active_area: SelectionAreaId,
+        status: SelectionStatus,
+    ) -> BoxFuture<'_, Result<(), SelectionError>> {
+        self.answer(
+            SelectionCall::Activate(active_area, status),
+            |_| true,
+            Some(active_area),
+            status,
+        )
+    }
+
+    fn deactivate(
+        &self,
+        active_area: SelectionAreaId,
+    ) -> BoxFuture<'_, Result<(), SelectionError>> {
+        self.answer(
+            SelectionCall::Deactivate(active_area),
+            |state| state.active_area == Some(active_area),
+            None,
+            SelectionStatus::default(),
+        )
+    }
+
+    fn clear(&self) -> BoxFuture<'_, Result<(), SelectionError>> {
+        self.answer(
+            SelectionCall::Clear,
+            |_| true,
+            None,
+            SelectionStatus::default(),
+        )
     }
 }

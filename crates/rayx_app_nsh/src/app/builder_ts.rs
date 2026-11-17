@@ -9,7 +9,6 @@ use rayx_app::{
 };
 use rayx_runtime::services::application_configuration::ApplicationConfigurationAppBuilderExt as _;
 use rayx_runtime::services::input_map::InputMapAppBuilderExt as _;
-use rayx_runtime::services::selection::SelectionAppBuilderExt as _;
 
 use crate::configuration::options_ts::record;
 use crate::ts::{ApplicationConfigurationOptions, ConfigurationBuilder, InputMapOptions};
@@ -127,11 +126,6 @@ impl RayXAppBuilder {
                 }
             })
         })
-    }
-
-    /// Registers the app's selection service.
-    pub fn add_selection(this: Instance<Self>) -> Result<Instance<Self>, AppError> {
-        chain(this, |builder| builder.add_selection())
     }
 
     /// Registers the app's configuration service (`RayX:Application`: its layout direction,

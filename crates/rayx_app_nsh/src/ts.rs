@@ -19,7 +19,8 @@
 //! - The services' classes: [`ApplicationConfigurationService`]; the service crates
 //!   (`rayx_services_*`) add theirs (`AssetService`, `FontService`, `I18nService`,
 //!   `KeyValueStore`, `NavigationService` with `NavigationRegion`, `OperationService` with
-//!   `OperationTarget`, `HistoryService`, `PlatformInfoService`, `SuspensionService`) with their sets.
+//!   `OperationTarget`, `HistoryService`, `PlatformInfoService`, `SelectionService`,
+//!   `SuspensionService`) with their sets.
 //!
 //! # Options classes
 //!

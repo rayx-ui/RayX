@@ -13,6 +13,9 @@
 //!   prelude.
 //! - [`history`] ([`rayx_services_history`]): RayX's history (undo and redo per scope, in memory
 //!   or in the app's key-value store); its builder extension is in the prelude.
+//! - [`selection`] ([`rayx_services_selection`]): RayX's selection service (the active
+//!   selection area's summary, cleared on every route change); its builder extension is in the
+//!   prelude.
 //! - [`app_nsh`] ([`rayx_app_nsh`]): the NSH host: a root provider per surface, a scope per screen, the
 //!   app's start (`RayXAppBuilder::start`), the TSX classes (`rayx::app_nsh::ts`: `RayXAppBuilder`,
 //!   `ServiceProvider` and the services' classes under their Rust names) and the services' NSH
@@ -54,6 +57,7 @@ pub use rayx_runtime as runtime;
 pub use rayx_services_history as history;
 pub use rayx_services_navigation as navigation;
 pub use rayx_services_operations as operations;
+pub use rayx_services_selection as selection;
 
 pub use dxn_i18n as i18n;
 pub use dxn_intl as intl;
@@ -121,4 +125,5 @@ pub mod prelude {
         NavigationAppBuilderExt, navigation_region, navigation_view,
     };
     pub use rayx_services_operations::OperationsAppBuilderExt;
+    pub use rayx_services_selection::SelectionAppBuilderExt;
 }

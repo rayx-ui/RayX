@@ -125,6 +125,7 @@ listener.
 | --- | --- | --- |
 | `I18nService` | `dyn I18nService`, formatted by `dyn MessageFormatter` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, and, as promises, `setLanguage(language)`, `followPlatform()`, `setTimeZone(zone)`, `loadMessages()`, `addResource(language, namespace, json)`; `rayx_services_i18n`'s set ([I18n](services/i18n.md#tsx)) |
 | `NavigationService` | `dyn NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)); in `rayx_services_navigation`'s set |
+| `SelectionService` | `dyn SelectionService` | The active selection area: `state()`, `activeArea()`, `status()`, `onChange`, and, as promises, `activate`, `publishStatus`, `deactivate`, `clear` ([Selection](services/selection.md#tsx)); in `rayx_services_selection`'s set |
 | `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)); in `rayx_services_storage`'s set |
 | `ApplicationConfigurationService` | `ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()` |
 | `AssetService` | `AssetService` | Asset URLs: `url(path)`, `urlForScale(path, scale)` |

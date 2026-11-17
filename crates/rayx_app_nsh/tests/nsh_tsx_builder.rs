@@ -2,9 +2,9 @@
 //! has a chaining camelCase twin that registers what the Rust method does, with the same implied
 //! services, and the set declares each with a doc comment. (The service crates' methods,
 //! `addPlatform`, `addAssets`, `addStorage`, `addNavigation`, `addOperations`, `addHistory`,
-//! `addI18n` and the others, are their crates' groups'; the services the host requires come from
-//! `addHostFakes()` here, a key-value store from the test's `addFakeStorage()`, and the
-//! navigation `addSelection()` follows from `addTestNavigation()`, a fake.)
+//! `addI18n`, `addSelection` and the others, are their crates' groups'; the services the host
+//! requires come from `addHostFakes()` here, and a key-value store from the test's
+//! `addFakeStorage()`.)
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -17,7 +17,7 @@ use nsh_core::prelude::*;
 use nsh_engine::Assets;
 use rayx_app_nsh::rayx_runtime::services::{
     application_configuration::ApplicationConfigurationService, input_map::InputMapService,
-    navigation::NavigationService, selection::SelectionService, storage::KeyValueStore,
+    storage::KeyValueStore,
 };
 use rayx_app_nsh::ts::ServiceProvider;
 use rayx_app_nsh::{Configuration, RayXAppBuilder, ServiceProvider as Services};
@@ -66,11 +66,9 @@ impl Probe {
     pub(crate) fn registered(services: Instance<ServiceProvider>) -> Vec<String> {
         services.with(|services| {
             let services = services.services();
-            let checks: [(&str, Resolves); 5] = [
+            let checks: [(&str, Resolves); 3] = [
                 ("KeyValueStore", resolves::<dyn KeyValueStore>),
-                ("NavigationService", resolves::<dyn NavigationService>),
                 ("InputMapService", resolves::<InputMapService>),
-                ("SelectionService", resolves::<SelectionService>),
                 (
                     "ApplicationConfigurationService",
                     resolves::<ApplicationConfigurationService>,
@@ -109,33 +107,9 @@ impl Probe {
     }
 }
 
-/// `builder.addTestNavigation()`: a fake as the app's `dyn NavigationService`, which
-/// `addSelection()` follows.
-struct TestNavigation;
-
-#[class_extension(rayx_app_nsh::ts::RayXAppBuilder)]
-impl TestNavigation {
-    /// Registers a fake navigation service.
-    pub fn add_test_navigation(
-        this: Instance<rayx_app_nsh::ts::RayXAppBuilder>,
-    ) -> Result<Instance<rayx_app_nsh::ts::RayXAppBuilder>, String> {
-        rayx_app_nsh::ts::RayXAppBuilder::extend_with(this, |mut builder| {
-            use rayx_app_nsh::AppBuilder as _;
-            builder
-                .services_mut()
-                .replace_service::<dyn NavigationService>(
-                    rayx_app::testing::FakeNavigation::new() as Arc<dyn NavigationService>
-                );
-            builder
-        })
-    }
-}
-
 fn set() -> nsh_core::element::Registry {
     headless::set(|set| {
-        set.module::<Probe>()
-            .class_extension::<add_fake_storage>()
-            .class_extension::<TestNavigation>();
+        set.module::<Probe>().class_extension::<add_fake_storage>();
     })
 }
 
@@ -157,9 +131,7 @@ setTimeout(async () => {
           .addValue({ Feed: { Mode: "live" } });
       })
       .addFakeStorage()
-      .addTestNavigation()
       .addInputMap()
-      .addSelection()
       .addApplicationConfiguration()
       .defaultInitializationTimeout(1234);
     lines.push(String(chained === builder));
@@ -182,8 +154,8 @@ fn each_builder_method_registers_its_service() {
     assert_eq!(
         shown,
         "done true\
-         |KeyValueStore,NavigationService,\
-         InputMapService,SelectionService,ApplicationConfigurationService\
+         |KeyValueStore,\
+         InputMapService,ApplicationConfigurationService\
          |json,appsettings,3,live|1234"
     );
 }
@@ -247,7 +219,6 @@ fn the_declarations_declare_each_builder_method_with_a_doc_comment() {
         "addOptionalAppSettings(uri: string): RayXAppBuilder;",
         "configureAppConfiguration(configure: (configuration: ConfigurationBuilder) => void): RayXAppBuilder;",
         "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
-        "addSelection(): RayXAppBuilder;",
         "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;",
         "defaultInitializationTimeout(ms: number): RayXAppBuilder;",
         "start(): Promise<ServiceProvider>;",

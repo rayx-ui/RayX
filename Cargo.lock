@@ -4884,6 +4884,7 @@ dependencies = [
  "rayx_services_i18n",
  "rayx_services_navigation",
  "rayx_services_operations",
+ "rayx_services_selection",
  "serde_json",
 ]
 
@@ -5103,6 +5104,18 @@ version = "0.11.0"
 dependencies = [
  "crossbeam-channel",
  "dxn_intl",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde_json",
+]
+
+[[package]]
+name = "rayx_services_selection"
+version = "0.11.0"
+dependencies = [
  "futures",
  "nsh-core",
  "nsh-engine",
