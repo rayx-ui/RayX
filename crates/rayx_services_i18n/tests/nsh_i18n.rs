@@ -64,7 +64,7 @@ setTimeout(async () => {
   const lines = [];
   const services = await Probe.addApp(new RayXAppBuilder()).addHostFakes().start();
   const i18n = services.getRequiredService(I18nService);
-  i18n.setTimeZone("Europe/Zagreb");
+  await i18n.setTimeZone("Europe/Zagreb");
   lines.push(i18n.t("hello", { name: "Ana" }));
   lines.push(i18n.t("cart", { n: 1 }));
   lines.push(i18n.has("cart") && !i18n.has("nope") ? "has" : "lacks");
@@ -88,7 +88,7 @@ setTimeout(async () => {
     lines.push(i18n.t("cart", { n: 3 }));
     shown.set(`done ${lines.join("|")}`);
   });
-  i18n.setLanguage("hr");
+  await i18n.setLanguage("hr");
 }, 0);
 
 mount(() => <Text>{shown()}</Text>);
@@ -135,11 +135,8 @@ setTimeout(async () => {
       .start();
     const i18n = services.getRequiredService(I18nService);
     lines.push(i18n.t("hello", { name: "Ana" }));
-    // The call reaches the TS implementation on the engine's next turn.
-    i18n.setLanguage("hr");
-    for (let turn = 0; turn < 100 && i18n.locale() !== "hr"; turn++) {
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    }
+    // The call resolves once the TS implementation took it.
+    await i18n.setLanguage("hr");
     lines.push(`${i18n.locale()} ${i18n.t("hello", { name: "Ana" })}`);
   } catch (error) {
     lines.push(`threw ${error}`);

@@ -8,7 +8,6 @@ use dxn_intl::{
     DateFields, DateTimeOptions, Grouping, HourCycle, Length, Number, NumberOptions, NumberStyle,
     TimePrecision,
 };
-use futures::FutureExt as _;
 use futures::future::BoxFuture;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
@@ -29,7 +28,9 @@ use rayx_app_nsh::ts::{Listeners, ServiceClass};
 ///
 /// It wraps whichever `dyn I18nService` is registered (RayX's, or a TS implementation of the
 /// contract `I18nServiceContract` registered under this class) and formats synchronously
-/// through the app's `dyn MessageFormatter` (`addI18n` registers RayX's).
+/// through the app's `dyn MessageFormatter` (`addI18n` registers RayX's). Its commands
+/// (`setLanguage`, `followPlatform`, `setTimeZone`, `loadMessages`, `addResource`) return
+/// promises that resolve once the service took them and reject with its error.
 #[class]
 pub struct I18nService {
     service: Arc<dyn I18n>,
@@ -56,13 +57,14 @@ impl ServiceClass for I18nService {
     }
 }
 
-/// What a command's call answered now: RayX's implementation answers when called; a TS one's
-/// starts (its failure reaches TS from its own promise).
-fn answered(call: BoxFuture<'_, Result<(), I18nServiceError>>) -> Result<(), String> {
-    match call.now_or_never() {
-        Some(result) => result.map_err(|error| error.to_string()),
-        None => Ok(()),
-    }
+/// The service `this` wraps.
+fn service(this: &Instance<I18nService>) -> Arc<dyn I18n> {
+    this.with(|this| Arc::clone(&this.service))
+}
+
+/// What a command answered, for TS: its error as the promise's rejection.
+async fn answered(call: BoxFuture<'_, Result<(), I18nServiceError>>) -> Result<(), String> {
+    call.await.map_err(|error| error.to_string())
 }
 
 #[class]
@@ -137,20 +139,39 @@ impl I18nService {
         .to_owned()
     }
 
-    /// Shows the app in `language` from now on, whatever the system's languages.
-    pub fn set_language(&self, language: String) -> Result<(), String> {
-        answered(self.service.set_language(language))
+    /// Shows the app in `language` from now on, whatever the system's languages; resolves once
+    /// the service did (rejects with its error).
+    pub async fn set_language(this: Instance<Self>, language: String) -> Result<(), String> {
+        answered(service(&this).set_language(language)).await
     }
 
-    /// Follows the system's languages again after `setLanguage`.
-    pub fn follow_platform(&self) -> Result<(), String> {
-        answered(self.service.follow_platform())
+    /// Follows the system's languages again after `setLanguage`; resolves once the service did.
+    pub async fn follow_platform(this: Instance<Self>) -> Result<(), String> {
+        answered(service(&this).follow_platform()).await
     }
 
     /// Shows instants in `timeZone` (an IANA name) from now on, until the system reports
-    /// another.
-    pub fn set_time_zone(&self, time_zone: String) -> Result<(), String> {
-        answered(self.service.set_time_zone(time_zone))
+    /// another; resolves once the service did (rejects with its error).
+    pub async fn set_time_zone(this: Instance<Self>, time_zone: String) -> Result<(), String> {
+        answered(service(&this).set_time_zone(time_zone)).await
+    }
+
+    /// Loads the app's messages again (RayX's service: the asset catalog's translations);
+    /// rejects naming the first resource that did not load, once the others are added.
+    pub async fn load_messages(this: Instance<Self>) -> Result<(), String> {
+        answered(service(&this).load_messages()).await
+    }
+
+    /// Adds the messages of `json` (an object of message sources, nested objects making dotted
+    /// ids) for `language`, in `namespace` (the default one when `null`), replacing messages
+    /// with the same ids; rejects when one does not parse, once the others are added.
+    pub async fn add_resource(
+        this: Instance<Self>,
+        language: String,
+        namespace: Option<String>,
+        json: String,
+    ) -> Result<(), String> {
+        answered(service(&this).add_resource(language, namespace, json)).await
     }
 
     /// Calls `listener` with the locale's tag after every change, until the function it

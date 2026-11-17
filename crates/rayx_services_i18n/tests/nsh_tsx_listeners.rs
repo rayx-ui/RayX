@@ -54,12 +54,12 @@ setTimeout(async () => {
     const locales = { first: [], second: [] };
     const stopLocale = i18n.onChange((locale) => locales.first.push(locale));
     services.getRequiredService(I18nService).onChange((locale) => locales.second.push(locale));
-    i18n.setLanguage("hr");
+    await i18n.setLanguage("hr");
     await tick();
     lines.push(String(typeof stopLocale));
     stopLocale();
     stopLocale();
-    i18n.setLanguage("en");
+    await i18n.setLanguage("en");
     await tick();
     lines.push(`locales ${locales.first} / ${locales.second}`);
   } catch (error) {
