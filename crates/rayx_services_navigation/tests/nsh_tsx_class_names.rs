@@ -46,6 +46,11 @@ fn the_navigation_classes_carry_their_members() {
         ),
     ] {
         let declared = class(&ts, name);
+        // Made by the provider and the service only: never `new`ed or `of(app)`.
+        assert!(
+            declared.contains("private constructor();"),
+            "{name}:\n{declared}"
+        );
         assert!(!declared.contains("static of("), "{name}:\n{declared}");
         for member in members {
             assert!(
@@ -54,10 +59,6 @@ fn the_navigation_classes_carry_their_members() {
             );
         }
     }
-    assert!(
-        class(&ts, "NavigationService").contains("private constructor();"),
-        "{ts}"
-    );
     for declared in [
         "export interface NavigationServiceContract {",
         "  navigate(request: NavigationRequest): NavigationResult;",

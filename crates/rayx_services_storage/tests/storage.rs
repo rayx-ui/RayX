@@ -1,11 +1,15 @@
-//! The key-value storage service: the in-memory store, buckets of JSON values and registration.
+//! The key-value storage service: the in-memory store, buckets of JSON values and registration
+//! (the later of `add_*` and the app's own store wins).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+use std::sync::Arc;
+
 use futures::executor::block_on;
-use rayx_app::RayXAppBuilder;
 use rayx_app::di::StartupInitializationContext;
 use rayx_app::services::storage::{KeyValueStore, StorageError};
+use rayx_app::testing::FakeKeyValueStore;
+use rayx_app::{AppBuilder as _, RayXAppBuilder};
 use rayx_services_storage::{InMemoryKeyValueStore, StorageAppBuilderExt as _};
 use serde::{Deserialize, Serialize};
 
@@ -132,4 +136,30 @@ fn add_storage_registers_the_persistent_store_and_each_replaces_the_other() {
         .unwrap();
     let store = services.required_service::<dyn KeyValueStore>().unwrap();
     assert!(store.capabilities().persistent);
+}
+
+#[test]
+fn the_later_registration_of_a_store_wins() {
+    let custom: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
+    set(custom.as_ref(), "b", "k", &[7]);
+
+    // `add_*` replaces a store the app registered before it.
+    let mut builder = RayXAppBuilder::new();
+    builder
+        .services_mut()
+        .replace_service::<dyn KeyValueStore>(Arc::clone(&custom));
+    let services = builder.add_in_memory_storage().build().unwrap();
+    let store = services.required_service::<dyn KeyValueStore>().unwrap();
+    assert!(!Arc::ptr_eq(&store, &custom));
+    assert_eq!(get(store.as_ref(), "b", "k"), None);
+
+    // A store the app registers after it replaces its.
+    let mut builder = RayXAppBuilder::new().add_in_memory_storage();
+    builder
+        .services_mut()
+        .replace_service::<dyn KeyValueStore>(Arc::clone(&custom));
+    let services = builder.build().unwrap();
+    let store = services.required_service::<dyn KeyValueStore>().unwrap();
+    assert!(Arc::ptr_eq(&store, &custom));
+    assert_eq!(get(store.as_ref(), "b", "k"), Some(vec![7]));
 }

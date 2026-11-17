@@ -499,6 +499,23 @@ mod registration {
     }
 
     #[test]
+    fn add_navigation_replaces_a_navigation_service_registered_before_it()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let mut builder = RayXAppBuilder::new();
+        let custom: Arc<dyn NavigationService> = rayx_app::testing::FakeNavigation::new();
+        builder
+            .services_mut()
+            .replace_service::<dyn NavigationService>(Arc::clone(&custom));
+        let services = builder
+            .add_navigation(|options| options.root_region_name = "main".to_string())
+            .build()?;
+        let navigation = services.required_service::<dyn NavigationService>()?;
+        assert!(!Arc::ptr_eq(&navigation, &custom));
+        assert_eq!(navigation.root_region_name(), "main");
+        Ok(())
+    }
+
+    #[test]
     fn invalid_routes_fail_on_start() -> Result<(), Box<dyn std::error::Error>> {
         let services = RayXAppBuilder::new()
             .add_navigation(|options| {
