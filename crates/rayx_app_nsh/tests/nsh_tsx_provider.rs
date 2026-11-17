@@ -1,6 +1,7 @@
 //! TS `ServiceProvider` (what `await builder.start()` resolves with) through NSH's engine,
 //! headless: a RayX service's class is its own token, a singleton is one object, a missing token
-//! gives `null` or throws naming it, a scope has scoped services of its own, and `dispose()`
+//! (a class whose service the app did not register, a TS class, a `ServiceToken`) gives `null`
+//! or throws naming it, a scope has scoped services of its own, and `dispose()`
 //! releases them and deactivates the view models activated through it.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
@@ -11,7 +12,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use nsh_core::prelude::*;
-use rayx_app_nsh::ts::{RayXAppBuilder, ServiceProvider};
+use rayx_app_nsh::ts::{
+    RayXAppBuilder, ServiceClass, ServiceClassRegistryExt as _, ServiceProvider,
+};
 use rayx_app_nsh::{ActivatableViewModel, AppService, ServiceAppBuilderExt, ViewModelActivator};
 
 static DROPPED: AtomicUsize = AtomicUsize::new(0);
@@ -45,6 +48,26 @@ impl ActivatableViewModel for PageViewModel {
         &self.activator
     }
 }
+
+/// A Rust service the app never registers.
+pub struct Clock;
+
+/// Its service class, in the test's set: a token the provider knows, whose service is missing.
+#[class]
+pub struct ClockService {
+    _clock: Arc<Clock>,
+}
+
+impl ServiceClass for ClockService {
+    type Service = Clock;
+
+    fn wrap(clock: Arc<Clock>) -> Self {
+        Self { _clock: clock }
+    }
+}
+
+#[class]
+impl ClockService {}
 
 thread_local! {
     /// The view model `Probe.page` resolved last.
@@ -124,7 +147,7 @@ impl Probe {
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
 import {
-  ApplicationConfigurationService, Probe, RayXAppBuilder, ServiceToken,
+  ApplicationConfigurationService, ClockService, Probe, RayXAppBuilder, ServiceToken,
 } from "test/app";
 
 const shown = signal("waiting");
@@ -141,6 +164,8 @@ setTimeout(async () => {
     lines.push(typeof configuration.current().name);
 
     // Nothing registered: `null`, or an error naming the token.
+    lines.push(String(services.getService(ClockService)));
+    lines.push(thrown(() => services.getRequiredService(ClockService)));
     class Mine {}
     lines.push(String(services.getService(Mine)));
     lines.push(thrown(() => services.getRequiredService(Mine)));
@@ -179,11 +204,13 @@ mount(() => <Text>{shown()}</Text>);
 #[test]
 fn the_provider_resolves_by_class_and_token_with_scopes_disposed() {
     let set = headless::set(|set| {
-        set.module::<Probe>();
+        set.module::<Probe>().service_class::<ClockService>();
     });
     assert_eq!(
         headless::run(set, TSX),
-        "done true true|true|string|null|no service is registered for Mine\
+        "done true true|true|string\
+         |null|service `nsh_tsx_provider::Clock` is not registered\
+         |null|no service is registered for Mine\
          |clock null|no service is registered for ServiceToken(clock)\
          |ServiceProvider.getService: `token`: expected an object, got 3\
          |true|true|true|true|0 false|false|2|disposed|disposed"
