@@ -99,16 +99,19 @@ mod service_contracts {
         });
 
         let transaction = now(service.begin_transaction(OperationTransactionMode::New)).unwrap();
-        let first = now(service.submit(
-            &target_id,
-            SetValue { value: 3 },
-            OperationOrigin::LocalUser,
-        ))
-        .unwrap();
-        let joined = now(service.begin_transaction(OperationTransactionMode::Join)).unwrap();
-        assert_eq!(joined.id(), transaction.id());
-        assert!(joined.is_joined());
-        now(joined.commit()).unwrap();
+        let first = transaction.enter(|| {
+            let first = now(service.submit(
+                &target_id,
+                SetValue { value: 3 },
+                OperationOrigin::LocalUser,
+            ))
+            .unwrap();
+            let joined = now(service.begin_transaction(OperationTransactionMode::Join)).unwrap();
+            assert_eq!(joined.id(), transaction.id());
+            assert!(joined.is_joined());
+            now(joined.commit()).unwrap();
+            first
+        });
         assert!(events.lock().unwrap().is_empty());
         now(transaction.commit()).unwrap();
         assert!(
@@ -116,7 +119,7 @@ mod service_contracts {
         );
 
         let transaction = now(service.begin_transaction(OperationTransactionMode::New)).unwrap();
-        now(service.submit(
+        now(transaction.submit(
             &target_id,
             SetValue { value: 9 },
             OperationOrigin::LocalUser,
@@ -128,7 +131,9 @@ mod service_contracts {
         assert_eq!(events.lock().unwrap().len(), 1);
 
         let outer = now(service.begin_transaction(OperationTransactionMode::New)).unwrap();
-        assert!(now(service.begin_transaction(OperationTransactionMode::Reject)).is_err());
+        outer.enter(|| {
+            assert!(now(service.begin_transaction(OperationTransactionMode::Reject)).is_err());
+        });
         now(outer.abort()).unwrap();
     }
 

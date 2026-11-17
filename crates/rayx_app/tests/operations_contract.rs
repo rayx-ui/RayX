@@ -1,12 +1,13 @@
 //! The operation contract in the core, NSH-free: `rayx_app::testing::FakeOperations` registered
 //! as `dyn OperationService`, the helpers of `dyn OperationService` over its members (typed
-//! handlers and submissions, transactions on the thread in their three modes, a dropped
+//! handlers and submissions, transactions entered on the thread in their three modes, a dropped
 //! transaction aborting) and a failed call in the contract's error type.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use std::sync::{Arc, Mutex};
 
+use futures::FutureExt as _;
 use futures::executor::block_on;
 use rayx_app::services::ContractFailure;
 use rayx_app::services::operations::{
@@ -43,6 +44,11 @@ impl OperationTargetHandler<Set> for Target {
             u64::from(operation.0),
         ))
     }
+}
+
+/// What `call` answered: the fake answers at once.
+fn now<F: std::future::Future>(call: F) -> F::Output {
+    call.now_or_never().expect("answers at once")
 }
 
 /// The fake, resolved by trait, with the target `doc`.
@@ -94,37 +100,31 @@ fn transactions_on_the_thread_join_nest_or_refuse() {
             .begin_transaction(OperationTransactionMode::New)
             .await
             .unwrap();
-        assert_eq!(operations.current_transaction_id(), Some(outer.id()));
-        operations
-            .submit(&id, Set(1), OperationOrigin::LocalUser)
-            .await
-            .unwrap();
-        let joined = operations
-            .begin_transaction(OperationTransactionMode::Join)
-            .await
-            .unwrap();
-        assert!(joined.is_joined());
-        assert_eq!(joined.id(), outer.id());
-        joined.commit().await.unwrap();
-        assert!(matches!(
-            operations
-                .begin_transaction(OperationTransactionMode::Reject)
-                .await,
-            Err(OperationError::NestedTransactionRejected)
-        ));
-        let inner = operations
-            .begin_transaction(OperationTransactionMode::New)
-            .await
-            .unwrap();
+        // Begun, it is carried, not entered on the thread.
+        assert_eq!(operations.current_transaction_id(), None);
+        let inner = outer.enter(|| {
+            assert_eq!(operations.current_transaction_id(), Some(outer.id()));
+            now(operations.submit(&id, Set(1), OperationOrigin::LocalUser)).unwrap();
+            let joined = now(operations.begin_transaction(OperationTransactionMode::Join)).unwrap();
+            assert!(joined.is_joined());
+            assert_eq!(joined.id(), outer.id());
+            now(joined.commit()).unwrap();
+            assert!(matches!(
+                now(operations.begin_transaction(OperationTransactionMode::Reject)),
+                Err(OperationError::NestedTransactionRejected)
+            ));
+            operations.begin_transaction(OperationTransactionMode::New)
+        });
+        assert_eq!(operations.current_transaction_id(), None);
+        let inner = inner.await.unwrap();
         assert_ne!(inner.id(), outer.id());
-        operations
+        inner
             .submit(&id, Set(2), OperationOrigin::LocalUser)
             .await
             .unwrap();
         // Dropped: aborted, its operation undone.
         drop(inner);
         assert_eq!(*target.0.lock().unwrap(), 1);
-        assert_eq!(operations.current_transaction_id(), Some(outer.id()));
         assert!(events.lock().unwrap().is_empty());
         let outer_id = outer.id();
         outer.commit().await.unwrap();
@@ -141,15 +141,14 @@ fn a_transaction_belongs_to_its_thread() {
             .begin_transaction(OperationTransactionMode::New)
             .await
             .unwrap();
-        let elsewhere = Arc::clone(&operations);
-        let other = std::thread::spawn(move || elsewhere.current_transaction_id())
-            .join()
-            .unwrap();
-        assert_eq!(other, None);
-        operations
-            .submit(&id, Set(5), OperationOrigin::LocalUser)
-            .await
-            .unwrap();
+        transaction.enter(|| {
+            let elsewhere = Arc::clone(&operations);
+            let other = std::thread::spawn(move || elsewhere.current_transaction_id())
+                .join()
+                .unwrap();
+            assert_eq!(other, None);
+            now(operations.submit(&id, Set(5), OperationOrigin::LocalUser)).unwrap();
+        });
         transaction.abort().await.unwrap();
     });
     assert_eq!(*target.0.lock().unwrap(), 0);

@@ -23,19 +23,25 @@ committed operations and failure codes in the published state (`diagnostics()` o
   `register_handler::<T, _>(id, handler).await`; it applies the operations meant for that target, atomically. The
   contract's `register_target(id, handle)` takes an `OperationTargetHandle`: the handler as a Rust object, which a TS
   implementation of the service calls through its class (`OperationTarget.of(handle).apply(record, origin)`), never a
-  closure. `release_target(id).await` releases it; operations submitted to it fail with `TargetReleased`.
+  closure; a handle TS does not take during the call (its `registerTarget` throws first) is released with the call.
+  `release_target(id).await` releases it; operations submitted to it fail with `TargetReleased`.
 - **Submissions:** `submit(&id, operation, origin).await` encodes the operation as an `OperationRecord` and submits it
   (`submit_record(record, origin, transaction)` in the contract); the receipt has its inverse, which history uses to
   undo it.
-- **Transactions:** `begin_transaction(mode).await` opens a transaction on the thread (join, new or reject when one
-  is open), over the commands `begin`, `commit(id)` and `abort(id)`: the operations submitted on the thread meanwhile
-  are in it, their events are published when it commits, and an abort (or dropping it) undoes them, newest first.
+- **Transactions:** `begin_transaction(mode).await` opens a transaction, over the commands `begin`, `commit(id)` and
+  `abort(id)`: its events are published when it commits, and an abort (or dropping it) undoes its operations, newest
+  first. It is carried explicitly: `transaction.submit(&id, operation, origin).await` submits in it from any task or
+  thread, so it may be held across `.await`s and closed on another thread. `transaction.enter(|| ..)` makes it the
+  thread's transaction for a synchronous body only: there `submit` on the service (and the code calling it) submits in
+  it and `begin_transaction(Join)` joins it (`Reject` refuses, `New` begins another); the body cannot `.await`, so it
+  never spans another task's work, and the futures it makes carry the id. A submission into a transaction that is not
+  open (never begun, committed or aborted) fails with `TransactionClosed`, applying nothing.
 - **Events:** `subscribe(..)` (or `events()`) hears every `OperationEvent`, committed or failed; a subscriber that
   panics fails neither the others nor the operation.
 - **Remote operations:** `publish_remote(&id, operation, peer, before, after, affected).await` publishes what a peer
   applied as committed.
-- **The instance:** `instance_id()`, a constant, tells two services apart; a thread's open transactions are kept per
-  instance.
+- **The instance:** `instance_id()`, a constant, tells two services apart; the transactions entered on a thread are
+  kept per instance.
 
 In TS, `services.getRequiredService(OperationService)` wraps whichever `dyn OperationService` is registered:
 `registerTarget(id, target)`, `releaseTarget`, `begin`, `commit`, `abort`, `submitRecord` and `publishRemoteRecord`

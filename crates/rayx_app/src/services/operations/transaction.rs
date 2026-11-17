@@ -4,35 +4,38 @@ use futures::FutureExt as _;
 use futures::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 
-use super::{OperationError, OperationService};
+use super::{DomainOperation, OperationError, OperationReceipt, OperationRecord, OperationService};
+use super::{OperationOrigin, OperationTargetId};
 
 thread_local! {
-    /// The transactions open on this thread, innermost last, by service instance.
-    static TRANSACTIONS: RefCell<Vec<ActiveTransaction>> = const { RefCell::new(Vec::new()) };
+    /// The transactions entered on this thread, innermost last, by service instance: each only
+    /// for the length of a synchronous [`OperationTransaction::enter`], so never across an
+    /// `.await`.
+    static ENTERED: RefCell<Vec<EnteredTransaction>> = const { RefCell::new(Vec::new()) };
 }
 
-/// How `begin_transaction` on `dyn OperationService` treats a transaction of the
-/// same service open on the thread.
+/// How `begin_transaction` on `dyn OperationService` treats a transaction of the same service
+/// entered on the thread (inside [`OperationTransaction::enter`]).
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum OperationTransactionMode {
     /// Joins it (its commit and abort are the outer transaction's).
     Join,
-    /// Begins a new one inside it.
+    /// Begins a new one, whatever is entered.
     New,
     /// Fails with [`OperationError::NestedTransactionRejected`].
     Reject,
 }
 
 #[derive(Clone, Copy)]
-struct ActiveTransaction {
+struct EnteredTransaction {
     service_id: u64,
     transaction_id: u64,
 }
 
-/// The innermost transaction of the service `service_id` open on this thread.
+/// The innermost transaction of the service `service_id` entered on this thread.
 pub(super) fn current_transaction_id(service_id: u64) -> Option<u64> {
-    TRANSACTIONS.with(|transactions| {
-        transactions
+    ENTERED.with(|entered| {
+        entered
             .borrow()
             .iter()
             .rev()
@@ -41,31 +44,30 @@ pub(super) fn current_transaction_id(service_id: u64) -> Option<u64> {
     })
 }
 
-fn push(service_id: u64, transaction_id: u64) {
-    TRANSACTIONS.with(|transactions| {
-        transactions.borrow_mut().push(ActiveTransaction {
-            service_id,
-            transaction_id,
+/// Leaves the transaction entered last on the thread when dropped (a body that panics leaves
+/// it too).
+struct Entered;
+
+impl Drop for Entered {
+    fn drop(&mut self) {
+        ENTERED.with(|entered| {
+            entered.borrow_mut().pop();
         });
-    });
+    }
 }
 
-fn pop(service_id: u64, transaction_id: u64) {
-    TRANSACTIONS.with(|transactions| {
-        let mut transactions = transactions.borrow_mut();
-        if let Some(index) = transactions.iter().rposition(|active| {
-            active.service_id == service_id && active.transaction_id == transaction_id
-        }) {
-            transactions.remove(index);
-        }
-    });
-}
-
-/// A transaction of an operation service, open on this thread until it is committed or
-/// aborted (dropped, it aborts): the operations submitted on the thread meanwhile through the
-/// helpers of `dyn OperationService` (`submit`, `resubmit`) are in it, and their events are
-/// published when it commits. Begun with `begin_transaction(mode)` on `dyn OperationService`,
-/// over the service's commands `begin`, `commit` and `abort`.
+/// A transaction of an operation service, open until it is committed or aborted (dropped, it
+/// aborts). Begun with `begin_transaction(mode)` on `dyn OperationService`, over the service's
+/// commands `begin`, `commit` and `abort`.
+///
+/// The transaction is carried explicitly: [`submit`](Self::submit) and
+/// [`resubmit`](Self::resubmit) submit in it by its id, from any task or thread, so it may be
+/// held across `.await`s and moved between threads, and two tasks on one thread never share
+/// one. [`enter`](Self::enter) makes it the thread's ambient transaction for a synchronous body
+/// only: there `submit`/`resubmit` on `dyn OperationService` (and code that calls them, like a
+/// view model's handler) submit in it, and `begin_transaction(Join)` joins it. A body cannot
+/// `.await`, so the ambient transaction never spans another task's work; a submission's future
+/// made in the body carries the transaction's id and may be awaited after it.
 pub struct OperationTransaction<'a> {
     service: &'a dyn OperationService,
     service_id: u64,
@@ -96,7 +98,6 @@ impl<'a> OperationTransaction<'a> {
             }
             _ => async move {
                 let transaction_id = service.begin().await?;
-                push(service_id, transaction_id);
                 Ok(Self {
                     service,
                     service_id,
@@ -119,6 +120,44 @@ impl<'a> OperationTransaction<'a> {
         !self.owns_scope
     }
 
+    /// Submits `operation` to `target_id` from `origin` in this transaction.
+    pub fn submit<T: DomainOperation>(
+        &self,
+        target_id: &OperationTargetId,
+        operation: T,
+        origin: OperationOrigin,
+    ) -> BoxFuture<'a, Result<OperationReceipt, OperationError>> {
+        match OperationRecord::from_operation(target_id.clone(), &operation) {
+            Ok(record) => self.resubmit(record, origin),
+            Err(error) => futures::future::ready(Err(error)).boxed(),
+        }
+    }
+
+    /// Submits `record` from `origin` in this transaction.
+    pub fn resubmit(
+        &self,
+        record: OperationRecord,
+        origin: OperationOrigin,
+    ) -> BoxFuture<'a, Result<OperationReceipt, OperationError>> {
+        self.service
+            .submit_record(record, origin, Some(self.transaction_id))
+    }
+
+    /// Runs `body` with this transaction entered on the thread: the submissions made in it
+    /// through `submit`/`resubmit` on `dyn OperationService` are in this transaction, and
+    /// `begin_transaction(Join)` joins it. It is left when `body` returns (or panics). `body`
+    /// is synchronous, so it never spans an `.await`; the futures it makes carry the id.
+    pub fn enter<R>(&self, body: impl FnOnce() -> R) -> R {
+        ENTERED.with(|entered| {
+            entered.borrow_mut().push(EnteredTransaction {
+                service_id: self.service_id,
+                transaction_id: self.transaction_id,
+            });
+        });
+        let _entered = Entered;
+        body()
+    }
+
     /// Commits it: its operations' events are published (a joined transaction leaves that to
     /// the outer one).
     pub fn commit(self) -> BoxFuture<'a, Result<(), OperationError>> {
@@ -133,22 +172,14 @@ impl<'a> OperationTransaction<'a> {
 
     fn close(mut self, commit: bool) -> BoxFuture<'a, Result<(), OperationError>> {
         self.closed = true;
-        let (service, service_id, transaction_id) =
-            (self.service, self.service_id, self.transaction_id);
         if !self.owns_scope {
             return futures::future::ready(Ok(())).boxed();
         }
-        async move {
-            let closed = if commit {
-                service.commit(transaction_id).await
-            } else {
-                service.abort(transaction_id).await
-            };
-            // After the events: a subscriber hears them inside the transaction.
-            pop(service_id, transaction_id);
-            closed
+        if commit {
+            self.service.commit(self.transaction_id)
+        } else {
+            self.service.abort(self.transaction_id)
         }
-        .boxed()
     }
 }
 
@@ -157,7 +188,6 @@ impl Drop for OperationTransaction<'_> {
         if !self.closed && self.owns_scope {
             // RayX's service aborts at once; another's abort is started, not awaited.
             let _ = self.service.abort(self.transaction_id).now_or_never();
-            pop(self.service_id, self.transaction_id);
         }
     }
 }

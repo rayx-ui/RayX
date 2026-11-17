@@ -6,9 +6,10 @@
 //! RayX's implementation is `rayx_services_operations`' (`add_operations()`); an app may register
 //! its own, in Rust or in TS. A target's handler crosses as an [`OperationTargetHandle`], a Rust
 //! object a TS implementation calls through its class handle (`OperationTarget` in TS). Typed
-//! submissions (`submit::<T>`), transactions on the thread (`begin_transaction(mode)`) and typed
-//! handlers (`register_handler::<T, H>`) are helpers on `dyn OperationService`, over the
-//! contract's members.
+//! submissions (`submit::<T>`), transactions (`begin_transaction(mode)`, carried explicitly and
+//! entered on the thread only for a synchronous body) and typed handlers
+//! (`register_handler::<T, H>`) are helpers on `dyn OperationService`, over the contract's
+//! members.
 
 mod error;
 mod model;
@@ -55,8 +56,8 @@ pub trait OperationService {
     #[events(ts = "OperationEvent")]
     fn events(&self) -> &EventStream<OperationEvent>;
 
-    /// The service's instance: what tells two services apart (a thread's open transactions are
-    /// kept per instance).
+    /// The service's instance: what tells two services apart (the transactions entered on a
+    /// thread are kept per instance).
     #[constant]
     fn instance_id(&self) -> u64;
 
@@ -129,9 +130,10 @@ impl dyn OperationService {
         self.register_target(target_id, handle)
     }
 
-    /// Begins a transaction on this thread (`mode` says what to do when one is open here):
-    /// the operations submitted on the thread through [`submit`](Self::submit) and
-    /// [`resubmit`](Self::resubmit) until it closes are in it.
+    /// Begins a transaction (`mode` says what to do when one is entered on this thread): submit
+    /// in it with its own `submit`/`resubmit` (from any task or thread), or enter it for a
+    /// synchronous body ([`OperationTransaction::enter`]), where [`submit`](Self::submit) and
+    /// [`resubmit`](Self::resubmit) submit in it.
     pub fn begin_transaction(
         &self,
         mode: OperationTransactionMode,
@@ -139,13 +141,14 @@ impl dyn OperationService {
         OperationTransaction::begin(self, mode)
     }
 
-    /// The innermost transaction open on this thread, if there is one.
+    /// The innermost transaction entered on this thread (inside
+    /// [`OperationTransaction::enter`]), if there is one.
     pub fn current_transaction_id(&self) -> Option<u64> {
         transaction::current_transaction_id(self.instance_id())
     }
 
-    /// Submits `operation` to `target_id` from `origin`, in the transaction open on this thread
-    /// if there is one.
+    /// Submits `operation` to `target_id` from `origin`, in the transaction entered on this
+    /// thread if there is one (read now: the future carries its id).
     pub fn submit<T: DomainOperation>(
         &self,
         target_id: &OperationTargetId,
@@ -158,8 +161,8 @@ impl dyn OperationService {
         }
     }
 
-    /// Submits `record` (history's replay, an imported record) from `origin`, in the
-    /// transaction open on this thread if there is one.
+    /// Submits `record` (an imported record) from `origin`, in the transaction entered on this
+    /// thread if there is one (read now: the future carries its id).
     pub fn resubmit(
         &self,
         record: OperationRecord,
