@@ -2,7 +2,7 @@
 
 A release is a version tag `vX.Y.Z` on `main` plus a GitHub Release whose notes are that version's
 `CHANGELOG.md` section and whose assets are the `rayx` command-line tool for six targets, with its
-installers. The crates, `rayx` (the umbrella), `rayx_app`, `rayx_core`, `rayx_runtime`,
+installers. The crates, `rayx` (the umbrella), `rayx_app_nsh`, `rayx_app`, `rayx_runtime`,
 `rayx_app_macros` and `rayx-cli` (the `rayx` binary), share one version, one tag, one GitHub
 Release and one root `CHANGELOG.md`; none of them gets a tag or a Release of its own. Nothing is
 published to crates.io (`publish = false`).
@@ -58,7 +58,8 @@ release pull request counts the crate as new again and repeats its history. `ray
 the `v0.5.0` tag does not have, carried the line until `v0.5.1`, and `rayx-cli`, which moved here
 from `rayx-ui/RayX.CLI` (never released there), carried `git_tag_name = "rayx-cli-v{{ version }}"`
 until `v0.6.0`. `rayx_components` and `rayx_devtools_protocol` carried the line until
-`v0.11.0`. A crate that is never released (`release = false`, such as `rayx-gallery`)
+`v0.11.0`. `rayx_app_nsh`, the NSH host's name after `v0.11.0` (where it was
+`rayx_app`), carries it until its first release, and so does each `rayx_services_*` crate. A crate that is never released (`release = false`, such as `rayx-gallery`)
 still needs it, and keeps it: release-plz looks every workspace crate up in the previous tag.
 
 A `Migration:` footer may wrap over several lines: the changelog template reads it from the commit's
@@ -112,7 +113,7 @@ header must stay identical to `[changelog] header`.
 
 A release pull request runs `ci.yml`, like any other pull request: one `ubuntu-24.04` job with
 `cargo fmt --all --check`, Clippy, `cargo test --workspace` and the `wasm32-unknown-unknown` check
-of `rayx_core` and `rayx_runtime`, and the `rayx-cli` job, which formats, lints and tests the CLI on
+of `rayx_app` and `rayx_runtime`, and the `rayx-cli` job, which formats, lints and tests the CLI on
 Linux, macOS and Windows. It also runs dist's Release workflow, which plans the release and
 builds the binaries without publishing anything. `ci.yml` also runs on every push to `main`;
 `release-plz.yml` runs no tests.
@@ -185,9 +186,9 @@ crates.io, and install the `rayx` of the same release:
 ```toml
 [dependencies]
 rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
-rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
+rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
 rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's app services
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
+rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
 ```
 
 `Cargo.lock` records the exact commit. Bump the tag by hand to take a new release; the latest one is

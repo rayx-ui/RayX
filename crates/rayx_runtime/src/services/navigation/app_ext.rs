@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::{NavigationLocationSynchronizer, NavigationOptions, NavigationService};
-use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
+use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// The configuration section [`NavigationOptions`] bind from.
 pub const NAVIGATION_OPTIONS_SECTION: &str = "RayX:Services:Navigation";

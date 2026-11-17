@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
-use rayx_core::di::{
+use rayx_app::di::{
     AppService, AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceError,
     StartupServiceType,
@@ -59,7 +59,7 @@ impl ResolvedFontAlias {
 pub enum FontServiceError {
     #[error(transparent)]
     InvalidOptions(#[from] FontOptionsError),
-    #[error("no FontRegistrar is registered (rayx_app registers NSH's)")]
+    #[error("no FontRegistrar is registered (rayx_app_nsh registers NSH's)")]
     NoRegistrar,
     #[error("the font service needs the asset service to register font assets")]
     MissingAssetService,

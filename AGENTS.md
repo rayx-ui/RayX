@@ -4,16 +4,16 @@ RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh)
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../_archive/RayX.Old`), which is not
 a dependency. The workspace has eight crates sharing one version, and the gallery app's crate:
 
-- `crates/rayx_core`: the pure-Rust core: dependency injection (singleton, scoped and transient
+- `crates/rayx_app`: the pure-Rust core: dependency injection (singleton, scoped and transient
   services, scopes, async startup), configuration sources, .NET's options model and the
   `RayXAppBuilder`. It has no NSH dependency and must keep building for `wasm32-unknown-unknown`;
   service crates depend on it alone.
 - `crates/rayx_runtime`: RayX's app services (storage, operations and history, navigation, input
   maps, platform and lifecycle state, app configuration, assets, fonts), ported from RayX.Old's
-  `rayx_runtime`. It depends on `rayx_core` alone, has no NSH dependency and builds for
+  `rayx_runtime`. It depends on `rayx_app` alone, has no NSH dependency and builds for
   `wasm32-unknown-unknown`; what a service needs from the platform is a trait here that
-  `rayx_app` implements. `docs/services.md` describes each service and how it is registered.
-- `crates/rayx_app`: the NSH layer: the app's start on each engine surface (a Rust root's
+  `rayx_app_nsh` implements. `docs/services.md` describes each service and how it is registered.
+- `crates/rayx_app_nsh`: the NSH layer: the app's start on each engine surface (a Rust root's
   `RayXAppBuilder::new()….start()`), a root provider per surface, a scope per screen, view models
   activated with their screen, the TS side (`src/ts/`: TS's `RayXAppBuilder` with a camelCase
   twin of every builder method, its `ServiceProvider`, services written in TS in the one
@@ -32,14 +32,14 @@ a dependency. The workspace has eight crates sharing one version, and the galler
   how one is built.
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers,
   `#[app_extension]` (a Rust builder extension exported to TS) and `#[contract]` (a Rust trait TS
-  implements), re-exported by `rayx_app` and `rayx`, and `#[native_module]`, used as
+  implements), re-exported by `rayx_app_nsh` and `rayx`, and `#[native_module]`, used as
   `#[rayx::native_module]`.
 - `crates/rayx_devtools_protocol`: the agent protocol of the dev tools (`docs/devtools.md`): the
-  JSON-RPC 2.0 messages between an app's dev-build agent in `rayx_app` and a tool's hub, with its
+  JSON-RPC 2.0 messages between an app's dev-build agent in `rayx_app_nsh` and a tool's hub, with its
   golden messages embedded. It depends on serde and serde_json alone (no RayX or NSH crate, no
   sockets, threads or clocks), builds for `wasm32-unknown-unknown`, and names nothing of a product built on RayX.
-- `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_core`, `rayx_runtime`,
-  `rayx_app`, `rayx_components` (`rayx::components`), `rayx_devtools_protocol`, `dxn_i18n` and
+- `crates/rayx`: the umbrella apps depend on: it re-exports `rayx_app`, `rayx_runtime`,
+  `rayx_app_nsh`, `rayx_components` (`rayx::components`), `rayx_devtools_protocol`, `dxn_i18n` and
   `dxn_intl`, with a prelude, and `#[rayx::native_module("spec")]` (from `rayx_app_macros`), the
   attribute of a TSX app's UI set (every RayX TS class and RayX's components, then the
   function's body).
@@ -84,7 +84,7 @@ committing:
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo check -p rayx_core -p rayx_runtime -p rayx_devtools_protocol --target wasm32-unknown-unknown
+cargo check -p rayx_app -p rayx_runtime -p rayx_devtools_protocol --target wasm32-unknown-unknown
 ```
 
 CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`, and
@@ -142,8 +142,8 @@ when it moved here.
 ## Consumers
 
 Consumers depend on release tags only:
-`rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` for apps (or `rayx_app`), and
-`rayx_core` from the same tag for service crates. A change a consumer needs is released here first; then the consumer
+`rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }` for apps (or `rayx_app_nsh`), and
+`rayx_app` from the same tag for service crates. A change a consumer needs is released here first; then the consumer
 bumps its tag by hand and validates what the change touches.
 
 ## Commits

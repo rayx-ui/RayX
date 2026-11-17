@@ -8,8 +8,8 @@ use std::sync::{Arc, Mutex};
 use futures::FutureExt as _;
 use futures::executor::block_on;
 use futures::future::LocalBoxFuture;
-use rayx_core::RayXAppBuilder;
-use rayx_core::di::StartupInitializationContext;
+use rayx_app::RayXAppBuilder;
+use rayx_app::di::StartupInitializationContext;
 use rayx_runtime::services::assets::{AssetReader, AssetService, MemoryAssetReader};
 use rayx_runtime::services::fonts::*;
 use serde_json::json;
@@ -59,7 +59,7 @@ fn options() -> FontOptions {
     options
 }
 
-fn start(registrar: Arc<FakeRegistrar>) -> rayx_core::ServiceProvider {
+fn start(registrar: Arc<FakeRegistrar>) -> rayx_app::ServiceProvider {
     let mut builder = RayXAppBuilder::new().add_fonts(|options| *options = self::options());
     builder.configuration.add_value(json!({
         "RayX": { "Services": { "Assets": { "packages": ["app"] } } }

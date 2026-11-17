@@ -1,16 +1,16 @@
 # Architecture
 
 RayX is a set of crates released together under one version. An app depends on the umbrella `rayx`; a service crate
-depends on `rayx_core` alone.
+depends on `rayx_app` alone.
 
 | Crate | What it holds | NSH |
 | --- | --- | --- |
-| `rayx_core` | Dependency injection (singleton, scoped and transient services, scopes, async startup), configuration sources, .NET's options model and the `RayXAppBuilder` | no |
+| `rayx_app` | Dependency injection (singleton, scoped and transient services, scopes, async startup), configuration sources, .NET's options model and the `RayXAppBuilder` | no |
 | `rayx_runtime` | The app services: storage, operations and history, navigation, input maps, platform and lifecycle state, app configuration, assets, fonts, translations | no |
-| `rayx_app` | The NSH layer: the app's start on each surface, a root provider per surface, a scope per screen, view-model activation and binding, navigation regions, the TS side (`rayx_app::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts and the services' classes), and the NSH side of the services | yes |
+| `rayx_app_nsh` | The NSH layer: the app's start on each surface, a root provider per surface, a scope per screen, view-model activation and binding, navigation regions, the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts and the services' classes), and the NSH side of the services | yes |
 | `rayx_components` | The component library: the design system's tokens as an NSH theme document (`theme.json`, generated from the Figma export) read through typed keys, its modes as the document's modifiers, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
 | `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
-| `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_core`, `rayx_app` and `rayx`; `#[app_extension]` and `#[contract]`, re-exported by `rayx_app` and `rayx`; `#[native_module]`, used as `#[rayx::native_module]` | no |
+| `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_app`, `rayx_app_nsh` and `rayx`; `#[app_extension]` and `#[contract]`, re-exported by `rayx_app_nsh` and `rayx`; `#[native_module]`, used as `#[rayx::native_module]` | no |
 | `rayx` | The umbrella: re-exports the other crates and dXn.I18n and dXn.Intl, with a prelude, and `#[rayx::native_module]`, the attribute of a TSX app's UI set | yes |
 | `rayx-cli` | The `rayx` command-line tool | no (runs the `nsh` CLI) |
 
@@ -18,10 +18,10 @@ depends on `rayx_core` alone.
 
 The core and the services have no NSH dependency. They build for every target, `wasm32-unknown-unknown` included, and
 service crates stay testable with plain `cargo test`. What a service needs from the platform is a trait in
-`rayx_runtime` that `rayx_app` implements on NSH: reading the app's assets, registering fonts, the device's state, the
+`rayx_runtime` that `rayx_app_nsh` implements on NSH: reading the app's assets, registering fonts, the device's state, the
 bundled `appsettings.json`.
 
-`rayx_app` and `rayx_components` are the crates that depend on NSH. `rayx_app` ties the core's lifetimes to what NSH runs (see
+`rayx_app_nsh` and `rayx_components` are the crates that depend on NSH. `rayx_app_nsh` ties the core's lifetimes to what NSH runs (see
 [Dependency injection](dependency-injection.md#lifetimes-on-nsh)) and gives TSX the same builder and container (see
 [TSX](tsx.md)): a TSX app builds and starts itself in TS, its services written in TS live in the one container, and
 Rust reaches them through contracts.
@@ -30,9 +30,9 @@ Rust reaches them through contracts.
 
 `rayx` re-exports:
 
-- `rayx::core`: `rayx_core`
-- `rayx::runtime`: `rayx_runtime`
 - `rayx::app`: `rayx_app`
+- `rayx::runtime`: `rayx_runtime`
+- `rayx::app_nsh`: `rayx_app_nsh`
 - `rayx::components`: `rayx_components` (not in the prelude: its names, `Button`, `Density`, would clash)
 - `rayx::devtools_protocol`: `rayx_devtools_protocol`
 - `rayx::i18n` and `rayx::intl`: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and

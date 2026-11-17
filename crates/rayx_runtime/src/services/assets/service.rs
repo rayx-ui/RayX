@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, PoisonError, RwLock};
 
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
-use rayx_core::di::{
+use rayx_app::di::{
     AppService, AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceError,
     StartupServiceType,
@@ -231,7 +231,7 @@ impl AssetService {
     async fn read(&self, uri: &str) -> Result<Vec<u8>> {
         let reader = self.reader.as_ref().ok_or_else(|| AssetError::Read {
             uri: uri.to_owned(),
-            reason: "no AssetReader is registered (rayx_app registers NSH's)".to_owned(),
+            reason: "no AssetReader is registered (rayx_app_nsh registers NSH's)".to_owned(),
         })?;
         reader.read(uri).await.map_err(|reason| AssetError::Read {
             uri: uri.to_owned(),

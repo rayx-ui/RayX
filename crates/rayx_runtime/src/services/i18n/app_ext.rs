@@ -1,6 +1,6 @@
 use super::{I18N_CONFIG_PATH, I18nOptions, I18nService};
 use crate::services::assets::AssetAppBuilderExt;
-use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
+use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`I18nService`] on an app builder.
 pub trait I18nAppBuilderExt: AppBuilder {

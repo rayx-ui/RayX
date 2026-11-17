@@ -2,9 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
-use rayx_core::ChangeSubscription;
-use rayx_core::change::Listeners;
-use rayx_core::di::{
+use rayx_app::ChangeSubscription;
+use rayx_app::change::Listeners;
+use rayx_app::di::{
     AppService, AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceError,
     StartupServiceType,

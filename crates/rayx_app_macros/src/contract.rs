@@ -325,7 +325,7 @@ mod tests {
     use super::*;
 
     fn refused(item: TokenStream) -> String {
-        match expand(syn::parse2(item).unwrap(), &quote!(::rayx_app)) {
+        match expand(syn::parse2(item).unwrap(), &quote!(::rayx_app_nsh)) {
             Ok(_) => "accepted".to_owned(),
             Err(error) => error.to_string(),
         }

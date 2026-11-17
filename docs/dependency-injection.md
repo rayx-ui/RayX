@@ -1,6 +1,6 @@
 # Dependency injection
 
-`rayx_core` has a `ServiceProvider` with the API of .NET's `Microsoft.Extensions.DependencyInjection`: singleton,
+`rayx_app` has a `ServiceProvider` with the API of .NET's `Microsoft.Extensions.DependencyInjection`: singleton,
 scoped and transient services, child scopes, and services that initialize asynchronously at startup
 ([Startup](startup.md)).
 
@@ -60,7 +60,7 @@ let maybe = services.service::<Cache<u32>>();         // Option<Arc<Cache<u32>>>
 let scope = services.create_scope();                  // a child scope
 ```
 
-In a Rust component, `rayx_app::services()` returns the provider of the nearest screen scope (or the surface's root).
+In a Rust component, `rayx_app_nsh::services()` returns the provider of the nearest screen scope (or the surface's root).
 In TSX, `await builder.start()` gives the surface's root:
 
 ```tsx
@@ -130,7 +130,7 @@ See [TSX](tsx.md#contracts).
 
 ## Lifetimes on NSH
 
-NSH has no process-wide singletons: each window, test and hot restart is a surface of its own. So `rayx_app` keeps one
+NSH has no process-wide singletons: each window, test and hot restart is a surface of its own. So `rayx_app_nsh` keeps one
 root provider per surface, built from the builder the app starts there (`RayXAppBuilder::new()….start()` in a Rust
 root, `await builder.start()` in TSX).
 
@@ -149,7 +149,7 @@ scope.dispose();
 ## View models
 
 `use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
-component's cleanup. `ServiceProvider::view_model::<T>()` (`rayx_app::ts`) does the same, in a Rust bridge, for a TSX
+component's cleanup. `ServiceProvider::view_model::<T>()` (`rayx_app_nsh::ts`) does the same, in a Rust bridge, for a TSX
 screen until its scope is disposed.
 
 ```rust

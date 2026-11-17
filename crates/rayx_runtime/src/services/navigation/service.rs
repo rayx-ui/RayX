@@ -4,7 +4,7 @@ use super::{
 };
 use futures::FutureExt;
 use futures::future::LocalBoxFuture;
-use rayx_core::di::{
+use rayx_app::di::{
     AppService, AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };

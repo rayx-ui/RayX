@@ -1,6 +1,6 @@
 use super::SelectionService;
 use crate::services::navigation::NavigationService;
-use rayx_core::AppBuilder;
+use rayx_app::AppBuilder;
 
 /// Registers the [`SelectionService`] on an app builder.
 pub trait SelectionAppBuilderExt: AppBuilder {

@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use super::{SuspensionHost, SuspensionService};
-use rayx_core::AppBuilder;
+use rayx_app::AppBuilder;
 
 /// Registers the [`SuspensionService`] on an app builder.
 pub trait SuspensionAppBuilderExt: AppBuilder {
     /// Registers the app's [`SuspensionService`] unless one is registered; the UI layer
-    /// publishes the app's lifecycle to it (`rayx_app` does from NSH) and quits through the
-    /// app's `dyn SuspensionHost`, when one is registered (`rayx_app` registers NSH's).
+    /// publishes the app's lifecycle to it (`rayx_app_nsh` does from NSH) and quits through the
+    /// app's `dyn SuspensionHost`, when one is registered (`rayx_app_nsh` registers NSH's).
     fn add_suspension(mut self) -> Self {
         self.services_mut()
             .try_add_service_factory::<SuspensionService>(|services| {

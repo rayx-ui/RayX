@@ -17,7 +17,7 @@ fn native(registry: &mut Registry) {}
 ```
 
 It is NSH's `#[native_module("my-app")]` on the function, whose body first registers every RayX TS class
-(`rayx::app::register`: the builder, the provider and its tokens, the startup classes and interfaces, the options
+(`rayx::app_nsh::register`: the builder, the provider and its tokens, the startup classes and interfaces, the options
 classes and the services' classes) and RayX's components with their theme document (`rayx::components::register`),
 and nothing else. The function's own body adds the app's exports:
 
@@ -36,7 +36,7 @@ fn native(registry: &mut Registry) {
 TSX imports the set by its specifier (`import { RayXAppBuilder } from "my-app"`), and the crate gains `pub fn
 registry()`, as with NSH's attribute. Keep the attribute's line in the crate's source: NSH's CLI reads the set's
 specifier from it, and the web runtime keeps the set by that name. A hand-written `#[native_module]` registers the same
-with `rayx::app::register(registry)` and `rayx::components::register(registry)`. If the crate depends on `nsh-core`,
+with `rayx::app_nsh::register(registry)` and `rayx::components::register(registry)`. If the crate depends on `nsh-core`,
 depend on it in `[dependencies]` (or not at all): the attribute takes NSH's core from the crate's own dependency when it
 names one, so `nsh-core` in `[dev-dependencies]` alone breaks the crate's normal build.
 
@@ -86,7 +86,7 @@ See [Startup](startup.md).
 
 ## Resolving services
 
-| Rust (`rayx_core::ServiceProvider`) | TS (`ServiceProvider`) |
+| Rust (`rayx_app::ServiceProvider`) | TS (`ServiceProvider`) |
 | --- | --- |
 | `services.service::<I18nService>()` | `services.getService(I18nService)`: the service, or `null` |
 | `services.required_service::<I18nService>()` | `services.getRequiredService(I18nService)`: throws an `Error` naming the token when none is registered |

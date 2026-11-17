@@ -1,5 +1,5 @@
-//! Procedural macros for `rayx_app`: the `AppService` derive, `#[app_extension]` and
-//! `#[contract]`, and the umbrella's `#[native_module]`.
+//! Procedural macros for RayX's core (`rayx_app`) and NSH host (`rayx_app_nsh`): the `AppService`
+//! derive, `#[app_extension]` and `#[contract]`, and the umbrella's `#[native_module]`.
 
 mod contract;
 mod extension;
@@ -56,7 +56,7 @@ pub fn app_extension(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// TS gets the interface `WeatherSource` and the token function `weatherSourceToken()`, which
 /// the app adds to its set (`registry.contract::<dyn WeatherSource>()`, with
-/// `rayx::app::ts::ContractRegistryExt`); `builder.addSingletonAs(weatherSourceToken(), () =>
+/// `rayx::app_nsh::ts::ContractRegistryExt`); `builder.addSingletonAs(weatherSourceToken(), () =>
 /// new OpenMeteo())` (and the scoped, transient and startup forms) registers a TS
 /// implementation, which Rust resolves as `Arc<dyn WeatherSource>` on the engine thread (off it,
 /// a method fails with `ContractError::WrongThread`).
@@ -84,7 +84,7 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 ///
 /// It is NSH's `#[native_module("my-app")]` on the function, whose body first registers every
-/// RayX TS class (`rayx::app::register`) and RayX's components with their theme document
+/// RayX TS class (`rayx::app_nsh::register`) and RayX's components with their theme document
 /// (`rayx::components::register`), and nothing else; the crate gains `pub fn registry()`, as
 /// with NSH's attribute. Written in the crate's source, the attribute line is what NSH's CLI
 /// reads the set's specifier from. Used through the `rayx` umbrella, which it names. It takes
@@ -108,8 +108,8 @@ pub fn native_module(attr: TokenStream, item: TokenStream) -> TokenStream {
         .into()
 }
 
-/// The path of `rayx_app` as the calling crate names it: through the `rayx` umbrella
-/// (`::rayx::app`), else `rayx_app` itself (`::rayx_app`, which names itself so in its own
+/// The path of `rayx_app_nsh` as the calling crate names it: through the `rayx` umbrella
+/// (`::rayx::app_nsh`), else `rayx_app_nsh` itself (`::rayx_app_nsh`, which names itself so in its own
 /// tests).
 fn app_path() -> proc_macro2::TokenStream {
     app_path_from(|name| crate_name(name).ok())
@@ -118,17 +118,17 @@ fn app_path() -> proc_macro2::TokenStream {
 fn app_path_from(found: impl Fn(&str) -> Option<FoundCrate>) -> proc_macro2::TokenStream {
     let ident = |name: &str| syn::Ident::new(name, proc_macro2::Span::call_site());
     match found("rayx") {
-        Some(FoundCrate::Itself) => quote!(crate::app),
+        Some(FoundCrate::Itself) => quote!(crate::app_nsh),
         Some(FoundCrate::Name(name)) => {
             let name = ident(&name);
-            quote!(::#name::app)
+            quote!(::#name::app_nsh)
         }
-        None => match found("rayx_app") {
+        None => match found("rayx_app_nsh") {
             Some(FoundCrate::Name(name)) => {
                 let name = ident(&name);
                 quote!(::#name)
             }
-            _ => quote!(::rayx_app),
+            _ => quote!(::rayx_app_nsh),
         },
     }
 }
@@ -136,8 +136,8 @@ fn app_path_from(found: impl Fn(&str) -> Option<FoundCrate>) -> proc_macro2::Tok
 /// Implements `AppService` (RayX's `RayXService`) for a service type.
 ///
 /// The generated impl names the trait through the crate the caller depends on: the `rayx`
-/// umbrella (`::rayx::core::di::AppService`), else `rayx_core` (`::rayx_core::di::AppService`),
-/// else `rayx_app` (`::rayx_app::di::AppService`: the NSH layer re-exports the core under
+/// umbrella (`::rayx::app::di::AppService`), else `rayx_app` (`::rayx_app::di::AppService`),
+/// else `rayx_app_nsh` (`::rayx_app_nsh::di::AppService`: the NSH layer re-exports the core under
 /// `di`). Renamed dependencies are honoured.
 ///
 /// `#[app_service(startup)]` is accepted (as RayX's `#[rayx(startup)]`) and marks
@@ -186,10 +186,10 @@ fn di_path_from(found: impl Fn(&str) -> Option<FoundCrate>) -> proc_macro2::Toke
     let ident = |name: &str| syn::Ident::new(name, proc_macro2::Span::call_site());
     if let Some(found) = found("rayx") {
         return match found {
-            FoundCrate::Itself => quote!(crate::core::di),
+            FoundCrate::Itself => quote!(crate::app::di),
             FoundCrate::Name(name) => {
                 let name = ident(&name);
-                quote!(::#name::core::di)
+                quote!(::#name::app::di)
             }
         };
     }
@@ -197,15 +197,15 @@ fn di_path_from(found: impl Fn(&str) -> Option<FoundCrate>) -> proc_macro2::Toke
         let name = ident(name);
         quote!(::#name::di)
     };
-    // `rayx_core` declares `extern crate self as rayx_core`, so `Itself` (its own
+    // `rayx_app` declares `extern crate self as rayx_app`, so `Itself` (its own
     // unit and integration tests) resolves through the absolute path as well.
-    match found("rayx_core") {
-        Some(FoundCrate::Itself) => path("rayx_core"),
+    match found("rayx_app") {
+        Some(FoundCrate::Itself) => path("rayx_app"),
         Some(FoundCrate::Name(name)) => path(&name),
-        None => match found("rayx_app") {
+        None => match found("rayx_app_nsh") {
             Some(FoundCrate::Itself) => quote!(crate::di),
             Some(FoundCrate::Name(name)) => path(&name),
-            None => quote!(::rayx_core::di),
+            None => quote!(::rayx_app::di),
         },
     }
 }
@@ -240,15 +240,18 @@ mod tests {
             .to_string()
         };
         assert_eq!(
-            app(&[("rayx_app", named("rayx_app")), ("rayx", named("rayx"))]),
-            quote!(::rayx::app).to_string()
+            app(&[
+                ("rayx_app_nsh", named("rayx_app_nsh")),
+                ("rayx", named("rayx"))
+            ]),
+            quote!(::rayx::app_nsh).to_string()
         );
         assert_eq!(
-            app(&[("rayx_app", FoundCrate::Itself)]),
-            quote!(::rayx_app).to_string()
+            app(&[("rayx_app_nsh", FoundCrate::Itself)]),
+            quote!(::rayx_app_nsh).to_string()
         );
         assert_eq!(
-            app(&[("rayx_app", named("app_layer"))]),
+            app(&[("rayx_app_nsh", named("app_layer"))]),
             quote!(::app_layer).to_string()
         );
     }
@@ -257,15 +260,15 @@ mod tests {
     fn a_crate_with_only_the_umbrella_names_it() {
         assert_eq!(
             resolved(&[("rayx", named("rayx"))]),
-            quote!(::rayx::core::di).to_string()
+            quote!(::rayx::app::di).to_string()
         );
         assert_eq!(
             resolved(&[("rayx", named("framework"))]),
-            quote!(::framework::core::di).to_string()
+            quote!(::framework::app::di).to_string()
         );
         assert_eq!(
             resolved(&[("rayx", FoundCrate::Itself)]),
-            quote!(crate::core::di).to_string()
+            quote!(crate::app::di).to_string()
         );
     }
 
@@ -273,11 +276,11 @@ mod tests {
     fn the_umbrella_wins_over_the_layers() {
         assert_eq!(
             resolved(&[
-                ("rayx_core", named("rayx_core")),
-                ("rayx", named("rayx")),
                 ("rayx_app", named("rayx_app")),
+                ("rayx", named("rayx")),
+                ("rayx_app_nsh", named("rayx_app_nsh")),
             ]),
-            quote!(::rayx::core::di).to_string()
+            quote!(::rayx::app::di).to_string()
         );
     }
 
@@ -285,19 +288,19 @@ mod tests {
     fn the_core_wins_over_the_nsh_layer() {
         assert_eq!(
             resolved(&[
-                ("rayx_app", named("rayx_app")),
-                ("rayx_core", named("rayx_base")),
+                ("rayx_app_nsh", named("rayx_app_nsh")),
+                ("rayx_app", named("rayx_base")),
             ]),
             quote!(::rayx_base::di).to_string()
         );
         assert_eq!(
-            resolved(&[("rayx_app", named("rayx_app"))]),
-            quote!(::rayx_app::di).to_string()
+            resolved(&[("rayx_app_nsh", named("rayx_app_nsh"))]),
+            quote!(::rayx_app_nsh::di).to_string()
         );
         assert_eq!(
-            resolved(&[("rayx_app", FoundCrate::Itself)]),
+            resolved(&[("rayx_app_nsh", FoundCrate::Itself)]),
             quote!(crate::di).to_string()
         );
-        assert_eq!(resolved(&[]), quote!(::rayx_core::di).to_string());
+        assert_eq!(resolved(&[]), quote!(::rayx_app::di).to_string());
     }
 }

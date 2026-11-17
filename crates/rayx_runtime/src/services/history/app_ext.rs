@@ -3,7 +3,7 @@ use std::sync::Arc;
 use super::{HistoryService, HistoryStore, KeyValueHistoryStore};
 use crate::services::operations::{OperationService, OperationsAppBuilderExt};
 use crate::services::storage::{KeyValueStore, StorageAppBuilderExt};
-use rayx_core::{AppBuilder, ServiceProvider};
+use rayx_app::{AppBuilder, ServiceProvider};
 
 /// Registers the [`HistoryService`] (undo and redo of operations) on an app builder.
 pub trait HistoryAppBuilderExt: AppBuilder {

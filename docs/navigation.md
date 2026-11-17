@@ -30,7 +30,7 @@ Both are called in a component's body, under the app's services.
 
 On NSH the navigation's location is NSH's app address (`app_url`, `set_app_url_with`; TS's `UrlScheme.url()` and
 `setUrl`): the web shows it in the address bar and keeps it in the browser's history, and the native platforms keep it
-for the app, starting at the link that opened it. `rayx_app` registers `NshLocationSynchronizer` for it, so nothing
+for the app, starting at the link that opened it. `rayx_app_nsh` registers `NshLocationSynchronizer` for it, so nothing
 is to set up:
 
 - **Startup** goes to the default route, then, once the app is ready, to NSH's address at start (the page's address,

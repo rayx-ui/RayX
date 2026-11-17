@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex, PoisonError};
 
-use rayx_core::ChangeSubscription;
-use rayx_core::change::Listeners;
-use rayx_core::di::AppService;
+use rayx_app::ChangeSubscription;
+use rayx_app::change::Listeners;
+use rayx_app::di::AppService;
 
 use super::PlatformSnapshot;
 
@@ -16,7 +16,7 @@ pub struct PlatformChangedEvent {
 type PlatformListener = dyn Fn(&PlatformChangedEvent) + Send + Sync;
 
 /// The device and the user's settings as the app's surface sees them ([`PlatformSnapshot`]),
-/// kept current by the UI layer (`rayx_app` updates it from NSH's environment), with change
+/// kept current by the UI layer (`rayx_app_nsh` updates it from NSH's environment), with change
 /// listeners. On NSH each surface has a provider, so the service describes its surface.
 #[derive(Clone, AppService)]
 pub struct PlatformInfoService {

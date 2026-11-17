@@ -1,6 +1,6 @@
 use super::{FONT_CONFIG_PATH, FontOptions, FontRegistrar, FontService};
 use crate::services::assets::AssetAppBuilderExt;
-use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
+use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`FontService`] on an app builder.
 pub trait FontAppBuilderExt: AppBuilder {
@@ -8,7 +8,7 @@ pub trait FontAppBuilderExt: AppBuilder {
     /// catalog's fonts, after the asset service, registered too when missing) unless one is
     /// registered. Its [`FontOptions`] bind from [`FONT_CONFIG_PATH`], then `configure`
     /// changes them; invalid aliases fail startup. It registers through the app's
-    /// `dyn FontRegistrar` (`rayx_app` registers NSH's).
+    /// `dyn FontRegistrar` (`rayx_app_nsh` registers NSH's).
     fn add_fonts(self, configure: impl Fn(&mut FontOptions) + Send + Sync + 'static) -> Self {
         let mut builder = self
             .add_assets(|_| {})

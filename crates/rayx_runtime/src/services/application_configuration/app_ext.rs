@@ -2,7 +2,7 @@ use super::{
     APPLICATION_CONFIGURATION_PATH, ApplicationConfiguration, ApplicationConfigurationService,
 };
 use crate::services::platform::{PlatformAppBuilderExt, PlatformInfoService};
-use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
+use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`ApplicationConfigurationService`] on an app builder.
 pub trait ApplicationConfigurationAppBuilderExt: AppBuilder {

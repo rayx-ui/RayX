@@ -13,7 +13,7 @@ builder
     })
 ```
 
-`add_asset_files(files)` (in `rayx_app`; `add_bundled_assets(uris)` for any list of `asset:/@<package>/<path>` URLs)
+`add_asset_files(files)` (in `rayx_app_nsh`; `add_bundled_assets(uris)` for any list of `asset:/@<package>/<path>` URLs)
 adds a crate's files to the catalog, so the crate needs no manifest listing them. Packages it adds come after the
 asset options' packages, in the order their files are added.
 
@@ -64,7 +64,7 @@ let text = assets.load_text("notes/welcome.md").await?;
 
 ## On NSH
 
-NSH packages each crate's `assets/` and serves `asset:/` URLs itself, and `rayx_app` reads them with NSH's `fetch`, so
+NSH packages each crate's `assets/` and serves `asset:/` URLs itself, and `rayx_app_nsh` reads them with NSH's `fetch`, so
 the same code serves desktop, mobile and web. Assets are read-only, and a session restart reads them again (no hot
 reload).
 

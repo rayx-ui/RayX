@@ -193,7 +193,7 @@ fn a_rust_app_s_root_builds_the_chain_and_starts_it() {
         &lib,
         "RayXAppBuilder::new().add_storage().add_history().start();",
     );
-    let followed = at(&lib, "rayx::app::app_state()");
+    let followed = at(&lib, "rayx::app_nsh::app_state()");
     assert!(root < started && started < followed, "{lib}");
     let readme = read(&app, "README.md");
     at(&readme, "builds the app with `RayXAppBuilder::new()`");

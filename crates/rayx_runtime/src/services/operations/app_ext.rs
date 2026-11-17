@@ -1,5 +1,5 @@
 use super::OperationService;
-use rayx_core::AppBuilder;
+use rayx_app::AppBuilder;
 
 /// Registers the [`OperationService`] on an app builder.
 pub trait OperationsAppBuilderExt: AppBuilder {

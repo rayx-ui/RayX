@@ -576,7 +576,7 @@ mod service {
 }
 
 mod registration {
-    use rayx_core::RayXAppBuilder;
+    use rayx_app::RayXAppBuilder;
     use rayx_runtime::services::navigation::{
         NavigationAppBuilderExt, NavigationOptions, NavigationService, RouteDefinition,
     };

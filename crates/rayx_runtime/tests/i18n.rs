@@ -6,8 +6,8 @@
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
-use rayx_core::RayXAppBuilder;
-use rayx_core::di::StartupInitializationContext;
+use rayx_app::RayXAppBuilder;
+use rayx_app::di::StartupInitializationContext;
 use rayx_runtime::services::assets::{AssetReader, MemoryAssetReader};
 use rayx_runtime::services::i18n::*;
 use rayx_runtime::services::platform::{PlatformAppBuilderExt as _, PlatformInfoService};
@@ -41,7 +41,7 @@ fn reader() -> MemoryAssetReader {
 fn start(
     configure: impl Fn(&mut I18nOptions) + Send + Sync + 'static,
     platform: bool,
-) -> rayx_core::ServiceProvider {
+) -> rayx_app::ServiceProvider {
     let mut builder = RayXAppBuilder::new().add_i18n(configure);
     if platform {
         builder = builder.add_platform();

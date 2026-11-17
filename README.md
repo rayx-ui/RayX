@@ -61,9 +61,9 @@ const store = services.getRequiredService(KeyValueStore);
 | Crate | What it is |
 | --- | --- |
 | `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;` and `#[rayx::native_module]` |
-| `rayx_core` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
+| `rayx_app` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
 | `rayx_runtime` | The app services; no NSH, builds for wasm32 |
-| `rayx_app` | The NSH layer: the app's start, surfaces, screens, view-model binding, navigation regions, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
+| `rayx_app_nsh` | The NSH layer: the app's start, surfaces, screens, view-model binding, navigation regions, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
 | `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]` |
 | `rayx-cli` | The `rayx` command-line tool |
 

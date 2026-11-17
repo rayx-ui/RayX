@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::{InMemoryKeyValueStore, KeyValueStore};
-use rayx_core::AppBuilder;
+use rayx_app::AppBuilder;
 
 /// The store the platform keeps the app's values in (on NSH, NSH's storage), registered by the
 /// UI layer: [`StorageAppBuilderExt::add_storage`] makes it the app's store, whether the layer

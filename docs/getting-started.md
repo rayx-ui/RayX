@@ -27,9 +27,9 @@ Depend on a tag, the same one for every RayX crate:
 ```toml
 [dependencies]
 rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
-rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
+rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
 rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
+rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
 ```
 
 NSH comes from an integration tag `nshx-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh), through
@@ -80,7 +80,7 @@ pub fn App() -> impl IntoElement {
             options.default_language("en");
         })
         .start();
-    dynamic(|| match rayx::app::app_state() {
+    dynamic(|| match rayx::app_nsh::app_state() {
         AppState::Ready => home().into_element(),
         AppState::Failed(message) => error_screen(message).into_element(),
         _ => splash().into_element(),
@@ -99,6 +99,8 @@ and [Startup](startup.md).
 RayX is 0.x: a minor release (`0.5` → `0.6`) may break the API. Each breaking change has a `Migration:` note in
 [CHANGELOG.md](../CHANGELOG.md).
 
+- From `v0.11`: `rayx_core` is `rayx_app` now and the old `rayx_app` (the NSH layer) is `rayx_app_nsh`;
+  rename the dependencies and their paths (`rayx::core` is `rayx::app`, the old `rayx::app` is `rayx::app_nsh`).
 - From `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths.
 - From `nsh-app` `v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_core`) and their
   paths, and move to `dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.

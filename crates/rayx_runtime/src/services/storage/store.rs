@@ -1,7 +1,7 @@
 use super::{Result, StorageBucket};
 use futures::FutureExt as _;
 use futures::future::BoxFuture;
-use rayx_core::AppService;
+use rayx_app::AppService;
 
 /// What a store keeps its values in.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]

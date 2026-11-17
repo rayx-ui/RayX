@@ -48,7 +48,7 @@ let name = fonts.register_font(bytes).await?;
 ## On NSH
 
 NSH registers every font its UI sets' crates ship in `assets/` before the first frame, so for the catalog's font assets
-`rayx_app` only reads the family name (NSH's `font_family`); a font registered while the app runs (`register_font`)
+`rayx_app_nsh` only reads the family name (NSH's `font_family`); a font registered while the app runs (`register_font`)
 goes to NSH's `register_font`. Both read WOFF and WOFF2 fonts too.
 
 ## TSX

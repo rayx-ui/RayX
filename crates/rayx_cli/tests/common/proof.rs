@@ -227,9 +227,9 @@ pub fn override_rayx(app: &Path) {
     let mut text = std::fs::read_to_string(&config).expect(".cargo/config.toml");
     let crates = checkout().join("crates");
     text.push_str(&format!(
-        "\n# The proof's override: the RayX crates of the checkout under test.\n[patch.\"https://github.com/rayx-ui/RayX\"]\nrayx = {{ path = {:?} }}\nrayx_core = {{ path = {:?} }}\n",
+        "\n# The proof's override: the RayX crates of the checkout under test.\n[patch.\"https://github.com/rayx-ui/RayX\"]\nrayx = {{ path = {:?} }}\nrayx_app = {{ path = {:?} }}\n",
         crates.join("rayx"),
-        crates.join("rayx_core"),
+        crates.join("rayx_app"),
     ));
     std::fs::write(&config, text).expect(".cargo/config.toml");
 }

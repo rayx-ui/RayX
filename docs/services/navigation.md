@@ -43,7 +43,7 @@ route in its query: `/app/projects/12?panel=%2Fsettings`.
 
 - After every navigation in any region, the service shows the location through the app's
   `NavigationLocationSynchronizer` (from DI, `with_navigation_location_synchronizer`): a new navigation as a new
-  history entry; back, forward and refresh in place. On NSH, `rayx_app`'s `NshLocationSynchronizer` shows it as NSH's
+  history entry; back, forward and refresh in place. On NSH, `rayx_app_nsh`'s `NshLocationSynchronizer` shows it as NSH's
   app address (`set_app_url_with`), takes the navigation to the address at start once the app is ready, and follows
   the platform's moves of it and the deep links that open the app while it runs
   ([the location on NSH](../navigation.md#the-location-on-nsh)); without NSH the default synchronizer does nothing.

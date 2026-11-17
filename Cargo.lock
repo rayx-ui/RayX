@@ -4875,10 +4875,11 @@ dependencies = [
  "nsh-engine",
  "nsh-js",
  "rayx_app",
+ "rayx_app_nsh",
  "rayx_components",
- "rayx_core",
  "rayx_devtools_protocol",
  "rayx_runtime",
+ "serde_json",
 ]
 
 [[package]]
@@ -4923,28 +4924,10 @@ dependencies = [
 name = "rayx_app"
 version = "0.11.0"
 dependencies = [
- "base64 0.22.1",
- "crossbeam-channel",
- "dxn_i18n_macros",
- "dxn_intl",
- "dxn_reactive",
  "futures",
- "nsh-base",
- "nsh-bundler",
- "nsh-core",
- "nsh-engine",
- "nsh-js",
- "png",
  "rayx_app_macros",
- "rayx_core",
- "rayx_devtools_protocol",
- "rayx_runtime",
  "serde",
  "serde_json",
- "tokio",
- "tokio-tungstenite",
- "tungstenite",
- "url",
 ]
 
 [[package]]
@@ -4958,6 +4941,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayx_app_nsh"
+version = "0.11.0"
+dependencies = [
+ "base64 0.22.1",
+ "crossbeam-channel",
+ "dxn_i18n_macros",
+ "dxn_intl",
+ "dxn_reactive",
+ "futures",
+ "nsh-base",
+ "nsh-bundler",
+ "nsh-core",
+ "nsh-engine",
+ "nsh-js",
+ "png",
+ "rayx_app",
+ "rayx_app_macros",
+ "rayx_devtools_protocol",
+ "rayx_runtime",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
+ "url",
+]
+
+[[package]]
 name = "rayx_components"
 version = "0.11.0"
 dependencies = [
@@ -4967,16 +4978,6 @@ dependencies = [
  "nsh-core",
  "nsh-engine",
  "nsh-js",
- "serde_json",
-]
-
-[[package]]
-name = "rayx_core"
-version = "0.11.0"
-dependencies = [
- "futures",
- "rayx_app_macros",
- "serde",
  "serde_json",
 ]
 
@@ -4995,7 +4996,7 @@ dependencies = [
  "dxn_i18n",
  "dxn_intl",
  "futures",
- "rayx_core",
+ "rayx_app",
  "serde",
  "serde_json",
  "thiserror",

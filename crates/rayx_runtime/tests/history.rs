@@ -205,7 +205,7 @@ mod scope_lifecycle {
     use std::time::{Duration, Instant};
 
     use futures::future::LocalBoxFuture;
-    use rayx_core::di::{
+    use rayx_app::di::{
         AsyncInitializable, StartupInitializable, StartupInitializationContext,
         StartupInitializationResult, StartupServiceType,
     };
@@ -1744,14 +1744,14 @@ mod legacy_history_reset {
 }
 
 mod registration {
-    use rayx_core::RayXAppBuilder;
-    use rayx_core::di::StartupInitializationContext;
+    use rayx_app::RayXAppBuilder;
+    use rayx_app::di::StartupInitializationContext;
     use rayx_runtime::services::history::{
         HistoryAppBuilderExt, HistoryService, InMemoryHistoryStore,
     };
     use rayx_runtime::services::operations::OperationService;
 
-    fn start(builder: RayXAppBuilder) -> rayx_core::ServiceProvider {
+    fn start(builder: RayXAppBuilder) -> rayx_app::ServiceProvider {
         let services = builder.build().unwrap();
         futures::executor::block_on(
             services

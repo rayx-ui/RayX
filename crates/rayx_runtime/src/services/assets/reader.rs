@@ -3,10 +3,10 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use futures::FutureExt as _;
 use futures::future::LocalBoxFuture;
-use rayx_core::di::AppService;
+use rayx_app::di::AppService;
 
 /// Reads the files the app ships by their `asset:/` URL: the platform's part of the asset
-/// service (`rayx_app` reads them with NSH's `fetch`). A failure is a message naming why.
+/// service (`rayx_app_nsh` reads them with NSH's `fetch`). A failure is a message naming why.
 pub trait AssetReader: Send + Sync + 'static {
     fn read(&self, uri: &str) -> LocalBoxFuture<'static, Result<Vec<u8>, String>>;
 }

@@ -23,17 +23,17 @@ semver_check = false
 # along in the next one.
 release_commits = "^(feat|fix|perf)"
 
-# One release unit: the crates inherit `[workspace.package] version`, `rayx_app` builds on
-# `rayx_core` and `rayx_runtime`, the layers re-export `rayx_app_macros`' derive, the `rayx`
+# One release unit: the crates inherit `[workspace.package] version`, `rayx_app_nsh` builds on
+# `rayx_app` and `rayx_runtime`, the layers re-export `rayx_app_macros`' derive, the `rayx`
 # umbrella re-exports them all and `rayx-cli` scaffolds apps on the same tag, so they share one
 # version (the version group), one tag `vX.Y.Z`, one GitHub Release and one root CHANGELOG.md,
-# all owned by `rayx_app`.
+# all owned by `rayx_app`, the core.
 [[package]]
 name = "rayx_app"
 changelog_path = "./CHANGELOG.md"
 changelog_include = [
     "rayx",
-    "rayx_core",
+    "rayx_app_nsh",
     "rayx_runtime",
     "rayx_app_macros",
     "rayx-cli",
@@ -43,7 +43,7 @@ changelog_include = [
 version_group = "rayx"
 
 [[package]]
-name = "rayx_core"
+name = "rayx_app_macros"
 version_group = "rayx"
 # Released under `rayx_app`'s tag and changelog. It keeps the inherited `git_tag_name`: in
 # git-only mode that template is how it finds its previous version (`v*` tags).
@@ -52,9 +52,20 @@ git_release_enable = false
 changelog_update = false
 
 [[package]]
+name = "rayx_app_nsh"
+version_group = "rayx"
+# The NSH host, like `rayx_app_macros`. It was `rayx_app` up to `v0.11.0`, whose tag has no
+# `rayx_app_nsh`: this name, which matches no tag, makes its first release a new crate's
+# (docs/releasing.md). Remove it in the first commit after that release's tag.
+git_tag_name = "rayx_app_nsh-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
 name = "rayx_runtime"
 version_group = "rayx"
-# Like `rayx_core`.
+# Like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -62,15 +73,7 @@ changelog_update = false
 [[package]]
 name = "rayx"
 version_group = "rayx"
-# The umbrella crate, like `rayx_core`.
-git_tag_enable = false
-git_release_enable = false
-changelog_update = false
-
-[[package]]
-name = "rayx_app_macros"
-version_group = "rayx"
-# Like `rayx_core`.
+# The umbrella crate, like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -78,7 +81,7 @@ changelog_update = false
 [[package]]
 name = "rayx_components"
 version_group = "rayx"
-# RayX's component library and theme, like `rayx_core`.
+# RayX's component library and theme, like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -95,7 +98,7 @@ release = false
 [[package]]
 name = "rayx-cli"
 version_group = "rayx"
-# The `rayx` command-line tool, like `rayx_core`; dist builds and publishes its binaries for the
+# The `rayx` command-line tool, like `rayx_app_macros`; dist builds and publishes its binaries for the
 # tag.
 git_tag_enable = false
 git_release_enable = false
@@ -155,7 +158,7 @@ commit_parsers = [
 [[package]]
 name = "rayx_devtools_protocol"
 version_group = "rayx"
-# The agent protocol of the dev tools, like `rayx_core`.
+# The agent protocol of the dev tools, like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false

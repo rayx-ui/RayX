@@ -31,13 +31,13 @@ fn the_prelude_builds_an_app_with_the_services() {
 
 #[test]
 fn the_crates_are_reachable_by_name() {
-    let _: fn() -> rayx::core::RayXAppBuilder = rayx::core::RayXAppBuilder::new;
+    let _: fn() -> rayx::app::RayXAppBuilder = rayx::app::RayXAppBuilder::new;
     let locale = rayx::intl::parse_locale("de-AT").unwrap();
     assert_eq!(locale.to_string(), "de-AT");
     let message = rayx::i18n::Message::parse("Hello").unwrap();
     assert_eq!(message.format(&locale, &rayx::i18n::Args::new()), "Hello");
     // The TSX classes, and a Rust root's start.
-    let _: Option<&rayx::app::ts::ServiceProvider> = None;
+    let _: Option<&rayx::app_nsh::ts::ServiceProvider> = None;
     let _: fn(RayXAppBuilder) = StartAppBuilderExt::start;
     // The screen's (or the surface root's) provider, for Rust components.
     let _: fn() -> Result<ServiceProvider, AppError> = services;

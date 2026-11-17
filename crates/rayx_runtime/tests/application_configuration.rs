@@ -6,7 +6,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use rayx_core::{Configuration, RayXAppBuilder, ServiceProvider};
+use rayx_app::{Configuration, RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::application_configuration::*;
 use rayx_runtime::services::platform::PlatformInfoService;
 use serde_json::json;

@@ -68,7 +68,7 @@ the result, so `appsettings.json` sets the defaults and code has the last word. 
 startup instead of the first use.
 
 **Resolved by type.** Rust code resolves a service from the provider: `services.required_service::<I18nService>()`, or
-`rayx_app::services()` in a component. TSX resolves them by their classes, named after the Rust services, from the
+`rayx_app_nsh::services()` in a component. TSX resolves them by their classes, named after the Rust services, from the
 provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.md#rayxs-services)).
 
 **Written in TS too.** An app's own services may be TS classes in the same container, and a Rust trait marked
@@ -76,11 +76,11 @@ provider `start()` gives: `services.getRequiredService(I18nService)` ([TSX](tsx.
 
 **Platform-independent.** `rayx_runtime` has no NSH dependency and builds for `wasm32-unknown-unknown`. What a service
 needs from the platform is a trait (`AssetReader`, `FontRegistrar`, `KeyValueStore`,
-`NavigationLocationSynchronizer`) that `rayx_app` implements on NSH, so the services stay testable with `cargo test`.
+`NavigationLocationSynchronizer`) that `rayx_app_nsh` implements on NSH, so the services stay testable with `cargo test`.
 
 ## On NSH
 
-`rayx_app` gives the services what they need from NSH:
+`rayx_app_nsh` gives the services what they need from NSH:
 
 - Every surface's builder starts with `NshAssetReader` (reads `asset:/` URLs with `fetch`), `NshFontRegistrar`
   (registers fonts with `register_font`) and `NshKeyValueStore` (persists values in NSH's storage).
@@ -92,11 +92,11 @@ needs from the platform is a trait (`AssetReader`, `FontRegistrar`, `KeyValueSto
 
 ## Writing a service
 
-A service crate depends on `rayx_core` alone and follows the same pattern: options bound from a section, a service
+A service crate depends on `rayx_app` alone and follows the same pattern: options bound from a section, a service
 made from them, and a builder extension that registers both.
 
 ```rust
-use rayx_core::prelude::*;
+use rayx_app::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Serialize, Deserialize)]

@@ -13,7 +13,7 @@ use super::{
     OperationTransaction, OperationTransactionMode, TypedOperationTarget, current_transaction_id,
 };
 use futures::{FutureExt, future::LocalBoxFuture};
-use rayx_core::di::{
+use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };

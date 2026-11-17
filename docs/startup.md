@@ -165,7 +165,7 @@ from NSH.
 #[component]
 fn Root() -> impl IntoElement {
     RayXAppBuilder::new().add_storage().add_i18n(|_| {}).start();
-    dynamic(|| match rayx_app::app_state() {
+    dynamic(|| match rayx_app_nsh::app_state() {
         AppState::Ready => home().into_element(),
         AppState::Failed(message) => error_screen(message).into_element(),
         _ => splash().into_element(),

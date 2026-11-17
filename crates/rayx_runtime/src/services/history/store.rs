@@ -3,7 +3,7 @@ use futures::{
     FutureExt as _,
     future::{BoxFuture, LocalBoxFuture},
 };
-use rayx_core::di::{
+use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };

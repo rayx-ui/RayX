@@ -15,7 +15,7 @@ use crate::services::operations::{
     OperationSubscription, OperationTargetId, OperationTransactionMode,
 };
 use futures::{FutureExt, future::LocalBoxFuture};
-use rayx_core::di::{
+use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceError,
     StartupServiceType,

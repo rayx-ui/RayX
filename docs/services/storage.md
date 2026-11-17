@@ -27,7 +27,7 @@ drafts.remove("note-1")?;
 
 ## On NSH
 
-`rayx_app`'s `NshKeyValueStore` keeps values in NSH's storage (`nsh/storage`: a file in the app's data directory, the
+`rayx_app_nsh`'s `NshKeyValueStore` keeps values in NSH's storage (`nsh/storage`: a file in the app's data directory, the
 browser's `localStorage`; strings only, 5 MB in all, shared with the app's TSX) under `rayx/<bucket>/<key>`, UTF-8 as
 it is and other bytes in base64.
 

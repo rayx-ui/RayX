@@ -2,7 +2,7 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-use rayx_core::RayXAppBuilder;
+use rayx_app::RayXAppBuilder;
 use rayx_runtime::services::storage::{
     InMemoryKeyValueStore, KeyValueStore, StorageAppBuilderExt, StorageError,
 };

@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex, PoisonError};
 
-use rayx_core::ChangeSubscription;
-use rayx_core::change::Listeners;
-use rayx_core::di::AppService;
+use rayx_app::ChangeSubscription;
+use rayx_app::change::Listeners;
+use rayx_app::di::AppService;
 
 use super::{SuspensionEvent, SuspensionEventKind, SuspensionSnapshot};
 
@@ -17,7 +17,7 @@ pub struct SuspensionChangedEvent {
 
 /// What the suspension service asks of the platform: to quit the app, and whether the user's
 /// requests to quit (the app's Quit item, its quit key) come to the app first rather than
-/// quitting. The UI layer implements it (`rayx_app` with NSH's `quit` and `on_quit_request`).
+/// quitting. The UI layer implements it (`rayx_app_nsh` with NSH's `quit` and `on_quit_request`).
 pub trait SuspensionHost: Send + Sync + 'static {
     /// Quits the app (a desktop's; elsewhere the system decides, and nothing happens). Callable
     /// on any thread.
@@ -43,7 +43,7 @@ type EventListener = dyn Fn(&SuspensionEvent) + Send + Sync;
 type QuitRequestListener = dyn Fn() + Send + Sync;
 
 /// The app's lifecycle, activation, visibility and a desktop's window and wakes
-/// ([`SuspensionSnapshot`]), from the events the UI layer publishes (`rayx_app` publishes NSH's
+/// ([`SuspensionSnapshot`]), from the events the UI layer publishes (`rayx_app_nsh` publishes NSH's
 /// app state, the window's, the system's wakes and the app's quitting), with listeners for every
 /// event and for changes. Work that pauses in the background listens to it; work that must not
 /// be lost listens for [`SuspensionEventKind::Destroying`], and an app that asks before it quits

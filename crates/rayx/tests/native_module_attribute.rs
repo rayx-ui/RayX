@@ -6,13 +6,13 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-#[path = "../../rayx_app/tests/headless/mod.rs"]
+#[path = "../../rayx_app_nsh/tests/headless/mod.rs"]
 mod headless;
 
 use std::collections::BTreeSet;
 
 use nsh_core::prelude::*;
-use rayx::app::ts::ServiceProvider;
+use rayx::app_nsh::ts::ServiceProvider;
 use rayx::prelude::*;
 
 /// The greeting an extension registers.
@@ -81,7 +81,7 @@ fn exports(set: &Registry) -> BTreeSet<String> {
 fn the_set_is_rayx_s_then_the_body_s_exports_and_nothing_else() {
     let set = registry();
     let mut rayx = Registry::ui_set("test/app");
-    rayx::app::register(&mut rayx);
+    rayx::app_nsh::register(&mut rayx);
     rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     let own: BTreeSet<String> = exports(&set).difference(&expected).cloned().collect();

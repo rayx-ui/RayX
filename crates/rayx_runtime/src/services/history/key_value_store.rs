@@ -1,7 +1,7 @@
 use super::{HistoryJournalV2, HistoryScopeId, HistoryStore, HistoryStoreError};
 use crate::services::storage::KeyValueStore;
 use futures::{FutureExt as _, future::LocalBoxFuture};
-use rayx_core::di::{
+use rayx_app::di::{
     AsyncInitializable, StartupInitializable, StartupInitializationContext,
     StartupInitializationResult, StartupInitializationState, StartupServiceType,
 };
@@ -12,7 +12,7 @@ pub const HISTORY_BUCKET: &str = "rayx.history";
 
 /// A [`HistoryStore`] over a [`KeyValueStore`]: each scope's journal is one JSON value in
 /// [`HISTORY_BUCKET`], keyed by the scope's id, so history persists wherever the store keeps its
-/// values (NSH's storage on a device, through `rayx_app`).
+/// values (NSH's storage on a device, through `rayx_app_nsh`).
 #[derive(Clone)]
 pub struct KeyValueHistoryStore {
     store: Arc<dyn KeyValueStore>,

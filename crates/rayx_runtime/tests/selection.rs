@@ -5,8 +5,8 @@
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
-use rayx_core::di::{StartupInitializationContext, StartupInitializationError};
-use rayx_core::{RayXAppBuilder, ServiceProvider};
+use rayx_app::di::{StartupInitializationContext, StartupInitializationError};
+use rayx_app::{RayXAppBuilder, ServiceProvider};
 use rayx_runtime::services::navigation::{
     NavigationAppBuilderExt, NavigationService, RouteDefinition,
 };

@@ -8,7 +8,7 @@ The app's lifecycle, focus and visibility, a desktop's window and the system's w
 builder.add_suspension()
 ```
 
-`add_suspension` quits through the app's `dyn SuspensionHost` when one is registered (`rayx_app` registers NSH's;
+`add_suspension` quits through the app's `dyn SuspensionHost` when one is registered (`rayx_app_nsh` registers NSH's;
 `with_suspension_host(host)` registers another).
 
 ## What it holds
@@ -61,7 +61,7 @@ Linux); elsewhere the system decides when an app ends, and they do nothing.
 
 ## On NSH
 
-`rayx_app` publishes, from `use_platform_sync()` in a Rust root or `builder.start()` in a TSX app:
+`rayx_app_nsh` publishes, from `use_platform_sync()` in a Rust root or `builder.start()` in a TSX app:
 
 - NSH's `lifecycle()`: NSH folds the platforms' own callbacks into one app state, so an event's reason is
   `AppStateChanged` (or the host's start);

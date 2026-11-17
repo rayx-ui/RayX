@@ -7,8 +7,8 @@
 use std::sync::Arc;
 
 use futures::executor::block_on;
-use rayx_core::RayXAppBuilder;
-use rayx_core::di::StartupInitializationContext;
+use rayx_app::RayXAppBuilder;
+use rayx_app::di::StartupInitializationContext;
 use rayx_runtime::services::assets::*;
 use serde_json::json;
 

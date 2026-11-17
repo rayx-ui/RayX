@@ -4,7 +4,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use rayx_core::RayXAppBuilder;
+use rayx_app::RayXAppBuilder;
 use rayx_runtime::services::platform::*;
 
 #[test]

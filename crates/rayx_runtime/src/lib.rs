@@ -1,9 +1,9 @@
 //! RayX's app services, without NSH or GPUI (ported from RayX's `rayx_runtime::services`). Each
-//! service is registered on a [`RayXAppBuilder`](rayx_core::RayXAppBuilder) through an
+//! service is registered on a [`RayXAppBuilder`](rayx_app::RayXAppBuilder) through an
 //! `AppBuilder` extension trait (`add_history()`, `add_navigation(..)`, …) and reads its options
-//! from the configuration under `RayX:Services:<Name>` through [`rayx_core`]'s options model.
+//! from the configuration under `RayX:Services:<Name>` through [`rayx_app`]'s options model.
 //! What a service needs from the platform (reading the app's files, registering fonts, the
-//! device's state) is a trait here that the NSH layer, `rayx_app`, implements. It builds for
+//! device's state) is a trait here that the NSH layer, `rayx_app_nsh`, implements. It builds for
 //! every target, wasm32 included.
 //!
 //! `docs/services.md` describes each service and how it is registered.

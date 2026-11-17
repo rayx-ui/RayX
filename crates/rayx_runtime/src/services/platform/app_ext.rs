@@ -1,12 +1,12 @@
 use std::future::Future;
 
 use super::{PlatformInfoService, PlatformSnapshot};
-use rayx_core::{AppBuilder, ReadyAppBuilderExt as _, ReadyContext, ReadyResult};
+use rayx_app::{AppBuilder, ReadyAppBuilderExt as _, ReadyContext, ReadyResult};
 
 /// Registers the [`PlatformInfoService`] on an app builder.
 pub trait PlatformAppBuilderExt: AppBuilder {
     /// Registers the app's [`PlatformInfoService`] unless one is registered. It holds a default
-    /// desktop snapshot until the UI layer reports the platform's (`rayx_app` does from NSH,
+    /// desktop snapshot until the UI layer reports the platform's (`rayx_app_nsh` does from NSH,
     /// before the startup services initialize).
     fn add_platform(mut self) -> Self {
         self.services_mut()

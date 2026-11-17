@@ -12,7 +12,7 @@ reach the apps through it.
 
 ## The switch
 
-`rayx_app` compiles the agent and the layer under `cfg(rayx_devtools)`. Its build script sets it when
+`rayx_app_nsh` compiles the agent and the layer under `cfg(rayx_devtools)`. Its build script sets it when
 NSH's dev tools hooks are compiled in and `RAYX_DEVTOOLS` is not `0`:
 
 - NSH's hooks are `nsh-core`'s feature `inspect`, which every platform's `dev` feature turns on and
@@ -24,14 +24,14 @@ NSH's dev tools hooks are compiled in and `RAYX_DEVTOOLS` is not `0`:
 
 The `DevTools` class and the `DevLayer` component are registered in every build, so the `describe`
 program and a runner see the same names; without the dev tools their bodies do nothing.
-`rayx_app::devtools_enabled()` (TSX: `DevTools.isEnabled()`) says whether a build has them.
+`rayx_app_nsh::devtools_enabled()` (TSX: `DevTools.isEnabled()`) says whether a build has them.
 
 ## The agent
 
 - **When it starts.** Once the app is ready: `await builder.start()` (TSX) or
   `RayXAppBuilder::new()….start()` (a Rust root) starts it in a host's dev session. It stays off in a plain engine (a test's) and in a test
   session, whose host refuses the app's connections; there `await DevTools.start({ url })` (TSX) or
-  `rayx_app::start_devtools(options)` (Rust) starts it. `DevTools:Enabled = false` in the
+  `rayx_app_nsh::start_devtools(options)` (Rust) starts it. `DevTools:Enabled = false` in the
   configuration turns it off.
 - **Where it dials.** `ws://127.0.0.1:9240`, the hub's default on loopback, or `DevTools:Url`, or the
   `url` `DevTools.start` names. It dials again after 250 ms, doubling to 5 s, so the hub may start
@@ -100,8 +100,8 @@ marker is a marker, a note a note.
 | Group | Proves |
 | --- | --- |
 | `cargo test -p rayx_devtools_protocol --test devtools_protocol` | Golden messages round-trip byte for byte; unknown methods; version mismatch |
-| `cargo test -p rayx_app --test devtools_connect` | The switch, the dial with backoff, `hello`, starting only in a dev session |
-| `cargo test -p rayx_app --test devtools_tree` | Tree, node, find and pick on a hot TSX app; bounds; pay on connect |
-| `cargo test -p rayx_app --test devtools_act` | Act, input, wait and screenshot through a fake driver on the worker thread |
-| `cargo test -p rayx_app --test devtools_layer` | Pick mode, outlines, the toolbar and the note box on the headless engine |
+| `cargo test -p rayx_app_nsh --test devtools_connect` | The switch, the dial with backoff, `hello`, starting only in a dev session |
+| `cargo test -p rayx_app_nsh --test devtools_tree` | Tree, node, find and pick on a hot TSX app; bounds; pay on connect |
+| `cargo test -p rayx_app_nsh --test devtools_act` | Act, input, wait and screenshot through a fake driver on the worker thread |
+| `cargo test -p rayx_app_nsh --test devtools_layer` | Pick mode, outlines, the toolbar and the note box on the headless engine |
 | `cargo test -p rayx-cli --test new_devtools` | `rayx new` writes the class and the layer |

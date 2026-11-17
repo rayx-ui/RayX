@@ -6,7 +6,7 @@
 use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
-use rayx_core::prelude::*;
+use rayx_app::prelude::*;
 use rayx_runtime::services::platform::{
     FormFactor, PlatformAppBuilderExt as _, PlatformInfoService, PlatformSnapshot,
 };

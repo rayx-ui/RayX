@@ -17,7 +17,7 @@ diagnostics = []
 dxn_i18n.workspace = true
 dxn_intl = { workspace = true, features = ["tz"] }
 futures = { workspace = true, features = ["alloc", "std"] }
-rayx_core.workspace = true
+rayx_app.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 serde_json.workspace = true
 thiserror.workspace = true

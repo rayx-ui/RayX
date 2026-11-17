@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex, PoisonError};
 
-use rayx_core::di::AppService;
+use rayx_app::di::AppService;
 
 /// The files the app's packages ship, as the platform lists them (`asset:/@<package>/<path>`
-/// URLs; `rayx_app` takes NSH's `assets!()`): the asset service catalogs them without a
+/// URLs; `rayx_app_nsh` takes NSH's `assets!()`): the asset service catalogs them without a
 /// manifest listing them, and reads a package's manifest only when the package ships one, for
 /// the metadata it adds.
 #[derive(Clone, Debug, Default, AppService)]

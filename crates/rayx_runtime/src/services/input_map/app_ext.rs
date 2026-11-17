@@ -1,6 +1,6 @@
 use super::{INPUT_MAP_OPTIONS_SECTION, InputMapOptions, InputMapService};
 use crate::services::storage::{KeyValueStore, StorageAppBuilderExt};
-use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
+use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`InputMapService`] on an app builder.
 pub trait InputMapAppBuilderExt: AppBuilder {

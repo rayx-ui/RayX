@@ -34,14 +34,14 @@ pub(crate) fn expand(
     };
     let body = &item.block;
     item.block = syn::parse_quote!({
-        #rayx::app::register(#registry);
+        #rayx::app_nsh::register(#registry);
         #rayx::components::register(#registry);
         #body
     });
     let nsh_core = if nsh_core_in_scope {
         quote! {
             #[allow(unused_imports)]
-            use #rayx::app::__private::nsh_core;
+            use #rayx::app_nsh::__private::nsh_core;
         }
     } else {
         quote!()
@@ -49,7 +49,7 @@ pub(crate) fn expand(
     Ok(quote! {
         #nsh_core
 
-        #[#rayx::app::__private::nsh_core::element::native_module(#specifier)]
+        #[#rayx::app_nsh::__private::nsh_core::element::native_module(#specifier)]
         #item
     })
 }

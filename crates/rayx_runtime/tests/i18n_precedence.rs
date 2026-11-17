@@ -7,8 +7,8 @@
 use std::sync::Arc;
 
 use futures::executor::block_on;
-use rayx_core::RayXAppBuilder;
-use rayx_core::di::StartupInitializationContext;
+use rayx_app::RayXAppBuilder;
+use rayx_app::di::StartupInitializationContext;
 use rayx_runtime::services::assets::{AssetReader, MemoryAssetReader};
 use rayx_runtime::services::i18n::*;
 use serde_json::json;
@@ -34,7 +34,7 @@ fn reader() -> MemoryAssetReader {
         )
 }
 
-fn start(packages: &[&str]) -> rayx_core::ServiceProvider {
+fn start(packages: &[&str]) -> rayx_app::ServiceProvider {
     let mut builder = RayXAppBuilder::new().add_i18n(|_| {});
     builder.configuration.add_value(json!({
         "RayX": { "Services": { "Assets": { "packages": packages } } }

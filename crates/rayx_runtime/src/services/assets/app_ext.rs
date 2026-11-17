@@ -1,12 +1,12 @@
 use super::{ASSET_OPTIONS_SECTION, AssetOptions, AssetReader, AssetService, BundledAssets};
-use rayx_core::{AppBuilder, ServiceAppBuilderExt as _};
+use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
 
 /// Registers the [`AssetService`] on an app builder.
 pub trait AssetAppBuilderExt: AppBuilder {
     /// Registers the app's [`AssetService`] (a startup singleton that reads the packages'
     /// manifests) unless one is registered. Its [`AssetOptions`] bind from
     /// [`ASSET_OPTIONS_SECTION`], then `configure` changes them (`options.package("my-app")`).
-    /// It reads through the app's `dyn AssetReader` (`rayx_app` registers NSH's).
+    /// It reads through the app's `dyn AssetReader` (`rayx_app_nsh` registers NSH's).
     fn add_assets(mut self, configure: impl Fn(&mut AssetOptions) + Send + Sync + 'static) -> Self {
         self = self.add_options::<AssetOptions>(|options| {
             options
