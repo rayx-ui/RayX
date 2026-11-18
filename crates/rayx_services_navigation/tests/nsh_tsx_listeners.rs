@@ -25,12 +25,12 @@ setTimeout(async () => {
     const routes = { first: [], second: [] };
     const stopFirst = first.onChange((event) => routes.first.push(event.to.path));
     second.onChange((event) => routes.second.push(event.to.path));
-    first.navigate("/a");
+    await first.navigate("/a");
     await tick();
     lines.push(String(typeof stopFirst));
     stopFirst();
     stopFirst();
-    second.navigate("/b");
+    await second.navigate("/b");
     await tick();
     lines.push(`routes ${routes.first} / ${routes.second}`);
 
@@ -38,10 +38,10 @@ setTimeout(async () => {
     const pages = { first: 0, second: 0 };
     const stopPanel = panel.onChange(() => pages.first++);
     panel.onChange(() => pages.second++);
-    panel.navigate("/a");
+    await panel.navigate("/a");
     await tick();
     stopPanel();
-    panel.navigate("/b");
+    await panel.navigate("/b");
     await tick();
     lines.push(`pages ${pages.first} / ${pages.second}`);
   } catch (error) {

@@ -2,7 +2,6 @@
 
 use std::sync::Arc;
 
-use futures::FutureExt as _;
 use futures::future::BoxFuture;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
@@ -14,24 +13,20 @@ use serde::Serialize;
 
 use crate::region_ts::NavigationRegion;
 
-/// A command's answer for TS, which calls synchronously: RayX's implementation answers at
-/// once; a TS implementation's call starts, and TS awaits its contract's member instead.
-pub(crate) fn now<T: Serialize>(
+/// A command's answer for TS: its JSON, or the service's error as the promise's rejection.
+pub(crate) async fn answer<T: Serialize>(
     command: BoxFuture<'_, Result<T, NavigationError>>,
 ) -> Result<JsonValue, String> {
-    match command.now_or_never() {
-        Some(answer) => answer
-            .map(|value| json(&value))
-            .map_err(|error| error.to_string()),
-        None => Err(
-            "the navigation service answers later: await its contract's member instead".to_owned(),
-        ),
-    }
+    command
+        .await
+        .map(|value| json(&value))
+        .map_err(|error| error.to_string())
 }
 
 /// The app's navigation, for TSX: `services.getRequiredService(NavigationService)`, then
-/// `navigate("/projects/12")`, `back()` and `current()`; `region(name)` is a region of it, and
-/// `onChange` hears every route change, with `{ region, from, to }`.
+/// `await navigate("/projects/12")`, `await back()` and `current()`; `region(name)` is a region
+/// of it, and `onChange` hears every route change, with `{ region, from, to }`. Its commands are
+/// promises, over RayX's implementation and a TS one alike; its reads are synchronous.
 #[class]
 pub struct NavigationService {
     service: Arc<dyn Navigation>,
@@ -49,6 +44,11 @@ impl ServiceClass for NavigationService {
     }
 }
 
+/// The service `this` wraps.
+fn service(this: &Instance<NavigationService>) -> Arc<dyn Navigation> {
+    this.with(|this| Arc::clone(&this.service))
+}
+
 #[class]
 impl NavigationService {
     /// The contract this class is the token of (TS types only: `null` at run time).
@@ -58,20 +58,33 @@ impl NavigationService {
         None
     }
 
-    /// Navigates the root region to `uri`; the result has the region, the direction, the status
-    /// (`Success`, `FailedNotFound`, …) and the route.
-    pub fn navigate(&self, uri: String) -> Result<JsonValue, String> {
-        now(self.service.navigate_to(uri))
+    /// Navigates the root region to `uri`; resolves with the region, the direction, the status
+    /// (`Success`, `FailedNotFound`, …) and the route, or rejects with the service's error.
+    #[ts("(uri: string): NavigationResult")]
+    pub async fn navigate(this: Instance<Self>, uri: String) -> Result<JsonValue, String> {
+        let service = service(&this);
+        answer(service.navigate_to(uri)).await
     }
 
     /// Goes back in the root region's journal.
-    pub fn back(&self) -> Result<JsonValue, String> {
-        now(self.service.back(self.service.root_region_name()))
+    #[ts("(): NavigationResult")]
+    pub async fn back(this: Instance<Self>) -> Result<JsonValue, String> {
+        let service = service(&this);
+        answer(service.back(service.root_region_name())).await
     }
 
     /// Goes forward in the root region's journal.
-    pub fn forward(&self) -> Result<JsonValue, String> {
-        now(self.service.forward(self.service.root_region_name()))
+    #[ts("(): NavigationResult")]
+    pub async fn forward(this: Instance<Self>) -> Result<JsonValue, String> {
+        let service = service(&this);
+        answer(service.forward(service.root_region_name())).await
+    }
+
+    /// Navigates the root region to its current route again.
+    #[ts("(): NavigationResult")]
+    pub async fn refresh(this: Instance<Self>) -> Result<JsonValue, String> {
+        let service = service(&this);
+        answer(service.refresh(service.root_region_name())).await
     }
 
     /// The root region's current route and its status, `null` before the first navigation.
@@ -81,7 +94,8 @@ impl NavigationService {
             .map_or(JsonValue::Null, |data| json(&data))
     }
 
-    /// The navigation region `name`, made when missing: its own journal, for a `NavStack`.
+    /// The navigation region `name`, made when missing: its own journal, for a `NavStack`. Over
+    /// a TS implementation, which makes it later, the region's first command waits for it.
     pub fn region(&self, name: String) -> Result<Instance<NavigationRegion>, String> {
         NavigationRegion::of(Arc::clone(&self.service), name).map(Instance::new)
     }

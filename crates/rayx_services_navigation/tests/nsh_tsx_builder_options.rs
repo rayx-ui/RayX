@@ -48,7 +48,7 @@ setTimeout(async () => {
       .start();
     const routes = Probe.routes(services);
     lines.push(routes.map((route) => `${route.pattern}:${route.component}:${route.prewarm}`).join(","));
-    lines.push(services.getRequiredService(NavigationService).navigate("/projects/12").status);
+    lines.push((await services.getRequiredService(NavigationService).navigate("/projects/12")).status);
   } catch (error) {
     lines.push(`threw ${error}`);
   }

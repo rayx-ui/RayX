@@ -145,25 +145,27 @@ route in its query: `/app/projects/12?panel=%2Fsettings`.
 `NavigationService`, resolved from the provider `start()` gives, wraps whichever `dyn NavigationService` is
 registered:
 
-- `navigate(uri)`, `back()`, `forward()`: the root region; each returns the `NavigationResult` (`{ region, direction,
-  status, route }`) at once;
+- `navigate(uri)`, `back()`, `forward()`, `refresh()`: the root region; each a promise of the `NavigationResult`
+  (`{ region, direction, status, route }`), rejected with the service's error;
 - `current()`: the root region's current route and its status, `null` before the first navigation;
 - `region(name)`: the `NavigationRegion` `name`, made when missing;
 - `onChange(({ region, from, to }) => ..)`: every route change, until the function it returns is called.
 
-`NavigationRegion` has `navigate(uri, replace?)`, `back()`, `forward()`, `goTo(index)`, `close()`, `pages()` (its
-journal up to the current entry, bottom to top) and `onChange((pages) => ..)`; see
+`NavigationRegion` has `navigate(uri, replace?)`, `back()`, `forward()`, `refresh()`, `goTo(index)`, `close()` (each a
+promise; `close` of whether the region was open), `pages()` (its journal up to the current entry, bottom to top) and
+`onChange((pages) => ..)`; see
 [Navigation regions](../navigation.md#from-tsx).
 
-The classes' commands are synchronous: RayX's implementation answers at once. Over a TS implementation they throw
-(it answers later); TS code awaits the implementation's own methods instead.
+The classes' commands are promises, over RayX's implementation and a TS one alike; their reads (`current()`,
+`pages()`) are synchronous. Over a TS implementation, which makes a region later, `region(name)` starts making it and
+the region's first command waits for it (and rejects with why it could not).
 
 ```tsx
 const navigation = services.getRequiredService(NavigationService);
-navigation.navigate("/projects/12");
+await navigation.navigate("/projects/12");
 const stop = navigation.onChange(({ region, from, to }) => render(to));
 const panel = navigation.region("panel");
-panel.navigate("/settings");
+await panel.navigate("/settings");
 ```
 
 ## Replace it

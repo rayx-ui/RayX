@@ -23,9 +23,10 @@ fn the_navigation_classes_carry_their_members() {
         (
             "NavigationService",
             &[
-                "navigate(",
-                "back(",
-                "forward(",
+                "navigate(uri: string): Promise<NavigationResult>;",
+                "back(): Promise<NavigationResult>;",
+                "forward(): Promise<NavigationResult>;",
+                "refresh(): Promise<NavigationResult>;",
                 "current(",
                 "region(name: string): NavigationRegion;",
                 "onChange(",
@@ -35,11 +36,12 @@ fn the_navigation_classes_carry_their_members() {
         (
             "NavigationRegion",
             &[
-                "navigate(",
-                "back(",
-                "forward(",
-                "goTo(",
-                "close(",
+                "navigate(uri: string, replace?: boolean | null): Promise<NavigationResult>;",
+                "back(): Promise<NavigationResult>;",
+                "forward(): Promise<NavigationResult>;",
+                "refresh(): Promise<NavigationResult>;",
+                "goTo(index: number): Promise<NavigationResult>;",
+                "close(): Promise<boolean>;",
                 "pages(",
                 "onChange(",
             ],

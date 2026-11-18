@@ -27,10 +27,10 @@ setTimeout(async () => {
     const navigation = services.getRequiredService(NavigationService);
     const changes = [];
     navigation.onChange((event) => changes.push(event.to.path));
-    lines.push(navigation.navigate("/projects/12").status);
+    lines.push((await navigation.navigate("/projects/12")).status);
     lines.push(navigation.current().route.path);
-    lines.push(navigation.back().route.path);
-    lines.push(navigation.forward().route.params.id);
+    lines.push((await navigation.back()).route.path);
+    lines.push((await navigation.forward()).route.params.id);
     lines.push(String(navigation.contract));
     // Listeners are called on a later turn.
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -82,13 +82,13 @@ setTimeout(async () => {
   try {
     const services = await new RayXAppBuilder().addHostFakes().addFakeNavigation().start();
     const navigation = services.getRequiredService(NavigationService);
-    lines.push(navigation.navigate("/anywhere").route.path);
+    lines.push((await navigation.navigate("/anywhere")).route.path);
     const panel = navigation.region("panel");
-    panel.navigate("/a");
-    panel.navigate("/b");
+    await panel.navigate("/a");
+    await panel.navigate("/b");
     lines.push(panel.pages().map((page) => page.path).join(">"));
-    lines.push(panel.goTo(0).route.path);
-    lines.push(`${panel.close()} ${panel.pages().length}`);
+    lines.push((await panel.goTo(0)).route.path);
+    lines.push(`${await panel.close()} ${panel.pages().length}`);
   } catch (error) {
     lines.push(`threw ${error}`);
   }

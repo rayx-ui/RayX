@@ -167,12 +167,12 @@ setTimeout(async () => {
     const panel = services.getRequiredService(NavigationService).region("panel");
     const heard = [];
     panel.onChange((pages) => heard.push(pages.map((page) => page.path).join(">")));
-    lines.push(panel.navigate("/settings").status);
-    panel.navigate("/projects/2");
+    lines.push((await panel.navigate("/settings")).status);
+    await panel.navigate("/projects/2");
     lines.push(panel.pages().map((page) => page.path).join(">"));
     // A page's onDismiss goes to the page below it.
-    lines.push(panel.goTo(0).route.path);
-    lines.push(`${panel.close()} ${panel.pages().length}`);
+    lines.push((await panel.goTo(0)).route.path);
+    lines.push(`${await panel.close()} ${panel.pages().length}`);
     await tick();
     lines.push(`heard ${heard.join("|")}`);
   } catch (error) {

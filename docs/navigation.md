@@ -62,15 +62,15 @@ NSH's address and its moves out of the navigation, startup included.
 ## From TSX
 
 `NavigationService`, resolved from the provider `start()` gives, drives the URL region: `navigate(uri)`, `back()`,
-`forward()`, `current()` and `onChange`; in Rust, `services.required_service::<dyn NavigationService>()`. Its classes
+`forward()`, `refresh()` (promises), `current()` and `onChange`; in Rust, `services.required_service::<dyn NavigationService>()`. Its classes
 come with the navigation's set (the `navigation` feature, or `rayx_services_navigation::register(registry)` in a
-hand-written set). Over a TS implementation of the navigation service these members throw: the app awaits its own
-implementation's commands instead ([the navigation service](services/navigation.md#tsx)).
+hand-written set). The commands are promises over RayX's navigation service and a TS implementation of it alike
+([the navigation service](services/navigation.md#tsx)).
 
 `navigation.region("panel")` drives a named region (made when missing), as `navigation_region("panel")` shows one in
 a Rust component:
 
-- `navigate(uri, replace?)`, `back()`, `forward()`, `goTo(index)`, `close()`;
+- `navigate(uri, replace?)`, `back()`, `forward()`, `refresh()`, `goTo(index)`, `close()`: promises;
 - `pages()`: the journal up to the current entry, for a `NavStack` of `NavPage`s, each `onDismiss` going to the page
   below;
 - `onChange`: every change of its pages, until the function it returns is called.
@@ -79,5 +79,5 @@ a Rust component:
 const panel = services.getRequiredService(NavigationService).region("panel");
 const pages = signal(panel.pages());
 const stop = panel.onChange(pages.set); // called with the pages after every change
-panel.navigate("/settings");
+await panel.navigate("/settings");
 ```
