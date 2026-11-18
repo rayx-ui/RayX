@@ -71,14 +71,15 @@ waits for: where it keeps each scope's journal (`HistoryJournalV2`), with `InMem
 `KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at once or later; `save` and
 `delete_scope` take the revision the history expects in the store and check it and write in one step (a save fails
 with `Conflict`, a delete answers `false`), so a journal another history saved meanwhile is never overwritten or
-deleted. `InMemoryHistoryStore` makes the step under its own lock. `KeyValueHistoryStore` makes it under a lock of the
-scope in its key-value store, shared by every `KeyValueHistoryStore` in the process over that store, so it holds for
-the histories of every window, surface and app instance of one process that use one `dyn KeyValueStore`; RayX's NSH
-store (`add_storage()`) is one per NSH storage in the process, so the surfaces over one storage share it. Over separate
-key-value stores, and across processes, it does not hold: a `KeyValueStore` has no compare step (none of RayX's has
-one), so two of them writing one scope's journal into one storage can overwrite or delete each other's. Those
-histories need a store of the app's with a real compare-and-swap (a `HistoryStore`, or a TS `HistoryStoreContract`,
-over a backend that offers one). The history loads a scope when a command first awaits it and saves each change behind
+deleted. `InMemoryHistoryStore` makes the step under its own lock. `KeyValueHistoryStore` makes it under the
+process's one lock of the scope's journal (its bucket and the scope's id), whatever `dyn KeyValueStore` object it goes
+through, so it holds for the histories of every window, surface and app instance of one process: the surfaces over
+one NSH storage each have their own NSH store (`add_storage()`), and NSH shares the storage's entries between them.
+Histories over unrelated stores that use one scope id take turns at the step. Across processes it does not hold: a
+`KeyValueStore` has no compare step (none of RayX's has one), so two processes writing one scope's journal into one
+storage can overwrite or delete each other's. Those histories need a store of the app's with a real compare-and-swap
+(a `HistoryStore`, or a TS `HistoryStoreContract`, over a backend that offers one).
+The history loads a scope when a command first awaits it and saves each change behind
 it, one save at a time. A failure nobody awaits (a save behind an edit, a command whose caller gave up or dropped its
 answer unread) is a `NavigationFailed` event of the scope. Entries have ids, given when they are recorded and saved
 with the journal (an entry of a journal saved before ids existed gets one when it loads). Histories may share a store

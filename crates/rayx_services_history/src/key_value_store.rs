@@ -22,23 +22,22 @@ pub const HISTORY_BUCKET: &str = "rayx.history";
 /// implementation's, which answers in JS's next turn). It initializes after the key-value
 /// store.
 ///
-/// A save or a delete checks the scope's stored revision and writes in one step, under a lock
-/// of the scope in the key-value store shared by every `KeyValueHistoryStore` in the process
-/// over that store: histories of separate windows, surfaces and app instances in one process
-/// over one `dyn KeyValueStore` never overwrite or delete a journal another wrote meanwhile
-/// (RayX's NSH store, `add_storage()`, is one per NSH storage, so the surfaces over one storage
-/// share it).
-/// Over separate key-value stores, or across processes, the step is not atomic: a
-/// [`KeyValueStore`] has no compare step.
+/// A save or a delete checks the scope's stored revision and writes in one step, under the
+/// process's one lock of the scope's journal (its bucket and the scope's id), whatever key-value
+/// store object it goes through: histories of separate windows, surfaces and app instances in
+/// one process over one storage (RayX's NSH store, `add_storage()`, one per provider, over the
+/// NSH storage they share) never overwrite or delete a journal another wrote meanwhile.
+/// Histories over unrelated stores that use one scope id take turns too. Across processes the
+/// step is not atomic: a [`KeyValueStore`] has no compare step.
 #[derive(Clone)]
 pub struct KeyValueHistoryStore {
     store: Arc<dyn KeyValueStore>,
     initialization: StartupInitializationState,
 }
 
-/// The lock of a scope in a key-value store: the one every `KeyValueHistoryStore` of the process
-/// over that store holds while it checks the scope's revision and writes, across their awaits.
-/// Stores over other key-value stores, and other scopes, never wait for it.
+/// The lock of a scope's journal: the one every `KeyValueHistoryStore` of the process holds while
+/// it checks the scope's revision and writes, across their awaits, whichever key-value store
+/// object it goes through. Other scopes never wait for it.
 #[derive(Default)]
 struct ScopeLock {
     state: Mutex<ScopeLockState>,
@@ -52,20 +51,15 @@ struct ScopeLockState {
 }
 
 impl ScopeLock {
-    /// The lock of `scope` in `store`, shared by the process's history stores over it.
-    fn of(store: &Arc<dyn KeyValueStore>, scope: &HistoryScopeId) -> Arc<ScopeLock> {
-        // The store's address names it while a history store over it lives, which every save
-        // and delete holding or awaiting the lock does.
-        type Locks = HashMap<(usize, String), Weak<ScopeLock>>;
+    /// The lock of `scope`'s journal in `bucket`, one in the process.
+    fn of(bucket: &str, scope: &HistoryScopeId) -> Arc<ScopeLock> {
+        type Locks = HashMap<(String, String), Weak<ScopeLock>>;
         static LOCKS: OnceLock<Mutex<Locks>> = OnceLock::new();
         let mut locks = LOCKS
             .get_or_init(Mutex::default)
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
-        let key = (
-            Arc::as_ptr(store).cast::<()>() as usize,
-            scope.as_str().to_owned(),
-        );
+        let key = (bucket.to_owned(), scope.as_str().to_owned());
         if let Some(lock) = locks.get(&key).and_then(Weak::upgrade) {
             return lock;
         }
@@ -166,7 +160,9 @@ impl HistoryStore for KeyValueHistoryStore {
         expected: Option<u64>,
     ) -> BoxFuture<'_, Result<(), HistoryStoreError>> {
         async move {
-            let _saving = ScopeLock::of(&self.store, &journal.scope_id).hold().await;
+            let _saving = ScopeLock::of(HISTORY_BUCKET, &journal.scope_id)
+                .hold()
+                .await;
             let current = self
                 .load_journal(&journal.scope_id)
                 .await?
@@ -195,7 +191,7 @@ impl HistoryStore for KeyValueHistoryStore {
         expected: u64,
     ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
         async move {
-            let _saving = ScopeLock::of(&self.store, scope).hold().await;
+            let _saving = ScopeLock::of(HISTORY_BUCKET, scope).hold().await;
             let current = self
                 .load_journal(scope)
                 .await?

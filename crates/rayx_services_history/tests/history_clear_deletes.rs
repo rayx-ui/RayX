@@ -77,7 +77,9 @@ struct App {
 }
 
 impl App {
-    fn start(store: &Arc<FakeKeyValueStore>, value: u64) -> Self {
+    /// An app over `store`, its target bound to `scope` (each test's own: the journals' lock is
+    /// one per scope in the process, and the tests run at once).
+    fn start(store: &Arc<FakeKeyValueStore>, scope: &str, value: u64) -> Self {
         let services = with_store(RayXAppBuilder::new(), Arc::clone(store))
             .add_persistent_history()
             .build()
@@ -92,7 +94,7 @@ impl App {
         let history = services.required_service::<dyn HistoryService>().unwrap();
         let target = Arc::new(Target(Mutex::new(value)));
         let target_id = OperationTargetId::new("persistence:target").unwrap();
-        let scope = HistoryScopeId::new("persistence:scope").unwrap();
+        let scope = HistoryScopeId::new(scope).unwrap();
         now(operations.register_handler(target_id.clone(), target.clone())).unwrap();
         now(history.bind_target_scope(target_id.clone(), scope.clone())).unwrap();
         Self {
@@ -127,7 +129,7 @@ fn saved(store: &FakeKeyValueStore, scope: &HistoryScopeId) -> Option<serde_json
 #[test]
 fn clearing_a_scope_deletes_its_journal() {
     let store = FakeKeyValueStore::new();
-    let app = App::start(&store, 0);
+    let app = App::start(&store, "clear:deletes", 0);
     app.set(1);
     app.set(2);
     assert_eq!(
@@ -162,8 +164,8 @@ fn clearing_a_scope_deletes_its_journal() {
 #[test]
 fn clearing_keeps_another_history_s_entries() {
     let store = FakeKeyValueStore::new();
-    let first = App::start(&store, 0);
-    let second = App::start(&store, 0);
+    let first = App::start(&store, "clear:keeps", 0);
+    let second = App::start(&store, "clear:keeps", 0);
     first.set(1);
     second.set(2);
     assert_eq!(
