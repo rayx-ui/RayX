@@ -59,7 +59,8 @@ the `v0.5.0` tag does not have, carried the line until `v0.5.1`, and `rayx-cli`,
 from `rayx-ui/RayX.CLI` (never released there), carried `git_tag_name = "rayx-cli-v{{ version }}"`
 until `v0.6.0`. `rayx_components` and `rayx_devtools_protocol` carried the line until
 `v0.11.0`. `rayx_app_nsh`, the NSH host's name after `v0.11.0` (where it was
-`rayx_app`), carries it until its first release, and so does each `rayx_services_*` crate. A crate that is never released (`release = false`, such as `rayx-gallery`)
+`rayx_app`), and the `rayx_services_*` crates carried it until `v0.12.0`. A crate that is never
+released (`release = false`, such as `rayx-gallery`)
 still needs it, and keeps it: release-plz looks every workspace crate up in the previous tag.
 
 A `Migration:` footer may wrap over several lines: the changelog template reads it from the commit's
