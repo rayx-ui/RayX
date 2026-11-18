@@ -1,8 +1,6 @@
-//! The app builder ([`RayXAppBuilder`]) and the traits service crates extend it through (RayX's
-//! `rayx_runtime::services::app`).
-//!
-//! RayX's `AppContext` (a GPUI global with a platform snapshot) and
-//! `GpuxServiceAppExt` are GPUI-specific and live in the NSH layer instead.
+//! The app builder ([`RayXAppBuilder`]) and the traits service crates extend it through
+//! ([`AppBuilder`], with [`ServiceAppBuilderExt`], [`ConfigurationAppBuilderExt`] and
+//! [`ReadyAppBuilderExt`]). Starting the app is the NSH host's (`rayx_app_nsh`).
 
 mod builder;
 mod configuration_ext;

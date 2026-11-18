@@ -76,7 +76,7 @@ pub trait SuspensionService {
 
 impl dyn SuspensionService {
     /// Until the subscription is dropped, the user's requests to quit come to `listener` instead
-    /// of quitting the app (the app asks, saves or waits, then calls [`quit`](Self::quit)); when
+    /// of quitting the app (the app asks, saves or waits, then calls [`quit`](SuspensionService::quit)); when
     /// it is dropped, a request quits again. One owner at a time: dropping it stops asking.
     pub fn on_quit_request(
         self: &Arc<Self>,

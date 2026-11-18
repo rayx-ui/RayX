@@ -1,5 +1,5 @@
 //! Service lifetimes, scopes, trait-object registration and resolution errors
-//! (ported from RayX's `rayx_runtime::di` tests).
+//! (ported from the GPUI-era RayX's DI tests).
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use rayx_app::prelude::*;

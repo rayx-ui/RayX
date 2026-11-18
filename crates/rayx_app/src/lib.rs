@@ -1,39 +1,23 @@
 //! RayX's core: dependency injection, configuration, options and the app builder, with the API
-//! of .NET's `Microsoft.Extensions` (RayX's `rayx_runtime::di`, `configuration`, `options`,
-//! `services::app`), without NSH or GPUI. It builds for every target, wasm32 included.
+//! of .NET's `Microsoft.Extensions`, and every service's contract, without NSH. It builds for
+//! every target, wasm32 included, and depends on no RayX crate but `rayx_app_macros`.
 //!
-//! - [`di`]: the [`ServiceProvider`] with singleton, scoped and transient services, scopes and
-//!   async startup services.
+//! - [`di`]: the [`ServiceProvider`] with singleton, scoped and transient services, scopes,
+//!   async startup services, and the requirements checked before anything is made
+//!   ([`ServiceProvider::require`], [`ServiceProvider::require_for`],
+//!   [`ServiceProvider::validate`]).
 //! - [`configuration`]: sources merged into one [`Configuration`], read by path.
 //! - [`options`]: typed options made by a pipeline (bind, configure, post-configure, validate),
 //!   read once, per scope or as they change.
 //! - [`published`]: [`StateCell`] and [`EventStream`], the state and events a service's
 //!   implementation publishes, read and followed from any thread.
-//! - [`services::app`]: [`RayXAppBuilder`] and the [`AppBuilder`] traits service crates extend.
+//! - [`services`]: [`RayXAppBuilder`] and the [`AppBuilder`] traits service crates extend
+//!   ([`services::app`]), and each service's contract (`services::<name>`: a `#[contract]`
+//!   trait with its data types), which RayX's `rayx_services_<name>` crates implement on NSH
+//!   and an app may implement itself, in Rust or TS.
+//! - [`testing`]: a fake of each contract, for tests.
 //!
-//! Porting from RayX changes `use` paths, plus `RayXService` -> [`AppService`]:
-//!
-//! | RayX | rayx_app |
-//! | --- | --- |
-//! | `rayx::di::*`, `rayx_runtime::di::*` | `rayx_app::di::*` |
-//! | `rayx::services::app::{AppBuilder, ServiceAppBuilderExt}` | `rayx_app::services::app::*` |
-//! | `rayx::prelude::{ConfigurationBuilder, ServiceProvider, RayXService}` | `rayx_app::prelude::{.., AppService}` |
-//! | `rayx_runtime::options::*`, `configuration::*` | `rayx_app::options::*`, `configuration::*` |
-//!
-//! RayX's options plans (`options`, `configure_options` with a finalizer, `options_value`) are
-//! .NET's options model now: `services.add_options::<T>().bind(..).configure(..).validate(..)`.
-//! The most used items are also re-exported at the crate root.
-//!
-//! Not ported from RayX (GPUI- or platform-bound, or unused by its callers):
-//! `despatma`'s `dependency_container` with `RayxBaseModule`/`RayxEmptyService`
-//! (so `ServiceProvider::new()` takes no module), `AppContext`,
-//! `GpuxServiceAppExt`, the GPUI startup phase (`GpuxStartupContext`,
-//! `initialize_gpux`, `gpux_initialization_depends_on`), the platform snapshot in
-//! `StartupInitializationContext`, file, environment and app-settings configuration sources
-//! (`add_file`, `add_environment`, `add_app_settings`: a [`ConfigurationSource`] of the
-//! platform's brings them) and the `rayx_diagnostics` feature.
-//!
-//! [`ConfigurationSource`]: configuration::ConfigurationSource
+//! The most used items are also re-exported at the crate root and in [`prelude`].
 
 // Unit tests panic on broken fixtures by design.
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]

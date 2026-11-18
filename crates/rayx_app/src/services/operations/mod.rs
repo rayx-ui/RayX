@@ -142,8 +142,8 @@ impl dyn OperationService {
 
     /// Begins a transaction (`mode` says what to do when one is entered on this thread): submit
     /// in it with its own `submit`/`resubmit` (from any task or thread), or enter it for a
-    /// synchronous body ([`OperationTransaction::enter`]), where [`submit`](Self::submit) and
-    /// [`resubmit`](Self::resubmit) submit in it.
+    /// synchronous body ([`OperationTransaction::enter`]), where this service's `submit` and
+    /// `resubmit` submit in it.
     pub fn begin_transaction(
         &self,
         mode: OperationTransactionMode,

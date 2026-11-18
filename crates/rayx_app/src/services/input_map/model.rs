@@ -65,8 +65,7 @@ pub fn valid_key_sequence(sequence: &str) -> bool {
 /// `sequence` in one spelling, so that sequences that mean the same keys are equal: each
 /// keystroke's modifiers in the order `ctrl`, `alt`, `shift`, `cmd`, `fn`, each once, and its
 /// key in lowercase. `control` is `ctrl`, and `cmd`, `super`, `win` and `platform` are the
-/// platform's key (Command on Apple platforms, the Windows or Super key elsewhere), as GPUI
-/// reads them. `None` when it is no key sequence ([`valid_key_sequence`]).
+/// platform's key (Command on Apple platforms, the Windows or Super key elsewhere). `None` when it is no key sequence ([`valid_key_sequence`]).
 ///
 /// `cmd-shift-P` and `shift-cmd-p` are both `shift-cmd-p`, `control-k control-c` is
 /// `ctrl-k ctrl-c`, and the minus key alone (`-`, or `--`) is `-`.

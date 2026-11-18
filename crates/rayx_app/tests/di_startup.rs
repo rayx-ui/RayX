@@ -1,5 +1,5 @@
-//! The startup registry (ported from RayX's `rayx_runtime::di` tests; the GPUI
-//! phase is not part of the core).
+//! The startup registry (ported from the GPUI-era RayX's DI tests; the GPUI phase is not part
+//! of the core).
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
 use futures::FutureExt;

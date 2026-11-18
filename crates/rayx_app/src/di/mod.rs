@@ -1,4 +1,5 @@
-//! Dependency injection: RayX's `rayx_runtime::di` without GPUI.
+//! Dependency injection: the service provider, its lifetimes and scopes, startup services and
+//! the requirements checked before the app is built.
 
 mod key;
 mod lifecycle;
