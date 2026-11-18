@@ -51,6 +51,9 @@ fn packages() -> BTreeMap<String, Package> {
         String::from_utf8_lossy(&output.stderr)
     );
     let metadata: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    // The manifests' folders are relative to the root cargo reports, not to `root`: on Windows
+    // `canonicalize` gives `\\?\D:\…`, and cargo's paths start with `D:\…`.
+    let cargo_root = PathBuf::from(metadata["workspace_root"].as_str().unwrap());
     metadata["packages"]
         .as_array()
         .unwrap()
@@ -60,7 +63,7 @@ fn packages() -> BTreeMap<String, Package> {
             let folder = manifest
                 .parent()
                 .unwrap()
-                .strip_prefix(&root)
+                .strip_prefix(&cargo_root)
                 .unwrap()
                 .to_string_lossy()
                 .replace('\\', "/");
