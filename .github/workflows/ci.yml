@@ -3,19 +3,32 @@ name: RayX
 # Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the NSH-free
 # crates (the core, with every service's contract, and the dev tools' protocol), on Ubuntu; and the `rayx` command-line tool (`rayx-cli`),
 # which runs on every desktop, on Linux, macOS and Windows. Runs on every pull request
-# (release-plz's release pull requests included) and every push to `main`. The toolchain is
+# (release-plz's release pull requests included). `main` runs every three hours, and only when it
+# moved since the last scheduled run, instead of on every push: one run covers every push since the
+# last one, and it saves the dependencies' caches pull requests restore. The toolchain is
 # rust-toolchain.toml's.
 on:
   pull_request:
-  push:
-    branches: [main]
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  # Scheduled runs: only when main moved since the last one.
+  changed:
+    if: github.event_name == 'schedule'
+    permissions:
+      actions: read
+    uses: ./.github/workflows/changed.yml
+
   rust:
     name: fmt, clippy, test, wasm32
+    needs: changed
+    # A skipped `changed` (every event but the schedule) lets the checks run.
+    if: ${{ !cancelled() && needs.changed.outputs.run != 'false' }}
     runs-on: ubuntu-24.04
     # Every test binary links NSH, oxc and QuickJS; without debug info they fit the runner's disk.
     env:
@@ -57,6 +70,8 @@ jobs:
 
   cli:
     name: rayx-cli on ${{ matrix.os }}
+    needs: changed
+    if: ${{ !cancelled() && needs.changed.outputs.run != 'false' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
