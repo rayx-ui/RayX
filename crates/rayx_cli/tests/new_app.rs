@@ -250,7 +250,8 @@ fn a_rust_app_gets_the_same_patches_and_lock() {
     for needle in [
         "#[rayx::native_module(\"hello/native\")]",
         "pub fn App() -> impl IntoElement",
-        "RayXAppBuilder::new().add_storage().add_history().start();",
+        "RayXAppBuilder::new()\n        .add_platform()",
+        ".add_history()\n        .start();",
     ] {
         assert!(lib.contains(needle), "{needle}: {lib}");
     }
@@ -391,7 +392,7 @@ fn a_rayx_app_depends_on_rayx_at_this_rayx_s_tag_and_holds_its_classes() {
 
     let manifest = read("Cargo.toml");
     let dependency = format!(
-        "rayx = {{ git = \"https://github.com/rayx-ui/RayX\", tag = \"v{}\" }}",
+        "rayx = {{ git = \"https://github.com/rayx-ui/RayX\", tag = \"v{}\", features = [\"storage\", \"operations\", \"history\"] }}",
         env!("CARGO_PKG_VERSION")
     );
     assert_eq!(rayx_dependency(), dependency);

@@ -3,12 +3,13 @@
 //! NEW-1).
 //!
 //! 1. Install rayx's default pin if needed and run its `nsh init <dir> --name … --template …`.
-//! 2. A RayX app (`mixed` and `rust`): `Cargo.toml` depends on `rayx` at this `rayx`'s own tag,
-//!    and `src/lib.rs` (with `App.tsx`, `App.test.tsx` and the README) is RayX's: for `mixed`,
-//!    a UI set on RayX's attribute (`#[rayx::native_module]`) and an `App.tsx` that builds and
-//!    starts the
-//!    app with `RayXAppBuilder`; for `rust`, a root component that builds the same chain and
-//!    calls `.start()`.
+//! 2. A RayX app (`mixed` and `rust`): `Cargo.toml` depends on `rayx` at this `rayx`'s own tag
+//!    with the features its builder uses beyond the defaults ([`RAYX_FEATURES`]), and
+//!    `src/lib.rs` (with `App.tsx`, `App.test.tsx` and the README) is RayX's: for `mixed`, a UI
+//!    set on RayX's attribute (`#[rayx::native_module]`) and an `App.tsx` that builds and starts
+//!    the app with `RayXAppBuilder`; for `rust`, a root component that builds the same chain and
+//!    calls `.start()`. Both register the four services the host requires (platform, suspension,
+//!    assets, fonts) before storage, operations and history.
 //! 3. `mixed` and `rust`: write `.cargo/config.toml` with a `[patch.crates-io]` entry (git URL and
 //!    tag) for every NSH crate the default pin patches (RayX's), every NSH crate nsh's generated
 //!    workspace depends on (its hosts, runners and platforms, which crates.io lacks or has as
@@ -82,10 +83,21 @@ pub fn cargo_config(default: &DefaultNsh, also: &[String]) -> String {
     text
 }
 
-/// The `rayx` dependency of a new RayX app: RayX at this `rayx`'s own release tag.
+/// The `rayx` features a new RayX app's builder uses beyond the defaults (`platform`,
+/// `suspension`, `assets` and `fonts`, the four services the host requires): storage, and history
+/// with the operations it needs.
+pub const RAYX_FEATURES: [&str; 3] = ["storage", "operations", "history"];
+
+/// The `rayx` dependency of a new RayX app: RayX at this `rayx`'s own release tag, with
+/// [`RAYX_FEATURES`].
 pub fn rayx_dependency() -> String {
+    let features = RAYX_FEATURES
+        .iter()
+        .map(|feature| format!("\"{feature}\""))
+        .collect::<Vec<_>>()
+        .join(", ");
     format!(
-        "rayx = {{ git = \"{RAYX_GIT}\", tag = \"v{}\" }}",
+        "rayx = {{ git = \"{RAYX_GIT}\", tag = \"v{}\", features = [{features}] }}",
         env!("CARGO_PKG_VERSION")
     )
 }
@@ -219,8 +231,10 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                          classes), RayX's components and dev tools, and what the app adds.",
                         templates.specifier
                     ),
-                    "`App.tsx` builds the app with `RayXAppBuilder` (its services) and \
-                     `await`s `start()`, whose `ServiceProvider` resolves them",
+                    "`App.tsx` builds the app with `RayXAppBuilder` (the four services the \
+                     host requires, `addPlatform()`, `addSuspension()`, `addAssets()` and \
+                     `addFonts()`, each replaceable by the app's own, then storage, operations \
+                     and history) and `await`s `start()`, whose `ServiceProvider` resolves them",
                 ),
             ),
         ]
@@ -241,7 +255,10 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                          services and shows them, and `cargo run` runs it on this machine's \
                          desktop.",
                     "`src/lib.rs`'s root component builds the app with `RayXAppBuilder::new()` \
-                         (its services) and calls `.start()`, which `app_state()` follows",
+                         (the four services the host requires, `add_platform()`, \
+                         `add_suspension()`, `add_assets(..)` and `add_fonts(..)`, each \
+                         replaceable by the app's own, then storage, operations and history) and \
+                         calls `.start()`, which `app_state()` follows",
                 ),
             ),
         ],

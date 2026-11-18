@@ -2,13 +2,20 @@ import { mount, signal, Text, View } from "nsh";
 import { DevLayer, KeyValueStore, RayXAppBuilder } from "__SPECIFIER__";
 
 // The app's composition root: its configuration and the services every surface starts with
-// (RayX's are listed in its `docs/services.md`). `start()` resolves with the root
+// (RayX's are listed in its `docs/services.md`). The host requires the first four (platform
+// state, suspension, assets and fonts), and each can be replaced by the app's own
+// implementation of its contract; history needs operations. `start()` resolves with the root
 // `ServiceProvider` once every startup service is ready; resolving a service after it is
 // synchronous.
 const status = signal("Starting");
 const launches = signal(0);
 new RayXAppBuilder()
+  .addPlatform()
+  .addSuspension()
+  .addAssets()
+  .addFonts()
   .addStorage()
+  .addOperations()
   .addHistory()
   .start()
   .then((services) => {
