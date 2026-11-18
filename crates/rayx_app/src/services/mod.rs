@@ -16,6 +16,7 @@ pub mod platform;
 pub mod selection;
 pub mod storage;
 pub mod suspension;
+pub mod theme;
 
 use std::fmt;
 
