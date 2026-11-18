@@ -72,9 +72,15 @@ fn the_workspace_job_stays_on_ubuntu() {
     let ci = ci();
     let job = get(get(&ci, "jobs"), "rust");
     assert_eq!(get(job, "runs-on").as_str(), Some("ubuntu-24.04"));
+    // The test binaries fit the runner's disk only without debug info and with the unused
+    // preinstalled toolchains removed.
+    let env = get(job, "env");
+    assert_eq!(get(env, "CARGO_PROFILE_DEV_DEBUG").as_i64(), Some(0));
+    assert_eq!(get(env, "CARGO_PROFILE_TEST_DEBUG").as_i64(), Some(0));
     assert_eq!(
         runs(job),
         [
+            "sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL\ndf -h /\n",
             "sudo apt-get update && sudo apt-get install -y clang libclang-dev",
             "cargo fmt --all --check",
             "cargo clippy --workspace --all-targets -- -D warnings",
