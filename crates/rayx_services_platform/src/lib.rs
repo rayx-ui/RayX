@@ -1,7 +1,7 @@
-//! RayX's platform service on NSH: the device and the user's settings
-//! ([`PlatformSnapshot`](rayx_app::services::platform::PlatformSnapshot)), published by RayX's
-//! implementation of [`rayx_app::services::platform::PlatformInfoService`], which follows NSH's
-//! environment from the app's start on, on every surface, in Rust and TSX apps alike.
+//! RayX's platform service on NSH: the device and the user's settings ([`PlatformSnapshot`]),
+//! published by RayX's implementation of [`rayx_app::services::platform::PlatformInfoService`],
+//! which follows NSH's environment from the app's start on, on every surface, in Rust and TSX
+//! apps alike.
 //!
 //! - Rust: `RayXAppBuilder::new().add_platform()` ([`PlatformAppBuilderExt`]).
 //! - TS: `new RayXAppBuilder().addPlatform()` (a class extension of the host's
