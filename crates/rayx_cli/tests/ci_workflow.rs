@@ -1,6 +1,7 @@
 //! CI (`.github/workflows/ci.yml`): the workspace job on Ubuntu, and `rayx-cli`'s formatting,
-//! Clippy and tests on Linux, macOS and Windows, on pull requests and pushes to `main`; and every
-//! feature-gated test group (`[[test]] required-features`) run somewhere in CI.
+//! Clippy and tests on Linux, macOS and Windows, on pull requests and on `main`'s schedule (never
+//! on every push); and every feature-gated test group (`[[test]] required-features`) run somewhere
+//! in CI.
 
 use std::path::{Path, PathBuf};
 
@@ -29,18 +30,41 @@ fn runs(job: &Yaml) -> Vec<&str> {
 }
 
 #[test]
-fn ci_runs_on_pull_requests_and_main_pushes() {
+fn ci_runs_on_pull_requests_and_on_main_only_on_its_schedule_when_main_moved() {
     let ci = ci();
     let on = get(&ci, "on");
     assert!(on.get("pull_request").is_some());
-    let branches = get(get(on, "push"), "branches")
-        .as_sequence()
-        .expect("push branches");
-    assert_eq!(
-        branches.iter().map(Yaml::as_str).collect::<Vec<_>>(),
-        [Some("main")],
-        "ci.yml runs on pushes to main only, never on other branches"
+    assert!(
+        on.get("push").is_none(),
+        "ci.yml never runs on a push: one scheduled run covers every push since the last one"
     );
+    let cron = get(on, "schedule")
+        .as_sequence()
+        .and_then(|entries| entries.first())
+        .and_then(|entry| entry.get("cron"))
+        .and_then(Yaml::as_str);
+    assert_eq!(cron, Some("0 */3 * * *"), "main runs every three hours");
+
+    // The scheduled run goes on only when main moved since the last one.
+    let jobs = get(&ci, "jobs");
+    let changed = get(jobs, "changed");
+    assert_eq!(
+        get(changed, "uses").as_str(),
+        Some("./.github/workflows/changed.yml")
+    );
+    assert_eq!(
+        get(changed, "if").as_str(),
+        Some("github.event_name == 'schedule'")
+    );
+    for name in ["rust", "cli"] {
+        let job = get(jobs, name);
+        assert_eq!(get(job, "needs").as_str(), Some("changed"), "{name}");
+        assert_eq!(
+            get(job, "if").as_str(),
+            Some("${{ !cancelled() && needs.changed.outputs.run != 'false' }}"),
+            "{name} runs for every event but a scheduled run on an unchanged main"
+        );
+    }
 }
 
 #[test]
