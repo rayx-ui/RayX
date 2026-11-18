@@ -256,7 +256,7 @@ impl RayxHistory {
         &self,
         scope_id: &HistoryScopeId,
         undo: bool,
-    ) -> Result<bool, HistoryError> {
+    ) -> Result<bool, Failure> {
         self.ensure_scope_loaded(scope_id).await?;
         let Some(entry) = self.peek_entry(scope_id, undo)? else {
             return Ok(false);
@@ -270,7 +270,10 @@ impl RayxHistory {
             Err(error) => {
                 drop(replaying);
                 self.record_failure(scope_id.clone(), &error);
-                return Err(error);
+                return Err(Failure {
+                    error,
+                    reported: true,
+                });
             }
         };
         {
@@ -594,7 +597,7 @@ impl RayxHistory {
     ) -> BoxFuture<'static, Result<T, HistoryError>>
     where
         T: Send + 'static,
-        F: std::future::Future<Output = Result<T, HistoryError>> + Send + 'static,
+        F: std::future::Future<Output = Result<T, Failure>> + Send + 'static,
     {
         let Some(history) = self.this.upgrade() else {
             return futures::future::ready(Err(HistoryError::Poisoned)).boxed();
@@ -604,8 +607,10 @@ impl RayxHistory {
         let answer_scope = scope_id.clone();
         let reporter = Arc::downgrade(&history);
         crate::detached::spawn(Box::pin(async move {
-            if let Err(Err(error)) = answer.send(work.await) {
-                history.record_failure(answer_scope, &error);
+            if let Err(Err(failure)) = answer.send(work.await)
+                && !failure.reported
+            {
+                history.record_failure(answer_scope, &failure.error);
             }
         }));
         Answer {
@@ -641,10 +646,26 @@ impl RayxHistory {
     }
 }
 
+/// A command's failure, and whether the command reported it already (a failed replay is a
+/// failed step of its scope whoever hears it): one the caller does not hear is reported once.
+pub(crate) struct Failure {
+    pub(crate) error: HistoryError,
+    pub(crate) reported: bool,
+}
+
+impl From<HistoryError> for Failure {
+    fn from(error: HistoryError) -> Self {
+        Self {
+            error,
+            reported: false,
+        }
+    }
+}
+
 /// A detached command's answer: an error the caller drops unread (it gave up on the command
 /// after the command finished) is a failed step of the scope.
 struct Answer<T> {
-    answered: futures::channel::oneshot::Receiver<Result<T, HistoryError>>,
+    answered: futures::channel::oneshot::Receiver<Result<T, Failure>>,
     history: Weak<RayxHistory>,
     scope_id: HistoryScopeId,
     read: bool,
@@ -659,7 +680,10 @@ impl<T> std::future::Future for Answer<T> {
     ) -> std::task::Poll<Self::Output> {
         let answer = std::task::ready!(self.answered.poll_unpin(cx));
         self.read = true;
-        std::task::Poll::Ready(answer.unwrap_or(Err(HistoryError::Poisoned)))
+        std::task::Poll::Ready(match answer {
+            Ok(answer) => answer.map_err(|failure| failure.error),
+            Err(_) => Err(HistoryError::Poisoned),
+        })
     }
 }
 
@@ -728,7 +752,7 @@ impl HistoryService for RayxHistory {
 
     fn clear_scope(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<(), HistoryError>> {
         self.detached(&scope_id.clone(), move |history| async move {
-            history.clear_scope_now(&scope_id).await
+            Ok(history.clear_scope_now(&scope_id).await?)
         })
     }
 
@@ -738,7 +762,7 @@ impl HistoryService for RayxHistory {
         limit: usize,
     ) -> BoxFuture<'_, Result<(), HistoryError>> {
         self.detached(&scope_id.clone(), move |history| async move {
-            history.set_scope_entry_limit_now(&scope_id, limit).await
+            Ok(history.set_scope_entry_limit_now(&scope_id, limit).await?)
         })
     }
 

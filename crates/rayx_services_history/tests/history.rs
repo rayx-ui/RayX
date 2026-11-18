@@ -415,6 +415,27 @@ mod scope_lifecycle {
     }
 
     #[test]
+    fn a_refused_undo_dropped_unread_is_one_failed_step() {
+        let f = Fixture::new(None);
+        f.set(1);
+        let failures = Arc::new(AtomicUsize::new(0));
+        let counted = Arc::clone(&failures);
+        let _subscription = f.history.subscribe(move |event| {
+            if matches!(event, HistoryEvent::NavigationFailed(_)) {
+                counted.fetch_add(1, Ordering::SeqCst);
+            }
+        });
+        f.target.fail.store(true, Ordering::SeqCst);
+        // Refused at once, then dropped unread: reported once, by the replay.
+        drop(f.history.undo(f.scope.clone()));
+        assert_eq!(failures.load(Ordering::SeqCst), 1);
+        // Awaited: once too.
+        assert!(now(f.history.undo(f.scope.clone())).is_err());
+        assert_eq!(failures.load(Ordering::SeqCst), 2);
+        assert_eq!(f.depths(), (1, 0));
+    }
+
+    #[test]
     fn grouped_transactions_are_evicted_whole_and_other_scopes_are_unchanged() {
         let f = Fixture::new(None);
         let other = HistoryScopeId::new("lifecycle:other")
