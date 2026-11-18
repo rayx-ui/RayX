@@ -186,25 +186,25 @@ fn release_plz_names_every_package_as_it_is() {
             )),
         }
     }
+    // Every other released crate is in the previous `v*` tag and finds itself there: a leftover
+    // `git_tag_name` would make each release pull request count it as new and repeat its history.
+    for entry in &entries {
+        let name = entry["name"].as_str().expect("name");
+        if name != "rayx-gallery"
+            && !NEW_SINCE_THE_LAST_RELEASE.contains(&name)
+            && entry.get("git_tag_name").is_some()
+        {
+            problems.push(format!(
+                "{name} is in the last release, but still has a git_tag_name of its own"
+            ));
+        }
+    }
     assert!(problems.is_empty(), "{}", problems.join("\n"));
 }
 
 /// The packages the last release's tag does not have, under their names now.
-const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
-    "rayx_app_nsh",
-    "rayx_services_application_configuration",
-    "rayx_services_assets",
-    "rayx_services_fonts",
-    "rayx_services_history",
-    "rayx_services_i18n",
-    "rayx_services_input_map",
-    "rayx_services_navigation",
-    "rayx_services_operations",
-    "rayx_services_platform",
-    "rayx_services_selection",
-    "rayx_services_storage",
-    "rayx_services_suspension",
-];
+/// None since `v0.12.0`, which released `rayx_app_nsh` and the `rayx_services_*` crates.
+const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[];
 
 #[test]
 fn changelog_groups_commit_types_and_drops_housekeeping() {
