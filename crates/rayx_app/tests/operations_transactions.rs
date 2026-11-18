@@ -198,3 +198,34 @@ fn a_handle_taken_lives_with_whoever_took_it() {
     drop(taken);
     assert!(target.upgrade().is_none());
 }
+
+#[test]
+fn the_fake_s_transaction_ids_are_unique_and_increasing() {
+    let (operations, [(_, a_id), _], _) = operations();
+    let threads: Vec<_> = (0..4)
+        .map(|_| {
+            let operations = Arc::clone(&operations);
+            let a_id = a_id.clone();
+            std::thread::spawn(move || {
+                let mut ids = Vec::new();
+                for value in 0..50 {
+                    ids.push(block_on(operations.begin()).unwrap());
+                    ids.push(
+                        block_on(operations.submit(&a_id, Set(value), OperationOrigin::LocalUser))
+                            .unwrap()
+                            .transaction_id,
+                    );
+                }
+                ids
+            })
+        })
+        .collect();
+    let mut all = std::collections::BTreeSet::new();
+    for thread in threads {
+        let ids = thread.join().unwrap();
+        assert!(ids.windows(2).all(|pair| pair[0] < pair[1]), "{ids:?}");
+        assert!(ids.into_iter().all(|id| all.insert(id)));
+    }
+    let after = block_on(operations.begin()).unwrap();
+    assert!(all.iter().all(|id| *id < after));
+}

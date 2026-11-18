@@ -40,6 +40,10 @@ committed operations and failure codes in the published state (`diagnostics()` o
   panics fails neither the others nor the operation.
 - **Remote operations:** `publish_remote(&id, operation, peer, before, after, affected).await` publishes what a peer
   applied as committed.
+- **Transaction ids** are unique and increasing per service: every id it gives (`begin`, a submission outside a
+  transaction, a remote operation) is greater than every id it gave before, on any thread. An implementation, in Rust
+  or TS, must keep this: history groups the receipts of one id into one entry, and a clear discards what transactions
+  with smaller ids commit after it.
 - **The instance:** `instance_id()`, a constant, tells two services apart; the transactions entered on a thread are
   kept per instance.
 

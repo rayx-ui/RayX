@@ -83,6 +83,7 @@ impl<T> OperationApplyResult<T> {
 /// An operation a target applied: in its transaction, with its inverse record.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct OperationReceipt {
+    /// Its transaction: unique and increasing per service (the contract's rule).
     pub transaction_id: u64,
     pub target_id: OperationTargetId,
     pub forward: OperationRecord,

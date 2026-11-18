@@ -45,6 +45,12 @@ use crate::published::{EventStream, StateCell};
 /// transactions by id and remote operations published as committed. Its state is the
 /// registered targets (and an implementation's diagnostics), its events every committed or
 /// failed operation.
+///
+/// Transaction ids are unique and increasing per service: every id it gives (`begin`, and the
+/// transaction of its own a submission outside one or a remote operation gets) is greater than
+/// every id it gave before, whatever the thread. History relies on it: it groups the receipts of
+/// one id into one entry, and a clear discards what transactions with smaller ids commit after
+/// it.
 #[rayx_app_macros::contract(ts = "OperationServiceContract")]
 pub trait OperationService {
     /// The registered targets (and diagnostics), now and as they change.
@@ -76,7 +82,7 @@ pub trait OperationService {
     async fn release_target(&self, target_id: OperationTargetId) -> Result<bool, OperationError>;
 
     /// Opens a transaction: the operations submitted in it are applied at once and published
-    /// when it commits. Its id.
+    /// when it commits. Its id: unique, and greater than every id the service gave before.
     async fn begin(&self) -> Result<u64, OperationError>;
 
     /// Commits the transaction `transaction_id`: its operations' events are published, in
@@ -87,7 +93,8 @@ pub trait OperationService {
     /// newest first, and publish nothing.
     async fn abort(&self, transaction_id: u64) -> Result<(), OperationError>;
 
-    /// Applies `record` from `origin` through its target: alone (published at once) with no
+    /// Applies `record` from `origin` through its target: alone (published at once, in a
+    /// transaction of its own with a new id, greater than every id given before) with no
     /// `transaction_id`, else in that transaction, which must be open
     /// ([`OperationError::TransactionClosed`] otherwise, and the record is not applied, or is
     /// undone when the transaction closed while it applied). A failure publishes
@@ -103,7 +110,8 @@ pub trait OperationService {
     ) -> Result<OperationReceipt, OperationError>;
 
     /// Publishes `record`, which the peer `peer_id` applied (its target moved from
-    /// `before_revision` to `after_revision`), as committed; the target must be registered.
+    /// `before_revision` to `after_revision`), as committed (in a transaction of its own with a
+    /// new id, greater than every id given before); the target must be registered.
     #[ts(
         "(record: OperationRecord, peerId: string, beforeRevision: number, afterRevision: number, affectedIds: string[]): OperationReceipt"
     )]

@@ -71,6 +71,8 @@ impl RayxOperations {
         self.targets.lock().map_err(|_| OperationError::Poisoned)
     }
 
+    /// A new transaction id: unique and greater than every id given before, on any thread
+    /// (the contract's rule).
     fn next_transaction_id(&self) -> u64 {
         self.next_transaction.fetch_add(1, Ordering::SeqCst) + 1
     }
