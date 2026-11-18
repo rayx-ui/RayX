@@ -108,6 +108,27 @@ pub mod testing {
         crate::service::RayxHistory::new(operations, Some(store), true, None, None)
     }
 
+    /// RayX's history of `operations`' operations, kept in `store` when there is one, and a
+    /// function poisoning its state's lock (a thread panics holding it), for tests of what
+    /// follows a panic.
+    pub fn history_with_poison(
+        operations: Arc<dyn OperationService>,
+        store: Option<Arc<dyn HistoryStore>>,
+    ) -> (Arc<dyn HistoryService>, Box<dyn Fn() + Send + Sync>) {
+        let stored = store.is_some();
+        let history = crate::service::RayxHistory::new(operations, store, stored, None, None);
+        let poisoned = Arc::clone(&history);
+        let poison = move || {
+            let history = Arc::clone(&poisoned);
+            let _ = std::thread::spawn(move || {
+                let _held = history.scopes.lock();
+                panic!("a thread panicked holding the history's state (a test's poison)");
+            })
+            .join();
+        };
+        (history, Box::new(poison))
+    }
+
     /// RayX's history of `operations`' operations, kept in `store` when there is one, its calls
     /// bounded by `timeout` on `timer`.
     pub fn history_with_timer(

@@ -1,7 +1,8 @@
 //! Failures nobody awaits, and calls that never answer: a failed save behind an edit and the
 //! failure of a command whose caller gave up are `NavigationFailed` events of the scope; a call
 //! of the store or the operation service that never answers fails the command with `TimedOut`
-//! after the history's timeout and frees its scope.
+//! after the history's timeout and frees its scope; and a lock poisoned while a save is pending
+//! leaves no save unanswered.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -72,6 +73,8 @@ enum Saves {
     Fail,
     /// Each save waits until the test lets it go, then fails.
     FailLater,
+    /// Each save waits until the test lets it go, then saves.
+    SucceedLater,
     /// No save ever answers.
     Hang,
 }
@@ -118,11 +121,16 @@ impl HistoryStore for Store {
         match *self.saves.lock().unwrap() {
             Saves::Succeed => self.inner.save(journal, expected_revision),
             Saves::Fail => futures::future::ready(failed()).boxed(),
-            Saves::FailLater => {
+            later @ (Saves::FailLater | Saves::SucceedLater) => {
                 let released = Arc::clone(&self.released);
+                let inner = self.inner.clone();
                 futures::future::poll_fn(move |cx| {
                     if released.load(Ordering::SeqCst) {
-                        Poll::Ready(failed())
+                        Poll::Ready(if later == Saves::FailLater {
+                            failed()
+                        } else {
+                            now(inner.save(journal.clone(), expected_revision))
+                        })
                     } else {
                         // Polled again soon: the test releases it from another thread.
                         let waker = cx.waker().clone();
@@ -400,4 +408,38 @@ fn a_commit_that_never_answers_times_out_and_frees_the_scope() {
         Err(HistoryError::ScopeBusy)
     );
     assert_eq!(f.history.stack_depths(&f.scope), (0, 0));
+}
+
+#[test]
+fn a_lock_poisoned_while_a_save_is_pending_leaves_no_save_unanswered() {
+    let store = Arc::new(Store {
+        inner: InMemoryHistoryStore::default(),
+        saves: Mutex::new(Saves::SucceedLater),
+        released: Arc::default(),
+    });
+    let operations: Arc<dyn OperationService> = FakeOperations::new();
+    let (history, poison) = rayx_services_history::testing::history_with_poison(
+        Arc::clone(&operations),
+        Some(Arc::clone(&store) as Arc<dyn HistoryStore>),
+    );
+    let first = HistoryScopeId::new("poison:first").unwrap();
+    let second = HistoryScopeId::new("poison:second").unwrap();
+    // The first clear's save waits in the writer; the second's waits behind it.
+    let clears = [first, second].map(|scope| {
+        let history = Arc::clone(&history);
+        let (send, receive) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = send.send(block_on(history.clear_scope(scope)));
+        });
+        receive
+    });
+    std::thread::sleep(Duration::from_millis(20));
+    poison();
+    store.released.store(true, Ordering::SeqCst);
+    for clear in clears {
+        // Answered, whatever the answer (the state is poisoned).
+        let _answer = clear
+            .recv_timeout(WAIT)
+            .expect("a save waiting behind the poisoned lock is answered");
+    }
 }
