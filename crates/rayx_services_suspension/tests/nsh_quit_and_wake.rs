@@ -1,7 +1,7 @@
 //! The app's quitting and the system's wakes on NSH, headless: while the app asks before it
 //! quits, NSH's Quit item comes to it (`QuitRequested`) and the suspension service's `quit()`
-//! quits; as the app quits the service hears `Destroying` then `Destroyed` (what the storage
-//! writes then is `rayx_services_storage`'s group); a wake from sleep is `Woke`.
+//! quits; as the app quits the service hears `Destroying` then `Destroyed` (what the app saves
+//! then reaching the device is `rayx_services_storage`'s group); a wake from sleep is `Woke`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 

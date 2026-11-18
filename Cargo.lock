@@ -5152,7 +5152,6 @@ dependencies = [
  "base64 0.22.1",
  "crossbeam-channel",
  "futures",
- "getrandom 0.4.3",
  "nsh-core",
  "nsh-engine",
  "rayx_app",

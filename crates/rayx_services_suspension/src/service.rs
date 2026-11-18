@@ -170,8 +170,8 @@ impl NshSuspension {
                 });
                 let quitting = Arc::clone(&service);
                 on_app_quit(move || {
-                    // What must not be lost is saved as subscribers hear `Destroying` (the storage
-                    // writes what waits then).
+                    // What must not be lost is saved as subscribers hear `Destroying`, on the engine
+                    // thread, where RayX's storage writes NSH's at once.
                     quitting.publish(SuspensionEvent::new(
                         SuspensionEventKind::Destroying,
                         SuspensionEventReason::HostStopping,

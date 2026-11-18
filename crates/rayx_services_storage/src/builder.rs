@@ -16,19 +16,19 @@ use crate::nsh_store::{NshKeyValueStore, StorageStartup};
 /// Registers RayX's key-value store on an app builder.
 pub trait StorageAppBuilderExt: AppBuilder {
     /// Registers RayX's store on NSH's storage as the app's `dyn KeyValueStore`, replacing any
-    /// other: a startup service that loads what the device's storage holds on the engine thread
-    /// when the app starts, then reads and writes from any thread, and writes what waits as the
-    /// app quits (heard through the app's `dyn SuspensionService`). Its values persist. The
-    /// providers of every surface (window, engine) over one NSH storage in the process resolve
-    /// the same store, so they read each other's writes.
+    /// other: a startup service that has NSH load what the device's storage holds on the engine
+    /// thread when the app starts; then it reads and writes NSH's storage from any thread (on
+    /// the engine thread, through the surface's engine runner elsewhere). Its values persist.
+    /// NSH shares one storage's entries between every surface (window, engine) given the same
+    /// backend, so their stores read each other's writes.
     fn add_storage(mut self) -> Self {
         let services = self.services_mut();
         services.replace_service_factory_as::<NshKeyValueStore>(|services| {
-            NshKeyValueStore::resolve(
+            Arc::new(NshKeyValueStore::new(
                 services
                     .service::<EngineRunner>()
                     .map(|runner| (*runner).clone()),
-            )
+            ))
         });
         // Replaced before the startup service is added: replacing `dyn KeyValueStore` drops the
         // startup services keyed by it.

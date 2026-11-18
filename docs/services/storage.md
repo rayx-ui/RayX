@@ -72,9 +72,11 @@ drafts.remove("note-1").await?;
 let lang = store.get("prefs".into(), "lang".into()).await?; // Option<Vec<u8>>
 ```
 
-RayX's stores answer at once (from memory, or the NSH store's mirror once it loaded), so a synchronous caller may
-poll a call once (`now_or_never()`). Another store may answer later (a TS store answers in JS's next turn): what RayX
-keeps in the store awaits its calls (history's `KeyValueHistoryStore`, the input map), so it works over either.
+The in-memory store answers at once, and so does the NSH store on its surface's engine thread where NSH's storage is
+reachable (a component, an effect, a task), so a caller there may poll a call once (`now_or_never()`). Elsewhere the
+NSH store answers once the engine ran the call, and another store may answer later (a TS store answers in JS's next
+turn): what RayX keeps in the store awaits its calls (history's `KeyValueHistoryStore`, the input map), so it works
+over any.
 
 ## On NSH
 
@@ -82,23 +84,19 @@ keeps in the store awaits its calls (history's `KeyValueHistoryStore`, the input
 `localStorage`; strings only, 5 MB in all, shared with the app's TSX) under `rayx/<bucket>/<key>`
 (`rayx_services_storage::STORAGE_PREFIX`), UTF-8 as it is and other bytes in base64.
 
-NSH's storage is reachable only while the engine runs Rust code, so the store mirrors its entries, loaded on the
-engine thread when the app starts (a startup service keyed by `dyn KeyValueStore`, which the input map and history
-initialize after; a call before that loads it through the surface's engine runner):
+NSH's storage is reachable only where the surface's engine runs Rust code, on its engine thread, so every call of the
+store reads or writes it there: at once where it is reachable, else through the surface's engine runner from any
+thread (the call answers once the engine ran it, and fails once the engine is gone). A write fails when the storage is
+full. A startup service keyed by `dyn KeyValueStore`, which the input map and history initialize after, has NSH load
+the device's entries on the engine thread as the app starts. The store keeps no copy of them: NSH's backend keeps
+every change itself, so nothing waits to be written as the app quits, and what the app saves on the engine thread as
+it hears `Destroying` reaches the device.
 
-- reads come from the mirror, on any thread;
-- a write where the storage is reachable goes through at once, and fails when the storage is full;
-- a write elsewhere (another thread) waits in the mirror while the engine runner writes it on the engine thread;
-- as the app quits, the store writes what still waits: it hears the app's `dyn SuspensionService` (when there is
-  one) publish `Destroying` and `Destroyed`, so what the app saves as it hears `Destroying` reaches the device.
-
-The store is one per NSH storage in the process. NSH shares one storage between the surfaces (windows, engines) it is
-given the same backend for, and the providers of all of them resolve the same `dyn KeyValueStore`: one mirror,
-written in order, so each surface reads what another wrote at once, and what locks on the store (history's journals)
-locks across them. A write that waits is written by any surface over the storage whose engine still runs, and each
-surface's app writes what waits as it quits. A surface finds its storage's store by an id the store keeps in it, at
-`rayx/.store` (outside every bucket); a surface over another storage (another backend, another data directory) has a
-store of its own.
+Each provider has its own store; the entries are NSH's. NSH shares one storage's entries between every surface
+(window, engine) given the same backend, each operation serialized, so the stores of the surfaces over one storage,
+and the app's TSX (`nsh/storage`), read each other's writes as soon as they are made, whatever cleared or changed
+them. A surface over another storage (another backend, another data directory, a copy of the first) keeps its own
+entries.
 
 ## TSX
 

@@ -1,7 +1,7 @@
 //! Two surfaces over one NSH storage in a process (two windows, two engines given the same
-//! backend), headless: their providers resolve one store, so each reads what the other wrote at
-//! once, from any thread, and what either writes reaches the device once; a surface over
-//! another NSH storage keeps a store of its own.
+//! backend), headless: their providers' stores share NSH's entries, so each reads what the other
+//! wrote as soon as the write answered, from any thread, and what either writes reaches the
+//! device once; a surface over another NSH storage keeps its own entries.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -109,7 +109,7 @@ fn wait_for(what: impl Fn() -> bool) -> bool {
 }
 
 #[test]
-fn surfaces_over_one_storage_share_one_store() {
+fn surfaces_over_one_storage_share_its_entries() {
     let device = Arc::new(Device::default());
     device
         .0
@@ -120,14 +120,10 @@ fn surfaces_over_one_storage_share_one_store() {
     let first = stores(1).remove(0);
     let second_surface = surface(&device);
     let second = stores(2).remove(1);
-    assert!(
-        Arc::ptr_eq(&first, &second),
-        "the providers of both surfaces resolve one store"
-    );
     assert_eq!(get(&second, "theme"), Some(b"dark".to_vec()));
 
-    // Written off the engine threads through one surface's provider: the other's reads it at
-    // once, and it reaches the device once.
+    // Written off the engine threads through one surface's provider: the other's reads it as
+    // soon as the write answered, and it reaches the device once.
     block_on(first.set("prefs".into(), "lang".into(), b"hr".to_vec())).unwrap();
     assert_eq!(get(&second, "lang"), Some(b"hr".to_vec()));
     block_on(second.set("prefs".into(), "lang".into(), b"de".to_vec())).unwrap();
@@ -140,10 +136,12 @@ fn surfaces_over_one_storage_share_one_store() {
             && !device.contains_key("rayx/prefs/theme")
     }));
 
-    // The first surface goes: the second writes what the app saves from then on.
+    // The first surface goes: its provider's store answers that its engine is gone, and the
+    // second's keeps the entries.
     drop(first_surface);
-    block_on(first.set("prefs".into(), "later".into(), b"1".to_vec())).unwrap();
-    assert_eq!(get(&second, "later"), Some(b"1".to_vec()));
+    assert!(block_on(first.set("prefs".into(), "later".into(), b"1".to_vec())).is_err());
+    block_on(second.set("prefs".into(), "later".into(), b"1".to_vec())).unwrap();
+    assert_eq!(get(&second, "lang"), Some(b"de".to_vec()));
     assert!(wait_for(|| {
         device
             .0
@@ -154,11 +152,10 @@ fn surfaces_over_one_storage_share_one_store() {
             == Some("t1")
     }));
 
-    // A surface over another storage keeps its own store.
+    // A surface over another storage keeps its own entries.
     let other_device = Arc::new(Device::default());
     let _other_surface = surface(&other_device);
     let other = stores(3).remove(2);
-    assert!(!Arc::ptr_eq(&other, &second));
     assert_eq!(get(&other, "lang"), None);
     drop(second_surface);
 }

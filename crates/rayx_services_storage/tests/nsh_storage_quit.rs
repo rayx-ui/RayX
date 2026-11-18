@@ -1,8 +1,8 @@
-//! What waits to be written reaches the device as the app quits, headless: RayX's store hears
-//! the app quitting through the app's `dyn SuspensionService` (here a fake that publishes
-//! `Destroying` then `Destroyed` from NSH's quit listener, as RayX's suspension service does)
-//! and writes then what the app saved off the engine thread as it heard `Destroying`, which the
-//! stopping engine runs nothing more for.
+//! What the app saves as it quits reaches the device, headless: the app hears `Destroying`
+//! through its `dyn SuspensionService` (here a fake that publishes `Destroying` then `Destroyed`
+//! from NSH's quit listener, as RayX's suspension service does) on the engine thread, where
+//! RayX's store writes NSH's storage at once, and NSH's backend keeps it: the store keeps
+//! nothing of its own to write as the engine stops.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -73,19 +73,13 @@ fn Root() -> impl IntoElement {
             suspension()
                 .events()
                 .subscribe(move |event| {
-                    // What an app saves as it quits, here off the engine thread, where NSH's
-                    // storage is not reachable: it waits in the store.
+                    // What an app saves as it quits, on the engine thread it hears it on.
                     if event.kind == SuspensionEventKind::Destroying {
-                        let store = Arc::clone(&store);
-                        std::thread::spawn(move || {
-                            store
-                                .set("draft".into(), "text".into(), b"unsaved".to_vec())
-                                .now_or_never()
-                                .unwrap()
-                                .unwrap();
-                        })
-                        .join()
-                        .unwrap();
+                        store
+                            .set("draft".into(), "text".into(), b"unsaved".to_vec())
+                            .now_or_never()
+                            .expect("written at once on the engine thread")
+                            .unwrap();
                     }
                 })
                 .detach();

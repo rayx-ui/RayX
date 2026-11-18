@@ -1,7 +1,7 @@
-//! The app's key-value store on NSH (`add_storage()`), headless: it loads what the device's
-//! storage held at startup, writes through NSH's storage on the engine thread, and a write made
-//! outside the engine reaches the device once the engine runs again (through the engine
-//! runner).
+//! The app's key-value store on NSH (`add_storage()`), headless: it reads what the device's
+//! storage held, writes through NSH's storage on the engine thread at once, and a call made
+//! outside the engine answers once the engine ran it (through the engine runner), its write on
+//! the device by then.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -73,7 +73,7 @@ fn Root() -> impl IntoElement {
             let services = app_services().unwrap();
             ROOT.with_borrow_mut(|root| *root = Some(services.clone()));
             let store = services.required_service::<dyn KeyValueStore>().unwrap();
-            // Loaded at startup: the store answers at once.
+            // On the engine thread, where NSH's storage is reachable: the store answers at once.
             let theme = store
                 .get("prefs".into(), "theme".into())
                 .now_or_never()
@@ -150,24 +150,29 @@ fn the_store_keeps_the_app_s_values_in_nsh_s_storage() {
         .expect("the app started");
     let store = services.required_service::<dyn KeyValueStore>().unwrap();
     assert!(store.capabilities().persistent);
-    // On another thread (the engine runs only while it is pumped): read from the mirror, and
-    // written to the device by the engine runner once the engine runs again.
+    // On another thread (the engine runs only while it is pumped): each call answers once the
+    // engine ran it, through the engine runner, the write on the device by then.
     let other = Arc::clone(&store);
-    std::thread::spawn(move || {
+    let caller = std::thread::spawn(move || {
         assert_eq!(
             block_on(other.get("prefs".into(), "lang".into())).unwrap(),
             Some(b"hr".to_vec())
         );
         block_on(other.set("prefs".into(), "later".into(), b"1".to_vec())).unwrap();
-    })
-    .join()
-    .unwrap();
-    assert!(!device.0.lock().unwrap().contains_key("rayx/prefs/later"));
-    let written = || device.0.lock().unwrap().get("rayx/prefs/later").cloned();
+    });
     let deadline = std::time::Instant::now() + Duration::from_secs(10);
-    while written().is_none() && std::time::Instant::now() < deadline {
+    while !caller.is_finished() && std::time::Instant::now() < deadline {
         engine.pump();
         std::thread::sleep(Duration::from_millis(5));
     }
-    assert_eq!(written().as_deref(), Some("t1"));
+    caller.join().unwrap();
+    assert_eq!(
+        device
+            .0
+            .lock()
+            .unwrap()
+            .get("rayx/prefs/later")
+            .map(String::as_str),
+        Some("t1")
+    );
 }
