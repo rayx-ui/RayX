@@ -218,7 +218,7 @@ impl StorageBackend for Device {
         Ok(self.0.lock().unwrap().clone())
     }
 
-    fn write(&self, change: StorageChange) {
+    fn write(&self, change: StorageChange) -> Result<(), String> {
         let mut entries = self.0.lock().unwrap();
         match change {
             StorageChange::Set(key, value) => {
@@ -229,6 +229,7 @@ impl StorageBackend for Device {
             }
             StorageChange::Clear => entries.clear(),
         }
+        Ok(())
     }
 }
 

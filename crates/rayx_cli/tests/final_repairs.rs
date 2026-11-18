@@ -18,7 +18,7 @@ use rayx_cli::nsh::{kept_ids, offer_prune};
 use rayx_cli::project::{Pins, Project};
 use rayx_cli::setup::{Cx, FakeMachine, PlanEnv, Set, after_run, environment_for};
 
-const ID: &str = "d47d7fd6dfdc";
+const ID: &str = "6ec3717843ab";
 
 fn host(os: Os) -> HostFacts {
     HostFacts {
@@ -151,7 +151,7 @@ fn doctor_warns_in_an_app_that_pins_no_nsh() {
         .assert();
     let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
     assert!(
-        stderr.contains("pins no nsh, so rayx's default nshx-0.5.0-7 (d47d7fd) applies")
+        stderr.contains("pins no nsh, so rayx's default nshx-0.6.0-3 (6ec3717) applies")
             && stderr.contains("[nsh]"),
         "{stderr}"
     );

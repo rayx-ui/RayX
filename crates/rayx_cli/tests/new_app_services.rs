@@ -75,7 +75,7 @@ fn with_default(home: &Workspace) {
             url: "u".into(),
             reference: Some(DEFAULTS.nsh.tag.into()),
             commit: Some(DEFAULTS.nsh.commit.into()),
-            nsh: "0.5.0".into(),
+            nsh: "0.6.0".into(),
             cli: "nsh/bin/nsh".into(),
             installed: "2026-11-18T01:30:00Z".into(),
         })
@@ -89,7 +89,7 @@ fn runner() -> Runner {
         if spec.args == ["--version"] {
             return Some(
                 Outcome::success()
-                    .with_stdout(format!("nsh 0.5.0 ({})\n", &DEFAULTS.nsh.commit[..7])),
+                    .with_stdout(format!("nsh 0.6.0 ({})\n", &DEFAULTS.nsh.commit[..7])),
             );
         }
         if spec.args.first().is_some_and(|a| a == "init") {
@@ -98,7 +98,7 @@ fn runner() -> Runner {
             std::fs::write(dir.join("nsh.json"), "{\"name\":\"hello\"}").expect("nsh.json");
             std::fs::write(
                 dir.join("Cargo.toml"),
-                "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.5.0\"\nnsh-base = \"0.5.0\"\n",
+                "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.6.0\"\nnsh-base = \"0.6.0\"\n",
             )
             .expect("Cargo.toml");
             std::fs::write(
