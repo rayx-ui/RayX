@@ -26,11 +26,11 @@ const OPERATIONS_HINT: &str = "add_operations() (addOperations in TS) from \
                                rayx_services_operations, or register your own dyn \
                                OperationService";
 
-/// What an app keeping its history in its key-value store without one is told.
 /// What an app keeping its history in a store written in TS without one is told.
 const JOURNAL_STORE_HINT: &str = "addHistoryWithStore(() => new MyStore()) in TS, or register your \
                                   own dyn HistoryJournalStore";
 
+/// What an app keeping its history in its key-value store without one is told.
 const STORAGE_HINT: &str = "add_storage() (addStorage in TS) from rayx_services_storage, or \
                             register your own dyn KeyValueStore";
 
