@@ -15,6 +15,8 @@ use rayx_app_nsh::ts::RayXAppBuilder;
 use crate::key_value_store::KeyValueHistoryStore;
 use crate::service::{RayxHistory, Starting};
 use crate::store::HistoryStore;
+use crate::timer::{HISTORY_CONFIG_PATH, HistoryOptions, HistoryTimer};
+use rayx_app_nsh::EngineRunner;
 
 /// What an app with a history and no operation service is told.
 const OPERATIONS_HINT: &str = "add_operations() (addOperations in TS) from \
@@ -71,8 +73,24 @@ impl<T> HistoryAppBuilderExt for T where T: AppBuilder {}
 fn register<B: AppBuilder>(mut builder: B, stored: bool) -> B {
     let services = builder.services_mut();
     services.require_for::<dyn HistoryService, dyn OperationService>(OPERATIONS_HINT);
+    services
+        .add_options::<HistoryOptions>()
+        .bind(HISTORY_CONFIG_PATH);
     services.replace_service_factory_as::<RayxHistory>(move |services| {
-        RayxHistory::new(operations(services), None, stored)
+        let timeout = services
+            .options::<HistoryOptions>()
+            .unwrap_or_else(|error| panic!("the history options are invalid: {error}"))
+            .call_timeout();
+        // The app's timer, else the engine's on NSH; with neither, calls are unbounded.
+        let timer = services
+            .service::<HistoryTimer>()
+            .map(|timer| (*timer).clone())
+            .or_else(|| {
+                services
+                    .service::<EngineRunner>()
+                    .map(|runner| HistoryTimer::engine((*runner).clone()))
+            });
+        RayxHistory::new(operations(services), None, stored, timer, timeout)
     });
     // Replaced before the startup service is added: replacing `dyn HistoryService` drops the
     // startup service keyed by it, which `Starting` is.

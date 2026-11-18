@@ -8,7 +8,7 @@ pub enum HistoryError {
     InvalidScopeId,
     /// An entry limit of 0.
     InvalidEntryLimit,
-    /// The scope is replaying, or a transaction is open on the thread.
+    /// The scope is replaying.
     ScopeBusy,
     /// The scope's stacks changed during the call.
     StackChanged,
@@ -20,6 +20,9 @@ pub enum HistoryError {
     Store(String),
     /// The history's state is poisoned (a thread panicked while it held it).
     Poisoned,
+    /// A call of the operation service or the store did not answer within the history's
+    /// timeout: the command gave up, freeing its scope.
+    TimedOut,
     /// The call failed (a TS implementation threw, the engine is gone).
     Failed(ContractFailure),
 }
@@ -47,6 +50,7 @@ impl std::fmt::Display for HistoryError {
             Self::ApplyStatus(status) => write!(formatter, "history_apply_status_{status:?}"),
             Self::Store(error) => write!(formatter, "history_store_{error}"),
             Self::Poisoned => formatter.write_str("history_state_poisoned"),
+            Self::TimedOut => formatter.write_str("history_timed_out"),
             Self::Failed(failure) => write!(formatter, "history_call_failed: {failure}"),
         }
     }

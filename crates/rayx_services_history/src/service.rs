@@ -22,6 +22,8 @@ use rayx_app::services::operations::{
 use rayx_app::{ChangeSubscription, EventStream, StateCell};
 
 use crate::store::HistoryStore;
+use crate::timer::HistoryTimer;
+use std::time::Duration;
 
 /// How many failure codes the diagnostics keep.
 #[cfg(feature = "diagnostics")]
@@ -37,6 +39,12 @@ pub(crate) struct ScopeHistory {
     pub(crate) replaying: bool,
     pub(crate) cleared_through_transaction: u64,
     pub(crate) persisted_revision: Option<u64>,
+    /// The undo entries of the journal the scope last loaded or saved: what a rebase on
+    /// another stored journal tells its own changes by.
+    pub(crate) base: Vec<HistoryEntry>,
+    /// How many entries were recorded in it (pushed, not merged): what a replay tells an edit
+    /// recorded meanwhile by.
+    pub(crate) pushes: u64,
     pub(crate) loaded: bool,
 }
 
@@ -89,6 +97,9 @@ pub(crate) struct Scopes {
 pub(crate) struct RayxHistory {
     /// Itself, for the work it runs detached.
     pub(crate) this: Weak<Self>,
+    /// Bounds each call of the operation service and the store (`None`: unbounded).
+    timer: Option<HistoryTimer>,
+    timeout: Option<Duration>,
     pub(crate) operations: Arc<dyn OperationService>,
     pub(crate) store: Mutex<Option<Arc<dyn HistoryStore>>>,
     pub(crate) store_configured: bool,
@@ -110,9 +121,13 @@ impl RayxHistory {
         operations: Arc<dyn OperationService>,
         store: Option<Arc<dyn HistoryStore>>,
         store_configured: bool,
+        timer: Option<HistoryTimer>,
+        timeout: Option<Duration>,
     ) -> Arc<Self> {
         let history = Arc::new_cyclic(|this| Self {
             this: this.clone(),
+            timer,
+            timeout,
             operations: Arc::clone(&operations),
             store_configured: store_configured || store.is_some(),
             store: Mutex::new(store),
@@ -139,6 +154,30 @@ impl RayxHistory {
 
     pub(crate) fn lock_state(&self) -> Result<MutexGuard<'_, Scopes>, HistoryError> {
         self.scopes.lock().map_err(|_| HistoryError::Poisoned)
+    }
+
+    /// What `call` gives, unless it takes longer than the history's timeout
+    /// ([`HistoryError::TimedOut`]).
+    pub(crate) async fn bounded_store<T>(
+        &self,
+        call: impl std::future::Future<Output = T>,
+    ) -> Result<T, HistoryError> {
+        let (Some(timer), Some(timeout)) = (&self.timer, self.timeout) else {
+            return Ok(call.await);
+        };
+        let call = std::pin::pin!(call);
+        match futures::future::select(call, timer.after(timeout)).await {
+            futures::future::Either::Left((value, _)) => Ok(value),
+            futures::future::Either::Right(_) => Err(HistoryError::TimedOut),
+        }
+    }
+
+    /// A call of the operation service or the store, bounded by the history's timeout.
+    pub(crate) async fn bounded<T, E: Into<HistoryError>>(
+        &self,
+        call: impl std::future::Future<Output = Result<T, E>>,
+    ) -> Result<T, HistoryError> {
+        self.bounded_store(call).await?.map_err(Into::into)
     }
 
     /// Publishes the state now, unless it is the one published: a change made while it is
@@ -212,8 +251,8 @@ impl RayxHistory {
             history: self,
             scope_id: Some(scope_id),
         };
-        let replayed = match self.resubmit(scope_id, &entry, undo).await {
-            Ok(entry) => entry,
+        let (replayed, pushes_at_commit) = match self.resubmit(scope_id, &entry, undo).await {
+            Ok(replayed) => replayed,
             Err(error) => {
                 drop(replaying);
                 self.record_failure(scope_id.clone(), &error);
@@ -225,17 +264,28 @@ impl RayxHistory {
             let scope = state.scopes.entry(scope_id.clone()).or_default();
             scope.replaying = false;
             replaying.scope_id = None;
-            let (from, to) = if undo {
-                (&mut scope.undo, &mut scope.redo)
+            let from = if undo {
+                &mut scope.undo
             } else {
-                (&mut scope.redo, &mut scope.undo)
+                &mut scope.redo
             };
             // Gone from its stack only if it changed between the check before the commit and
             // the commit: the change is committed, so it is recorded all the same.
             if let Some(position) = from.iter().rposition(|candidate| *candidate == entry) {
                 from.remove(position);
             }
-            to.push(replayed);
+            if undo {
+                // An edit recorded while the commit was pending came after the undo's change:
+                // it cleared the redo stack, so the undone entry is not kept there.
+                if scope.pushes == pushes_at_commit {
+                    scope.redo.push(replayed);
+                }
+            } else {
+                // Below the edits recorded while the commit was pending, which came after it.
+                let above = usize::try_from(scope.pushes - pushes_at_commit).unwrap_or(usize::MAX);
+                let at = scope.undo.len().saturating_sub(above);
+                scope.undo.insert(at, replayed);
+            }
             scope.revision += 1;
         }
         self.publish_state();
@@ -308,6 +358,7 @@ impl RayxHistory {
                     after_revision: receipt.after_revision,
                 };
                 scope.undo.push(entry.clone());
+                scope.pushes += 1;
                 scope.redo.clear();
                 Some(entry)
             };
@@ -331,10 +382,10 @@ impl RayxHistory {
         scope_id: &HistoryScopeId,
         entry: &HistoryEntry,
         undo: bool,
-    ) -> Result<HistoryEntry, HistoryError> {
+    ) -> Result<(HistoryEntry, u64), HistoryError> {
         let transaction = OpenTransaction {
             operations: &*self.operations,
-            id: Some(self.operations.begin().await?),
+            id: Some(self.bounded(self.operations.begin()).await?),
         };
         let records: Vec<OperationRecord> = if undo {
             entry.inverse.iter().rev().cloned().collect()
@@ -349,35 +400,40 @@ impl RayxHistory {
         let mut receipts = Vec::with_capacity(records.len());
         for record in records.iter().cloned() {
             let receipt = match self
-                .operations
-                .submit_record(record, origin.clone(), transaction.id)
+                .bounded(
+                    self.operations
+                        .submit_record(record, origin.clone(), transaction.id),
+                )
                 .await
             {
                 Ok(receipt) => receipt,
                 Err(error) => {
-                    let _ = transaction.abort().await;
-                    return Err(error.into());
+                    let _ = self.bounded(transaction.abort()).await;
+                    return Err(error);
                 }
             };
             if receipt.status != OperationApplyStatus::Applied {
-                let _ = transaction.abort().await;
+                let _ = self.bounded(transaction.abort()).await;
                 return Err(HistoryError::ApplyStatus(receipt.status));
             }
             receipts.push(receipt);
         }
-        let still_there = self
-            .lock_state()?
-            .scopes
-            .get(scope_id)
-            .is_some_and(|scope| {
-                let from = if undo { &scope.undo } else { &scope.redo };
-                from.contains(entry)
-            });
+        let (still_there, pushes_at_commit) = {
+            let state = self.lock_state()?;
+            let scope = state.scopes.get(scope_id);
+            (
+                scope.is_some_and(|scope| {
+                    let from = if undo { &scope.undo } else { &scope.redo };
+                    from.contains(entry)
+                }),
+                scope.map_or(0, |scope| scope.pushes),
+            )
+        };
         if !still_there {
-            let _ = transaction.abort().await;
+            let _ = self.bounded(transaction.abort()).await;
             return Err(HistoryError::StackChanged);
         }
-        transaction.commit().await?;
+        self.bounded(transaction.commit()).await?;
         let mut fresh_inverses = receipts
             .into_iter()
             .map(|receipt| receipt.inverse.ok_or(HistoryError::StackChanged))
@@ -388,7 +444,7 @@ impl RayxHistory {
         } else {
             (records, fresh_inverses)
         };
-        Ok(HistoryEntry {
+        let replayed = HistoryEntry {
             transaction_id: entry.transaction_id,
             scope_id: entry.scope_id.clone(),
             target_id: entry.target_id.clone(),
@@ -397,7 +453,8 @@ impl RayxHistory {
             inverse,
             before_revision: entry.before_revision,
             after_revision: entry.after_revision,
-        })
+        };
+        Ok((replayed, pushes_at_commit))
     }
 
     fn peek_entry(
@@ -511,8 +568,10 @@ impl Drop for OpenTransaction<'_> {
 impl RayxHistory {
     /// Runs `command` detached, started now: the returned future awaits only its answer, so
     /// dropping it never leaves a replay, a clear or a save half done.
+    /// A failure its caller no longer waits for is a failed step of `scope_id`.
     fn detached<T, F>(
         &self,
+        scope_id: &HistoryScopeId,
         command: impl FnOnce(Arc<Self>) -> F,
     ) -> BoxFuture<'static, Result<T, HistoryError>>
     where
@@ -523,9 +582,12 @@ impl RayxHistory {
             return futures::future::ready(Err(HistoryError::Poisoned)).boxed();
         };
         let (answer, answered) = futures::channel::oneshot::channel();
-        let work = command(history);
+        let work = command(Arc::clone(&history));
+        let scope_id = scope_id.clone();
         crate::detached::spawn(Box::pin(async move {
-            let _ = answer.send(work.await);
+            if let Err(Err(error)) = answer.send(work.await) {
+                history.record_failure(scope_id, &error);
+            }
         }));
         async move { answered.await.unwrap_or(Err(HistoryError::Poisoned)) }.boxed()
     }
@@ -556,15 +618,21 @@ impl HistoryService for RayxHistory {
     }
 
     fn undo(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<bool, HistoryError>> {
-        self.detached(move |history| async move { history.replay(&scope_id, true).await })
+        self.detached(&scope_id.clone(), move |history| async move {
+            history.replay(&scope_id, true).await
+        })
     }
 
     fn redo(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<bool, HistoryError>> {
-        self.detached(move |history| async move { history.replay(&scope_id, false).await })
+        self.detached(&scope_id.clone(), move |history| async move {
+            history.replay(&scope_id, false).await
+        })
     }
 
     fn clear_scope(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<(), HistoryError>> {
-        self.detached(move |history| async move { history.clear_scope_now(&scope_id).await })
+        self.detached(&scope_id.clone(), move |history| async move {
+            history.clear_scope_now(&scope_id).await
+        })
     }
 
     fn set_scope_entry_limit(
@@ -572,7 +640,7 @@ impl HistoryService for RayxHistory {
         scope_id: HistoryScopeId,
         limit: usize,
     ) -> BoxFuture<'_, Result<(), HistoryError>> {
-        self.detached(move |history| async move {
+        self.detached(&scope_id.clone(), move |history| async move {
             history.set_scope_entry_limit_now(&scope_id, limit).await
         })
     }

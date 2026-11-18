@@ -28,6 +28,7 @@ mod persistence;
 mod retained_records;
 mod service;
 mod store;
+mod timer;
 
 use nsh_core::element::{Registry, TsAlias};
 use rayx_app::services::history::*;
@@ -41,6 +42,7 @@ pub use journal::{HISTORY_JOURNAL_VERSION, HistoryJournalError, HistoryJournalV2
 pub use key_value_store::{HISTORY_BUCKET, KeyValueHistoryStore};
 pub use limits::{HistoryLimitError, HistoryLimits, encoded_size, enforce};
 pub use store::{HistoryStore, HistoryStoreError, InMemoryHistoryStore};
+pub use timer::{HISTORY_CONFIG_PATH, HistoryOptions, HistoryTimer};
 
 rayx_app_nsh::contract_nsh!(rayx_app::services::history::HistoryService as HistoryServiceContract);
 
@@ -91,7 +93,7 @@ pub mod testing {
 
     /// RayX's history of `operations`' operations, kept in memory.
     pub fn history(operations: Arc<dyn OperationService>) -> Arc<dyn HistoryService> {
-        crate::service::RayxHistory::new(operations, None, false)
+        crate::service::RayxHistory::new(operations, None, false, None, None)
     }
 
     /// RayX's history of `operations`' operations, kept in `store`.
@@ -99,6 +101,18 @@ pub mod testing {
         operations: Arc<dyn OperationService>,
         store: Arc<dyn HistoryStore>,
     ) -> Arc<dyn HistoryService> {
-        crate::service::RayxHistory::new(operations, Some(store), true)
+        crate::service::RayxHistory::new(operations, Some(store), true, None, None)
+    }
+
+    /// RayX's history of `operations`' operations, kept in `store` when there is one, its calls
+    /// bounded by `timeout` on `timer`.
+    pub fn history_with_timer(
+        operations: Arc<dyn OperationService>,
+        store: Option<Arc<dyn HistoryStore>>,
+        timer: crate::HistoryTimer,
+        timeout: std::time::Duration,
+    ) -> Arc<dyn HistoryService> {
+        let stored = store.is_some();
+        crate::service::RayxHistory::new(operations, store, stored, Some(timer), Some(timeout))
     }
 }

@@ -29,10 +29,19 @@ in a TS implementation's, which answers in JS's next turn. `HistoryStore` (in `r
 implementation's extension point: where it keeps each scope's journal (`HistoryJournalV2`), with
 `InMemoryHistoryStore` and `KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at
 once or later: the history loads a scope when a command first awaits it and saves each change behind it, one save at a
-time (a save nothing awaits that fails is a `NavigationFailed` event of the scope). A save that finds another revision
-in the store than it expects (another app's, or a save whose answer was lost) reloads it and saves over it. Changes
-made before the app's startup attaches the store are saved once it does. Its `diagnostics` feature keeps the replays
-that failed in the published state.
+time. A failure nobody awaits (a save behind an edit, a command whose caller gave up) is a `NavigationFailed` event of
+the scope. A save that finds another journal in the store than it expects (another window's or app's history over the
+same store, or a save whose answer was lost) reloads it and rebases on it what the scope changed since it last loaded
+or saved: the stored entries, less those this history dropped since (undone, cleared, evicted), then the entries it
+recorded since, so no writer's entries are lost. Changes made before the app's startup attaches the store are rebased
+on the stored journal the same way once it does. Its `diagnostics` feature keeps the replays that failed in the
+published state.
+
+Each call the history makes of the operation service or the store is bounded by `HistoryOptions::call_timeout_ms`
+(bound from `RayX:Services:History`, `configure_options::<HistoryOptions>(..)`; 30 seconds by default, `None` for
+none): one that does not answer in time (a TS promise that never settles) fails the command with
+`HistoryError::TimedOut` and frees its scope. The timer is the engine's on NSH (through the host's `EngineRunner`);
+elsewhere an app registers a `HistoryTimer` service, and without one the calls are unbounded.
 
 ## Use
 
@@ -55,8 +64,10 @@ history.redo(editor).await?;
   from any task or thread.
 - A scope is busy (`ScopeBusy`) while it is replayed: another undo, redo, `clear_scope` or `set_scope_entry_limit` of
   it fails meanwhile. An operation recorded meanwhile is kept, and a redo whose entry an edit cleared meanwhile is
-  aborted before it commits (`StackChanged`). `clear_scope` discards the operations of transactions begun before it
-  and committed after it.
+  aborted before it commits (`StackChanged`). The stacks keep the order the changes happened in: an edit recorded
+  while a redo's commit is pending stays above the redone entry, and one recorded while an undo's commit is pending
+  clears the redo stack, the undone entry included. `clear_scope` discards the operations of transactions begun before
+  it and committed after it.
 - `undo`, `redo`, `clear_scope` and `set_scope_entry_limit` start when called and run to their end, their saves
   included: dropping the future gives up only the wait for the answer, never a change half made.
 - `can_undo`, `can_redo`, `stack_depths` and `diagnostics` read the published state (`history()`), synchronously; a

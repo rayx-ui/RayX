@@ -1,9 +1,10 @@
 //! History commands given up on mid-way, over a store and an operation service that start their
 //! work when called and answer later (as TS implementations do): a clear or an undo dropped
 //! while its save is pending leaves the store in step with the history, an undo dropped while
-//! its commit is pending still moves the stacks, a save meeting another revision in the store
-//! reloads it and saves over it, a redo racing a new edit is refused before it commits, and the
-//! edits recorded before the app's store is attached are saved once it is.
+//! its commit is pending still moves the stacks, two histories saving the same scope in one
+//! store keep both's entries, a redo racing a new edit is refused before it commits, an edit
+//! recorded while a redo's commit is pending stays above it, and the edits recorded before the
+//! app's store is attached are saved once it is.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -494,7 +495,7 @@ fn edits_recorded_before_the_store_is_attached_are_saved_once_it_is() {
 }
 
 #[test]
-fn a_save_that_meets_another_revision_reloads_it_and_saves_over_it() {
+fn two_histories_sharing_a_store_keep_both_s_entries() {
     let store = InMemoryHistoryStore::default();
     let scope = HistoryScopeId::new("shared:scope").unwrap();
     let app = |value: u64| {
@@ -517,14 +518,51 @@ fn a_save_that_meets_another_revision_reloads_it_and_saves_over_it() {
         (operations, history, target_id, failures)
     };
     // Both loaded the scope before either saved.
-    let (first, first_history, target, _) = app(0);
-    let (second, second_history, _, failures) = app(0);
+    let (first, first_history, target, first_failures) = app(0);
+    let (second, second_history, _, second_failures) = app(0);
     now(first.submit(&target, Set(1), OperationOrigin::LocalUser)).unwrap();
+    // The second's save meets the first's journal: its entries go on top of it.
     now(second.submit(&target, Set(2), OperationOrigin::LocalUser)).unwrap();
     now(second.submit(&target, Set(3), OperationOrigin::LocalUser)).unwrap();
-    assert!(failures.lock().unwrap().is_empty(), "{failures:?}");
-    let stored = now(store.load(&scope)).unwrap().unwrap();
-    assert_eq!(stored.entries.len(), 2);
-    assert_eq!(second_history.stack_depths(&scope), (2, 0));
-    drop(first_history);
+    let entries = || now(store.load(&scope)).unwrap().unwrap().entries.len();
+    assert_eq!(entries(), 3);
+    assert_eq!(second_history.stack_depths(&scope), (3, 0));
+    // And the first's next save goes on top of both.
+    now(first.submit(&target, Set(4), OperationOrigin::LocalUser)).unwrap();
+    assert_eq!(entries(), 4);
+    assert_eq!(first_history.stack_depths(&scope), (4, 0));
+    // An undo in one drops only its entry from the stored journal.
+    assert!(now(second_history.undo(scope.clone())).unwrap());
+    now(second.submit(&target, Set(5), OperationOrigin::LocalUser)).unwrap();
+    assert_eq!(entries(), 4);
+    assert!(
+        first_failures.lock().unwrap().is_empty(),
+        "{first_failures:?}"
+    );
+    assert!(
+        second_failures.lock().unwrap().is_empty(),
+        "{second_failures:?}"
+    );
+}
+
+#[test]
+fn an_edit_recorded_while_a_redo_s_commit_is_pending_stays_above_it() {
+    let f = Fixture::new();
+    f.set(1);
+    assert!(block_on(f.history.undo(f.scope.clone())).unwrap());
+    assert_eq!((f.value(), f.depths()), (0, (0, 1)));
+    f.commits.hold();
+    let redo = f.history.redo(f.scope.clone());
+    eventually("the redo applied", || f.value() == 1);
+    // An edit after the redo applied, recorded while its commit is pending.
+    f.set(9);
+    f.commits.open();
+    assert!(block_on(redo).unwrap());
+    assert_eq!(f.depths(), (2, 0));
+    // Undone in the order they happened: the edit first, then the redo.
+    assert!(block_on(f.history.undo(f.scope.clone())).unwrap());
+    assert_eq!(f.value(), 1);
+    assert!(block_on(f.history.undo(f.scope.clone())).unwrap());
+    assert_eq!(f.value(), 0);
+    f.in_step();
 }

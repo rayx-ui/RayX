@@ -1,31 +1,71 @@
 //! Loading a scope from the history's store and saving it there, asynchronously: a scope is
-//! loaded the first time a command uses it (an operation recorded before its load is kept above
-//! the loaded entries), and saved behind each change by one writer at a time, which runs
-//! detached: a command awaits only the outcome of its save, so a command given up on leaves no
-//! save half done. A save that meets another revision in the store than it expects reloads it
-//! and saves over it.
+//! loaded the first time a command uses it, and saved behind each change by one writer at a
+//! time, which runs detached: a command awaits only the outcome of its save, so a command given
+//! up on leaves no save half done. What a scope changed since it last loaded or saved is rebased
+//! on the stored journal whenever the store holds another than it expects (edits recorded
+//! before the load, another history's saves over the same store), so no writer's entries are
+//! lost.
 
-use std::sync::Arc;
+use std::sync::{Arc, MutexGuard, PoisonError};
 
 use futures::FutureExt as _;
+use futures::channel::oneshot;
 use futures::future::BoxFuture;
-use rayx_app::services::history::{HistoryError, HistoryScopeId};
+use rayx_app::services::history::{HistoryEntry, HistoryError, HistoryScopeId};
 
 use crate::journal::HistoryJournalV2;
-use crate::service::RayxHistory;
+use crate::service::{RayxHistory, ScopeHistory, Scopes};
 use crate::store::{HistoryStore, HistoryStoreError};
 
-/// How many times a save that meets another revision reloads it and saves again.
+/// How many times a save that meets another journal rebases on it and saves again.
 const SAVE_ATTEMPTS: usize = 3;
 
+/// Puts what `scope` changed since its base (the journal it last loaded or saved) on `stored`:
+/// the stored entries, less those the scope dropped since (undone, cleared, evicted), then the
+/// entries it recorded since. Its base is `stored` from then on.
+pub(crate) fn rebase(scope: &mut ScopeHistory, stored: Option<HistoryJournalV2>) {
+    let stored_revision = stored.as_ref().map(|journal| journal.revision);
+    let stored_entries = stored.map(|journal| journal.entries).unwrap_or_default();
+    let ours = std::mem::take(&mut scope.undo);
+    let dropped: Vec<&HistoryEntry> = scope
+        .base
+        .iter()
+        .filter(|entry| !ours.contains(entry))
+        .collect();
+    let mut undo: Vec<HistoryEntry> = stored_entries
+        .iter()
+        .filter(|entry| !dropped.contains(entry))
+        .cloned()
+        .collect();
+    for entry in ours {
+        if !scope.base.contains(&entry) && !undo.contains(&entry) {
+            undo.push(entry);
+        }
+    }
+    let differs = undo != stored_entries;
+    scope.undo = undo;
+    scope.base = stored_entries;
+    scope.persisted_revision = stored_revision;
+    let floor = stored_revision.unwrap_or(0);
+    // Past the stored revision when it differs from it, so it is saved.
+    scope.revision = scope.revision.max(floor) + u64::from(differs);
+    if differs {
+        scope.enforce_entry_limit();
+    }
+}
+
 impl RayxHistory {
+    /// The service's state, even after a thread panicked holding it.
+    fn state(&self) -> MutexGuard<'_, Scopes> {
+        self.scopes.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
     /// The history's store, if it has one.
-    fn current_store(&self) -> Result<Option<Arc<dyn HistoryStore>>, HistoryError> {
-        Ok(self
-            .store
+    fn current_store(&self) -> Option<Arc<dyn HistoryStore>> {
+        self.store
             .lock()
-            .map_err(|_| HistoryError::Poisoned)?
-            .clone())
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone()
     }
 
     /// Loads the scope from the store the first time it is used (and publishes it). Two loads
@@ -43,8 +83,8 @@ impl RayxHistory {
         {
             return Ok(());
         }
-        let journal = match self.current_store()? {
-            Some(store) => store.load(scope_id).await?,
+        let journal = match self.current_store() {
+            Some(store) => self.bounded(store.load(scope_id)).await?,
             None if self.store_configured => return Ok(()),
             None => None,
         };
@@ -53,8 +93,8 @@ impl RayxHistory {
         Ok(())
     }
 
-    /// Puts the loaded `journal` under what the scope recorded since (unless it was loaded
-    /// meanwhile).
+    /// Puts what the scope recorded since its start on the loaded `journal` (unless it was
+    /// loaded meanwhile).
     fn merge_loaded(
         &self,
         scope_id: &HistoryScopeId,
@@ -65,76 +105,69 @@ impl RayxHistory {
         if scope.loaded {
             return Ok(());
         }
-        if let Some(journal) = journal {
-            let recorded = std::mem::replace(&mut scope.undo, journal.entries);
-            let had_recorded = !recorded.is_empty();
-            scope.undo.extend(recorded);
-            // The changes made before the load count on from the saved revision.
-            scope.revision += journal.revision;
-            scope.persisted_revision = Some(journal.revision);
-            if had_recorded {
-                scope.enforce_entry_limit();
-            }
-        }
+        rebase(scope, journal);
         scope.loaded = true;
         Ok(())
     }
 
     /// Saves the scope behind its change; the outcome of the save that holds it. One writer,
     /// detached, saves at a time, each scope at its latest revision; dropping the returned
-    /// future gives up only the wait. Before the app's store is attached, the scope is left
-    /// unsaved, saved once it is, and this answers at once.
+    /// future gives up only the wait (a failure nobody hears then is a failed step of the
+    /// scope). Before the app's store is attached, the scope is left unsaved, saved once it
+    /// is, and this answers at once.
     pub(crate) fn persist_scope(
         &self,
         scope_id: &HistoryScopeId,
     ) -> BoxFuture<'static, Result<(), HistoryError>> {
-        if !self.store_configured {
+        if !self.store_configured || self.current_store().is_none() {
+            self.persist(scope_id, None);
             return futures::future::ready(Ok(())).boxed();
         }
-        let attached = match self.current_store() {
-            Ok(store) => store.is_some(),
-            Err(error) => return futures::future::ready(Err(error)).boxed(),
-        };
-        let (answer, answered) = futures::channel::oneshot::channel();
-        let start = {
-            let mut state = match self.lock_state() {
-                Ok(state) => state,
-                Err(error) => return futures::future::ready(Err(error)).boxed(),
-            };
-            state.unsaved.insert(scope_id.clone());
-            if attached {
-                state
-                    .save_waiters
-                    .entry(scope_id.clone())
-                    .or_default()
-                    .push(answer);
-            }
-            attached && !std::mem::replace(&mut state.writing, true)
-        };
-        if start {
-            self.start_writer();
-        }
-        if !attached {
-            return futures::future::ready(Ok(())).boxed();
-        }
-        // A writer that ended without answering (the history went away) saved nothing more.
+        let (answer, answered) = oneshot::channel();
+        self.persist(scope_id, Some(answer));
+        // A writer that ended without answering saved nothing more.
         async move { answered.await.unwrap_or(Ok(())) }.boxed()
     }
 
     /// Saves `scope_id` where nothing awaits it: at once with a store that answers at once,
     /// else when the store answers; a failure is a failed step of the scope.
     pub(crate) fn persist_behind(&self, scope_id: &HistoryScopeId) {
-        // Nobody waits: the save's outcome reaches the scope's failures.
-        drop(self.persist_scope(scope_id));
+        self.persist(scope_id, None);
+    }
+
+    /// Marks `scope_id` unsaved (`waiter` hearing its next save) and starts the writer when
+    /// the store is attached and none runs.
+    fn persist(
+        &self,
+        scope_id: &HistoryScopeId,
+        waiter: Option<oneshot::Sender<Result<(), HistoryError>>>,
+    ) {
+        if !self.store_configured {
+            return;
+        }
+        let attached = self.current_store().is_some();
+        let start = {
+            let mut state = self.state();
+            state.unsaved.insert(scope_id.clone());
+            if let Some(waiter) = waiter {
+                state
+                    .save_waiters
+                    .entry(scope_id.clone())
+                    .or_default()
+                    .push(waiter);
+            }
+            attached && !std::mem::replace(&mut state.writing, true)
+        };
+        if start {
+            self.start_writer();
+        }
     }
 
     /// Starts the writer for what was changed before the app's store was attached.
     pub(crate) fn save_unsaved(&self) {
-        let start = match self.lock_state() {
-            Ok(mut state) => {
-                !state.unsaved.is_empty() && !std::mem::replace(&mut state.writing, true)
-            }
-            Err(_) => false,
+        let start = {
+            let mut state = self.state();
+            !state.unsaved.is_empty() && !std::mem::replace(&mut state.writing, true)
         };
         if start {
             self.start_writer();
@@ -144,27 +177,22 @@ impl RayxHistory {
     /// Runs the writer detached (its turn taken already).
     fn start_writer(&self) {
         let Some(history) = self.this.upgrade() else {
-            if let Ok(mut state) = self.lock_state() {
-                state.writing = false;
-            }
+            self.state().writing = false;
             return;
         };
         crate::detached::spawn(Box::pin(async move { history.write().await }));
     }
 
-    /// Saves the unsaved scopes until none is left, answering each one's waiters.
+    /// Saves the unsaved scopes until none is left, answering each one's waiters; a failure
+    /// none of them hears is a failed step of the scope.
     async fn write(self: Arc<Self>) {
-        let Ok(Some(store)) = self.current_store() else {
-            if let Ok(mut state) = self.lock_state() {
-                state.writing = false;
-            }
+        let Some(store) = self.current_store() else {
+            self.state().writing = false;
             return;
         };
         loop {
             let (next, waiters) = {
-                let Ok(mut state) = self.lock_state() else {
-                    return;
-                };
+                let mut state = self.state();
                 match state.unsaved.pop_first() {
                     Some(next) => {
                         let waiters = state.save_waiters.remove(&next).unwrap_or_default();
@@ -179,21 +207,19 @@ impl RayxHistory {
                 }
             };
             let saved = self.save_scope(&*store, &next).await;
-            if waiters.is_empty() {
-                if let Err(error) = &saved {
-                    self.record_failure(next, error);
-                }
-            } else {
-                for waiter in waiters {
-                    let _ = waiter.send(saved.clone());
-                }
+            let mut heard = false;
+            for waiter in waiters {
+                heard |= waiter.send(saved.clone()).is_ok();
+            }
+            if !heard && let Err(error) = &saved {
+                self.record_failure(next, error);
             }
         }
     }
 
     /// Saves `scope_id` at its revision now (loading it first if it was not); a save that
-    /// meets another revision in the store reloads it, and saves over it unless it holds this
-    /// very journal.
+    /// meets another journal in the store reloads it, rebases the scope's changes on it and
+    /// saves again (unless it holds this very journal, a save whose answer was lost).
     async fn save_scope(
         &self,
         store: &dyn HistoryStore,
@@ -205,7 +231,7 @@ impl RayxHistory {
             .get(scope_id)
             .is_some_and(|scope| !scope.loaded);
         if unloaded {
-            let journal = store.load(scope_id).await?;
+            let journal = self.bounded(store.load(scope_id)).await?;
             self.merge_loaded(scope_id, journal)?;
             self.publish_state();
         }
@@ -215,44 +241,30 @@ impl RayxHistory {
             if expected_revision == Some(journal.revision) {
                 return Ok(());
             }
-            let revision = journal.revision;
-            match store.save(journal.clone(), expected_revision).await {
-                Ok(()) => return self.record_persisted_revision(scope_id, revision),
+            match self
+                .bounded_store(store.save(journal.clone(), expected_revision))
+                .await?
+            {
+                Ok(()) => return self.record_saved(scope_id, journal),
                 Err(HistoryStoreError::Conflict) if attempt < SAVE_ATTEMPTS => {
                     attempt += 1;
-                    let stored = store.load(scope_id).await?;
+                    let stored = self.bounded(store.load(scope_id)).await?;
                     if stored.as_ref() == Some(&journal) {
-                        // This journal, written by a save whose outcome was lost.
-                        return self.record_persisted_revision(scope_id, revision);
+                        return self.record_saved(scope_id, journal);
                     }
-                    self.take_stored_revision(scope_id, stored.map(|stored| stored.revision))?;
+                    {
+                        let mut state = self.lock_state()?;
+                        let scope = state
+                            .scopes
+                            .get_mut(scope_id)
+                            .ok_or(HistoryError::StackChanged)?;
+                        rebase(scope, stored);
+                    }
+                    self.publish_state();
                 }
                 Err(error) => return Err(error.into()),
             }
         }
-    }
-
-    /// Expects `stored` in the store from now on, the scope's revision past it.
-    fn take_stored_revision(
-        &self,
-        scope_id: &HistoryScopeId,
-        stored: Option<u64>,
-    ) -> Result<(), HistoryError> {
-        {
-            let mut state = self.lock_state()?;
-            let scope = state
-                .scopes
-                .get_mut(scope_id)
-                .ok_or(HistoryError::StackChanged)?;
-            scope.persisted_revision = stored;
-            if let Some(stored) = stored
-                && stored >= scope.revision
-            {
-                scope.revision = stored + 1;
-            }
-        }
-        self.publish_state();
-        Ok(())
     }
 
     fn persistence_snapshot(
@@ -270,23 +282,19 @@ impl RayxHistory {
         ))
     }
 
-    fn record_persisted_revision(
+    /// `journal` is the scope's in the store: its base from now on.
+    fn record_saved(
         &self,
         scope_id: &HistoryScopeId,
-        revision: u64,
+        journal: HistoryJournalV2,
     ) -> Result<(), HistoryError> {
         let mut state = self.lock_state()?;
         let scope = state
             .scopes
             .get_mut(scope_id)
             .ok_or(HistoryError::StackChanged)?;
-        // A later save may have recorded a later revision already.
-        if scope
-            .persisted_revision
-            .is_none_or(|persisted| persisted < revision)
-        {
-            scope.persisted_revision = Some(revision);
-        }
+        scope.persisted_revision = Some(journal.revision);
+        scope.base = journal.entries;
         Ok(())
     }
 }

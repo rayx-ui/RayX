@@ -38,7 +38,7 @@ impl RayxHistory {
         } else {
             Ok(())
         };
-        transaction.commit().await?;
+        self.bounded(transaction.commit()).await?;
         self.emit(HistoryEvent::AvailabilityChanged(scope_id.clone()));
         result
     }
@@ -57,7 +57,7 @@ impl RayxHistory {
         self.clear_scope_state(scope_id, boundary, None)?;
         self.publish_state();
         let result = self.persist_scope(scope_id).await;
-        transaction.commit().await?;
+        self.bounded(transaction.commit()).await?;
         self.emit(HistoryEvent::ScopeCleared(scope_id.clone()));
         result
     }
@@ -90,7 +90,7 @@ impl RayxHistory {
     async fn begin_scope_change(&self) -> Result<OpenTransaction<'_>, HistoryError> {
         Ok(OpenTransaction {
             operations: &*self.operations,
-            id: Some(self.operations.begin().await?),
+            id: Some(self.bounded(self.operations.begin()).await?),
         })
     }
 }
