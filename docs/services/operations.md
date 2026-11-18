@@ -4,51 +4,207 @@ Typed, versioned domain operations applied to registered targets: the base of [u
 
 ## Register
 
-```rust
-use rayx_services_operations::OperationsAppBuilderExt;
+| | |
+| --- | --- |
+| Trait | `rayx_app::services::operations::OperationService` (`rayx::app::services::operations`) |
+| Crate | `rayx_services_operations` (`rayx::services::operations`) |
+| Feature | `operations` |
+| Rust | `add_operations()` (`OperationsAppBuilderExt`) |
+| TS | `addOperations()`, and the classes `OperationService` and `OperationTarget` |
+| Requires | nothing |
 
-builder.add_operations()
+```rust
+use rayx::prelude::*; // `OperationsAppBuilderExt`, with the `operations` feature
+
+let builder = RayXAppBuilder::new().add_operations();
 ```
 
-The contract is `dyn OperationService` (`rayx_app::services::operations`): its state (the registered targets), its
-events, its commands and data types, NSH-free and implementable in Rust or TS. RayX's implementation is
-`rayx_services_operations`' (`builder.addOperations()` in TS, once its set is registered with
-`rayx_services_operations::register(registry)`), registered as the app's `dyn OperationService`, replacing any other
-(an app's own, registered after it, wins). It has nothing to initialize. Its `diagnostics` feature keeps the latest
-committed operations and failure codes in the published state (`diagnostics()` on `dyn OperationService`).
+```tsx
+const services = await new RayXAppBuilder().addOperations().start();
+```
+
+`add_operations()` registers RayX's implementation as the app's `dyn OperationService`, replacing any earlier
+registration of it. It is a plain singleton, not a startup service: it has nothing to initialize and is ready once
+made. In TS, `addOperations()` is there once the crate's set is registered (`#[rayx::native_module]` with the feature
+on, or `rayx_services_operations::register(registry)`).
+
+The crate's own `diagnostics` feature keeps the latest committed operations and failure codes in the published state
+(`diagnostics()` on `dyn OperationService`).
+
+## The contract
+
+`OperationService` (TS: `OperationServiceContract`) is NSH-free and implementable in Rust or TS.
+
+Published state:
+
+- `operations()` (TS `operations`): an `OperationState`, the registered targets (sorted) and, with diagnostics, the
+  latest committed operations and failure codes.
+
+Events:
+
+- `events()` (TS `events`): every `OperationEvent`, `Committed(receipt)` (outside a transaction at once, inside one
+  when it commits) or `Failed(failure)`.
+
+Constants:
+
+- `instance_id()` (TS `instanceId`): tells two services apart; the transactions entered on a thread are kept per
+  instance.
+
+Commands:
+
+- `register_target(id, handle)` (TS `registerTarget`): registers a target's handler, an `OperationTargetHandle`;
+  refused when the id is registered (a released id may be registered again).
+- `release_target(id)` (TS `releaseTarget`): releases it, whether it was registered; operations submitted to it fail
+  with `TargetReleased`.
+- `begin()`, `commit(id)`, `abort(id)` (TS the same): open a transaction (its id), publish its operations' events, or
+  undo them newest first.
+- `submit_record(record, origin, transaction)` (TS `submitRecord`): applies an `OperationRecord` through its target,
+  alone or in an open transaction; the receipt, with the inverse history undoes it with.
+- `publish_remote_record(record, peer, before, after, affected)` (TS `publishRemoteRecord`): publishes what a peer
+  applied as committed.
+
+Rust helpers (on `dyn OperationService`):
+
+- `register_handler::<T, H>(id, Arc<H>)`: registers an `OperationTargetHandler<T>` of a `DomainOperation` `T`.
+- `submit(&id, operation, origin)`, `resubmit(record, origin)`: encode and submit, in the transaction entered on the
+  thread if there is one; `publish_remote(&id, operation, peer, before, after, affected)`.
+- `begin_transaction(mode)`: an `OperationTransaction`; `current_transaction_id()`.
+- `subscribe(..)`: hears every event, isolating a subscriber that panics; `targets()`, `has_target(&id)`,
+  `diagnostics()`.
+
+**Transaction ids** are unique and increasing per service: every id it gives (`begin`, a submission outside a
+transaction, a remote operation) is greater than every id it gave before, on any thread. An implementation, in Rust or
+TS, must keep this: history groups the receipts of one id into one entry, and a clear discards what transactions with
+smaller ids commit after it.
 
 ## Use
 
-- **Targets:** register an `OperationTargetHandler<T>` per `OperationTargetId` with
-  `register_handler::<T, _>(id, handler).await`; it applies the operations meant for that target, atomically. The
-  contract's `register_target(id, handle)` takes an `OperationTargetHandle`: the handler as a Rust object, which a TS
-  implementation of the service calls through its class (`OperationTarget.of(handle).apply(record, origin)`), never a
-  closure; a handle TS does not take during the call (its `registerTarget` throws first) is released with the call.
-  `release_target(id).await` releases it; operations submitted to it fail with `TargetReleased`.
-- **Submissions:** `submit(&id, operation, origin).await` encodes the operation as an `OperationRecord` and submits it
-  (`submit_record(record, origin, transaction)` in the contract); the receipt has its inverse, which history uses to
-  undo it.
-- **Transactions:** `begin_transaction(mode).await` opens a transaction, over the commands `begin`, `commit(id)` and
-  `abort(id)`: its events are published when it commits, and an abort (or dropping it) undoes its operations, newest
-  first. It is carried explicitly: `transaction.submit(&id, operation, origin).await` submits in it from any task or
-  thread, so it may be held across `.await`s and closed on another thread. `transaction.enter(|| ..)` makes it the
-  thread's transaction for a synchronous body only: there `submit` on the service (and the code calling it) submits in
-  it and `begin_transaction(Join)` joins it (`Reject` refuses, `New` begins another); the body cannot `.await`, so it
-  never spans another task's work, and the futures it makes carry the id. A submission into a transaction that is not
-  open (never begun, committed or aborted) fails with `TransactionClosed`, applying nothing.
-- **Events:** `subscribe(..)` (or `events()`) hears every `OperationEvent`, committed or failed; a subscriber that
+```rust
+use rayx::app::services::operations::*;
+
+#[derive(Clone, Serialize, Deserialize)]
+struct Rename(String);
+
+impl DomainOperation for Rename {
+    const KIND: &'static str = "doc.rename";
+    const VERSION: u32 = 1;
+}
+
+impl OperationTargetHandler<Rename> for Document {
+    fn apply_atomically(
+        &self,
+        operation: &Rename,
+        _origin: &OperationOrigin,
+    ) -> Result<OperationApplyResult<Rename>, String> {
+        let (before, revision) = self.rename(&operation.0);
+        Ok(OperationApplyResult::applied(Rename(before), ["title"], revision - 1, revision))
+    }
+}
+
+let operations = services.required_service::<dyn OperationService>()?;
+let doc = OperationTargetId::new("doc")?;
+operations.register_handler::<Rename, _>(doc.clone(), Arc::new(document)).await?;
+let receipt = operations.submit(&doc, Rename("Draft".into()), OperationOrigin::LocalUser).await?;
+```
+
+- **Targets:** a handler applies the operations meant for its target atomically (one at a time per target) and leaves
+  it unchanged when it fails; `validate` may refuse one first. `release_target(id).await` releases it.
+- **Transactions:** `begin_transaction(mode).await?` opens one, over `begin`, `commit(id)` and `abort(id)`: its events
+  are published when it commits, and an abort (or dropping it) undoes its operations, newest first. It is carried
+  explicitly: `transaction.submit(&id, operation, origin).await` submits in it from any task or thread, so it may be
+  held across `.await`s and closed on another thread. `transaction.enter(|| ..)` makes it the thread's transaction for
+  a synchronous body only: there `submit` on the service (and the code calling it) submits in it and
+  `begin_transaction(Join)` joins it (`Reject` refuses with `NestedTransactionRejected`, `New` begins another); the
+  body cannot `.await`, so it never spans another task's work, and the futures it makes carry the id. A submission into
+  a transaction that is not open (never begun, committed or aborted) fails with `TransactionClosed`, applying nothing.
+
+```rust
+let transaction = operations.begin_transaction(OperationTransactionMode::Join).await?;
+transaction.submit(&doc, Rename("Final".into()), OperationOrigin::LocalUser).await?;
+transaction.commit().await?;
+```
+
+- **Events:** `operations.subscribe(|event| ..)` (or `events().subscribe(..)`) hears every event; a subscriber that
   panics fails neither the others nor the operation.
 - **Remote operations:** `publish_remote(&id, operation, peer, before, after, affected).await` publishes what a peer
-  applied as committed.
-- **Transaction ids** are unique and increasing per service: every id it gives (`begin`, a submission outside a
-  transaction, a remote operation) is greater than every id it gave before, on any thread. An implementation, in Rust
-  or TS, must keep this: history groups the receipts of one id into one entry, and a clear discards what transactions
-  with smaller ids commit after it.
-- **The instance:** `instance_id()`, a constant, tells two services apart; the transactions entered on a thread are
-  kept per instance.
+  applied as committed; the target must be registered.
 
-In TS, `services.getRequiredService(OperationService)` wraps whichever `dyn OperationService` is registered:
-`registerTarget(id, target)`, `releaseTarget`, `begin`, `commit`, `abort`, `submitRecord` and `publishRemoteRecord`
-return promises, `targets` and `instanceId` are read at once, and `onEvent` hears every event.
+## On NSH
+
+RayX's implementation needs nothing from NSH: its commands answer at once, on any thread. It applies each record
+through its target's handler under a per-target gate, keeps an open transaction's receipts until it commits or aborts,
+and publishes the registered targets as its state.
+
+## TSX
+
+`OperationService`, resolved from the provider `start()` gives, wraps whichever `dyn OperationService` is registered:
+
+- `instanceId` and `targets` (getters), read at once;
+- `registerTarget(id, target)` (an `OperationTarget`), `releaseTarget(id)`, `begin()`, `commit(id)`, `abort(id)`,
+  `submitRecord(record, origin, transactionId?)` and `publishRemoteRecord(record, peerId, beforeRevision,
+  afterRevision, affectedIds)`: promises that reject with the service's error;
+- `onEvent(listener)`: hears every event (`{ Committed: receipt }` or `{ Failed: failure }`); it returns a function
+  that stops it.
+
+`OperationTarget` is a target's handler, a Rust object: Rust code hands one to TS with `OperationTarget::new(handle)`,
+and a TS implementation of the service takes the handle it is given with `OperationTarget.of(handle)` (once) and
+applies records with `apply(record, origin)` (synchronous; it throws when the target refused or failed it).
+
+```tsx
+const operations = services.getRequiredService(OperationService);
+const stop = operations.onEvent((event) => {
+  if ("Committed" in event) console.log(event.Committed.target_id);
+});
+const id = await operations.begin();
+await operations.submitRecord(record, "LocalUser", id);
+await operations.commit(id);
+```
+
+Records, origins and receipts cross as their JSON (snake_case fields; a record's `payload` is the operation's JSON as
+bytes).
+
+## Replace it
+
+Register the app's own `dyn OperationService` instead of calling `add_operations()`. RayX's history then undoes and
+redoes through it.
+
+```rust
+builder.add_singleton_as::<dyn OperationService>(
+    Arc::new(MyOperations::new()) as Arc<dyn OperationService>,
+)
+```
+
+In TS, a class implementing `OperationServiceContract`, registered under the class `OperationService`
+([contracts](../tsx.md#contracts)):
+
+```tsx
+class MyOperations {
+  operations = new ContractState({ targets: [], recent_transactions: [], recent_failure_codes: [] });
+  events = new ContractEvents();
+  instanceId = 77;
+  targets = new Map();
+  next = 0;
+  async registerTarget(targetId, handle) {
+    this.targets.set(targetId, OperationTarget.of(handle));
+    this.operations.publish({ targets: [...this.targets.keys()], recent_transactions: [], recent_failure_codes: [] });
+  }
+  async releaseTarget(targetId) { /* ... */ return this.targets.delete(targetId); }
+  async begin() { return ++this.next; }
+  async commit(transactionId) { /* publish its receipts */ }
+  async abort(transactionId) { /* undo them */ }
+  async submitRecord(record, origin, transactionId) {
+    const result = this.targets.get(record.target_id).apply(record, origin);
+    const receipt = { transaction_id: transactionId ?? ++this.next, target_id: record.target_id, forward: record, origin, ...result };
+    this.events.publish({ Committed: receipt });
+    return receipt;
+  }
+  async publishRemoteRecord(record, peerId, beforeRevision, afterRevision, affectedIds) { /* ... */ }
+}
+
+new RayXAppBuilder().addSingletonAs(OperationService, () => new MyOperations());
+```
+
+It must keep the transaction-id rule above. A handle TS does not take during `registerTarget` (it throws first) is
+released with the call.
 
 `rayx_app::testing::FakeOperations` is a fake of the contract, for testing what consumes operations.

@@ -5,35 +5,60 @@ as `asset:/` URLs.
 
 ## Register
 
+| | |
+| --- | --- |
+| Trait | `rayx_app::services::assets::AssetService` (`rayx::app::services::assets`) |
+| Crate | `rayx_services_assets` (`rayx::services::assets`) |
+| Feature | `assets` (default) |
+| Rust | `add_assets(..)`, `add_asset_files(files)`, `add_bundled_assets(uris)` (`AssetAppBuilderExt`) |
+| TS | `addAssets(..)`, and the class `AssetService` |
+| Requires | nothing |
+
 ```rust
-builder
-    .add_asset_files(assets!())       // the files this crate ships, as its UI set registers them (on NSH)
+use rayx::prelude::*; // AssetAppBuilderExt, with the `assets` feature
+
+let builder = RayXAppBuilder::new()
     .add_assets(|options| {
-        options.package("shared");    // a package whose manifest lists its files
+        options.package("my-app").package("shared"); // packages whose manifests are read
     })
+    .add_asset_files(assets!()); // the files this crate ships, as NSH lists them for its UI set
+// TS: new RayXAppBuilder().addAssets((options) => { options.package("my-app"); })
 ```
 
-RayX's implementation is `rayx_services_assets`'s (`builder.addAssets(..)` in TS, once its set is registered),
-registered as the app's `dyn AssetService`; the app's start requires one, RayX's or the app's own.
+`add_assets(configure)` registers RayX's implementation as the app's `dyn AssetService`, replacing any earlier
+registration of it: a startup service (keyed `dyn AssetService`) that reads the packages' manifests into the catalog
+when the app starts. The app's start requires a `dyn AssetService`, RayX's or the app's own; [fonts](fonts.md) and
+[i18n](i18n.md) require one too.
 
-`add_asset_files(files)` (in `rayx_app_nsh`; `add_bundled_assets(uris)` for any list of `asset:/@<package>/<path>` URLs)
-adds a crate's files to the catalog, so the crate needs no manifest listing them. Packages it adds come after the
-asset options' packages, in the order their files are added.
+`add_asset_files(files)` (NSH's `assets!()`) and `add_bundled_assets(uris)` (any list of `asset:/@<package>/<path>`
+URLs) add files to the catalog, so their package needs no manifest listing them. Packages they add come after the
+asset options' packages, in the order their files are added. TS has no counterpart.
+
+The TS side is there once the crate's set is registered: `#[rayx::native_module]` with the `assets` feature on, or
+`rayx_services_assets::register(registry)` by hand.
 
 ## Configure
 
-Options bind from `RayX:Services:Assets`, then the closure changes them: the packages whose manifests are read (the
-app's own first), the manifest's file name (`assets.toml`), the validation policy and the byte cache's budget.
+`AssetOptions` bind from `RayX:Services:Assets` (`ASSET_OPTIONS_SECTION`), then the closure changes them and they are
+validated at the start:
+
+- `packages`: the packages whose manifests are read, the app's own first; `package(name)` adds one;
+- `manifest`: the manifest's file name, `assets.toml`;
+- `validation`: an `AssetValidationPolicy`, `WarnOnly` (problems are diagnostics), `Strict` (problems fail the start)
+  or `Disabled`;
+- `byte_cache_budget`: how many bytes of read files stay in memory, 16 MiB (`DEFAULT_ASSET_BYTE_CACHE_BUDGET`).
 
 ```json
 { "RayX": { "Services": { "Assets": { "packages": ["my-app"], "byteCacheBudget": 1048576 } } } }
 ```
 
+TS's options object has `package(name)` only.
+
 ## The manifest
 
-A package whose files the platform lists needs a manifest only for metadata, and its manifest is read only when it
-ships one; a package whose files are not listed lists them in its manifest. The manifest is TOML, `assets.toml` by
-default:
+A package whose files are added (`add_asset_files`, `add_bundled_assets`) needs a manifest only for metadata, and its
+manifest is read only when it ships one; a package whose files are not added lists them in its manifest. The manifest is TOML,
+`assets.toml` by default:
 
 ```toml
 files = ["icons/close.svg", "locales/en.json"]
@@ -51,32 +76,105 @@ tags = ["brand"]
 - A listed file the manifest does not mention takes its kind from its name; it is in the catalog with no metadata.
 - Manifest problems are diagnostics or startup failures, as `AssetValidationPolicy` says.
 
+## The contract
+
+`AssetService` (`AssetServiceContract` in TS) is called from any thread.
+
+Published state:
+
+- `catalog()` (`catalog`): a `StateCell<Option<AssetCatalog>>`, the catalog once loaded (`None` until then), with
+  what reading the manifests found wrong.
+
+Commands (`async`, `Result<_, AssetError>`; promises in TS):
+
+- `load_catalog()` (`loadCatalog`): loads the catalog from the manifests and publishes it (the app's start does).
+- `load_bytes(path)` (`loadBytes`): the bytes of the asset at `path`, `Vec<u8>`.
+- `load_text(path)` (`loadText`): its UTF-8 text.
+
+Posted commands:
+
+- `clear_cache()` (`clearCache`): forgets the bytes read so far.
+
+Paths are logical paths (`@<package>/<path>`), or paths in the first package that has them; the commands take an
+owned `String`.
+
+Rust helpers, on `dyn AssetService`, synchronous except `load_json`:
+
+- `loaded_catalog()`: the catalog, or `AssetError::NotLoaded`;
+- `descriptor(path)` and `query(&AssetQuery)`: an asset's `AssetDescriptor` (package, path, kind, MIME type, scales,
+  metadata), and the assets a query matches;
+- `uri(path)`: its `asset:/` URL; `uri_for_scale(path, scale)`: its variant's for a scale;
+- `diagnostics()`: what reading the manifests found wrong;
+- `load_json::<T>(path)`: the asset decoded from JSON.
+
 ## Use
 
 ```rust
+use rayx::app::services::assets::AssetService;
+
 let assets = services.required_service::<dyn AssetService>()?;
 let url = assets.uri("images/logo.png")?;                // asset:/@my-app/images/logo.png
 let sharp = assets.uri_for_scale("images/logo.png", 2.0)?;
-let text = assets.load_text("notes/welcome.md").await?;
+let text = assets.load_text("notes/welcome.md".into()).await?;
+let settings: Settings = assets.load_json("data/settings.json").await?;
 ```
 
-- `AssetService`, a startup service, reads the manifests into an `AssetCatalog`; `descriptor` and `query` answer
-  questions about it, with kinds and MIME types from file names.
-- `load_bytes`, `load_text` and `load_json` read the files with NSH's `fetch` of their `asset:/` URLs, from any thread
-  (through the surface's engine runner), and keep what they read within the byte budget. `rayx_app::testing::FakeAssets`
-  serves a catalog and files from memory, for tests.
+Kinds and MIME types come from file names. RayX's implementation keeps what it reads within the byte budget.
 
 ## On NSH
 
-NSH packages each crate's `assets/` and serves `asset:/` URLs itself, and `rayx_app_nsh` reads them with NSH's `fetch`, so
-the same code serves desktop, mobile and web. Assets are read-only, and a session restart reads them again (no hot
-reload).
+NSH packages each crate's `assets/` and serves `asset:/` URLs itself (from the app's package on a device, the dev
+server during `nsh run`, the page's assets on the web), and RayX's implementation reads them with NSH's `fetch`
+through the surface's engine runner, so the same code reads them on every platform and from any thread. Assets are
+read-only, and a session restart reads them again (no hot reload).
 
 ## TSX
 
-`AssetService`, resolved from the provider `start()` gives:
+`AssetService`, resolved from the provider `start()` gives, wraps whichever `dyn AssetService` is registered:
+
+- `url(path)`: the asset's `asset:/` URL, for an `<Image source>` or a `fetch` (it throws for an unknown asset);
+- `urlForScale(path, scale)`: its variant's for a pixel ratio.
 
 ```tsx
 const assets = services.getRequiredService(AssetService);
 const logo = assets.url("images/logo.png"); // asset:/@my-app/images/logo.png
 ```
+
+## Replace it
+
+An app may keep its files elsewhere (embedded, downloaded) by registering its own `dyn AssetService` in place of
+`add_assets(..)`. RayX's [fonts](fonts.md) and [i18n](i18n.md) then read the app's own assets, the host starts with
+it, and the class `AssetService` wraps it.
+
+```rust
+builder.add_singleton_as::<dyn AssetService>(Arc::new(MyAssets::new()) as Arc<dyn AssetService>)
+```
+
+One that loads its catalog at the start also registers itself as a startup service, as `add_assets(..)` does:
+`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn AssetService`, which
+RayX's fonts wait for.
+
+In TS, a class implementing `AssetServiceContract`, registered under `AssetService`: `catalog` a `ContractState`
+(`null` until loaded, then the JSON of an `AssetCatalog`: `{ packages, entries, diagnostics }`, `entries` keyed by
+logical path), the commands `async` methods, `clearCache()` a plain one. `loadBytes` may answer a `Uint8Array` (or
+another typed array or `ArrayBuffer`) or a `number[]`.
+
+```tsx
+class MyAssets {
+  catalog = new ContractState(null);
+  isInitialized() { return this.catalog.value !== null; }
+  async initialize() { await this.loadCatalog(); }
+  async loadCatalog() { this.catalog.publish({ packages: ["app"], entries: { /* ... */ }, diagnostics: [] }); }
+  async loadBytes(path) { /* the file's bytes */ }
+  async loadText(path) { /* the file's text */ }
+  clearCache() {}
+}
+
+const services = await new RayXAppBuilder()
+  .addStartupSingletonAs(AssetService, () => new MyAssets())
+  .addFonts()
+  .start();
+```
+
+For tests, `rayx_app::testing::FakeAssets` serves a catalog and files from memory (`file`) and records what it is
+asked to load.
