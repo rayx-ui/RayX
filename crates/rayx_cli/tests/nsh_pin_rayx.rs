@@ -8,6 +8,10 @@ use std::path::PathBuf;
 use rayx_cli::nsh::pin::is_nsh_crate;
 use rayx_cli::project::pins::DEFAULTS;
 
+/// What a failure says when RayX builds on a local NSH checkout, which nothing may commit.
+const LOCAL: &str = " (while `rayx nshx use <checkout>` points RayX at a local NSH checkout, this fails \
+     until `rayx nshx use <tag>` moves it back: commit neither Cargo.toml nor Cargo.lock before)";
+
 fn read(relative: &str) -> toml::Table {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -29,7 +33,7 @@ fn the_default_pin_patches_what_rayx_patches_at_the_same_tag() {
         assert_eq!(
             spec["git"].as_str(),
             Some(DEFAULTS.nsh.git),
-            "RayX patches {name} from the default's repository"
+            "RayX patches {name} from the default's repository{LOCAL}"
         );
         assert_eq!(
             spec["tag"].as_str(),
@@ -62,7 +66,7 @@ fn the_default_pin_is_the_commit_and_version_rayx_locks() {
         assert_eq!(
             package["source"].as_str(),
             Some(source.as_str()),
-            "RayX's lock takes {name} from the default pin's commit"
+            "RayX's lock takes {name} from the default pin's commit{LOCAL}"
         );
         assert_eq!(
             package["version"].as_str(),

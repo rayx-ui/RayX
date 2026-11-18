@@ -343,7 +343,7 @@ fn prune_with_yes_removes_what_neither_a_project_nor_the_default_uses() {
         .args(["nsh", "prune"])
         .assert()
         .code(1)
-        .stdout(contains("rayx nsh prune --yes"));
+        .stdout(contains("rayx nshx prune --yes"));
     assert!(home.path("rayx-home/nsh/5f0c2a91be47").is_dir());
 }
 

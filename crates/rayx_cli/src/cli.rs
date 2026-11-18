@@ -52,8 +52,10 @@ pub enum Command {
     Fmt(FmtArgs),
     /// Run an nsh command with the project's pinned nsh (`rayx app run --target web`)
     App(AppArgs),
-    /// Show, install, locate and prune the nsh builds rayx keeps for each pin
-    Nsh {
+    /// Show, install, locate and prune the nsh builds rayx keeps, or build on a local NSH checkout
+    // `rayx nsh` was the group's name before the fork's `nshx` tags named it; it still works.
+    #[command(alias = "nsh")]
+    Nshx {
         #[command(subcommand)]
         command: NshCommand,
     },
@@ -264,9 +266,19 @@ pub enum AppCommand {
     Nsh(Vec<OsString>),
 }
 
-/// Subcommands of `rayx nsh`.
+/// Subcommands of `rayx nshx` (`rayx nsh`).
 #[derive(Debug, Subcommand)]
 pub enum NshCommand {
+    /// Build the project's NSH from a local NSH checkout, or move it to an nshx tag
+    Use {
+        /// An NSH checkout (the folder holding `crates/nsh-cli`), or a tag of the fork such as
+        /// `nshx-0.5.0-8`
+        #[arg(value_name = "CHECKOUT|TAG")]
+        target: String,
+        /// Run in this directory instead of the current one
+        #[arg(short = 'C', value_name = "DIR")]
+        dir: Option<PathBuf>,
+    },
     /// Show the project's nsh pin, where it comes from and its store entry
     Status {
         /// Run in this directory instead of the current one

@@ -505,7 +505,7 @@ fn on_a_host_setup_cannot_install_for_the_pinned_nsh_is_still_ensured() {
     assert!(text.contains("prerequisites not checked"), "{text}");
     assert!(error.contains("nsh nshx-0.5.0-7 (d47d7fd)"), "{error}");
     assert!(
-        error.contains("`rayx nsh install -C /work/app`") && !error.contains("rayx setup"),
+        error.contains("`rayx nshx install -C /work/app`") && !error.contains("rayx setup"),
         "the command that works on this host: {error}"
     );
 }

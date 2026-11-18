@@ -12,7 +12,7 @@ use predicates::str::contains;
 use rayx_cli::cli::{Cli, Command as Subcommand, NshCommand, Template};
 
 const COMMANDS: [&str; 10] = [
-    "setup", "doctor", "wsl", "lima", "self", "fmt", "app", "nsh", "new", "serve",
+    "setup", "doctor", "wsl", "lima", "self", "fmt", "app", "nshx", "new", "serve",
 ];
 
 fn rayx() -> Command {
@@ -93,7 +93,7 @@ fn unknown_flag_exits_2_and_names_the_problem() {
     for args in [
         &["setup", "--no-such-flag"][..],
         &["--no-such-flag"][..],
-        &["nsh", "status", "--no-such-flag"][..],
+        &["nshx", "status", "--no-such-flag"][..],
     ] {
         rayx()
             .args(args)
@@ -151,10 +151,12 @@ fn every_subcommand_parses() {
         &["rayx", "self", "update", "--release", "1.0.0", "--yes"][..],
         &["rayx", "fmt", "--check"][..],
         &["rayx", "app", "run"][..],
-        &["rayx", "nsh", "status", "--json"][..],
-        &["rayx", "nsh", "path", "--no-install"][..],
-        &["rayx", "nsh", "install", "-C", "app"][..],
-        &["rayx", "nsh", "prune", "--yes"][..],
+        &["rayx", "nshx", "status", "--json"][..],
+        &["rayx", "nshx", "path", "--no-install"][..],
+        &["rayx", "nshx", "install", "-C", "app"][..],
+        &["rayx", "nshx", "prune", "--yes"][..],
+        &["rayx", "nshx", "use", "../nsh"][..],
+        &["rayx", "nshx", "use", "nshx-0.5.0-8", "-C", "app"][..],
         &["rayx", "new", "hello"][..],
         &["rayx", "serve", "--dir", "site", "--port", "8081"][..],
     ] {
@@ -276,20 +278,44 @@ fn new_takes_nsh_s_three_templates_and_defaults_to_mixed() {
 
 #[test]
 fn nsh_subcommands_take_their_options() {
-    let Subcommand::Nsh {
+    let Subcommand::Nshx {
         command: NshCommand::Path { dir, no_install },
-    } = parse(&["rayx", "nsh", "path", "-C", "app", "--no-install"]).command
+    } = parse(&["rayx", "nshx", "path", "-C", "app", "--no-install"]).command
     else {
-        panic!("expected nsh path");
+        panic!("expected nshx path");
     };
     assert_eq!(dir, Some(PathBuf::from("app")));
     assert!(no_install);
 
     rayx()
-        .args(["nsh"])
+        .args(["nshx"])
         .assert()
         .code(2)
         .stderr(contains("status").and(contains("prune")));
+}
+
+#[test]
+fn nsh_still_names_the_nshx_group_and_use_takes_a_checkout_or_a_tag() {
+    let Subcommand::Nshx {
+        command: NshCommand::Status { json, .. },
+    } = parse(&["rayx", "nsh", "status", "--json"]).command
+    else {
+        panic!("`rayx nsh` is `rayx nshx`");
+    };
+    assert!(json);
+    let Subcommand::Nshx {
+        command: NshCommand::Use { target, dir },
+    } = parse(&["rayx", "nshx", "use", "../nsh", "-C", "app"]).command
+    else {
+        panic!("expected nshx use");
+    };
+    assert_eq!(target, "../nsh");
+    assert_eq!(dir, Some(PathBuf::from("app")));
+    rayx()
+        .args(["nshx", "use"])
+        .assert()
+        .code(2)
+        .stderr(contains("CHECKOUT|TAG"));
 }
 
 #[test]

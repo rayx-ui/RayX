@@ -1,5 +1,6 @@
 //! The nsh a project pins: reading the pin, the store under `$RAYX_HOME/nsh`, installing from a
-//! release or from source, and `rayx nsh status|path|install|prune` (design §4).
+//! release or from source, `rayx nshx status|path|install|prune` (design §4), and `rayx nshx use`,
+//! which builds a project's NSH from a local checkout or moves it to a tag ([`switch`]).
 //!
 //! rayx never runs the `nsh` on `PATH` (D1): it runs the build of the project's pin from the
 //! store, in the directory it read the pin in.
@@ -7,6 +8,7 @@
 pub mod install;
 pub mod pin;
 pub mod store;
+pub mod switch;
 
 use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
@@ -167,7 +169,7 @@ pub fn setup_command(dir: &Path) -> String {
     format!("cd {} && rayx setup", dir.display())
 }
 
-/// Runs `rayx nsh <command>` against the real machine and returns the exit code.
+/// Runs `rayx nshx <command>` against the real machine and returns the exit code.
 pub fn run(command: &NshCommand) -> u8 {
     let host = crate::host::facts();
     let machine = SystemMachine;
@@ -204,6 +206,9 @@ pub fn run(command: &NshCommand) -> u8 {
         NshCommand::Install { dir: d } => {
             install_in(&mut runner, &store, &host, &tools, &dir(d), &mut out)
         }
+        NshCommand::Use { target, dir: d } => {
+            switch::use_in(&mut runner, &dir(d), &cwd, target, &mut out)
+        }
         NshCommand::Prune { yes } => {
             let interactive = io::stdin().is_terminal() && io::stdout().is_terminal();
             let mut confirm = ask_on_terminal;
@@ -237,7 +242,7 @@ pub fn resolve(runner: &mut Runner, dir: &Path, err: &mut dyn Write) -> Result<P
     Ok(pin)
 }
 
-/// `rayx nsh status [--json]` in `dir`.
+/// `rayx nshx status [--json]` in `dir`.
 pub fn status_in(
     runner: &mut Runner,
     store: &Store,
@@ -248,16 +253,43 @@ pub fn status_in(
 ) -> Result<u8> {
     let pin = resolve(runner, dir, &mut io::stderr())?;
     let status = Status::of(&pin, store, host);
+    // On a local checkout (`rayx nshx use <checkout>`): its commit, its uncommitted files, and
+    // the tag `rayx nshx use` takes the project back to.
+    let local = match &pin.source {
+        Source::Path { checkout } => Some((
+            switch::checkout_state(runner, checkout),
+            pin::workspace_root(runner, dir).and_then(|root| switch::tag_before_checkout(&root)),
+        )),
+        _ => None,
+    };
     let text = if json {
-        serde_json::to_string_pretty(&status.to_json())? + "\n"
+        let mut value = status.to_json();
+        if let Some((state, back)) = &local {
+            value["checkout"] = json!({
+                "commit": state.commit,
+                "uncommitted": state.uncommitted,
+                "tagBefore": back,
+            });
+        }
+        serde_json::to_string_pretty(&value)? + "\n"
     } else {
-        status.to_text()
+        let mut text = status.to_text();
+        if let Some((state, back)) = &local {
+            text.push_str(&format!(
+                "  checkout   {}{}\n",
+                pin.label(),
+                state.describe()
+            ));
+            let back = back.as_deref().unwrap_or("<tag>");
+            text.push_str(&format!("  back       rayx nshx use {back}\n"));
+        }
+        text
     };
     let _ = out.write_all(text.as_bytes());
     Ok(0)
 }
 
-/// `rayx nsh path [--no-install]` in `dir`: the CLI's path on `out`, installing it first; with
+/// `rayx nshx path [--no-install]` in `dir`: the CLI's path on `out`, installing it first; with
 /// `replacement` (`RAYX_NSH`), that binary, with the warning on `err`.
 #[allow(clippy::too_many_arguments)]
 pub fn path_in(
@@ -316,7 +348,7 @@ pub fn path_in(
     Ok(0)
 }
 
-/// `rayx nsh install` in `dir`.
+/// `rayx nshx install` in `dir`.
 pub fn install_in(
     runner: &mut Runner,
     store: &Store,

@@ -4,7 +4,7 @@ What `rayx` reads from a project, and where. A project is a Cargo workspace, an 
 directory with `nsh.json`), or both. `rayx` writes into it only what a command is for: `rayx new`
 creates the app ([below](#what-rayx-new-writes)), `rayx fmt` formats it, `rayx setup --test` installs the Playwright package's
 dependencies, and a command that installs or runs nsh writes the `Cargo.lock` a Cargo workspace
-lacks (as `cargo metadata` does; `--check`, `doctor` and `rayx nsh status` write nothing).
+lacks (as `cargo metadata` does; `--check`, `doctor` and `rayx nshx status` write nothing).
 
 ## What `rayx new` writes
 
@@ -26,7 +26,7 @@ features the builder uses beyond the defaults, `features = ["storage", "operatio
 
 ## Finding the project
 
-`rayx` starts in the current directory, or the one `-C <dir>` names (`rayx app`, `rayx nsh`):
+`rayx` starts in the current directory, or the one `-C <dir>` names (`rayx app`, `rayx nshx`):
 
 1. **The Cargo workspace:** `cargo locate-project --workspace`, with `RUSTUP_AUTO_INSTALL=0` so
    finding the project never installs a toolchain. On a machine where Cargo does not run yet, the
