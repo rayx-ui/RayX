@@ -34,8 +34,8 @@ pub(crate) fn with_ids(mut entries: Vec<HistoryEntry>) -> Vec<HistoryEntry> {
 
 /// The journal to save for `scope`: the stored entries (another history's included) less the
 /// ones this history saved and dropped since (undone, cleared, evicted), each of its own
-/// replaced by its current copy, then its entries the store does not hold yet. Matched by id;
-/// the scope's live stacks are not changed.
+/// replaced by its current copy, then its entries it never saved. Matched by id; the scope's
+/// live stacks are not changed.
 pub(crate) fn journal_entries(scope: &ScopeHistory) -> Vec<HistoryEntry> {
     let ours: BTreeMap<&str, &HistoryEntry> = scope
         .undo
@@ -53,8 +53,10 @@ pub(crate) fn journal_entries(scope: &ScopeHistory) -> Vec<HistoryEntry> {
             entries.push((*own.unwrap_or(&stored)).clone());
         }
     }
+    // Only entries this history never saved: one it saved that the store no longer holds was
+    // removed by another writer (undone, cleared), and stays out.
     for entry in &scope.undo {
-        if included.insert(entry.id.clone()) {
+        if !scope.saved_own.contains(&entry.id) && included.insert(entry.id.clone()) {
             entries.push(entry.clone());
         }
     }

@@ -1,4 +1,5 @@
 //! Journal entries have ids: two histories' entries that are alike stay two in a shared store,
+//! an entry another history undid is not brought back by a merge,
 //! an entry extended after a save whose answer was lost replaces its stored copy instead of
 //! doubling it, and a journal saved before entries had ids loads (its entries get ids) and is
 //! saved with them.
@@ -257,4 +258,41 @@ fn a_journal_saved_before_entries_had_ids_loads_and_is_saved_with_them() {
     assert_eq!(saved.entries.len(), 2);
     assert!(saved.entries.iter().all(|entry| !entry.id.is_empty()));
     assert_eq!(saved.entries[0].id, "legacy:0:1");
+}
+
+#[test]
+fn an_entry_another_history_undid_stays_out_of_the_merged_journal() {
+    let store = InMemoryHistoryStore::default();
+    let target_id = OperationTargetId::new("ids:undone").unwrap();
+    let scope = HistoryScopeId::new("ids:undone-scope").unwrap();
+    let values = || -> Vec<u64> {
+        now(store.load(&scope))
+            .unwrap()
+            .unwrap()
+            .entries
+            .iter()
+            .map(|entry| entry.forward[0].decode::<Set>().unwrap().0)
+            .collect()
+    };
+    // An earlier run saved 1 and 2.
+    {
+        let (operations, _history, _target) =
+            app(Arc::new(store.clone()), None, &target_id, &scope);
+        for value in [1, 2] {
+            now(operations.submit(&target_id, Set(value), OperationOrigin::LocalUser)).unwrap();
+        }
+    }
+    assert_eq!(values(), [1, 2]);
+    // Two sessions load it.
+    let (first, first_history, first_target) =
+        app(Arc::new(store.clone()), None, &target_id, &scope);
+    let (second, _second_history, _) = app(Arc::new(store.clone()), None, &target_id, &scope);
+    *first_target.0.lock().unwrap() = 2;
+    // The first undoes 2 and edits 5.
+    assert!(now(first_history.undo(scope.clone())).unwrap());
+    now(first.submit(&target_id, Set(5), OperationOrigin::LocalUser)).unwrap();
+    assert_eq!(values(), [1, 5]);
+    // The second, which loaded 1 and 2, edits 7: 2, undone by the first, stays out.
+    now(second.submit(&target_id, Set(7), OperationOrigin::LocalUser)).unwrap();
+    assert_eq!(values(), [1, 5, 7]);
 }
