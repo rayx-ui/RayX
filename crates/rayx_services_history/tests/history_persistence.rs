@@ -167,10 +167,17 @@ fn the_store_checks_revisions_and_deletes_scopes() {
         Err(HistoryStoreError::Conflict)
     );
     now(store.save(second.clone(), Some(1))).unwrap();
-    assert_eq!(now(store.load(&scope)).unwrap(), Some(second));
+    assert_eq!(now(store.load(&scope)).unwrap(), Some(second.clone()));
 
-    now(store.delete_scope(&scope)).unwrap();
+    // A delete that expects another revision than the store holds is refused.
+    assert!(!now(store.delete_scope(&scope, 1)).unwrap());
+    assert_eq!(now(store.load(&scope)).unwrap(), Some(second));
+    assert!(now(store.delete_scope(&scope, 2)).unwrap());
     assert_eq!(now(store.load(&scope)).unwrap(), None);
+    assert!(
+        !now(store.delete_scope(&scope, 2)).unwrap(),
+        "none is saved"
+    );
     assert!(
         block_on(values.keys(HISTORY_BUCKET.into()))
             .unwrap()

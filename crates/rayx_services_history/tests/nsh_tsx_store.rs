@@ -137,9 +137,11 @@ class MyStore {
     this.calls.push(`save ${scope} ${revision}`);
     return true;
   }
-  async deleteScope(scope) {
+  async deleteScope(scope, expectedRevision) {
+    if ((this.journals.get(scope)?.revision ?? null) !== expectedRevision) return false;
     this.journals.delete(scope);
     this.calls.push(`delete ${scope}`);
+    return true;
   }
 }
 
@@ -192,6 +194,7 @@ fn add_history_with_store_takes_a_store_factory() {
         "addHistoryWithStore(store: (services: ServiceProvider) => HistoryStoreContract",
         "export interface HistoryStoreContract {",
         "  load(scope: string): Promise<string | null>;",
+        "  deleteScope(scope: string, expectedRevision: number): Promise<boolean>;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

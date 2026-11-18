@@ -21,7 +21,8 @@ pub const HISTORY_BUCKET: &str = "rayx.history";
 #[derive(Clone)]
 pub struct KeyValueHistoryStore {
     store: Arc<dyn KeyValueStore>,
-    /// Holds a save's revision check and its write together, across their awaits.
+    /// Holds a save's or a delete's revision check and its write together, across their
+    /// awaits.
     saving: Arc<futures::lock::Mutex<()>>,
     initialization: StartupInitializationState,
 }
@@ -97,12 +98,21 @@ impl HistoryStore for KeyValueHistoryStore {
     fn delete_scope<'a>(
         &'a self,
         scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
+        expected: u64,
+    ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
         async move {
+            let _saving = self.saving.lock().await;
+            let current = self
+                .load_journal(scope)
+                .await?
+                .map(|journal| journal.revision);
+            if current != Some(expected) {
+                return Ok(false);
+            }
             self.store
                 .remove(HISTORY_BUCKET.to_owned(), scope.as_str().to_owned())
                 .await
-                .map(|_| ())
+                .map(|_| true)
                 .map_err(backend)
         }
         .boxed()

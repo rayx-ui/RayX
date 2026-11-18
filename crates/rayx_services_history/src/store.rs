@@ -49,11 +49,15 @@ pub trait HistoryStore: StartupInitializable {
         expected_revision: Option<u64>,
     ) -> BoxFuture<'_, Result<(), HistoryStoreError>>;
 
-    /// Forgets the journal of `scope`.
+    /// Forgets the journal of `scope` when the saved one is at `expected_revision`; whether it
+    /// did (`false`: another revision is saved, or none, a conflict the history reloads after).
+    /// The check and the delete are one step, as a save's are, so a journal saved meanwhile is
+    /// never deleted.
     fn delete_scope<'a>(
         &'a self,
         scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<(), HistoryStoreError>>;
+        expected_revision: u64,
+    ) -> BoxFuture<'a, Result<bool, HistoryStoreError>>;
 }
 
 /// A [`HistoryStore`] in memory, for the app's life (and tests); it answers at once.
@@ -92,12 +96,16 @@ impl InMemoryHistoryStore {
         Ok(())
     }
 
-    fn delete_now(&self, scope: &HistoryScopeId) -> Result<(), HistoryStoreError> {
-        self.journals
+    fn delete_now(&self, scope: &HistoryScopeId, expected: u64) -> Result<bool, HistoryStoreError> {
+        let mut journals = self
+            .journals
             .lock()
-            .map_err(|_| HistoryStoreError::Poisoned)?
-            .remove(scope);
-        Ok(())
+            .map_err(|_| HistoryStoreError::Poisoned)?;
+        if journals.get(scope).map(|j| j.revision) != Some(expected) {
+            return Ok(false);
+        }
+        journals.remove(scope);
+        Ok(true)
     }
 }
 
@@ -120,8 +128,9 @@ impl HistoryStore for InMemoryHistoryStore {
     fn delete_scope<'a>(
         &'a self,
         scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
-        futures::future::ready(self.delete_now(scope)).boxed()
+        expected: u64,
+    ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
+        futures::future::ready(self.delete_now(scope, expected)).boxed()
     }
 }
 

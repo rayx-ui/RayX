@@ -51,8 +51,14 @@ pub trait HistoryJournalStore {
         expected_revision: Option<f64>,
     ) -> Result<bool, HistoryStoreError>;
 
-    /// Forgets the journal of `scope`.
-    async fn delete_scope(&self, scope: String) -> Result<(), HistoryStoreError>;
+    /// Forgets the journal of `scope` when the saved journal is at `expected_revision`; whether
+    /// it did (`false`: another revision is saved, or none, a conflict). Like `save`, it checks
+    /// the revision and deletes in one step, so a journal saved meanwhile is kept.
+    async fn delete_scope(
+        &self,
+        scope: String,
+        expected_revision: f64,
+    ) -> Result<bool, HistoryStoreError>;
 }
 
 /// RayX's [`HistoryStore`] over the app's `dyn HistoryJournalStore`: journals cross as JSON
@@ -102,8 +108,13 @@ impl HistoryStore for JournalStore {
     fn delete_scope<'a>(
         &'a self,
         scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
-        Box::pin(async move { self.0.delete_scope(scope.as_str().to_owned()).await })
+        expected_revision: u64,
+    ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
+        Box::pin(async move {
+            self.0
+                .delete_scope(scope.as_str().to_owned(), expected_revision as f64)
+                .await
+        })
     }
 }
 

@@ -56,7 +56,11 @@ class MyStore implements HistoryStoreContract {
     this.journals.set(scope, { text: journal, revision });
     return true;
   }
-  async deleteScope(scope: string) { this.journals.delete(scope); }
+  async deleteScope(scope: string, expectedRevision: number) {
+    if ((this.journals.get(scope)?.revision ?? null) !== expectedRevision) return false; // a conflict
+    this.journals.delete(scope);
+    return true;
+  }
 }
 ```
 
@@ -64,8 +68,10 @@ What its methods throw is the store's `Backend` error.
 
 `HistoryStore` (in `rayx_services_history`) is the implementation's extension point, a startup service the history
 waits for: where it keeps each scope's journal (`HistoryJournalV2`), with `InMemoryHistoryStore` and
-`KeyValueHistoryStore`. Its `load`, `save` (against an expected revision) and `delete_scope` return futures, answered at
-once or later: the history loads a scope when a command first awaits it and saves each change behind it, one save at a
+`KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at once or later; `save` and
+`delete_scope` take the revision the history expects in the store and check it and write in one step (a save fails
+with `Conflict`, a delete answers `false`), so a journal another history saved meanwhile is never overwritten or
+deleted. The history loads a scope when a command first awaits it and saves each change behind it, one save at a
 time. A failure nobody awaits (a save behind an edit, a command whose caller gave up or dropped its answer unread) is a
 `NavigationFailed` event of the scope. Entries have ids, given when they are recorded and saved with the journal (an
 entry of a journal saved before ids existed gets one when it loads). Histories may share a store (two windows, two app
@@ -116,8 +122,10 @@ Commands:
   on, and loads the scope's history.
 - `undo(scope)`, `redo(scope)` (TS the same): replay the latest entry; whether there was one.
 - `clear_scope(scope)` (TS `clearScope`): clears both stacks, keeping the binding and limit; with a store, the scope's
-  journal is deleted from it (`delete_scope`, TS `deleteScope`), unless another history's entries are in it, which
-  are saved without this history's.
+  journal is deleted from it (`delete_scope`, TS `deleteScope`, at the revision this history expects), unless another
+  history's entries are in it, which are saved without this history's: a delete that finds another journal (another
+  history saved meanwhile) reloads it and merges, as a save does. A clear made while the delete runs leaves the scope
+  deleted, never saved empty.
 - `set_scope_entry_limit(scope, limit)` (TS `setScopeEntryLimit`): bounds the scope's entries (at least 1), the oldest
   undo entries going first, then the most distant redo entries.
 - `retained_records(scope)` (TS `retainedRecords`): the `OperationRecord`s the scope keeps, newest undo entries first,

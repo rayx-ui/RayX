@@ -160,8 +160,9 @@ impl HistoryStore for LostAnswers {
     fn delete_scope<'a>(
         &'a self,
         scope: &'a HistoryScopeId,
-    ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
-        self.inner.delete_scope(scope)
+        expected_revision: u64,
+    ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
+        self.inner.delete_scope(scope, expected_revision)
     }
 }
 

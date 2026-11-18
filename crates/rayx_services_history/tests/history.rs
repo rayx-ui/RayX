@@ -713,14 +713,15 @@ mod scope_lifecycle {
         fn delete_scope<'a>(
             &'a self,
             scope: &'a HistoryScopeId,
-        ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
+            expected_revision: u64,
+        ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
             if self.fail.load(Ordering::SeqCst) {
                 return futures::future::ready(Err(HistoryStoreError::Backend(
                     "injected delete failure".into(),
                 )))
                 .boxed();
             }
-            self.inner.delete_scope(scope)
+            self.inner.delete_scope(scope, expected_revision)
         }
     }
 

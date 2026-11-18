@@ -5,8 +5,9 @@
 //! in the same store (their sessions undo them, never this one): when the store holds another
 //! journal than this history expects, it reloads it and merges its own entries in by id, so no
 //! writer's entries are lost. A cleared scope whose journal has no entry left (no other
-//! history's) is not saved: it is deleted from the store (`delete_scope`), unless another
-//! journal is there now.
+//! history's) is not saved: it is deleted from the store (`delete_scope`) at the revision this
+//! history expects; when another journal is there now, it is reloaded and merged as a save's
+//! conflict is.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, MutexGuard, PoisonError};
@@ -271,24 +272,26 @@ impl RayxHistory {
             }
             if cleared && journal.entries.is_empty() {
                 // Nothing left to keep (a cleared scope, no other history's entries in it):
-                // the scope is forgotten in the store, unless another journal is there now.
+                // the scope is forgotten in the store, unless another journal is there now
+                // (the store checks the revision and deletes in one step).
                 let Some(expected_revision) = expected_revision else {
                     return Ok(());
                 };
-                let stored = self.bounded(store.load(scope_id)).await?;
-                match stored.as_ref().map(|stored| stored.revision) {
-                    None => return self.record_deleted(scope_id),
-                    Some(revision) if revision == expected_revision => {
-                        self.bounded(store.delete_scope(scope_id)).await?;
-                        return self.record_deleted(scope_id);
-                    }
-                    Some(_) if attempt < SAVE_ATTEMPTS => {
-                        attempt += 1;
-                        self.take_stored(scope_id, stored)?;
-                        continue;
-                    }
-                    Some(_) => return Err(HistoryStoreError::Conflict.into()),
+                if self
+                    .bounded(store.delete_scope(scope_id, expected_revision))
+                    .await?
+                {
+                    return self.record_deleted(scope_id, journal.revision);
                 }
+                if attempt == SAVE_ATTEMPTS {
+                    return Err(HistoryStoreError::Conflict.into());
+                }
+                attempt += 1;
+                match self.bounded(store.load(scope_id)).await? {
+                    None => return self.record_deleted(scope_id, journal.revision),
+                    stored => self.take_stored(scope_id, stored)?,
+                }
+                continue;
             }
             match self
                 .bounded_store(store.save(journal.clone(), expected_revision))
@@ -351,17 +354,21 @@ impl RayxHistory {
         Ok(())
     }
 
-    /// The scope has no journal in the store (this history deleted it, or found it gone).
-    fn record_deleted(&self, scope_id: &HistoryScopeId) -> Result<(), HistoryError> {
+    /// The scope has no journal in the store (this history deleted it, or found it gone) since
+    /// its `revision`.
+    fn record_deleted(&self, scope_id: &HistoryScopeId, revision: u64) -> Result<(), HistoryError> {
         let mut state = self.lock_state()?;
         let scope = state
             .scopes
             .get_mut(scope_id)
             .ok_or(HistoryError::StackChanged)?;
+        // A clear made after this revision was taken is still to be deleted (or not saved).
+        if revision == scope.revision {
+            scope.cleared = false;
+        }
         scope.persisted_revision = None;
         scope.stored.clear();
         scope.saved_own.clear();
-        scope.cleared = false;
         Ok(())
     }
 
