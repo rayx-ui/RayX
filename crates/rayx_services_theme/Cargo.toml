@@ -1,0 +1,29 @@
+[package]
+name = "rayx_services_theme"
+description = "RayX's theme service on NSH: picks the theme document's modifier contexts on each surface and keeps its light/dark modifier in step with the color scheme or the app's choice, for Rust and TSX."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+rayx_app.workspace = true
+rayx_app_nsh.workspace = true
+nsh-core.workspace = true
+futures = { workspace = true, features = ["std"] }
+serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+rayx_app_nsh = { workspace = true, features = ["testing"] }
+# NSH's own platform service, whose color scheme is the one NSH shows (`nsh_theme`).
+rayx_services_platform.workspace = true
+nsh-core = { workspace = true, features = ["declarations"] }
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
+crossbeam-channel.workspace = true
+futures = { workspace = true, features = ["std", "executor"] }
+serde_json.workspace = true

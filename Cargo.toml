@@ -16,6 +16,7 @@ members = [
     "crates/rayx_services_selection",
     "crates/rayx_services_storage",
     "crates/rayx_services_suspension",
+    "crates/rayx_services_theme",
     "crates/rayx_app_macros",
     "crates/rayx_cli",
     "crates/rayx_components",
@@ -50,6 +51,7 @@ rayx_services_platform = { path = "crates/rayx_services_platform" }
 rayx_services_selection = { path = "crates/rayx_services_selection" }
 rayx_services_storage = { path = "crates/rayx_services_storage" }
 rayx_services_suspension = { path = "crates/rayx_services_suspension" }
+rayx_services_theme = { path = "crates/rayx_services_theme" }
 nsh-core = "0.6.0"
 nsh-base = "0.6.0"
 nsh-engine = { version = "0.6.0", default-features = false }

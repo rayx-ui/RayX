@@ -117,11 +117,12 @@ fn the_crates_are_reachable_by_name() {
     feature = "navigation",
     feature = "operations",
     feature = "selection",
-    feature = "storage"
+    feature = "storage",
+    feature = "theme"
 ))]
 #[test]
 fn every_other_service_crate_is_reachable_under_its_feature() {
-    let _: [fn(&mut Registry); 8] = [
+    let _: [fn(&mut Registry); 9] = [
         rayx::services::application_configuration::register,
         rayx::services::history::register,
         rayx::services::i18n::register,
@@ -130,6 +131,7 @@ fn every_other_service_crate_is_reachable_under_its_feature() {
         rayx::services::operations::register,
         rayx::services::selection::register,
         rayx::services::storage::register,
+        rayx::services::theme::register,
     ];
     // Their builder extensions are in the prelude.
     let _ = RayXAppBuilder::new()
@@ -139,7 +141,8 @@ fn every_other_service_crate_is_reachable_under_its_feature() {
         .add_selection()
         .add_storage()
         .add_operations()
-        .add_history();
+        .add_history()
+        .add_theme(|_| {});
     #[allow(unused_imports)]
     use rayx::prelude::{navigation_region, navigation_view};
     // `tr!` comes with `i18n`, and its checked form (which reads an app's messages when it

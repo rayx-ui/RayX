@@ -50,6 +50,7 @@ changelog_include = [
     "rayx_services_selection",
     "rayx_services_storage",
     "rayx_services_suspension",
+    "rayx_services_theme",
 ]
 version_group = "rayx"
 
@@ -181,6 +182,17 @@ version_group = "rayx"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
+
+[[package]]
+name = "rayx_services_theme"
+version_group = "rayx"
+# RayX's theme service, like `rayx_app_macros`. The last release's tag lacks it, so its own
+# `git_tag_name` matches no tag and it counts as a first release (docs/releasing.md); remove the
+# line in the first commit after the release that has it.
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+git_tag_name = "rayx_services_theme-v{{ version }}"
 
 [[package]]
 name = "rayx-gallery"

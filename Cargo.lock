@@ -4904,6 +4904,7 @@ dependencies = [
  "rayx_services_selection",
  "rayx_services_storage",
  "rayx_services_suspension",
+ "rayx_services_theme",
  "serde",
  "serde_json",
 ]
@@ -5183,6 +5184,21 @@ dependencies = [
  "nsh-engine",
  "rayx_app",
  "rayx_app_nsh",
+ "serde_json",
+]
+
+[[package]]
+name = "rayx_services_theme"
+version = "0.12.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "rayx_services_platform",
+ "serde",
  "serde_json",
 ]
 
