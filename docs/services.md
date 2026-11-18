@@ -164,7 +164,7 @@ The NSH host, `rayx_app_nsh`, starts the app; the service crates do the rest on 
 - The [platform](services/platform.md) and [suspension](services/suspension.md) services keep themselves current from
   NSH from their startup on, in Rust and TSX apps alike; the [asset](services/assets.md) and [font](services/fonts.md)
   services read and register through NSH from any thread, and so does the [key-value store](services/storage.md),
-  which writes what waits as the app quits; the [navigation](services/navigation.md) service shows its location as
+  which reads and writes NSH's storage itself, shared by every window over it; the [navigation](services/navigation.md) service shows its location as
   NSH's app address; the [i18n](services/i18n.md) formatter keeps `tr!` and NSH's locale on the i18n service from its
   startup on.
 

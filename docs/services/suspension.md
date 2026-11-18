@@ -151,8 +151,8 @@ function followLifecycle(services: ServiceProvider) {
 ## Replace it
 
 An app may follow its lifecycle itself by registering its own `dyn SuspensionService` in place of `add_suspension()`.
-The host starts with it, RayX's [storage](storage.md) writes as it publishes `Destroying`, and the class
-`SuspensionService` wraps it.
+The host starts with it, what an app saves in RayX's [storage](storage.md) as it hears `Destroying` reaches the
+device (NSH writes every change itself), and the class `SuspensionService` wraps it.
 
 ```rust
 builder.add_singleton_as::<dyn SuspensionService>(
