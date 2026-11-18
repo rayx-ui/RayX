@@ -25,9 +25,11 @@ let builder = RayXAppBuilder::new().add_navigation(|options| {
 ```
 
 ```tsx
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
   .addNavigation((options) => options.addRoute("/").addRoute("/projects/{id}", { component: "Project" }))
-  .start();
+  .start()
+  .then((services) => { /* the app's services, navigation among them */ });
 ```
 
 `add_navigation(..)` registers RayX's implementation as the app's `dyn NavigationService`, replacing any earlier
@@ -211,7 +213,11 @@ class MyNavigation {
   async applyLocation(location) { return []; }
 }
 
-const services = await new RayXAppBuilder().addSingletonAs(NavigationService, () => new MyNavigation()).start();
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
+  .addSingletonAs(NavigationService, () => new MyNavigation())
+  .start()
+  .then((services) => { /* Rust resolves `dyn NavigationService` as MyNavigation */ });
 ```
 
 For tests, `rayx_app::testing::FakeNavigation` navigates any URI and records the requests (`requests()`).
