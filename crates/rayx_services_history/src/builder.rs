@@ -10,10 +10,11 @@ use rayx_app::services::history::HistoryService;
 use rayx_app::services::operations::OperationService;
 use rayx_app::services::storage::KeyValueStore;
 use rayx_app::{AppBuilder, ServiceProvider};
-use rayx_app_nsh::ts::{RayXAppBuilder, record};
+use rayx_app_nsh::ts::{ContractFactory, RayXAppBuilder, record};
 
 use crate::options_ts::{HistoryOptions as TsHistoryOptions, HistoryStep};
 
+use crate::journal_store::{HistoryJournalStore, JournalStore};
 use crate::key_value_store::KeyValueHistoryStore;
 use crate::service::{RayxHistory, Starting};
 use crate::store::HistoryStore;
@@ -26,6 +27,10 @@ const OPERATIONS_HINT: &str = "add_operations() (addOperations in TS) from \
                                OperationService";
 
 /// What an app keeping its history in its key-value store without one is told.
+/// What an app keeping its history in a store written in TS without one is told.
+const JOURNAL_STORE_HINT: &str = "addHistoryWithStore(() => new MyStore()) in TS, or register your \
+                                  own dyn HistoryJournalStore";
+
 const STORAGE_HINT: &str = "add_storage() (addStorage in TS) from rayx_services_storage, or \
                             register your own dyn KeyValueStore";
 
@@ -69,6 +74,22 @@ fn add_persistent<B: AppBuilder>(mut builder: B, steps: Vec<HistoryStep>) -> B {
             .required_service::<dyn KeyValueStore>()
             .unwrap_or_else(|error| panic!("the history store needs a key-value store: {error}"));
         Arc::new(KeyValueHistoryStore::new(store))
+    });
+    register(builder, true, steps)
+}
+
+/// `add_history_with_store` over the app's `dyn HistoryJournalStore` (a store written in TS),
+/// with TS's recorded option `steps` after configuration's.
+fn add_with_journal_store<B: AppBuilder>(mut builder: B, steps: Vec<HistoryStep>) -> B {
+    let services = builder.services_mut();
+    services.require_for::<dyn HistoryStore, dyn HistoryJournalStore>(JOURNAL_STORE_HINT);
+    services.replace_app_service_factory_as::<dyn HistoryStore>(|services| {
+        let store = services
+            .required_service::<dyn HistoryJournalStore>()
+            .unwrap_or_else(|error| {
+                panic!("the history store written in TS is registered: {error}")
+            });
+        Arc::new(JournalStore(store))
     });
     register(builder, true, steps)
 }
@@ -163,5 +184,21 @@ impl HistoryBuilder {
     ) -> Result<Instance<RayXAppBuilder>, String> {
         let steps = record(TsHistoryOptions::new(), configure, TsHistoryOptions::take)?;
         RayXAppBuilder::extend_with(this, move |builder| add_persistent(builder, steps))
+    }
+
+    /// Registers the app's history kept in `store`'s store, written in TS: `store` makes a
+    /// `HistoryStoreContract` (`() => new MyStore()`), which keeps each scope's journal as JSON
+    /// text by revision; it needs an operation service (`addOperations`). `configure` sets its
+    /// options (`options.callTimeoutMs(5000)`) after configuration's; one that throws makes this
+    /// call throw.
+    pub fn add_history_with_store(
+        this: Instance<RayXAppBuilder>,
+        store: ContractFactory<dyn HistoryJournalStore>,
+        #[args(options)] configure: Option<Callback<Instance<TsHistoryOptions>>>,
+        sys: System,
+    ) -> Result<Instance<RayXAppBuilder>, String> {
+        let steps = record(TsHistoryOptions::new(), configure, TsHistoryOptions::take)?;
+        let this = RayXAppBuilder::add_contract_singleton(this, store, &sys)?;
+        RayXAppBuilder::extend_with(this, move |builder| add_with_journal_store(builder, steps))
     }
 }

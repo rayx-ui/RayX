@@ -8,7 +8,9 @@
 //! - Rust: `RayXAppBuilder::new().add_operations().add_history()` ([`HistoryAppBuilderExt`];
 //!   `add_operations()` is `rayx_services_operations`', or the app registers its own
 //!   `dyn OperationService`), then `services.required_service::<dyn HistoryService>()`.
-//! - TS: `new RayXAppBuilder().addOperations().addHistory()` (or `addPersistentHistory()`), with
+//! - TS: `new RayXAppBuilder().addOperations().addHistory()` (or `addPersistentHistory()`, or
+//!   `addHistoryWithStore(() => new MyStore())` over a store written in TS, a
+//!   [`HistoryJournalStore`]), with
 //!   the class [`HistoryService`] (the contract's token).
 //! - The app's set: [`register`].
 //!
@@ -21,6 +23,7 @@ mod builder;
 mod detached;
 mod history_ts;
 mod journal;
+mod journal_store;
 mod key_value_store;
 mod lifecycle;
 mod limits;
@@ -40,6 +43,7 @@ use rayx_app_nsh::ts::ContractRegistryExt as _;
 pub use builder::{HistoryAppBuilderExt, HistoryBuilder};
 pub use history_ts::HistoryService;
 pub use journal::{HISTORY_JOURNAL_VERSION, HistoryJournalError, HistoryJournalV2};
+pub use journal_store::HistoryJournalStore;
 pub use key_value_store::{HISTORY_BUCKET, KeyValueHistoryStore};
 pub use limits::{HistoryLimitError, HistoryLimits, encoded_size, enforce};
 pub use options_ts::HistoryOptions as TsHistoryOptions;
@@ -79,7 +83,10 @@ pub fn register(registry: &mut Registry) {
         .ts_alias(OPERATION_RECORD)
         .ts_alias(HISTORY_STATE)
         .ts_alias(HISTORY_EVENT)
-        .contract_class::<HistoryServiceContract, HistoryService>()
+        .contract_class::<HistoryServiceContract, HistoryService>();
+    // The interface a TS history store implements; `addHistoryWithStore` takes its factory.
+    <dyn HistoryJournalStore as rayx_app_nsh::ts::Contract>::register_interface(registry);
+    registry
         .class::<TsHistoryOptions>()
         .class_extension::<HistoryBuilder>();
 }

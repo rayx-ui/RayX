@@ -10,7 +10,7 @@ Undo and redo per history scope, over the [operation service](operations.md).
 | Crate | `rayx_services_history` (`rayx::services::history`) |
 | Feature | `history` |
 | Rust | `add_history()`, `add_history_with_store(store)`, `add_persistent_history()` (`HistoryAppBuilderExt`) |
-| TS | `addHistory(configure?)`, `addPersistentHistory(configure?)`, and the classes `HistoryService` and `HistoryOptions` |
+| TS | `addHistory(configure?)`, `addPersistentHistory(configure?)`, `addHistoryWithStore(store, configure?)`, and the classes `HistoryService` and `HistoryOptions` |
 | Requires | `dyn OperationService` (`add_operations()`); `add_persistent_history()` also `dyn KeyValueStore` (`add_storage()`) |
 
 Pick where the history lives:
@@ -26,14 +26,15 @@ builder.add_operations().add_history_with_store(my_store)       // any HistorySt
 ```tsx
 new RayXAppBuilder().addOperations().addHistory();
 new RayXAppBuilder().addOperations().addStorage().addPersistentHistory((options) => options.callTimeoutMs(5000));
+new RayXAppBuilder().addOperations().addHistoryWithStore(() => new MyStore()); // a store written in TS
 ```
 
 Each registers RayX's implementation as the app's `dyn HistoryService`, replacing any earlier registration of it: a
 startup service that initializes after the app's `dyn OperationService` (and its store, when it has one) and observes
 it. It registers neither the operation service nor the key-value store: building without one fails, naming the
-missing service and what registers it. In TS, `addHistory` and `addPersistentHistory` are there once the crate's set
-is registered (`#[rayx::native_module]` with the feature on, or `rayx_services_history::register(registry)`); TS has
-no `addHistoryWithStore`.
+missing service and what registers it. In TS, `addHistory`, `addPersistentHistory` and `addHistoryWithStore` are there
+once the crate's set is registered (`#[rayx::native_module]` with the feature on, or
+`rayx_services_history::register(registry)`).
 
 ### Where it keeps the history
 
@@ -41,6 +42,25 @@ no `addHistoryWithStore`.
 app's [key-value store](storage.md), through a `KeyValueHistoryStore`, so it persists wherever the store does: on NSH,
 in the device's storage, or in a TS implementation's, which answers in JS's next turn. `add_history_with_store(store)`
 registers `store` as the app's `dyn HistoryStore`.
+
+In TS, `addHistoryWithStore(() => new MyStore())` keeps the journals in a store written in TS: a class implementing
+`HistoryStoreContract` (Rust's contract `HistoryJournalStore`), made by `start()`, which keeps each scope's journal as
+JSON text by revision; RayX's history keeps its journals in it through a `HistoryStore` over it:
+
+```tsx
+class MyStore implements HistoryStoreContract {
+  private journals = new Map<string, { text: string; revision: number }>();
+  async load(scope: string) { return this.journals.get(scope)?.text ?? null; }
+  async save(scope: string, journal: string, revision: number, expectedRevision: number | null) {
+    if ((this.journals.get(scope)?.revision ?? null) !== expectedRevision) return false; // a conflict
+    this.journals.set(scope, { text: journal, revision });
+    return true;
+  }
+  async deleteScope(scope: string) { this.journals.delete(scope); }
+}
+```
+
+What its methods throw is the store's `Backend` error.
 
 `HistoryStore` (in `rayx_services_history`) is the implementation's extension point, a startup service the history
 waits for: where it keeps each scope's journal (`HistoryJournalV2`), with `InMemoryHistoryStore` and
