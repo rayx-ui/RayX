@@ -73,8 +73,8 @@ let lang = store.get("prefs".into(), "lang".into()).await?; // Option<Vec<u8>>
 ```
 
 RayX's stores answer at once (from memory, or the NSH store's mirror once it loaded), so a synchronous caller may
-poll a call once (`now_or_never()`); history's `KeyValueHistoryStore` does, and fails on a store that leaves a call
-pending.
+poll a call once (`now_or_never()`). Another store may answer later (a TS store answers in JS's next turn): what RayX
+keeps in the store awaits its calls (history's `KeyValueHistoryStore`, the input map), so it works over either.
 
 ## On NSH
 
