@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 95,
+  "revision": 104,
   "planRevision": 8,
   "specHashes": {
     "requirements": "949a9040a097193404369c5a8ab94406aef6467815ca587482a0a26b36034038",
@@ -100,13 +100,22 @@
       ]
     },
     "t16-umbrella": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t17-rayx-new": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t18-gallery": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t19-docs": {
       "status": "pending"
@@ -198,6 +207,26 @@
         }
       },
       "recordedAt": "2026-11-18T00:58:20Z"
+    },
+    "009404f5a543504896204e65a8990d93ec34f8f4c69a2bc08d2e730c6d60cae0": {
+      "snapshot": {
+        "specHash": "aab76af034aaf33619d7593ad3c8187c966a07da35be1cee87b5cbd12d722885",
+        "repositories": {
+          "rayx": "d2dce4cfb7a18177d37cdc8b879e9d10fa296cdbf34be650827cb38e9bc8124e",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-18T01:23:45Z"
+    },
+    "ad086ce4445a445cdecc555da3e210b9441a2130dd2bee10917942cc2c3d48aa": {
+      "snapshot": {
+        "specHash": "aab76af034aaf33619d7593ad3c8187c966a07da35be1cee87b5cbd12d722885",
+        "repositories": {
+          "rayx": "3e3ca62d94de2897129cddf6825378fc59e50fdf0f0e3e6f6bd43acb9f3c2fb0",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-18T01:27:16Z"
     }
   },
   "checkResults": {
@@ -829,6 +858,74 @@
       "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-8c108368bf80.log",
       "logSha256": "a131aa58df2a52e0156f4ebfa809401944150ffd8915b001804ebc6791b89f09",
       "inputsHash": "d61f9dcc37ee857de80ef776d490716d5c991f1f31da4dcb4b00c9cce70db2ae"
+    },
+    "s6-consumers/c-umbrella-features/final": {
+      "checkId": "c-umbrella-features",
+      "boundaryId": "s6-consumers",
+      "phase": "final",
+      "batchId": "009404f5a543504896204e65a8990d93ec34f8f4c69a2bc08d2e730c6d60cae0",
+      "definitionHash": "b2c39e95297a9165216969a6ebfa2a71352bdd35d86ecde72f97d3231722be50",
+      "basisHash": "e3cef5c6efe9d1d3cbd35b50ce99776bf0ea11a9d94db0af27fc4bcbba5b338c",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 18,
+      "durationSeconds": 19.6963,
+      "recordedAt": "2026-11-18T01:22:49Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s6-consumers-final-ed8823f24ba7.log",
+      "logSha256": "62ae4317bc5b30c935edcb66ceb0ff49542c42410a91c03bef5eb5b5715e4805",
+      "inputsHash": "690a2ce2f0564cbc2e759658a0f42383678dda2e5027de9757c812e9ef898da6"
+    },
+    "s6-consumers/c-umbrella-all-features/final": {
+      "checkId": "c-umbrella-all-features",
+      "boundaryId": "s6-consumers",
+      "phase": "final",
+      "batchId": "009404f5a543504896204e65a8990d93ec34f8f4c69a2bc08d2e730c6d60cae0",
+      "definitionHash": "507d7d3bdd70f8accc9f8e105c84663022523ac719ae051cd4f116cd188ceda5",
+      "basisHash": "f3ca638e5f40e0bc711f3010312701be0c08aaa7ba42e7ca08b662cc16539c42",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 10,
+      "durationSeconds": 16.0887,
+      "recordedAt": "2026-11-18T01:23:05Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s6-consumers-final-ebdb0f5234dd.log",
+      "logSha256": "384547b7a76a263ece7b7ce6ce93addaa42c76b56a685907f0c7c025e2c2665f",
+      "inputsHash": "690a2ce2f0564cbc2e759658a0f42383678dda2e5027de9757c812e9ef898da6"
+    },
+    "s6-consumers/c-new-app-services/final": {
+      "checkId": "c-new-app-services",
+      "boundaryId": "s6-consumers",
+      "phase": "final",
+      "batchId": "ad086ce4445a445cdecc555da3e210b9441a2130dd2bee10917942cc2c3d48aa",
+      "definitionHash": "daee9b8c5912ce638ec1357b50f9bcc4c3199c8e86afb252b5f309d147c79d2a",
+      "basisHash": "3a1a749ebe224ca70538900c85f2ff791d0843c1910526d173bd0e51efb71b37",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 39,
+      "durationSeconds": 3.8494,
+      "recordedAt": "2026-11-18T01:27:16Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s6-consumers-final-8b7139af90b0.log",
+      "logSha256": "93f79045950132e860eaa4fe7bb759c5e095f340221189887b06d71d207b6360",
+      "inputsHash": "3555b603ec3713d79081c1c459ef459d6a96d23ac8344925f960c73ca7292e0e"
+    },
+    "s6-consumers/c-gallery/final": {
+      "checkId": "c-gallery",
+      "boundaryId": "s6-consumers",
+      "phase": "final",
+      "batchId": "009404f5a543504896204e65a8990d93ec34f8f4c69a2bc08d2e730c6d60cae0",
+      "definitionHash": "d92351de9aff635a09df805b6430a48ce9f62edd6a60ec0dea5db9608cbba1b2",
+      "basisHash": "17450259e4d56a090c3af94c3cbcac1b20c53259a4ade8e81a953c92eda5dc8e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 5,
+      "durationSeconds": 35.5932,
+      "recordedAt": "2026-11-18T01:23:45Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s6-consumers-final-64a63a8d72fc.log",
+      "logSha256": "f8e6d0fe0e757165dd24117a5de3c4ac69b78bd4193d07a628143762be377d01",
+      "inputsHash": "6e036fa7f8069ae240ba76666d9a987fd83edc16e2414343eff5edd5f20724d8"
     }
   },
   "reviews": {
@@ -1994,6 +2091,185 @@
         "S5-F22"
       ],
       "recordedAt": "2026-11-18T00:58:50Z"
+    },
+    "s6-consumers": {
+      "reviewerId": "reviewer-sonnet-s6",
+      "snapshotId": "ad086ce4445a445cdecc555da3e210b9441a2130dd2bee10917942cc2c3d48aa",
+      "criterionIds": [
+        "UMB-1",
+        "UMB-2",
+        "UMB-3"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "68f6ee35dee599823f4901757430dbaedd44de21b073dcd9117ec8bd4bc96e1c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "08556aac8561f5efd4f214b5edfa7eaaaa102949aa7c121c8dbc52e21b9e674e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/native_module.rs",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "b08c36349699e4a78f6e5584da421cbfa11fba24db94094f31a7ce81ffbc079f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/features.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "a9ecc346e18c194e92e283046d6732427f1539d0069350b6aa6a35b144aa1677"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module_attribute.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "9138363347cc0fb9b19a6cad741bf5725580cb34049c5f0a8a9fec4a8b9cb72a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "ada1cbdd87600192afa41f873cc82708d93adf5c2f3409bb2dcb7436dc0ea4b1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new.rs",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "b46c331066bb1efbc7ec97e3833d8e229dfdcb97dc2e1f501dc119a10891162c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_App.tsx.in",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "15295738e72e7f92254a240a9247a2994b96408f307bbf82e54e1284904c0c5f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/rust_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "5b7101b1a6476c7bc4af5b447b5c32b5bd8b1752c8b7525bfd33c2a0e018df8f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/cli/projects.md",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "4343c53ed95e79032b350ddf14040e0cdaab2f7ce2f72027d5c339bf72a7472a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app_services.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "2f6573aa5cf0d2bd9cbff16c8611b7b2a13c4b2f2469bb3665fd8c145cee1ad1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app_builder.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "024121aa33d3b8f8887a7d08127b80fc75c55e57a3280e9471133493e39a1aa6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "6498a55b7a4fc201fd669246c642b0541a0cf3b97eb81009818e03325d6997a4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/App.tsx",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "32460efb5aed77e2acfd9126541804898e1c9fef0bde99a8f725583c03ac65ec"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/src/gallery.tsx",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "08771190d7ce88e44a5873ebaab94d7429b211cf86ebfb08bbb720b587d97f63"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/tests/gallery_tsx.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "2817bbd261a4ee5155a874ca79634ea1293d9efd28fd6f286d20d1bb112ede96"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_App.test.tsx.in",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "f238723db2e4d074a9fb989e925b7d893109b4a21f3a8486600c8efbfa217bb9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/src/storage_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "1266292a69db2f3f0add18f24990946ea3f3e3995bf7981ad4b3699500df87ac"
+        }
+      ],
+      "summaryMarkdown": "**All of UMB-1, UMB-2 and UMB-3 hold; S6-F1 is resolved by d190524.**\n\n- The mixed template's `then` callback is `async` and awaits `store.get` and `store.set`, matching the async `KeyValueStore` class (`storage_ts.rs`). The template test waits for `Launch 1`, and `the_tsx_root_awaits_the_key_value_store_s_promises` checks the awaits and the test line (`new_app_services`: 6 passed).\n- No other synchronous use of a service class in the gallery or the templates; the Rust template only registers `add_storage()`.\n- UMB-1 (features, `native_module`) and UMB-3 (gallery) are unchanged from the earlier review.",
+      "findingIds": [
+        "S6-F1"
+      ],
+      "recordedAt": "2026-11-18T02:04:44Z"
     }
   },
   "checkpoints": {
@@ -2041,6 +2317,15 @@
       },
       "reviewHash": "e23af5cd064186b8e8e46300cb37f8b1c59ceb5e4f2157f9730632164542133c",
       "recordedAt": "2026-11-18T00:59:04Z"
+    },
+    "s6-consumers": {
+      "snapshotId": "ad086ce4445a445cdecc555da3e210b9441a2130dd2bee10917942cc2c3d48aa",
+      "commits": {
+        "rayx": "d190524d5c48aed0b36105109a62259d4f532ab8",
+        "root": "f8f986197908b834f4302803f1880231d6cbb7ee"
+      },
+      "reviewHash": "fea63770c4cdf303fec74c474020c7c5a143820a8a84d44bffea3fbd23b469ba",
+      "recordedAt": "2026-11-18T02:04:54Z"
     }
   },
   "findings": [
@@ -3097,9 +3382,30 @@
         }
       ],
       "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S6-F1",
+      "criterionIds": [
+        "UMB-2"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Every new mixed app's launch counter is broken: `rayx new`'s TSX root uses the `KeyValueStore` class synchronously, though s4 made its methods return promises.**\n\n*Where*: `crates/rayx_cli/src/new/mixed_App.tsx.in:22-25`:\n\n```tsx\nconst count = Number(store.get(\"app\", \"launches\") ?? \"0\") + 1;\nstore.set(\"app\", \"launches\", String(count));\n```\n\n`KeyValueStore.get`/`set` are `async`, giving `Promise<string | null>` and `Promise<void>` (`crates/rayx_services_storage/src/storage_ts.rs`, and the declarations `nsh_tsx_class_names` checks).\n\n*Observed* (by reading the template against the class): `store.get(..)` is a Promise, never nullish, so `count` is `NaN`. The app writes the text \"NaN\" to the store, unawaited, and `launches() > 0` is false, so \"Launch N\" never shows. `mixed_App.test.tsx.in` only waits for `Ready`, and `new_app_builder` checks only the order of the calls, so nothing catches it. The template was rewritten in this sprint (af8557b) and it is what every `rayx new --template mixed` app starts from.\n\n*Expected*: the generated app counts its launches as the template intends, and its test proves it.\n\n*Repair*:\n\n- Make the `then` callback `async`: `const count = Number((await store.get(\"app\", \"launches\")) ?? \"0\") + 1; await store.set(\"app\", \"launches\", String(count));`, then set `launches` and `status`.\n- Have `mixed_App.test.tsx.in` assert `Launch 1` after `Ready`.\n- Extend `new_app_builder` or `new_app_services` to check that the template awaits the store's calls.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app_services.rs",
+          "symbol": "the_tsx_root_awaits_the_key_value_store_s_promises"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_App.test.tsx.in"
+        }
+      ],
+      "boundaryId": "s6-consumers"
     }
   ],
-  "handoffMarkdown": "TS implementations of all twelve contracts (5a26f3c); fixed EngineRunner in stop functions and TS contract factories first.",
+  "handoffMarkdown": "Gallery starts RayX with the four and names its features (8bd41e2).",
   "protectedPaths": {
     "rayx": {
       "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",
