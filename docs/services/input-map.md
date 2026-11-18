@@ -23,10 +23,12 @@ let builder = RayXAppBuilder::new().add_storage().add_input_map(|options| {
 ```
 
 ```tsx
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
   .addStorage()
   .addInputMap((options) => options.bindKey("editor", "cmd-s", "file::save"))
-  .start();
+  .start()
+  .then((services) => { /* resolve InputMapService here */ });
 ```
 
 `add_input_map(..)` registers RayX's implementation as the app's `dyn InputMapService`, replacing any earlier
@@ -125,6 +127,7 @@ see keystrokes and gestures ask it what they run.
 - `onChange((state) => ..)`: every change of the state, until the function it returns is called.
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const inputMap = services.getRequiredService(InputMapService);
 const resolved = inputMap.resolve(["editor"], { kind: "keyboard", value: "cmd-s" });
 const user = inputMap.current().user;
@@ -182,7 +185,11 @@ class MyInputMap {
   }
 }
 
-const services = await new RayXAppBuilder().addStartupSingletonAs(InputMapService, () => new MyInputMap()).start();
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
+  .addStartupSingletonAs(InputMapService, () => new MyInputMap())
+  .start()
+  .then((services) => { /* RayX's InputMapService class wraps MyInputMap */ });
 ```
 
 For tests, `rayx_app::testing::FakeInputMap` publishes the state a test gives it (`publish`) and records the loads

@@ -88,6 +88,7 @@ its summary through the service.
   once the service took them and reject with its error.
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const selection = services.getRequiredService(SelectionService);
 await selection.activate(3, {
   participant_count: 1, selected_character_count: 4, is_collapsed: false, is_selecting: false,
@@ -126,7 +127,11 @@ class MySelection {
   async clear() { this.selection.publish(state(null, empty)); }
 }
 
-const services = await new RayXAppBuilder().addSingletonAs(SelectionService, () => new MySelection()).start();
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
+  .addSingletonAs(SelectionService, () => new MySelection())
+  .start()
+  .then((services) => { /* RayX's SelectionService class wraps MySelection */ });
 ```
 
 For tests, `rayx_app::testing::FakeSelection` publishes the state a test gives it (`publish`) and records the

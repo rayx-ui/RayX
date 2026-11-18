@@ -83,8 +83,9 @@ builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore
 
 - `add_startup_singleton_factory_for::<dyn Trait, Impl>(|services| Arc::new(..))` makes it on first resolve (or when
   startup runs); `add_startup_scoped_for` and `add_startup_transient_for` are its scoped and transient forms.
-- `add_startup_service_for::<dyn Trait, _>(Arc::new(..))` adds a startup service registered as the trait without
-  registering anything to resolve (`add_suspension()` follows NSH's app state this way beside its service).
+- `builder.services_mut().add_startup_service_for::<dyn Trait, _>(Arc::new(..))` (a `ServiceProvider` method; the
+  builder has none) adds a startup service registered as the trait without registering anything to resolve
+  (`add_suspension()` follows NSH's app state this way beside its service).
 - Every contract can be registered this way (`#[contract]` implements `ImplementedBy` for it); a plain trait of the
   app's needs `rayx::app::implemented_by!(MyTrait);` beside it.
 - An async factory form is not offered: the trait resolves synchronously, before startup has run, so its value must
@@ -95,7 +96,7 @@ builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore
 services registered as that key before; a registration that is a startup service (`add_startup_*`, the `_for` forms)
 replaces them with its own. So the app's own `dyn I18nService`, registered after `add_i18n(..)`, replaces RayX's
 completely: RayX's never loads its messages. Registered before it, `add_i18n(..)` replaces the app's. What
-`add_i18n(..)` declared its service needs (`require_for`) goes with it: the app's own needs no asset or platform
+`add_i18n(..)` declared its service needs (`services_mut().require_for`) goes with it: the app's own needs no asset or platform
 service. A startup
 service is removed by the registration of what it was registered as, not of the key it names: one registered
 `add_startup_singleton(MyStore)` (registered as `MyStore`) and naming `dyn KeyValueStore` stays when `dyn KeyValueStore`
@@ -198,22 +199,25 @@ builder.onReady(async (context) => {
 ## Starting from TSX
 
 ```tsx
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
   .addPlatform()
   .addSuspension()
   .addAssets()
   .addFonts()
   .addStorage()
   .addI18n()
-  .start();                           // once: rejects if a service is missing, failed or timed out
-const scope = services.createScope(); // on a screen's mount
-scope.dispose();                      // in its cleanup
+  .start()                                // once: rejects if a service is missing, failed or timed out
+  .then((services) => {
+    const scope = services.createScope(); // on a screen's mount
+    scope.dispose();                      // in its cleanup
+  });
 ```
 
 The app's crate is `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {}`, whose set holds the
 builder, RayX's classes and the set of each service crate the umbrella's features enable (here `storage` and `i18n`
 besides the defaults; [TSX](tsx.md#the-apps-crate)). `start()` is asynchronous because startup awaits the services;
-everything after it is synchronous. RayX's platform and suspension services keep themselves current from NSH from
+everything after it is synchronous. Chain `.then` on it, or await it inside an `async` function: `nsh run`'s
+development bundle is CommonJS, which has no top-level `await`. RayX's platform and suspension services keep themselves current from NSH from
 their startup on, in a TSX app as in a Rust one.
 
 ## Starting from a Rust root

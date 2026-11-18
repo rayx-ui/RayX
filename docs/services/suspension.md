@@ -177,9 +177,13 @@ class MySuspension {
   async askBeforeQuit(ask) { this.suspension.publish({ ...this.suspension.value, asks_before_quit: ask }); }
 }
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform()
   .addStartupSingletonAs(SuspensionService, () => new MySuspension())
-  .start();
+  .addAssets()
+  .addFonts()
+  .start()
+  .then((services) => { /* RayX's SuspensionService class wraps MySuspension */ });
 ```
 
 For tests, `rayx_app::testing::FakeSuspension` publishes the events the test gives it (`emit`, `start`) and counts the

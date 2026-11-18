@@ -61,7 +61,7 @@ RayXAppBuilder::new()
 ```
 
 ```tsx
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
   .addAppSettings("my-app")
   .addPlatform()
   .addSuspension()
@@ -71,7 +71,8 @@ const services = await new RayXAppBuilder()
   .addOperations()
   .addPersistentHistory()
   .addI18n((options) => options.defaultLanguage("en"))
-  .start();
+  .start()
+  .then((services) => { /* resolve the services here */ });
 ```
 
 `add_<service>(..)` registers RayX's implementation as the app's `dyn Trait`, replacing any registered before. A

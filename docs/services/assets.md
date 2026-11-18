@@ -172,10 +172,13 @@ class MyAssets {
   clearCache() {}
 }
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform()
+  .addSuspension()
   .addStartupSingletonAs(AssetService, () => new MyAssets())
   .addFonts()
-  .start();
+  .start()
+  .then((services) => { /* RayX's AssetService class wraps MyAssets */ });
 ```
 
 For tests, `rayx_app::testing::FakeAssets` serves a catalog and files from memory (`file`) and records what it is

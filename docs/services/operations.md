@@ -20,7 +20,11 @@ let builder = RayXAppBuilder::new().add_operations();
 ```
 
 ```tsx
-const services = await new RayXAppBuilder().addOperations().start();
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
+  .addOperations()
+  .start()
+  .then((services) => { /* resolve OperationService here */ });
 ```
 
 `add_operations()` registers RayX's implementation as the app's `dyn OperationService`, replacing any earlier
@@ -29,7 +33,8 @@ made. In TS, `addOperations()` is there once the crate's set is registered (`#[r
 on, or `rayx_services_operations::register(registry)`).
 
 The crate's own `diagnostics` feature keeps the latest committed operations and failure codes in the published state
-(`diagnostics()` on `dyn OperationService`).
+(`diagnostics()` on `dyn OperationService`). The umbrella has no feature for it: an app enables it by depending on
+`rayx_services_operations` from the same tag as `rayx`, with `features = ["diagnostics"]`.
 
 ## The contract
 
@@ -151,6 +156,7 @@ and a TS implementation of the service takes the handle it is given with `Operat
 applies records with `apply(record, origin)` (synchronous; it throws when the target refused or failed it).
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const operations = services.getRequiredService(OperationService);
 const stop = operations.onEvent((event) => {
   if ("Committed" in event) console.log(event.Committed.target_id);

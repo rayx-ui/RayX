@@ -139,9 +139,13 @@ class MyPlatform {
   }
 }
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
   .addStartupSingletonAs(PlatformInfoService, () => new MyPlatform())
-  .start();
+  .addSuspension()
+  .addAssets()
+  .addFonts()
+  .start()
+  .then((services) => { /* RayX's PlatformInfoService class wraps MyPlatform */ });
 ```
 
 `addSingletonAs` registers one that needs no initialization. For tests, `rayx_app::testing::FakePlatform` publishes

@@ -57,7 +57,7 @@ RayXAppBuilder::new()
 // The crate's src/lib.rs: `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {}`
 import { KeyValueStore, RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder() // resolves once every startup service is ready
+new RayXAppBuilder()
   .addPlatform()
   .addSuspension()
   .addAssets()
@@ -66,8 +66,10 @@ const services = await new RayXAppBuilder() // resolves once every startup servi
   .addStorage()
   .addOperations()
   .addHistory()
-  .start();
-const store = services.getRequiredService(KeyValueStore);
+  .start() // resolves once every startup service is ready
+  .then((services) => {
+    const store = services.getRequiredService(KeyValueStore);
+  });
 ```
 
 [Getting started](docs/getting-started.md) walks through it.
@@ -82,7 +84,7 @@ const store = services.getRequiredService(KeyValueStore);
 | `rayx_services_<name>` | RayX's implementation of one service each (platform, suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map, application configuration), on NSH, with its TS class |
 | `rayx_components` | The component library and its theme, for Rust and TSX |
 | `rayx_devtools_protocol` | The dev tools' agent protocol |
-| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]`, `#[native_module]` |
+| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]`, `contract_nsh!`, `#[native_module]` |
 | `rayx-cli` | The `rayx` command-line tool |
 
 ## Documentation

@@ -106,6 +106,7 @@ values are text or JSON:
 Every method returns a promise.
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const storage = services.getRequiredService(KeyValueStore);
 await storage.setJson("settings", "theme", { mode: "dark" });
 const theme = await storage.getJson("settings", "theme");
@@ -142,7 +143,11 @@ class MyStore {
   async clear(bucket) { /* removes the bucket's values */ }
 }
 
-const services = await new RayXAppBuilder().addSingletonAs(KeyValueStore, () => new MyStore()).start();
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
+  .addSingletonAs(KeyValueStore, () => new MyStore())
+  .start()
+  .then((services) => { /* RayX's KeyValueStore class wraps MyStore */ });
 ```
 
 A store that must load first is registered with `addStartupSingletonAs`, with `isInitialized()` and

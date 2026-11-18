@@ -65,7 +65,7 @@ fn native(registry: &mut Registry) {}
 // App.tsx
 import { I18nService, RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
   .addPlatform()            // the four the host requires (the default features);
   .addSuspension()          // each can be replaced by the app's own
   .addAssets()
@@ -75,10 +75,15 @@ const services = await new RayXAppBuilder()
   .addOperations()
   .addHistory()
   .addI18n((options) => options.defaultLanguage("en"))
-  .start();                 // rejects if a startup service failed
-const i18n = services.getRequiredService(I18nService);
-const scope = services.createScope(); // one scope per screen
+  .start()                  // rejects if a startup service failed
+  .then((services) => {
+    const i18n = services.getRequiredService(I18nService);
+    const scope = services.createScope(); // one scope per screen
+  });
 ```
+
+`start()` is chained with `.then` (or awaited inside an `async` function), never awaited at a module's top level:
+`nsh run`'s development bundle is CommonJS, which has no top-level `await`.
 
 A Rust UI builds the same chain in its root component and starts it there:
 

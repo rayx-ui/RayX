@@ -72,7 +72,7 @@ TSX, before the app uses a service:
 ```tsx
 import { I18nService, RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
   .addAppSettings("my-app")
   .addPlatform()
   .addSuspension()
@@ -80,10 +80,14 @@ const services = await new RayXAppBuilder()
   .addFonts()
   .addStorage()
   .addI18n((options) => options.defaultLanguage("en"))
-  .start();
-const i18n = services.getRequiredService(I18nService);
+  .start()
+  .then((services) => {
+    const i18n = services.getRequiredService(I18nService);
+  });
 ```
 
+- Chain `.then` on `start()` (as `rayx new`'s `App.tsx` does), or await it inside an `async` function: never at a
+  module's top level, which `nsh run`'s development bundle (CommonJS) cannot run.
 - `start()` resolves with the surface's root `ServiceProvider` once every startup service, Rust's and TS's, initialized
   and every ready hook ran. It rejects with an `Error` whose message is the startup error's: a failing service, a
   timeout, an option validated on start, a ready hook.
@@ -154,6 +158,7 @@ listener (it also stops when the reactive owner of the call goes, or the object 
 | `ApplicationConfigurationService` | `dyn ApplicationConfigurationService` | `current()`, `layoutDirection()`, `reducedMotion()`, `onChange`; as a promise: `replaceOptions(settings)` ([Application configuration](services/application-configuration.md#tsx)) | `application_configuration` |
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const i18n = services.getRequiredService(I18nService);
 title.set(i18n.t("welcome", { name: "Ada" }));
 const stop = i18n.onChange(() => title.set(i18n.t("welcome", { name: "Ada" })));
@@ -304,12 +309,13 @@ class MyPlatform implements PlatformInfoServiceContract {
   async initialize() {}
 }
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
   .addStartupSingletonAs(PlatformInfoService, () => new MyPlatform())
   .addSuspension()
   .addAssets()
   .addFonts()
-  .start();
+  .start()
+  .then((services) => { /* RayX's PlatformInfoService class wraps MyPlatform */ });
 ```
 
 Register it with a startup form (`isInitialized()` and `async initialize()`) when it must load before the services that
@@ -324,14 +330,17 @@ TS options are a token with their defaults, configured as Rust's are (see
 ```tsx
 const Feed = new OptionsToken("Feed", { title: "News", pageSize: 10 });
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
   .addOptions(Feed, (options) => options
     .bind("Feed")
     .validate((feed) => feed.pageSize > 0, "pageSize must be positive")
     .validateOnStart())
   .configureOptions(Feed, (feed) => ({ ...feed, title: feed.title.trim() }))
-  .start();
-const feed = services.getOptions(Feed).value;
+  .start()
+  .then((services) => {
+    const feed = services.getOptions(Feed).value;
+  });
 ```
 
 ## App extensions
@@ -355,7 +364,12 @@ fn native(registry: &mut Registry) {
 ```tsx
 import { RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder().addStorage().addWeather().start();
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()
+  .addStorage()
+  .addWeather()
+  .start()
+  .then((services) => { /* the weather service resolves here */ });
 ```
 
 The method runs the Rust function on the builder and returns the builder, and throws once the builder started.

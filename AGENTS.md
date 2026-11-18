@@ -40,8 +40,9 @@ a dependency. The workspace has nineteen crates sharing one version (`rayx`, `ra
   how one is built.
 - `crates/rayx_app_macros`: the `#[derive(AppService)]` proc macro, re-exported by both layers,
   `#[app_extension]` (a Rust builder extension exported to TS) and `#[contract]` (a Rust trait TS
-  implements), re-exported by `rayx_app_nsh` and `rayx`, and `#[native_module]`, used as
-  `#[rayx::native_module]`.
+  implements), re-exported by `rayx_app_nsh` and `rayx`, `contract_nsh!` (the TS side of a
+  contract written in an NSH-free crate), re-exported by `rayx_app_nsh`, and `#[native_module]`,
+  used as `#[rayx::native_module]`.
 - `crates/rayx_devtools_protocol`: the agent protocol of the dev tools (`docs/devtools.md`): the
   JSON-RPC 2.0 messages between an app's dev-build agent in `rayx_app_nsh` and a tool's hub, with its
   golden messages embedded. It depends on serde and serde_json alone (no RayX or NSH crate, no

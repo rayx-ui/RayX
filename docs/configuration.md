@@ -90,7 +90,8 @@ same steps, and the provider makes them when asked:
 ```tsx
 const Api = new OptionsToken("Api", { baseUrl: "", retryLimit: 1 });
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform().addSuspension().addAssets().addFonts()             // the four the host requires
   .configureAppConfiguration((c) => c.addValue({ Api: { baseUrl: "https://api.example.com", retryLimit: 3 } }))
   .addOptions(Api, (options) => options
     .bind("Api")                                                   // the section over the defaults
@@ -98,8 +99,10 @@ const services = await new RayXAppBuilder()
     .validate((api) => api.baseUrl !== "/", "the API needs a base URL")
     .validateOnStart())                                            // fail `start()`, not the first use
   .configureOptions(Api, (api) => ({ ...api, retryLimit: Math.min(api.retryLimit, 5) }))
-  .start();
-const api = services.getOptions(Api).value;
+  .start()
+  .then((services) => {
+    const api = services.getOptions(Api).value;
+  });
 ```
 
 - The value starts from the token's defaults; `bind` takes the section over them key by key; then the configure

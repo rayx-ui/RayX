@@ -123,6 +123,7 @@ changes.
 - `onChange(listener)`: hears the settings after every change; it returns a function that stops it.
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const settings = services.getRequiredService(ApplicationConfigurationService);
 settings.layoutDirection(); // "ltr" or "rtl"
 settings.reducedMotion();

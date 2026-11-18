@@ -163,9 +163,13 @@ class MyFonts {
   }
 }
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform()
+  .addSuspension()
+  .addAssets()
   .addStartupSingletonAs(FontService, () => new MyFonts())
-  .start();
+  .start()
+  .then((services) => { /* RayX's FontService class wraps MyFonts */ });
 ```
 
 For tests, `rayx_app::testing::FakeFonts` publishes the state the test gives it and records the fonts registered.
