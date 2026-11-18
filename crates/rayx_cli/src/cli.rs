@@ -271,9 +271,10 @@ pub enum AppCommand {
 pub enum NshCommand {
     /// Build the project's NSH from a local NSH checkout, or move it to an nshx tag
     Use {
-        /// An NSH checkout (the folder holding `crates/nsh-cli`), or a tag of the fork such as
-        /// `nshx-0.5.0-8`
-        #[arg(value_name = "CHECKOUT|TAG")]
+        /// An NSH checkout (the folder holding `crates/nsh-cli`), `local` (the `dXn/nsh/nsh` or
+        /// `nsh/nsh` checkout in a folder above the project), a tag of the fork such as
+        /// `nshx-0.5.0-8`, or `latest`, the fork's newest `nshx-*` tag
+        #[arg(value_name = "CHECKOUT|local|TAG|latest")]
         target: String,
         /// Run in this directory instead of the current one
         #[arg(short = 'C', value_name = "DIR")]

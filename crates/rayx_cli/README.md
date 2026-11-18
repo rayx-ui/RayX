@@ -347,7 +347,7 @@ Everything runs as you, with no question and no administrator rights.
 | `rayx nshx path [-C <dir>] [--no-install]` | Prints the pinned CLI's path, installing it first when it is missing (for scripts that need the binary). |
 | `rayx nshx install [-C <dir>]` | Installs the pin into the store. |
 | `rayx nshx prune [--yes]` | Lists the entries no recorded project and no default pins, with their sizes, and removes them after asking. |
-| `rayx nshx use <checkout>\|<tag> [-C <dir>]` | Builds the project's NSH from a local NSH checkout, or moves it to a tag of the fork (below). |
+| `rayx nshx use <checkout>\|local\|<tag>\|latest [-C <dir>]` | Builds the project's NSH from a local NSH checkout, or moves it to a tag of the fork (below). |
 
 **Working on NSH itself.** A path dependency on an NSH checkout makes `rayx` run
 `cargo build --release -p nsh-cli --target-dir target` in that checkout and run its `target/release/nsh`, copying
@@ -355,12 +355,17 @@ nothing into the store. `rayx nshx use ../nsh` makes that dependency in the chec
 in: every `[patch.crates-io]` line of an NSH crate, in the workspace's `Cargo.toml` and in each
 `.cargo/config.toml` under it (the gallery's), points at that crate in the checkout, with a comment
 keeping what it was, and Cargo relocks. Nothing waits for an nshx release while you work on both.
-`rayx nshx use <tag>` puts the lines back at that tag of the fork (`nshx-0.5.0-8`) and relocks; in
-RayX's own repository a new tag also moves the default pin and every tracked file that names it, the
-way a pin bump does (`CHANGELOG.md` and `.agentx/` keep their history). While the lines point at a
-checkout, commit neither them nor `Cargo.lock`: `tests/nsh_pin_rayx.rs` fails until the tag is back.
-A checkout whose NSH version the project does not accept, or that lacks a patched crate, is refused
-with every file as it was. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
+`rayx nshx use local` takes the checkout in a folder above the project: the first `dXn/nsh/nsh` or
+`nsh/nsh` holding `crates/nsh-cli`, nearest first (`…/projects/dXn/nsh/nsh` beside
+`…/projects/RayX/RayX`). `rayx nshx use <tag>` puts the lines back at that tag of the fork
+(`nshx-0.5.0-8`) and relocks, and `rayx nshx use latest` at the fork's newest `nshx-*` tag (by NSH
+version, then build number). The project's NSH version requirements follow: one the new NSH does not
+meet moves to the checkout crate's version, or to the version the tag names (`nshx-0.6.0-2` is NSH
+0.6.0), so going back to the old tag moves it back. In RayX's own repository a new tag also moves the
+default pin and every tracked file that names it, the way a pin bump does (`CHANGELOG.md` and
+`.agentx/` keep their history). While the lines point at a checkout, commit neither them nor
+`Cargo.lock`: `tests/nsh_pin_rayx.rs` fails until the tag is back. A checkout Cargo cannot lock, or
+that lacks a patched crate, is refused with every file as it was. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
 every command: `rayx: RAYX_NSH=<path> replaces the project's nsh d47d7fd6dfdc`. A relative path is
 read against the directory `rayx` started in (never searched on `PATH`), and `rayx nshx path` prints
 it too, for scripts that need the binary.

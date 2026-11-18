@@ -315,7 +315,7 @@ fn nsh_still_names_the_nshx_group_and_use_takes_a_checkout_or_a_tag() {
         .args(["nshx", "use"])
         .assert()
         .code(2)
-        .stderr(contains("CHECKOUT|TAG"));
+        .stderr(contains("CHECKOUT|local|TAG|latest"));
 }
 
 #[test]

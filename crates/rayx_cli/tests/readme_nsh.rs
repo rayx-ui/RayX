@@ -246,6 +246,8 @@ fn the_readme_says_how_rayx_chooses_and_installs_nsh() {
         "`rayx nshx prune [--yes]`",
         "`rayx nshx use ../nsh`",
         "`rayx nshx use <tag>`",
+        "`rayx nshx use local`",
+        "`rayx nshx use latest`",
         "`RAYX_NSH=<path>`",
         "`rayx: RAYX_NSH=<path> replaces the project's nsh d47d7fd6dfdc`",
         "A path dependency on an NSH checkout",
