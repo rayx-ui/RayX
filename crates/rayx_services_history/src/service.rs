@@ -71,6 +71,9 @@ pub(crate) struct Scopes {
     pub(crate) unsaved: BTreeSet<HistoryScopeId>,
     /// Whether a writer is saving them.
     pub(crate) writing: bool,
+    /// The commands waiting for a scope's next save.
+    pub(crate) save_waiters:
+        BTreeMap<HistoryScopeId, Vec<futures::channel::oneshot::Sender<Result<(), HistoryError>>>>,
     #[cfg(feature = "diagnostics")]
     pub(crate) recent_failure_codes: std::collections::VecDeque<String>,
     #[cfg(feature = "diagnostics")]
@@ -84,9 +87,11 @@ pub(crate) struct Scopes {
 /// service and the store do (RayX's do), on any thread; with services answering later (TS
 /// implementations), its commands await them and its saves follow its changes.
 pub(crate) struct RayxHistory {
+    /// Itself, for the work it runs detached.
+    pub(crate) this: Weak<Self>,
     pub(crate) operations: Arc<dyn OperationService>,
     pub(crate) store: Mutex<Option<Arc<dyn HistoryStore>>>,
-    store_configured: bool,
+    pub(crate) store_configured: bool,
     pub(crate) scopes: Mutex<Scopes>,
     subscription: Mutex<Option<ChangeSubscription>>,
     history: StateCell<HistoryState>,
@@ -106,7 +111,8 @@ impl RayxHistory {
         store: Option<Arc<dyn HistoryStore>>,
         store_configured: bool,
     ) -> Arc<Self> {
-        let history = Arc::new(Self {
+        let history = Arc::new_cyclic(|this| Self {
+            this: this.clone(),
             operations: Arc::clone(&operations),
             store_configured: store_configured || store.is_some(),
             store: Mutex::new(store),
@@ -206,7 +212,7 @@ impl RayxHistory {
             history: self,
             scope_id: Some(scope_id),
         };
-        let replayed = match self.resubmit(&entry, undo).await {
+        let replayed = match self.resubmit(scope_id, &entry, undo).await {
             Ok(entry) => entry,
             Err(error) => {
                 drop(replaying);
@@ -224,11 +230,11 @@ impl RayxHistory {
             } else {
                 (&mut scope.redo, &mut scope.undo)
             };
-            let position = from
-                .iter()
-                .rposition(|candidate| *candidate == entry)
-                .ok_or(HistoryError::StackChanged)?;
-            from.remove(position);
+            // Gone from its stack only if it changed between the check before the commit and
+            // the commit: the change is committed, so it is recorded all the same.
+            if let Some(position) = from.iter().rposition(|candidate| *candidate == entry) {
+                from.remove(position);
+            }
             to.push(replayed);
             scope.revision += 1;
         }
@@ -317,24 +323,12 @@ impl RayxHistory {
         Ok(())
     }
 
-    /// Saves `scope_id` (when the history has a store) where nothing awaits it: at once with a
-    /// store that answers at once, else when the store answers; a failure is a failed step of
-    /// the scope.
-    fn persist_behind(self: &Arc<Self>, scope_id: &HistoryScopeId) {
-        if !self.store_configured {
-            return;
-        }
-        let history = Arc::clone(self);
-        let scope_id = scope_id.clone();
-        crate::detached::spawn(Box::pin(async move {
-            if let Err(error) = history.persist_scope(&scope_id).await {
-                history.record_failure(scope_id, &error);
-            }
-        }));
-    }
-
+    /// Resubmits `entry`'s records in a transaction of its own, committed only while the entry
+    /// is still on its stack of `scope_id` (an edit recorded meanwhile may have cleared the redo
+    /// stack): else aborted, and `StackChanged`.
     async fn resubmit(
         &self,
+        scope_id: &HistoryScopeId,
         entry: &HistoryEntry,
         undo: bool,
     ) -> Result<HistoryEntry, HistoryError> {
@@ -370,6 +364,18 @@ impl RayxHistory {
                 return Err(HistoryError::ApplyStatus(receipt.status));
             }
             receipts.push(receipt);
+        }
+        let still_there = self
+            .lock_state()?
+            .scopes
+            .get(scope_id)
+            .is_some_and(|scope| {
+                let from = if undo { &scope.undo } else { &scope.redo };
+                from.contains(entry)
+            });
+        if !still_there {
+            let _ = transaction.abort().await;
+            return Err(HistoryError::StackChanged);
         }
         transaction.commit().await?;
         let mut fresh_inverses = receipts
@@ -502,6 +508,29 @@ impl Drop for OpenTransaction<'_> {
     }
 }
 
+impl RayxHistory {
+    /// Runs `command` detached, started now: the returned future awaits only its answer, so
+    /// dropping it never leaves a replay, a clear or a save half done.
+    fn detached<T, F>(
+        &self,
+        command: impl FnOnce(Arc<Self>) -> F,
+    ) -> BoxFuture<'static, Result<T, HistoryError>>
+    where
+        T: Send + 'static,
+        F: std::future::Future<Output = Result<T, HistoryError>> + Send + 'static,
+    {
+        let Some(history) = self.this.upgrade() else {
+            return futures::future::ready(Err(HistoryError::Poisoned)).boxed();
+        };
+        let (answer, answered) = futures::channel::oneshot::channel();
+        let work = command(history);
+        crate::detached::spawn(Box::pin(async move {
+            let _ = answer.send(work.await);
+        }));
+        async move { answered.await.unwrap_or(Err(HistoryError::Poisoned)) }.boxed()
+    }
+}
+
 /// A command's answer, boxed.
 fn boxed<'a, T: Send + 'a>(
     call: impl std::future::Future<Output = T> + Send + 'a,
@@ -527,15 +556,15 @@ impl HistoryService for RayxHistory {
     }
 
     fn undo(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<bool, HistoryError>> {
-        boxed(async move { self.replay(&scope_id, true).await })
+        self.detached(move |history| async move { history.replay(&scope_id, true).await })
     }
 
     fn redo(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<bool, HistoryError>> {
-        boxed(async move { self.replay(&scope_id, false).await })
+        self.detached(move |history| async move { history.replay(&scope_id, false).await })
     }
 
     fn clear_scope(&self, scope_id: HistoryScopeId) -> BoxFuture<'_, Result<(), HistoryError>> {
-        boxed(async move { self.clear_scope_now(&scope_id).await })
+        self.detached(move |history| async move { history.clear_scope_now(&scope_id).await })
     }
 
     fn set_scope_entry_limit(
@@ -543,7 +572,9 @@ impl HistoryService for RayxHistory {
         scope_id: HistoryScopeId,
         limit: usize,
     ) -> BoxFuture<'_, Result<(), HistoryError>> {
-        boxed(async move { self.set_scope_entry_limit_now(&scope_id, limit).await })
+        self.detached(move |history| async move {
+            history.set_scope_entry_limit_now(&scope_id, limit).await
+        })
     }
 
     fn retained_records(
@@ -587,6 +618,9 @@ impl AsyncInitializable for Starting {
                     ));
                 }
                 *store = Some(configured);
+                drop(store);
+                // What was recorded before the store was attached is saved now.
+                history.save_unsaved();
             }
             history.initialization.mark_initialized();
             Ok(())

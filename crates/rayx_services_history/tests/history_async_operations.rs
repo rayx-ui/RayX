@@ -1,7 +1,7 @@
 //! RayX's history over an operation service that answers later (as a TS implementation does):
 //! its replay carries its transaction by id, so another task on the thread neither joins it nor
 //! finds the history busy, a replay finished on another thread leaves nothing open behind; an
-//! edit recorded while an undo is in flight is kept, and a dropped undo frees its scope.
+//! edit recorded while an undo is in flight is kept, and a dropped undo still completes.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -325,17 +325,19 @@ fn an_edit_recorded_while_an_undo_is_in_flight_is_kept() {
 }
 
 #[test]
-fn a_dropped_undo_frees_its_scope() {
+fn a_dropped_undo_still_completes_and_frees_its_scope() {
     let f = Fixture::new();
     f.set(&f.a, 5);
     f.gate.hold();
     let mut undo = f.history.undo(f.a.id.clone());
     assert!(poll_once(&mut undo).is_pending());
+    // Giving up on the undo gives up only the wait: started, it finishes.
     drop(undo);
     f.gate.open();
-    assert_eq!(f.a.value(), 5);
-    assert_eq!(f.history.stack_depths(&f.a.id), (1, 0));
-    assert!(block_on(f.history.undo(f.a.id.clone())).unwrap());
     assert_eq!(f.a.value(), 0);
+    assert_eq!(f.history.stack_depths(&f.a.id), (0, 1));
+    assert!(!block_on(f.history.undo(f.a.id.clone())).unwrap());
+    assert!(block_on(f.history.redo(f.a.id.clone())).unwrap());
+    assert_eq!(f.a.value(), 5);
     now(f.history.clear_scope(f.a.id.clone())).unwrap();
 }

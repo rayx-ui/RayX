@@ -747,7 +747,10 @@ mod scope_lifecycle {
         let (done_tx, done_rx) = mpsc::channel();
         let clearer = std::thread::spawn(move || {
             done_tx
-                .send(now(history.clear_scope(scope.clone())))
+                // Waits for its save, behind the pending one.
+                .send(futures::executor::block_on(
+                    history.clear_scope(scope.clone()),
+                ))
                 .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
         });
         let deadline = Instant::now() + WAIT;

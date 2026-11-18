@@ -29,8 +29,10 @@ in a TS implementation's, which answers in JS's next turn. `HistoryStore` (in `r
 implementation's extension point: where it keeps each scope's journal (`HistoryJournalV2`), with
 `InMemoryHistoryStore` and `KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at
 once or later: the history loads a scope when a command first awaits it and saves each change behind it, one save at a
-time (a save nothing awaits that fails is a `NavigationFailed` event of the scope). Its `diagnostics` feature keeps the
-replays that failed in the published state.
+time (a save nothing awaits that fails is a `NavigationFailed` event of the scope). A save that finds another revision
+in the store than it expects (another app's, or a save whose answer was lost) reloads it and saves over it. Changes
+made before the app's startup attaches the store are saved once it does. Its `diagnostics` feature keeps the replays
+that failed in the published state.
 
 ## Use
 
@@ -52,8 +54,11 @@ history.redo(editor).await?;
   the inverses the replay answered. It works over any `dyn OperationService`, one answering later (a TS one) included,
   from any task or thread.
 - A scope is busy (`ScopeBusy`) while it is replayed: another undo, redo, `clear_scope` or `set_scope_entry_limit` of
-  it fails meanwhile. An operation recorded meanwhile is kept; a replay that fails or whose future is dropped frees the
-  scope. `clear_scope` discards the operations of transactions begun before it and committed after it.
+  it fails meanwhile. An operation recorded meanwhile is kept, and a redo whose entry an edit cleared meanwhile is
+  aborted before it commits (`StackChanged`). `clear_scope` discards the operations of transactions begun before it
+  and committed after it.
+- `undo`, `redo`, `clear_scope` and `set_scope_entry_limit` start when called and run to their end, their saves
+  included: dropping the future gives up only the wait for the answer, never a change half made.
 - `can_undo`, `can_redo`, `stack_depths` and `diagnostics` read the published state (`history()`), synchronously; a
   persisted scope shows once it is loaded (bound, replayed or recorded in).
 - `clear_scope`, `set_scope_entry_limit` and `retained_records` keep the scopes' lifecycles; `subscribe(..)` (or
