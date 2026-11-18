@@ -4,7 +4,9 @@
 //! up on leaves no save half done. The journal saved keeps the entries other histories saved
 //! in the same store (their sessions undo them, never this one): when the store holds another
 //! journal than this history expects, it reloads it and merges its own entries in by id, so no
-//! writer's entries are lost.
+//! writer's entries are lost. A cleared scope whose journal has no entry left (no other
+//! history's) is not saved: it is deleted from the store (`delete_scope`), unless another
+//! journal is there now.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, MutexGuard, PoisonError};
@@ -263,9 +265,30 @@ impl RayxHistory {
         }
         let mut attempt = 1;
         loop {
-            let (journal, expected_revision, own) = self.persistence_snapshot(scope_id)?;
+            let (journal, expected_revision, own, cleared) = self.persistence_snapshot(scope_id)?;
             if expected_revision == Some(journal.revision) {
                 return Ok(());
+            }
+            if cleared && journal.entries.is_empty() {
+                // Nothing left to keep (a cleared scope, no other history's entries in it):
+                // the scope is forgotten in the store, unless another journal is there now.
+                let Some(expected_revision) = expected_revision else {
+                    return Ok(());
+                };
+                let stored = self.bounded(store.load(scope_id)).await?;
+                match stored.as_ref().map(|stored| stored.revision) {
+                    None => return self.record_deleted(scope_id),
+                    Some(revision) if revision == expected_revision => {
+                        self.bounded(store.delete_scope(scope_id)).await?;
+                        return self.record_deleted(scope_id);
+                    }
+                    Some(_) if attempt < SAVE_ATTEMPTS => {
+                        attempt += 1;
+                        self.take_stored(scope_id, stored)?;
+                        continue;
+                    }
+                    Some(_) => return Err(HistoryStoreError::Conflict.into()),
+                }
             }
             match self
                 .bounded_store(store.save(journal.clone(), expected_revision))
@@ -290,7 +313,7 @@ impl RayxHistory {
     fn persistence_snapshot(
         &self,
         scope_id: &HistoryScopeId,
-    ) -> Result<(HistoryJournalV2, Option<u64>, BTreeSet<String>), HistoryError> {
+    ) -> Result<(HistoryJournalV2, Option<u64>, BTreeSet<String>, bool), HistoryError> {
         let state = self.lock_state()?;
         let scope = state
             .scopes
@@ -300,6 +323,7 @@ impl RayxHistory {
             HistoryJournalV2::new(scope.revision, scope_id.clone(), journal_entries(scope)),
             scope.persisted_revision,
             scope.undo.iter().map(|entry| entry.id.clone()).collect(),
+            scope.cleared,
         ))
     }
 
@@ -327,6 +351,20 @@ impl RayxHistory {
         Ok(())
     }
 
+    /// The scope has no journal in the store (this history deleted it, or found it gone).
+    fn record_deleted(&self, scope_id: &HistoryScopeId) -> Result<(), HistoryError> {
+        let mut state = self.lock_state()?;
+        let scope = state
+            .scopes
+            .get_mut(scope_id)
+            .ok_or(HistoryError::StackChanged)?;
+        scope.persisted_revision = None;
+        scope.stored.clear();
+        scope.saved_own.clear();
+        scope.cleared = false;
+        Ok(())
+    }
+
     /// `journal` is the scope's in the store, with this history's entries `own`.
     fn record_saved(
         &self,
@@ -339,6 +377,10 @@ impl RayxHistory {
             .scopes
             .get_mut(scope_id)
             .ok_or(HistoryError::StackChanged)?;
+        // A clear made after this journal was taken is still to be saved.
+        if journal.revision == scope.revision {
+            scope.cleared = false;
+        }
         scope.persisted_revision = Some(journal.revision);
         scope.stored = journal.entries;
         scope.saved_own = own;

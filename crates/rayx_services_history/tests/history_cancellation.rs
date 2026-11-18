@@ -370,8 +370,9 @@ fn a_clear_given_up_while_its_save_is_pending_leaves_the_store_in_step() {
     assert!(poll_once(&mut clear).is_pending());
     drop(clear);
     f.saves.open();
-    f.in_step();
-    assert_eq!(f.stored(), Some(0));
+    // The cleared scope is deleted from the store.
+    eventually("the store forgot the scope", || f.stored().is_none());
+    assert!(f.failures.lock().unwrap().is_empty(), "{:?}", f.failures);
     // Later saves meet the revision they expect.
     f.set(2);
     f.set(3);

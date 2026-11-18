@@ -1,7 +1,7 @@
 //! A history store written in TS, headless: `addHistoryWithStore(() => new MyStore())` makes the
 //! TS class (it implements `HistoryStoreContract`) the app's history store: RayX's history loads
-//! each scope's journal from it and saves the journal (JSON text, by revision) behind every change,
-//! a cleared scope's too.
+//! each scope's journal from it, saves the journal (JSON text, by revision) behind every change
+//! and deletes a cleared scope's (`deleteScope`).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -165,7 +165,7 @@ setTimeout(async () => {
     await tick();
     await history.clearScope("document");
     await tick();
-    lines.push(String(JSON.parse(store.journals.get("document").text).entries.length));
+    lines.push(String(store.journals.has("document")));
     lines.push(store.calls.map((call) => call.split(" ")[0]).filter((call, index, calls) => calls.indexOf(call) === index).join(","));
   } catch (error) {
     lines.push(`threw ${error}`);
@@ -180,7 +180,7 @@ mount(() => <Text>{shown()}</Text>);
 fn a_history_store_written_in_ts_keeps_the_journals() {
     assert_eq!(
         testing::run(set(), TSX),
-        "done true true true|true document 2|true 3|0|load,save"
+        "done true true true|true document 2|true 3|false|load,save,delete"
     );
 }
 

@@ -49,6 +49,9 @@ pub(crate) struct ScopeHistory {
     /// recorded meanwhile by.
     pub(crate) pushes: u64,
     pub(crate) loaded: bool,
+    /// Cleared since its journal was last saved or deleted: a journal left with no entry is
+    /// deleted from the store then, not saved.
+    pub(crate) cleared: bool,
 }
 
 impl ScopeHistory {

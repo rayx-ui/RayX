@@ -714,6 +714,12 @@ mod scope_lifecycle {
             &'a self,
             scope: &'a HistoryScopeId,
         ) -> BoxFuture<'a, Result<(), HistoryStoreError>> {
+            if self.fail.load(Ordering::SeqCst) {
+                return futures::future::ready(Err(HistoryStoreError::Backend(
+                    "injected delete failure".into(),
+                )))
+                .boxed();
+            }
             self.inner.delete_scope(scope)
         }
     }
@@ -733,12 +739,11 @@ mod scope_lifecycle {
         store.fail.store(false, Ordering::SeqCst);
         now(f.history.clear_scope(f.scope.clone()))
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
+        // The cleared scope is deleted from the store.
         assert!(
             now(store.load(&f.scope))
                 .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
-                .unwrap_or_else(|| panic!("expected persisted history journal"))
-                .entries
-                .is_empty()
+                .is_none()
         );
         let restarted = Fixture::new(Some(store));
         assert_eq!(restarted.depths(), (0, 0));
@@ -797,10 +802,12 @@ mod scope_lifecycle {
         clearer
             .join()
             .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"));
-        let journal = now(store.load(&f.scope))
-            .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
-            .unwrap_or_else(|| panic!("expected persisted history journal"));
-        assert!(journal.entries.is_empty());
+        // The clear deleted the journal the pending save wrote.
+        assert!(
+            now(store.load(&f.scope))
+                .unwrap_or_else(|error| panic!("test prerequisite failed: {error:?}"))
+                .is_none()
+        );
         let restarted = Fixture::new(Some(store));
         assert_eq!(restarted.depths(), (0, 0));
     }

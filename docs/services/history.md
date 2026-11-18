@@ -115,7 +115,9 @@ Commands:
 - `bind_target_scope(target, scope)` (TS `bindTargetScope`): records the target's operations in the scope from now
   on, and loads the scope's history.
 - `undo(scope)`, `redo(scope)` (TS the same): replay the latest entry; whether there was one.
-- `clear_scope(scope)` (TS `clearScope`): clears both stacks, keeping the binding and limit.
+- `clear_scope(scope)` (TS `clearScope`): clears both stacks, keeping the binding and limit; with a store, the scope's
+  journal is deleted from it (`delete_scope`, TS `deleteScope`), unless another history's entries are in it, which
+  are saved without this history's.
 - `set_scope_entry_limit(scope, limit)` (TS `setScopeEntryLimit`): bounds the scope's entries (at least 1), the oldest
   undo entries going first, then the most distant redo entries.
 - `retained_records(scope)` (TS `retainedRecords`): the `OperationRecord`s the scope keeps, newest undo entries first,

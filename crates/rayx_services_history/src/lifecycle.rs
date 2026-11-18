@@ -82,6 +82,7 @@ impl RayxHistory {
         scope.redo.clear();
         scope.revision += 1;
         scope.loaded = true;
+        scope.cleared = true;
         Ok(())
     }
 
