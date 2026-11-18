@@ -53,4 +53,4 @@ Code and docs: [docs/dependency-injection.md](../../../../../docs/dependency-inj
 `di_validation`, `app_ready_hooks` in `crates/rayx_app/tests/`.
 
 Memory: [core](../state.md), [app](../../app/state.md),
-[crate structure decision draft](../../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16).
+[crate structure decision](../../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16).

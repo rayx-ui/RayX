@@ -50,5 +50,5 @@ Code and docs: `crates/rayx_app/src/lib.rs`, `crates/rayx_app/src/services/mod.r
 `crates/rayx/tests/macro_paths.rs`.
 
 Memory: [di](di/state.md), [configuration](configuration/state.md), [runtime](../runtime/state.md),
-[crate structure decision draft](../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16),
+[crate structure decision](../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16),
 [taxonomy decision](../../decisions/governance/memory/2026-11-04-governance-memory-taxonomy.md) (current, 2026-11-04).

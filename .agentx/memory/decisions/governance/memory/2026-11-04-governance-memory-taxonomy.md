@@ -60,7 +60,7 @@ Domains follow the crates and the repository's own cross-cutting rules:
 ## Crates since 2026-11-17
 
 The epic `service-crates` renamed and split the crates; the domains follow them under the same
-names ([crate structure decision draft](../../runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md)):
+names ([crate structure decision](../../runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md)):
 `core` covers `rayx_app` (the old `rayx_core`) and `rayx_app_macros`, `runtime` the service
 crates `rayx_services_*` (`rayx_runtime` is gone), and `app` the NSH host `rayx_app_nsh` (the old
 `rayx_app`) and the umbrella `rayx`. Renaming the domains would break every backlink for no

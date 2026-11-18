@@ -17,7 +17,7 @@ agentx:
 # app: knowledge
 
 - NSH's source is readable at `.references/nsh-main/` (git-ignored copy); its `AGENTS.md` and `docs/dev/` explain NSH's internals.
-- TSX apps compose with the same builder as Rust apps, and TS services share the Rust container: [decision](../../decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md) (2026-11-15, current; implemented by the epic `ts-app-builder`). Its rule that Rust reaches TS services from the engine thread only, and the host's own TS builder methods per service, are replaced by the epic `service-crates`: [successor draft](../../decisions/app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md) (2026-11-17, current, promoted when that epic closes).
+- TSX apps compose with the same builder as Rust apps, and TS services share the Rust container: [decision](../../decisions/app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md) (2026-11-17, current; from the epic `service-crates`): contracts are callable from any thread, and each service crate adds its own TS builder methods. It supersedes the [builder parity decision](../../decisions/app/tsx/2026-11-15-app-tsx-builder-parity.md) (2026-11-15, implemented by the epic `ts-app-builder`).
 
 - The host's TS container asks whether a TS factory may run on the spot with NSH's public
   `Callback::can_call_now()` (`crates/rayx_app_nsh/src/di/container_ts.rs`, since `nshx-0.5.0-5`,

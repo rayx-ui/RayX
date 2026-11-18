@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 129,
+  "revision": 132,
   "planRevision": 10,
   "specHashes": {
     "requirements": "9c7a48a18fd7249d750d536a896b48395c4e4bc8224330a3aeec042961357500",
@@ -272,6 +272,16 @@
         }
       },
       "recordedAt": "2026-11-18T06:17:03Z"
+    },
+    "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783": {
+      "snapshot": {
+        "specHash": "8167c8004424fa5bcca3f9072a3da02f6f8c08181626a4c9c6aa72ae7a3da11f",
+        "repositories": {
+          "rayx": "7effb7abd1c9ccd289c80cce40f09787f54c599b81970ac2742f79d194448ad0",
+          "root": "df47ef0b0e10a29bb5ed99733a128cc6324e993f63684704ca787618f55d441d"
+        }
+      },
+      "recordedAt": "2026-11-18T12:06:01Z"
     }
   },
   "checkResults": {
@@ -1146,596 +1156,596 @@
       "checkId": "c-crate-layout",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "2e927cd2884d00379baf2446f217cd2d10ef8055f1fdbb9ace499be64952fcdd",
-      "basisHash": "4557094122f9441597ea3fc3d1c718d413e3cb0700012890b2ceb54fe70a9951",
+      "basisHash": "2c3e20e7211f41614c3cf6456ae8b482c22519e6fd428acc12a0f16f9c177fda",
       "status": "passed",
       "exitCode": 0,
       "testCount": 9,
-      "durationSeconds": 8.2833,
-      "recordedAt": "2026-11-18T06:05:44Z",
+      "durationSeconds": 69.3483,
+      "recordedAt": "2026-11-18T11:48:57Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-3e2634e1cfb4.log",
-      "logSha256": "7928c064d672922355a3bc45af08329a3debb1183dfe6e69eafc89e75f31287f",
-      "inputsHash": "bc10e553cd4245e7d69865a8f43e184579bed26e705dd97354d4a54b40601802"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-7fdd8e0b4b5b.log",
+      "logSha256": "c4273a536be05b3bb371aa5246e204cb1ba11eeca49d90ea67b03765bdb7be4a",
+      "inputsHash": "3084f29288405cf0e309543a892cff29458a159eddbab06f74be9f1618c41387"
     },
     "final/c-macro-paths/final": {
       "checkId": "c-macro-paths",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "9f780c0d7a70ba305c71b67c7e47afbef3c83c94649686fb51ea460f2b46f522",
-      "basisHash": "929ad6e2596fe7cd30cab1341ea43a137880d2de38e794b33c36f765567b3988",
+      "basisHash": "e0d1696dfbc93624a9f91507fd1b5d345425e68f222f61077d780357cb3a5264",
       "status": "passed",
       "exitCode": 0,
       "testCount": 4,
-      "durationSeconds": 36.6287,
-      "recordedAt": "2026-11-18T06:06:21Z",
+      "durationSeconds": 38.0379,
+      "recordedAt": "2026-11-18T11:49:35Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-3de05cfb8c35.log",
-      "logSha256": "384714dd09e9eb819ce557d8f8412d86e192faaba05c1af9289aa1d0b3e9f3f7",
-      "inputsHash": "cdca8bc8c824fb8d4b213476eb65083b2b8004efb9071295bea4be1826a8ac20"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-ac63a939412a.log",
+      "logSha256": "5cf0f865d354d3e0a3da33e2cdf8a88f71d98a0b886233d0a5965463ee1213c0",
+      "inputsHash": "c94a8996f6b70c2de1c5d485c21c96c1931fcbb6201084e9220eb4d72b1d5ea3"
     },
     "final/c-workspace-build/final": {
       "checkId": "c-workspace-build",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "328134a894accf506af2ec2628bda33a4224bd8e60bc4a6315701de221dac95a",
-      "basisHash": "9bd585d718876b5957b497754d6bd4977361b93c6a19f62be21b386505b0c94d",
+      "basisHash": "6bb2d224302b65dfa36f2f949ea8e3415b2f648e47acd9c383dd8a62aa7ffdf6",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 150.8777,
-      "recordedAt": "2026-11-18T06:08:52Z",
+      "durationSeconds": 210.7519,
+      "recordedAt": "2026-11-18T11:53:06Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-aecce455a51d.log",
-      "logSha256": "6b7cac473d6f3b7d991f82a65da3658d72fdb80f185ce84a58461534ec4f37eb",
-      "inputsHash": "d20ee6846c2773cd2ef664ac76c662d79100a3bdb387db4b60fd96039a1786e3"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-8acb7e719568.log",
+      "logSha256": "bc7f245b513909fe04a9053f3ef258acebc7366d3966658e90c2d11a6de4c1a8",
+      "inputsHash": "30d04e9aafa0f629664e4a1fb15a8cb29c83f308b51409a8bbaa66a74641cc77"
     },
     "final/c-core-wasm/final": {
       "checkId": "c-core-wasm",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "51484270ab9a705ddacd8d3c2004fb5441ad324c1204f8472f2c53f611f12238",
-      "basisHash": "3f2d8d6231523161b1ee5f5b76da28cb36ed6949b6366b3113d893e91b3613a9",
+      "basisHash": "9f7c571d182006fa22e74c5a5fb5152ad110b46695b087c4be5df46f82be8e40",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 20.7514,
-      "recordedAt": "2026-11-18T06:09:12Z",
+      "durationSeconds": 13.4877,
+      "recordedAt": "2026-11-18T11:53:20Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-f00aecfde7fe.log",
-      "logSha256": "32797500bc9cb8113e0780962491808ed8e9318933c4675ac7235558af05e750",
-      "inputsHash": "3c39583212ad41bba3258331d36493a8aaa78c1ba3aa05d631ba2e4484955608"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-72fa95f07db9.log",
+      "logSha256": "eb883ff17cfdcd23a3352b7eaa00f41e11f9e54efe96b9462b8d0d34da0a47c7",
+      "inputsHash": "84442efe32f8432cec7c7df586e46f4af0e8f84a12e3e07d15a0f3488c173ba8"
     },
     "final/c-release-wiring/final": {
       "checkId": "c-release-wiring",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "44720a59a63a9184b7a5bcb71f863cc04c0f0045d261a3f6c80f2ff1628aa988",
-      "basisHash": "df1d12f31868c7e3609d1347446ffcfe0dcc825f5a06c06a00fd994e514893bc",
+      "basisHash": "da879a26559b188b3ee4b8733215e217905f29d1ec6dd59c4adad276b77ddc7e",
       "status": "passed",
       "exitCode": 0,
       "testCount": 28,
-      "durationSeconds": 5.6696,
-      "recordedAt": "2026-11-18T06:09:18Z",
+      "durationSeconds": 19.1223,
+      "recordedAt": "2026-11-18T11:53:39Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-ebc187802561.log",
-      "logSha256": "46ec793fb7ba8bdc4562bb1454a5f6dee2a3d957256696e50a724ef71af9fb12",
-      "inputsHash": "de038af73c9e16a688a792c6cf2890563dfe1270b3ee17b6f512e167348e6c0b"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-0b843cf5f168.log",
+      "logSha256": "a95ec2c7076a39d802cb9d3b2e79cbf84d3b1e837028e8e8ae9fbfe56ce0879f",
+      "inputsHash": "30cab857157f0799fe436aac88e07eef9108f8cefbf9ecfdba94b321db4ba42a"
     },
     "final/c-source-layout/final": {
       "checkId": "c-source-layout",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "9cc6ebb6eded7a16b6f66f8134fe30553b720d9ec2c0c18b6e065c889cf5cd69",
-      "basisHash": "200c3cda8a6ca3a8963a545e847aa5ec4eefb92d74327b1fd693db1b1e7ca962",
+      "basisHash": "a364fe0c8c4ecdfcbd29213dc384f1fb24861ba916db0107633e1f93d9d30b95",
       "status": "passed",
       "exitCode": 0,
       "testCount": 2,
-      "durationSeconds": 1.5549,
-      "recordedAt": "2026-11-18T06:09:20Z",
+      "durationSeconds": 6.4852,
+      "recordedAt": "2026-11-18T11:53:45Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-4d3f3f44f5c9.log",
-      "logSha256": "0520029f7c0a7b5a03ab47bc7c3ba9dc14380f43f811aad40b951e5725996888",
-      "inputsHash": "51684e9f776c1d1a304c4206add8a28c78082df0ab502a8a69f3ef053e2b54fd"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-fc18d8ffecd3.log",
+      "logSha256": "62450a2abce4e1a3dbeee27e593d9b12ffaf463542442ea628e9674e9653ed1c",
+      "inputsHash": "1d7fa98d50dcb4f3d25eafbc778cb5538e34efce151631519eea5c4f42c7c459"
     },
     "final/c-host-suite/final": {
       "checkId": "c-host-suite",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "d090d509dfb71e27bacefe5790a2de28170fd7b3ee14e5ba7e250a33ab297876",
-      "basisHash": "b5403ba6c21dc401ee53f3b3e1072fdd13772196efe47024b61bf42403f302af",
+      "basisHash": "3c2a9670f6e44f5dca55c0eddff68ab2073cb72f43c08247a7186e3d75df35e0",
       "status": "passed",
       "exitCode": 0,
       "testCount": 106,
-      "durationSeconds": 202.1372,
-      "recordedAt": "2026-11-18T06:12:42Z",
+      "durationSeconds": 203.3662,
+      "recordedAt": "2026-11-18T11:57:09Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-9ae66c21acbe.log",
-      "logSha256": "e0b87977ab6afedb49e11ca8f009cc28f3374f4f4f81a4af65aba05aa842f5c0",
-      "inputsHash": "853bc4962ee7f186225554184df5d8282d242f031ee456ecfd432ecd804ef9ff"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-f03a9dd708ff.log",
+      "logSha256": "17ab0680a8e5d9432bfcc76cceb2acbc8cbe57a9746357033198b5b3a90011cb",
+      "inputsHash": "e06abb8fd1f6c710f8dd3cfd9ac6d9fac23ec4d77ef4e18012c7a64dc07103af"
     },
     "final/c-host-docs/final": {
       "checkId": "c-host-docs",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "a9e156b1a07cbcdb9e02f62f0d3b07ee3ee58ee9a682d683143a9c27d7b1d042",
-      "basisHash": "93d90cfb177183a3adeb73a3f9663c751a98f0aba4b444afb4f385213db78d53",
+      "basisHash": "491431acdb01dcbd81a42574a4355de75e72caf3cf98f243e9777a305d01481b",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 1.6737,
-      "recordedAt": "2026-11-18T06:12:44Z",
+      "durationSeconds": 14.5662,
+      "recordedAt": "2026-11-18T11:57:23Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-9dd6759788a6.log",
-      "logSha256": "d5b448eb1cc481861e3b2aedf152261ace9f0b8eb42c73425f7211c141d7a391",
-      "inputsHash": "8bad695c2b21bb27f21016bd203e653baf41f3fe81edf8448997861d9d872845"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-3a247b99bf84.log",
+      "logSha256": "5ab3c7ae79f67e000de1a8d2df1bf5eea82a2983a513b7e4a7f7b46a2ebd9e22",
+      "inputsHash": "a292a16cb32ba6747927ec2533571e4b69c610148cbb4cff44656b71f832e411"
     },
     "final/c-published-values/final": {
       "checkId": "c-published-values",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "501f74645e985d6b2503aece7c28770e92d4464faf11af7780fe73d5c21ec2b9",
-      "basisHash": "4defd04f47d27c62843f0533cb76bce3571c407df94aa80b98a2f285da988479",
+      "basisHash": "2943336f1cc87405f81640ecb76af5c26eead13e2ecadd3a9bef2f119c890e6d",
       "status": "passed",
       "exitCode": 0,
       "testCount": 12,
-      "durationSeconds": 2.6984,
-      "recordedAt": "2026-11-18T06:12:46Z",
+      "durationSeconds": 13.766,
+      "recordedAt": "2026-11-18T11:57:37Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-17ff2397d098.log",
-      "logSha256": "3571a1bd042599ace100f71d1c24bd4e8cc4f56b9dd82fc661ad71a13dfd0c19",
-      "inputsHash": "50c56e2ef4d7409db64e08f6b01d15480a438062201009f8512e14efba33be85"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-f0f922e1cd3a.log",
+      "logSha256": "1cd23d6146fa550c8d88d3390d71886d34f79c76b26d3a5b0a95cb19654f80f8",
+      "inputsHash": "7155e5883bfc9d672577cdcb3464e768041f4bce0631dab5c9d609e3268fd3b5"
     },
     "final/c-published-binding/final": {
       "checkId": "c-published-binding",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "0bf57a16ba3f6eae12c33a1e1b3b550e7966b1c10fc22163ce284088abe44b62",
-      "basisHash": "563898478691ba2970ae69e3e9ea12681ba93b5655ce94f1e57e672633b400ea",
+      "basisHash": "5e85502fa34fffd35cbc9dce93c58152d4f3adc500d0fac0a526846c2915d6d3",
       "status": "passed",
       "exitCode": 0,
       "testCount": 1,
-      "durationSeconds": 0.9745,
-      "recordedAt": "2026-11-18T06:12:47Z",
+      "durationSeconds": 1.0978,
+      "recordedAt": "2026-11-18T11:57:38Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-4ed2c14061c5.log",
-      "logSha256": "d2e10bbae40c45e25092763ccea7b6f90be4b426998fa117378a831a85496a3e",
-      "inputsHash": "4d142d5666422d651197b5aa7e2d6a3e8de220e3e55f95ce37cfd932738aa317"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-9571a32e8586.log",
+      "logSha256": "0481f34807c31b5d2fe636db6803f71747f4f38c9cc2c50e461ec06353fbd06f",
+      "inputsHash": "55d9d981568a963d0fc46ceb207eac6d5686f617f2c3af9738bc534fd50f3e7b"
     },
     "final/c-contract-macro/final": {
       "checkId": "c-contract-macro",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "b20569f1b50297dfa8df2beac5d0a5e78674ec6eb7f12d27a7d713833ed4aee9",
-      "basisHash": "f64902369016326d7d3ca158e227fd273456bd3e8bce4b902d7de0d7f136311a",
+      "basisHash": "aef4f15ece64eb31bece671e263f623c81c743799bd0e647191849a0178f707e",
       "status": "passed",
       "exitCode": 0,
       "testCount": 9,
-      "durationSeconds": 1.1844,
-      "recordedAt": "2026-11-18T06:12:48Z",
+      "durationSeconds": 0.9675,
+      "recordedAt": "2026-11-18T11:57:39Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-f3c59d8bd5cb.log",
-      "logSha256": "1835ad1f01b4770be812c5e2a9cfa6b00a0cc0e94f80b8f2e495d9c29b5af8c8",
-      "inputsHash": "ee4d1391fc51a00a540b700eadc837cb72d4a22682aa8e7b7dca9984366b544f"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-ef4640c9b6ab.log",
+      "logSha256": "d165555b009fe3a5e0464c26d0fd4df4744d8080e76003ed4f95a8e8cb4ac501",
+      "inputsHash": "98ec9e6bd17290459cbbd9c5a6410168056d326c40fb15d17da6ca658e998177"
     },
     "final/c-contract-kinds/final": {
       "checkId": "c-contract-kinds",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "17ed1c72531e57ccb004ffa6396d8e842bd4d98860efcd1dbd2dc95a918b5e72",
-      "basisHash": "50655af47288c0f43b5a7526a39194d20597e73966259a459587cd97d21a4496",
+      "basisHash": "607e31a4eb42ea20e62e075a6e4c1bb0626c4ad35720dbcfbd8a18e6ae0246cd",
       "status": "passed",
       "exitCode": 0,
       "testCount": 14,
-      "durationSeconds": 0.9181,
-      "recordedAt": "2026-11-18T06:12:49Z",
+      "durationSeconds": 0.7488,
+      "recordedAt": "2026-11-18T11:57:40Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-e977689d953c.log",
-      "logSha256": "5b73fec7d51c829c055115b9c255f1e36ec0bf86c300f360db902b9c7b156737",
-      "inputsHash": "d6b9a878d203ae998197350114c8e2fc6b574292a110e7135e03c35e62ef9b97"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-b21602111cc7.log",
+      "logSha256": "1164e55aad1624aa4bc94512d0b636294871ce36a57e717595bf4e6201731f78",
+      "inputsHash": "abd665dbaa99fb2ff213de49042b130779cb2c652e28836ba5adc47b995429fb"
     },
     "final/c-contracts-any-thread/final": {
       "checkId": "c-contracts-any-thread",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "827c8df78b79beaeb6182ec40e9f1f4973280582fed6794b2c90f2654eedb372",
-      "basisHash": "ce34add9d6f9858c43c136e0de5e4eef1c7092aa02bd536a9c432247e6738608",
+      "basisHash": "0cdaea23c58529178f0e0248e3d1fec73deddd9683e03651182a6a935ab7720f",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 0.3749,
-      "recordedAt": "2026-11-18T06:12:50Z",
+      "durationSeconds": 0.3486,
+      "recordedAt": "2026-11-18T11:57:40Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-7d7e2ba0e5a7.log",
-      "logSha256": "3efbac3b34a8da00e1e2c93242ad4e9c20eb5a980db1c851cc8d7575295ad6c0",
-      "inputsHash": "2d6969a40d2051979c086498d458f92d870e40944ee63f08c0cd3c9551386cee"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-74c1dc61d03e.log",
+      "logSha256": "1cf630db782de944661a77f8551e8a216f303a4e73d473dbbf1adfeec37d988b",
+      "inputsHash": "58dc392498a01867e15fe974e792e40ba48375f004d5ba7015a5677084085394"
     },
     "final/c-engine-runner/final": {
       "checkId": "c-engine-runner",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "56fd0fead510e6f3a4cc631940f9fd8016776e6cfeb878a007485fb91308d5c9",
-      "basisHash": "9d5f2690b8411127cc94e1b598bed186219f5c7254e527a58cd292560c026f7a",
+      "basisHash": "d32af2bcad7325bc1646da042c4403161c56ff48ede30a1d185714c3d1dcf193",
       "status": "passed",
       "exitCode": 0,
       "testCount": 1,
-      "durationSeconds": 0.6116,
-      "recordedAt": "2026-11-18T06:12:50Z",
+      "durationSeconds": 0.6015,
+      "recordedAt": "2026-11-18T11:57:41Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-3e9e71b3deb1.log",
-      "logSha256": "babc5b5cbff2c7bab0552674a52631bbdb7d46e4ea93f3927c12906d41712f0c",
-      "inputsHash": "4f1a55493dfc94e748b9d37485b2d508457b2dac47fede323c944d8714faa4bc"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-904d318eba0c.log",
+      "logSha256": "b77b4a6ec9eb0649b61a30e6471fda8d9714dac856124dc891ebd472f10076ef",
+      "inputsHash": "9f6c2b9582adb7e4dd90f3a661f6153e435daae05dfb016f275fa9be43552ec4"
     },
     "final/c-di-validation/final": {
       "checkId": "c-di-validation",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "3f6a9e2a3c53cb35150b24db2437124b4027b8ef719686ced4bff0f2986d3707",
-      "basisHash": "3db8d1ebdab37f72227f41dcabf3228b57e3fb69d50c5afe25921b337b8b15ff",
+      "basisHash": "2c507d3c56baaf09044a142df89e0006171295be02949c6867c4220368f373be",
       "status": "passed",
       "exitCode": 0,
       "testCount": 9,
-      "durationSeconds": 0.9331,
-      "recordedAt": "2026-11-18T06:12:51Z",
+      "durationSeconds": 0.7133,
+      "recordedAt": "2026-11-18T11:57:41Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-c04747a5f8eb.log",
-      "logSha256": "e0c1d730ded22ccca99f00445645d15080a18d7f1e81ae995a394cf79d4373b1",
-      "inputsHash": "7a15dd8eb8b4cae738e2ba751bffe39db16ecd27fbbf68fe47416c22844f004c"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-685faf2e1b85.log",
+      "logSha256": "9b49bd95da834cedf066256b353aacde3e813df48e03a6a5d86f852bd7d7e0d6",
+      "inputsHash": "dd0eb7472100d50c4088fd0b3f70efabab8b531a57c2ff17f5dcf32d56f427d7"
     },
     "final/c-contract-tokens/final": {
       "checkId": "c-contract-tokens",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "77e43e6c7aaabd616b0930a046f4f9fca602d6cbbd3d4a08be7396e92bc90851",
-      "basisHash": "697732cbb483f32339085511ddd0a3d6beac30db728c1d6011d1312225e20cbf",
+      "basisHash": "d0b01eebaa4f5a63009afdbf67391758a889b8a48e215951f3a05111d6192539",
       "status": "passed",
       "exitCode": 0,
       "testCount": 5,
-      "durationSeconds": 0.6181,
-      "recordedAt": "2026-11-18T06:12:52Z",
+      "durationSeconds": 0.4431,
+      "recordedAt": "2026-11-18T11:57:42Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-522591c3bea3.log",
-      "logSha256": "b9d7dc4cc46d3a71d49275f19ac2d1fb9b03d015170cce39c39adcf166ad0a2e",
-      "inputsHash": "cda8fe944bf37942fec1f5d1ea5eb5749039782ce11d3eeed46e4c6c709bb064"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-803e521d7e66.log",
+      "logSha256": "4d5d1c37c45a1357ea33071da5841be581bd89da3a6cea33664e05e306b3a3db",
+      "inputsHash": "2d72ea16c109484998d907cb36098740bfa3ba1f93c0cf35072a301f8e5b59e7"
     },
     "final/c-host-hooks/final": {
       "checkId": "c-host-hooks",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "01746000950ba5a82fa65937102aaad4fea5b379ad19bef119b2b8c73e285aea",
-      "basisHash": "4460555604551f64899f2a4b6ba00972e8bd90c719f3f2075b1c603e6b69949d",
+      "basisHash": "75fa2ec9732ca87353fdf3fb52ef1ea095a3417823ca7797c6059ff1b62cbea5",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 0.6667,
-      "recordedAt": "2026-11-18T06:12:53Z",
+      "durationSeconds": 9.6997,
+      "recordedAt": "2026-11-18T11:57:52Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-1bdacc3f8da9.log",
-      "logSha256": "84cad978f367fb4df61c4a661855e29aae7943eb001495fe1210c8a2041ff45b",
-      "inputsHash": "f4dd2e1b36aece8f7f759fad9ff2452a8d06e0a37ddc3c0c9da542f945fc7220"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-cb4b93c54ddb.log",
+      "logSha256": "d899daa0efb6fc70eb3c20aa7b5b7801c5ba5edfed85d86e31551428d22a1fd8",
+      "inputsHash": "9921a2d34457759fc728632965274967b5118829cdd929a42c0ef8647b494bb3"
     },
     "final/c-app-extension-methods/final": {
       "checkId": "c-app-extension-methods",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "66591b8023bb6760636151fc36537d2601bce31bd56c69aae31ce7d4fdfcc25f",
-      "basisHash": "8399b7f5d28a0596d5555c5a2bef3fa3dac30fadb2b1587056a64cf7845983bb",
+      "basisHash": "2cf9cf2885ec71c4883fe01f530a46f967d19901dd8d9184eed1042690ccf3ee",
       "status": "passed",
       "exitCode": 0,
       "testCount": 6,
-      "durationSeconds": 0.6267,
-      "recordedAt": "2026-11-18T06:12:53Z",
+      "durationSeconds": 0.7295,
+      "recordedAt": "2026-11-18T11:57:52Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-1aa56e2815a3.log",
-      "logSha256": "f091928f33689656edbde8773fe62197922414b147f92fe977a555de1e6ede46",
-      "inputsHash": "d92b148aaee2fd8d30fa4cae4dc54e3f2123b2441dafc9754403dd93f997ef73"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-54c6c3c053af.log",
+      "logSha256": "4dadb2112dd0611bcd1a9ac429ba14dea444313bef1931403b3ea41e0f740917",
+      "inputsHash": "e4574a86cb5267fc0574b2871d8c2d0686694f64eb388370948e9b3e9f6991a3"
     },
     "final/c-app-extension-umbrella/final": {
       "checkId": "c-app-extension-umbrella",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "f091105e7e6f901f38dbd89f6a83e752226ff7c543012bf95b5ef2e9a5724688",
-      "basisHash": "27f774e871726925cd77362bba32edcf140d3189785f8aaaf5f6c5e300fc993e",
+      "basisHash": "a0848db0c304654ba5d69a704abdfa8649332f5ffda3917255d1f4405b049cca",
       "status": "passed",
       "exitCode": 0,
       "testCount": 10,
-      "durationSeconds": 11.1362,
-      "recordedAt": "2026-11-18T06:13:04Z",
+      "durationSeconds": 9.4563,
+      "recordedAt": "2026-11-18T11:58:02Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-61890e800f01.log",
-      "logSha256": "1c5799fc31fbef6e4f13982310e883df68a7fb24461009e21d54695200e06257",
-      "inputsHash": "080205c5e48df8987f6da0d8cc3bc585a8590c98028323912b58e6de5fdf96e1"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-e2fdabf39ed0.log",
+      "logSha256": "07ccd9dbfbd171e865546f652c7c0cc67f541df808c6811f00d0182ec579f0a6",
+      "inputsHash": "f47e857214d8b54febea9660a99df9d1eb5bdbf626be2aa606baf00ee13fd0f7"
     },
     "final/c-required-services/final": {
       "checkId": "c-required-services",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "d274bc31781aae26c24e02c47b6c8b30aa5dc1933d030d8fede3dc40e53d914d",
-      "basisHash": "493b9c26ceeb69f0973e320affcfc4787902dbffa4611e6d8f8568b442d9bd4e",
+      "basisHash": "14c72f565e399c773ed0b0fd0c4a9085fb8ac1a6c5d618e740958490572ccffd",
       "status": "passed",
       "exitCode": 0,
       "testCount": 6,
-      "durationSeconds": 0.4213,
-      "recordedAt": "2026-11-18T06:13:05Z",
+      "durationSeconds": 0.4265,
+      "recordedAt": "2026-11-18T11:58:02Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-d23e150f7e49.log",
-      "logSha256": "56b088b74e21f1bd9cd31d912a7a9af28733b70daa3045d85f2c04c47f893489",
-      "inputsHash": "d5f3425aa99d702de2dee8146d7fc06afcf6db8f84d02224554e8aa442853ada"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-3658289b8ff4.log",
+      "logSha256": "e8daa4e6cd030ac747d041dbf4727032d0ae59756e002b9e8ff9b8a5423f2e5d",
+      "inputsHash": "38b1275b75fdc45e1233e3377461cf2cab19b89eb29c1b116d22891cb2578dae"
     },
     "final/c-host-start/final": {
       "checkId": "c-host-start",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "c48279dd5b667d1e6abf2fb12ccf9ee9809ae37dad0128345faf5d090f84541e",
-      "basisHash": "8963a00b236ec248d670d3c350e00030389fdcfda3303f2f6bd8576dcf96b69f",
+      "basisHash": "096f9cdcb43a8b92fdf50693a49a5b96d10a55f8e99672ee0e018ae19fff78d5",
       "status": "passed",
       "exitCode": 0,
       "testCount": 15,
-      "durationSeconds": 1.0902,
-      "recordedAt": "2026-11-18T06:13:06Z",
+      "durationSeconds": 1.0759,
+      "recordedAt": "2026-11-18T11:58:03Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-73d28a185292.log",
-      "logSha256": "cb2c87635e8bf498256a680395e1e0be52d348d5124df5e26a79ec1d0e65dbb0",
-      "inputsHash": "634ca64ce5ca16f78ef1f1d86b1bd00ea587cc9877ed7b41c7156ab28fb96672"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-70660f13c5a5.log",
+      "logSha256": "0eba1602018fe3b13f300d1b0ce46cd46ce807f13e205a2f04853d768dc2eebe",
+      "inputsHash": "c01d31b0029216a517eff9123799fb3c987eb6898a8249a369fb6754d4b0c489"
     },
     "final/c-svc-mandatory/final": {
       "checkId": "c-svc-mandatory",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "8442b48a41dcacf8d267fd0f9127674ae2a98722c0c38c1ab0034261007aa098",
-      "basisHash": "bcec6253ad4c9a03eb6c64049e01a505fa78f82977fd4de41472a15f677280c1",
+      "basisHash": "ca2da19e6b1fcc19f097defca4dda3f63866b76b1efa46577f05970ee5348a2c",
       "status": "passed",
       "exitCode": 0,
       "testCount": 80,
-      "durationSeconds": 28.8445,
-      "recordedAt": "2026-11-18T06:13:35Z",
+      "durationSeconds": 79.739,
+      "recordedAt": "2026-11-18T11:59:23Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-76f0fe252534.log",
-      "logSha256": "4565254090cb1348f884f226b0ca48d71c6d70f32db0391cd6510e43b29b17f6",
-      "inputsHash": "8a5b21e17edc99ae7f8bdfac36d730238283ef3ecb1828d2cd7f9631e3df447f"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-92c857c4f2e1.log",
+      "logSha256": "2e965b20cb61d6863c97abaab3e8751fad42be14b5b4173766b64915ed8d308d",
+      "inputsHash": "51edbc57d709f4ed0921331e5626540e4dcf0eca16b48e7aa1e4243f0bc70ab2"
     },
     "final/c-svc-storage-navigation/final": {
       "checkId": "c-svc-storage-navigation",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "1015ae3a5f26ca90076a70b5728fe2b8c352db26c16089600444e0b16bc829fa",
-      "basisHash": "132bb27d89bcce46e021d35142c0e4ac87350ef55b60ed6d84562ff6a14dce7f",
+      "basisHash": "7717be709fd871742397c5b47afe1fc1efd5e6c902a80d6ed8af1419b2ea0ecc",
       "status": "passed",
       "exitCode": 0,
       "testCount": 73,
-      "durationSeconds": 8.0145,
-      "recordedAt": "2026-11-18T06:13:43Z",
+      "durationSeconds": 48.6749,
+      "recordedAt": "2026-11-18T12:00:12Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-08df58a94749.log",
-      "logSha256": "40cbe8e3f36c6d009435d3c8d0490f8101eeb0bb100ca7a6ce2f6b1c6592dfec",
-      "inputsHash": "b3788ab36a9180c5e692d81ef73c023ca8213d45c8180384bb795d7214fbfd05"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-8124647e5677.log",
+      "logSha256": "d1ff28b1a38124b4ca136ed94cf0c92290865aa7d84b618042abe8f40c00a6e5",
+      "inputsHash": "1a6a4666a9846fdf1739471364f3f5b92c98ea92ff2d26b6fbb02da52f28aad8"
     },
     "final/c-svc-i18n/final": {
       "checkId": "c-svc-i18n",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "066f551a2908f214983850f85d6c140e42d59cb8659b84c69970c3f4b81c6c96",
-      "basisHash": "a3e5a6e64d28b6411e139bfe528d23855a4255a56d1f52ed9e459f8ec9ac0068",
+      "basisHash": "ad267e766caf31bd047f691a9fe2c01719507bb48f17c5adcc0f1034861003f1",
       "status": "passed",
       "exitCode": 0,
       "testCount": 34,
-      "durationSeconds": 46.1967,
-      "recordedAt": "2026-11-18T06:14:29Z",
+      "durationSeconds": 91.66,
+      "recordedAt": "2026-11-18T12:01:43Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-76484d6d3fdc.log",
-      "logSha256": "def106ebf052d7093e652edef3340805c722d8eaae3dba60beaad138e75b2b2e",
-      "inputsHash": "bfac0fc78780f8ee7ae61adbf06c1ddcd8a764e966b09bc5eb6f29bf0e536fb1"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-3f4907f19854.log",
+      "logSha256": "a2008130d975ed52ed4c89012d1d1d1978bca90ffc5810604f22786ca4e23783",
+      "inputsHash": "d1b5f4a6b4fb53a54d1c60472b73060efe4ce4db4b30a021e6abc71803126df6"
     },
     "final/c-svc-ops-history-selection/final": {
       "checkId": "c-svc-ops-history-selection",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "310777690b89d1222c04425b3b9a9010e773e531761c9f2da5fe3055605a07ce",
-      "basisHash": "b1a5090fc3ac0f3775ea4cf34e283ac78b068a4daa78b74ebd2e6db219f12857",
+      "basisHash": "589a69f367155460b0da47937929dbdb724aba273716f5d1c51f59e6f22be5d6",
       "status": "passed",
       "exitCode": 0,
       "testCount": 118,
-      "durationSeconds": 60.272,
-      "recordedAt": "2026-11-18T06:15:29Z",
+      "durationSeconds": 64.3304,
+      "recordedAt": "2026-11-18T12:02:48Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-16a68a650726.log",
-      "logSha256": "00c90dfd1a8e9d409d28d5c6cd078e893af13adfddc8e28622af7c69bff226d1",
-      "inputsHash": "642a5a15f9062dd8df91b9f4f87114d0b10b0811a684b8d5fb48be6a28a554ad"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-82647a2015ad.log",
+      "logSha256": "b3e0dae943d47adbae410a6c0024b29e9729862c79580230cdb54d667f335385",
+      "inputsHash": "94545aa652bf7b98dec8aadf4f99e4364ab93c07660b9b2900388e645534d5d6"
     },
     "final/c-svc-input-config/final": {
       "checkId": "c-svc-input-config",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "e89202ccd22a68c1cf9682a52a791536a341b6e18021925371b95e66bb1eb3ea",
-      "basisHash": "308e79ab255222795248ece2df52879b0d4e8d23c53d95ec8f9cbe265c8d814e",
+      "basisHash": "1e1a9a810364311af7c1eecfc7a30022f6559278ecc6194027789ca46f13c491",
       "status": "passed",
       "exitCode": 0,
       "testCount": 42,
-      "durationSeconds": 25.5535,
-      "recordedAt": "2026-11-18T06:15:55Z",
+      "durationSeconds": 27.9135,
+      "recordedAt": "2026-11-18T12:03:16Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-f86c636f04a9.log",
-      "logSha256": "1fb2ec2ac47cd2cb2e2169939967ae00cbba7d75fafe1081d95cdc9f8972463a",
-      "inputsHash": "19762b3e8b5609f103d5a54ab8a9d63fe80cd75e6ff0985942adfd5ec08b663b"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-661b8b284643.log",
+      "logSha256": "a4454cf77df22d9f93758c1f337173c1ba742bd6f11f35392e19187306f3b4c4",
+      "inputsHash": "cdbab3ce81667636fb272815a9f6d12b11b79274356e70e2a9918eebb5f9b2b8"
     },
     "final/c-crate-rules/final": {
       "checkId": "c-crate-rules",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "90e862c68d802c5ed8bdfa95733a575629db00e416b5696c60da1727e0f388c6",
-      "basisHash": "4557094122f9441597ea3fc3d1c718d413e3cb0700012890b2ceb54fe70a9951",
+      "basisHash": "2c3e20e7211f41614c3cf6456ae8b482c22519e6fd428acc12a0f16f9c177fda",
       "status": "passed",
       "exitCode": 0,
       "testCount": 9,
-      "durationSeconds": 8.2833,
-      "recordedAt": "2026-11-18T06:15:55Z",
+      "durationSeconds": 69.3483,
+      "recordedAt": "2026-11-18T12:03:16Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-3e2634e1cfb4.log",
-      "logSha256": "7928c064d672922355a3bc45af08329a3debb1183dfe6e69eafc89e75f31287f",
-      "inputsHash": "bc10e553cd4245e7d69865a8f43e184579bed26e705dd97354d4a54b40601802"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-7fdd8e0b4b5b.log",
+      "logSha256": "c4273a536be05b3bb371aa5246e204cb1ba11eeca49d90ea67b03765bdb7be4a",
+      "inputsHash": "3084f29288405cf0e309543a892cff29458a159eddbab06f74be9f1618c41387"
     },
     "final/c-testing-fakes/final": {
       "checkId": "c-testing-fakes",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "2f75de67ca7c1ce49213b9508197d6d84e295ae322ae31126188abb14a299ec7",
-      "basisHash": "3295d6afa811694081c128b189766304f6b2d1fd7ed12abc9706757a2f0cd65c",
+      "basisHash": "f57ea7224e83a739be2b75a83273f72aab1884d3e1497b2cbb8b9434d8d2a0f8",
       "status": "passed",
       "exitCode": 0,
       "testCount": 28,
-      "durationSeconds": 2.9426,
-      "recordedAt": "2026-11-18T06:15:58Z",
+      "durationSeconds": 2.3508,
+      "recordedAt": "2026-11-18T12:03:18Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-8d3984f5d884.log",
-      "logSha256": "df9771b54ce73980e4886e07cbcae2315cb7c2665a22c1f70cf1e90fae72c12b",
-      "inputsHash": "f92ca6a0e4caf16bf966647643520072ce95ef1c742afd7793d6210dc501d239"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-076ed94d3152.log",
+      "logSha256": "aaf6c82f6fc6fb85fe641ac7169ffea26d9bb1e61487f1daf45381bd44ddb3cf",
+      "inputsHash": "854c8238c9e7b0c8b3d89551500d036d099bf1cd8cd38eec66a9b90c9b021d56"
     },
     "final/c-service-replacement/final": {
       "checkId": "c-service-replacement",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "b638642f8b920bcfdd78da67c421ea26f9fd1c15503c686fadc7aeb8c8d0bc2a",
-      "basisHash": "6ab0491652abf1865a419be1a3dbcf81c2894b7275f31f4d926b0e3fbe3d3116",
+      "basisHash": "82c6ec7323239bfc4d058c22d861cd4e10541998b3155ebfe01be88e86b5dff2",
       "status": "passed",
       "exitCode": 0,
       "testCount": 10,
-      "durationSeconds": 0.6503,
-      "recordedAt": "2026-11-18T06:15:59Z",
+      "durationSeconds": 36.7462,
+      "recordedAt": "2026-11-18T12:03:55Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-d4eee4d25412.log",
-      "logSha256": "987b1f36dc186bdfa43f3ff2f3c80c46543760075eb5e00973a3242f06f19eb3",
-      "inputsHash": "29d9d6438ff27ba21e2d5ee1f9260400f15a4972909427089ab81e50bb9ffac1"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-ce51fb6b3eff.log",
+      "logSha256": "16f6c246052cb380cc1be5d973e9e6dd1deabec3ecc2aa1f4cc5c27ba4619fc2",
+      "inputsHash": "3c3f269c760748f923f9a00d56031aff37bf22b020d069e8392598f2dad54ee2"
     },
     "final/c-ts-contracts/final": {
       "checkId": "c-ts-contracts",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "3dde3cce3e4eb99ade884a766fd3633db5dfc2d9747110449974f77b47622446",
-      "basisHash": "54e451bb66fff1fe992637ef5fb63bb13aac0e797115676d3eb97f325c0e7eb3",
+      "basisHash": "2a28892264cada2d2bb589bde111acd8109579a2a950c16547156313b0b18f55",
       "status": "passed",
       "exitCode": 0,
       "testCount": 17,
-      "durationSeconds": 0.7717,
-      "recordedAt": "2026-11-18T06:15:59Z",
+      "durationSeconds": 8.9983,
+      "recordedAt": "2026-11-18T12:04:04Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-7cabc9bf6c95.log",
-      "logSha256": "1f7e95997e779d6a544c7f7ae78035c2e342ae7a268a95d16c1cad97cb4629b1",
-      "inputsHash": "02ff4675d25f2626fadd31c1c1713e4f40523fcffc137d0fc2d4cc27efb48d96"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-215a2c9b8aad.log",
+      "logSha256": "d7927220bf2f569177b9932cbb1ef03997941246934fca74de2625279e99ede9",
+      "inputsHash": "df061166f20d6020067700cad57c0f591382151de8b1d891eb85159f3bfefb9e"
     },
     "final/c-umbrella-features/final": {
       "checkId": "c-umbrella-features",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "b2c39e95297a9165216969a6ebfa2a71352bdd35d86ecde72f97d3231722be50",
-      "basisHash": "6effdd11ec0a691f3e9d590bc70b18790641432b643259a466013b4660893158",
+      "basisHash": "171bbc3ad71b76142aef8bc067613b39e89f0d6395d1841312ed7cd75724cae9",
       "status": "passed",
       "exitCode": 0,
       "testCount": 18,
-      "durationSeconds": 5.4234,
-      "recordedAt": "2026-11-18T06:16:05Z",
+      "durationSeconds": 5.3038,
+      "recordedAt": "2026-11-18T12:04:09Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-d93bf352c68c.log",
-      "logSha256": "a3b37ab77dd9426604811a05ffb977b119e25137a64bba663d350bd99a432033",
-      "inputsHash": "a0694ec1a49b716cd990ceb1240aea852880646b98420af2818352efaa793602"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-1707ce652362.log",
+      "logSha256": "577f99ecf7f68f2645592ac8191430442ba91922ecf266a5d68de8866e780aa3",
+      "inputsHash": "01e7eec65acb4b1044760f7e1c328b1adada41fd97482beea50cf6879521cbc8"
     },
     "final/c-umbrella-all-features/final": {
       "checkId": "c-umbrella-all-features",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "507d7d3bdd70f8accc9f8e105c84663022523ac719ae051cd4f116cd188ceda5",
-      "basisHash": "b680225d508a1702dc0695838fd47b31cff8de96aeb4888421c36907ee968269",
+      "basisHash": "166e6273b7702d47982358fa954ef04457b4574fe6e10053391db8f0c4f9ce8c",
       "status": "passed",
       "exitCode": 0,
       "testCount": 10,
-      "durationSeconds": 11.0709,
-      "recordedAt": "2026-11-18T06:16:16Z",
+      "durationSeconds": 10.4585,
+      "recordedAt": "2026-11-18T12:04:20Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-2b7b4a770f01.log",
-      "logSha256": "279e981f59993835e1d4b1837cf5f2e92332502cce69a898e1dc9ddf5ba59d6d",
-      "inputsHash": "a0694ec1a49b716cd990ceb1240aea852880646b98420af2818352efaa793602"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-9d8736a72ce2.log",
+      "logSha256": "4ad50cd7801fca9e73496a5793cd8b5c816167c0452d872f8cd2d1b3083ca5f2",
+      "inputsHash": "01e7eec65acb4b1044760f7e1c328b1adada41fd97482beea50cf6879521cbc8"
     },
     "final/c-new-app-services/final": {
       "checkId": "c-new-app-services",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "daee9b8c5912ce638ec1357b50f9bcc4c3199c8e86afb252b5f309d147c79d2a",
-      "basisHash": "00f18728af9a5fe6758a63c855523fa5a53d05dfa0bc38a88d8890f1287c37f1",
+      "basisHash": "7db31b5e91208b67f290691a0cd4bad8c5660c1657d6ad2638fc37b5348ba671",
       "status": "passed",
       "exitCode": 0,
       "testCount": 39,
-      "durationSeconds": 5.183,
-      "recordedAt": "2026-11-18T06:16:21Z",
+      "durationSeconds": 4.0473,
+      "recordedAt": "2026-11-18T12:04:24Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-7262302f4d66.log",
-      "logSha256": "b95ceb92ca96c594046d86c02884f63dae86b2173f5b69c19d1a84db5266d8d0",
-      "inputsHash": "030c6a8d79c0979502336d1edeb578b620ab3dac4b95a21b851470631c8d121a"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-9f5257b6c997.log",
+      "logSha256": "8b23a72bc43c6dfa90e618734a36d10c945cdb1c7a1ded8c634365b6f55ab44f",
+      "inputsHash": "32f58ce7a35b2ce4b8ee72353e650cd89228d1d3fd71abace7e017186c548ab8"
     },
     "final/c-gallery/final": {
       "checkId": "c-gallery",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "d92351de9aff635a09df805b6430a48ce9f62edd6a60ec0dea5db9608cbba1b2",
-      "basisHash": "df024cf5c6927f9ada3a6b2aab9751e4ede15c9a93c7b3805b350377fd524d49",
+      "basisHash": "d8ea2897d4036c2967184bbcc8cb1d651278162624bddbeccb0594843f0a5237",
       "status": "passed",
       "exitCode": 0,
       "testCount": 5,
-      "durationSeconds": 37.8973,
-      "recordedAt": "2026-11-18T06:16:59Z",
+      "durationSeconds": 39.1771,
+      "recordedAt": "2026-11-18T12:05:03Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-1d9758e0e2cd.log",
-      "logSha256": "797af72275c470b62d34fffc19ee094f0be103752d189815f36c10674ac787dc",
-      "inputsHash": "bf095841d9ecac05f7ba8dcee26dfc7f9b1f319a3909bb1c07e3cb2e8343c394"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-2e4ca580185c.log",
+      "logSha256": "22dfbbc431d7eef569174a637736a5cbed89afdbe5990b8683cc5026635075e8",
+      "inputsHash": "cfef6fc4982ecdec5409c0bfb12bfc885d259a8c8fb41f308b2590344e438f2e"
     },
     "final/c-no-old-names/final": {
       "checkId": "c-no-old-names",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "8beb87b225717f5f6cc05e4ebc1685c88a56d2a6ec7b5944e8f080be9832c899",
-      "basisHash": "5e5388c0deff9ec0b3b47042993d1f145437316ef1222d6598681871ae88158e",
+      "basisHash": "6213d47c47f84ab98cd20fd238363d1ff09b92414dd02ed0e97aba21318daa08",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.0663,
-      "recordedAt": "2026-11-18T06:04:32Z",
+      "durationSeconds": 0.1128,
+      "recordedAt": "2026-11-18T12:05:03Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-d146c8c7c05a.log",
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-562e751152da.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "inputsHash": "4c3fdcea442ce158ae8c860ddedbc5047e284ee0b6f984f5ee5ed4236819c43d"
+      "inputsHash": "7e3f30ae04f49c5f6b018fc3ebe87343987030eaa85642b3eb75f756ba0fe3bc"
     },
     "final/c-no-old-names-root/final": {
       "checkId": "c-no-old-names-root",
@@ -1775,186 +1785,186 @@
       "checkId": "c-plain-startup-dependency",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "9929c9d6ae8bd7c11850ccc77f588c034ca9c1c31cba39cc65a0791ee61200ac",
-      "basisHash": "44c0cd15f9d69014b066d63dacdc756669df99e01dcca0be9508ffaabad13e2c",
+      "basisHash": "5afbdb64172fa00eb5ba95545f0c2e0e002ffed1550abec34d05d5b604788f1c",
       "status": "passed",
       "exitCode": 0,
       "testCount": 3,
-      "durationSeconds": 1.3064,
-      "recordedAt": "2026-11-18T06:17:00Z",
+      "durationSeconds": 1.0941,
+      "recordedAt": "2026-11-18T12:05:04Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-6de1e6ede0a1.log",
-      "logSha256": "46ec933cfd1c0d1bd6d58b74ebbea7544669e131747c820b079a5b516b88f8c1",
-      "inputsHash": "3e363b0c85770ba255871e3ea314879f4e396f949745ddaf6d351d50b9d1915d"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-437abe7fc53f.log",
+      "logSha256": "f5ea24bf07e6fdcb37a342904758f12f9039ee47bdb3cd4a4929379372f86a89",
+      "inputsHash": "09ce25802bd4fa2391f5c7a8c5bcdc2b94bcf2204ea4b1b5dd992be24adf8cfb"
     },
     "final/c-contract-bytes/final": {
       "checkId": "c-contract-bytes",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "1c6aca5a300467691fef08bb218af92b27ff4c20570ebe5db9df0a86d72e6a46",
-      "basisHash": "347aa24a356e6e258fb8534fb555b10c2c60724810e4286ed0fcc49bc37cf401",
+      "basisHash": "ba73ddcb569e2fb5f433e3cbea409733a7c4f66531f46369f53caae95384a009",
       "status": "passed",
       "exitCode": 0,
       "testCount": 2,
-      "durationSeconds": 0.6719,
-      "recordedAt": "2026-11-18T06:17:01Z",
+      "durationSeconds": 0.649,
+      "recordedAt": "2026-11-18T12:05:05Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-4b93d65c83d0.log",
-      "logSha256": "a762fa405f8743ecaff8a9a918c60d8943dc576a0b2dc4b7cac1eb8dd99fff6e",
-      "inputsHash": "76d90558993e8db8f62770523304ef501905e8b0f572bd88ba66e9989c56e411"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-4c7e36f94968.log",
+      "logSha256": "579b6ec5d5cf4c899f751a5882cd1d6c1568e83a0dcecdcd45ef0dcfa32d2877",
+      "inputsHash": "560c3183d388ede1ef9bc9aa50788f0500293f568dc9bba80b131ad74efb5767"
     },
     "final/c-gaps-core/final": {
       "checkId": "c-gaps-core",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "a7c4553aded74bc271ebe157f97d9d0996cfbdd2e0b71f10554c9f760371d45f",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "4c9fda0a38b8fcb4a809392489db0aa27c546dfb660bf3a9092e5aeb9bdbe0d4",
-      "basisHash": "aef93bfb871b1df353cc6961e2351ebb0869dcf2f5967c864d7abbc6ec392879",
+      "basisHash": "aad8f622a312b68c47b5fee06aaeb5a887843de97227700ffd45777a87d14d05",
       "status": "passed",
       "exitCode": 0,
       "testCount": 21,
-      "durationSeconds": 0.3028,
-      "recordedAt": "2026-11-18T05:23:46Z",
+      "durationSeconds": 1.8926,
+      "recordedAt": "2026-11-18T12:05:07Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-03911fddc46b.log",
-      "logSha256": "c9f0b2484c1984161ba069d5600f90b8ec4afd32a050695044d595af44441929",
-      "inputsHash": "a26dd589aa5a288e286736c95dd55e074fcef1690217f85129bf31a7e0ca5ff1"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-01a94d579a77.log",
+      "logSha256": "0cb6fa8d78e32f3a9745053fc2d34b43d26a079c5eb1b3b8c1b7acc2ecafbbd0",
+      "inputsHash": "9844572d157e43142a2d7abe2ae6834c1b9258f357aa4183b12c3caa72201ce9"
     },
     "final/c-gaps-host/final": {
       "checkId": "c-gaps-host",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "a938efab577274c61782d478996b0028ea857aef7403c43da86518f6a4df1cb6",
-      "basisHash": "65aae5dac9dfb6944ac42a92af3f3a220083a21675ba46ff4589e4f48600f353",
+      "basisHash": "4e10f092825b486e3f2bcc8a5034bdcd92aefdb478e3036470b9fc48fa890e7f",
       "status": "passed",
       "exitCode": 0,
       "testCount": 1,
-      "durationSeconds": 2.8662,
-      "recordedAt": "2026-11-18T06:04:35Z",
+      "durationSeconds": 0.3599,
+      "recordedAt": "2026-11-18T12:05:07Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-6cd8f23fcdb8.log",
-      "logSha256": "be9749bd3ae4c53ac17f98b93a280f6551bee286618b7d4fbb3d4d77858edde2",
-      "inputsHash": "4e21a7fd7878149adcd64df3d5e0af18f1d81662fdc04735142df3349465d1fe"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-625bda868815.log",
+      "logSha256": "429a68f0efabb2168935a1202523e2ddbca41bd3ea9898352d4c9a897f32c2f9",
+      "inputsHash": "e52596a2f825bd7130a4817beaa3e4eecdce49cbb0de0597e08f1e67aca8b662"
     },
     "final/c-gaps-navigation/final": {
       "checkId": "c-gaps-navigation",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "d77cdec3f66f5586282d9d7b94a954ab499b1d957155388b9d3473ea01c1b238",
-      "basisHash": "2cce9a5b129037386734e4127d995445c5dea53c5970b7841e692e48673a4c5e",
+      "basisHash": "810aa50041ea25b5e5cebea6cd3101806325e79ea365fdafcc816a3df0f49540",
       "status": "passed",
       "exitCode": 0,
       "testCount": 1,
-      "durationSeconds": 0.4762,
-      "recordedAt": "2026-11-18T06:04:36Z",
+      "durationSeconds": 0.4512,
+      "recordedAt": "2026-11-18T12:05:07Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-5993073a5eee.log",
-      "logSha256": "44f806331b52d366197f6d51730adcb89a2d5260edca42bf64fdb819deeb21db",
-      "inputsHash": "9adf38d881cc7ef7b95ac8381180e9f81888e4a284c2367b5a08f5969d1aac51"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-9a898a281c5f.log",
+      "logSha256": "b67f8820d9383ad4b7a414e8e6deabcb87cf06c06b287d351d32d801fe666e67",
+      "inputsHash": "3bddc981ea6d93df740477c96de069b50a27a72231a8499d420240f257845e74"
     },
     "final/c-gaps-storage/final": {
       "checkId": "c-gaps-storage",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "a3fa34bc7b11b05069ce604296fa3e6b927b2f239b7723f3206ed06603288240",
-      "basisHash": "ace400d234f46cd5d64e04f7e95d0e54b58f0178a55e969c64e71b1cee4c69c8",
+      "basisHash": "3c81f2ae48173e5f4f77f724ca1603ea6c58b5ac31254aa18f982ed9e24b280c",
       "status": "passed",
       "exitCode": 0,
       "testCount": 2,
-      "durationSeconds": 0.4445,
-      "recordedAt": "2026-11-18T06:04:36Z",
+      "durationSeconds": 0.4535,
+      "recordedAt": "2026-11-18T12:05:08Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-ae34b565a28b.log",
-      "logSha256": "e09a7db6f9f1037ad9722859e8f4198742f9d280d1d8d7fe2979a81980313ef0",
-      "inputsHash": "510675761d49dc36af80972f92b499771d6bf0a0a6ff11e31a13477a6b4b78cf"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-68f66c644f4b.log",
+      "logSha256": "5807f37815f90b4fe9e22d989e0062172e5c9fdc80b5fc103a1014ffe9e1b6f6",
+      "inputsHash": "e868c01dae5f0735d1768a1af7054a7188f280cc198c6f78fd3c8e99d5f9a932"
     },
     "final/c-gaps-history/final": {
       "checkId": "c-gaps-history",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "aaceaf4ecd2de0dace0079ab34f434a0269cb2c938c89d77d3b40001d7bd44d8",
-      "basisHash": "461a3cd8ee8ec789f20d54ddb4e3d0ed3e0fdd95da68693ab10f5e578906168a",
+      "basisHash": "a48b9484c1e31ac8a5998861a811b94053089c6432d2acb3a21d56afe517a537",
       "status": "passed",
       "exitCode": 0,
       "testCount": 6,
-      "durationSeconds": 5.1891,
-      "recordedAt": "2026-11-18T06:04:41Z",
+      "durationSeconds": 0.564,
+      "recordedAt": "2026-11-18T12:05:08Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-f6bbd79b466b.log",
-      "logSha256": "110389c4b66ae57322fec00b696d4479bc48c93c9f9e10b1117a8dc518d54af7",
-      "inputsHash": "79521270e0528f5f376ff6dd48dea5698f55d0836cffe933763f12a7a83f8e5e"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-fd69130481a5.log",
+      "logSha256": "5a7addabedf8adc0507867d18ddf8dc2227cdbe52a4cc44cdf08475f3949199e",
+      "inputsHash": "54e9a4b463a8a3f14a4e9afe16d0fc306eedff88725c8eec6de72d4e5e64bdba"
     },
     "final/c-gaps-umbrella/final": {
       "checkId": "c-gaps-umbrella",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "134b1584e847de2e9101a9b40fe18030fa55d3516099b3a8c3ec95c87a80f432",
-      "basisHash": "cdbf694f3dad46143d880853edecdb7d861e9eeec13c8b8e97a9a3125e41d00d",
+      "basisHash": "6e7564a6d133ec9ad1e33788bba17614136e9c1300c6876d467870b12cc34120",
       "status": "passed",
       "exitCode": 0,
       "testCount": 10,
-      "durationSeconds": 0.4886,
-      "recordedAt": "2026-11-18T06:04:42Z",
+      "durationSeconds": 0.4931,
+      "recordedAt": "2026-11-18T12:05:09Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-8b9c2b231e5c.log",
-      "logSha256": "c6a14ab7e10d451bb21d320c76615ccb325646fee5f580403f75ef53012c9da8",
-      "inputsHash": "01419f1879818bf09e63af52e77520c20a35e47b3c0543791fc71fe83ad13370"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-46106c87ec8a.log",
+      "logSha256": "5211bfc3a54cae8469d8273db49dfccdc98e45159ccb38c757786543cf4827c3",
+      "inputsHash": "0b7ab345bcac6879f84d1320b0c501061b123dba3fbd2def40a9c256d645d1aa"
     },
     "final/c-gaps-ci/final": {
       "checkId": "c-gaps-ci",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "a7c4553aded74bc271ebe157f97d9d0996cfbdd2e0b71f10554c9f760371d45f",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "efae1dbaa39aa23e3360c2e4e1df2597ad0995131f76cd62d8408f2ca26a7411",
-      "basisHash": "9fd9b62fe73277971561199cc5dda3e1ef0d03e68ea0e7e2dd877c379fecc36a",
+      "basisHash": "12d0e5aeec14676db6d365c5e3020ab467b92d2c386dcbfe183ed6dac875d397",
       "status": "passed",
       "exitCode": 0,
       "testCount": 5,
-      "durationSeconds": 0.2829,
-      "recordedAt": "2026-11-18T05:24:04Z",
+      "durationSeconds": 0.2093,
+      "recordedAt": "2026-11-18T12:05:09Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-4a7b8709abaf.log",
-      "logSha256": "9fa92119df7ce305117df22da35fc68561369a8e55bf35f81bd85487a237bd2c",
-      "inputsHash": "0f92ca44cae30e848101429e8fc1e171a781dcce63d49987ee9584fe44f76746"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-675e3e14d973.log",
+      "logSha256": "bebfd7fac49587270c1d62ae0a65b2ba6e4e9a6e2aa29c2443fe8896d87bc60b",
+      "inputsHash": "8565b35bbd8d6f5c10ca7ff3a77c46f200d0b8c06e8c3b53d8a63957f35b5c5f"
     },
     "final/f-fmt/final": {
       "checkId": "f-fmt",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "887c35a24f2e1b81341b993d692452dab0cc8612aecc6a8ea7cdb4ca516fb2f4",
-      "basisHash": "abaa4895f81dd777c1705b29f8880c5a9d2fdd1ce74561625eac582bf3b88dac",
+      "basisHash": "5ae81fb611aa0fe34a9a44e84e595c9fc19d7cc3922ff95e28644353e22cb18e",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.7126,
-      "recordedAt": "2026-11-18T06:17:02Z",
+      "durationSeconds": 0.6679,
+      "recordedAt": "2026-11-18T12:05:10Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-2723cce5fa88.log",
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-4497bfd9daa3.log",
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "final/f-clippy/final": {
       "checkId": "f-clippy",
       "boundaryId": "final",
       "phase": "final",
-      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "batchId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
       "definitionHash": "20b0933a51260d525b665aeb7eb971b4c45e08398750c572bec3befb8576dfa5",
-      "basisHash": "0af8a2a456f02bf31456cb483a3615b0ea0ace261d899b9024d9a1481311ed2c",
+      "basisHash": "c9b385033ec050f85a328c408a4daddaf85ef4295f892a9f3bfd9fa9f0ef89a9",
       "status": "passed",
       "exitCode": 0,
       "testCount": 0,
-      "durationSeconds": 0.7431,
-      "recordedAt": "2026-11-18T06:17:02Z",
+      "durationSeconds": 50.9055,
+      "recordedAt": "2026-11-18T12:06:01Z",
       "messageMarkdown": "Expectation matched",
-      "logPath": "artifacts-temp/agentx/service-crates/final-final-263aa0e3227a.log",
-      "logSha256": "358434368432a659e6ef83039260ed98d88fb244724920ecb3c8d56d7d54a318"
+      "logPath": "artifacts-temp/agentx/service-crates/final-final-08a969d148d6.log",
+      "logSha256": "234efbab077df778804f023517cb7d7b58e3916d120b38d8703a2abccc5b1345"
     }
   },
   "reviews": {
@@ -3572,6 +3582,868 @@
         "S7-F13"
       ],
       "recordedAt": "2026-11-18T06:05:13Z"
+    },
+    "final": {
+      "reviewerId": "claude-final-reviewer-service-crates",
+      "snapshotId": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
+      "criterionIds": [
+        "CRATES-1",
+        "CRATES-2",
+        "CRATES-3",
+        "CRATES-4",
+        "LAYOUT-1",
+        "LAYOUT-2",
+        "CON-1",
+        "CON-2",
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7",
+        "CON-8",
+        "CON-9",
+        "VAL-1",
+        "VAL-2",
+        "VAL-3",
+        "SVC-1",
+        "SVC-2",
+        "SVC-3",
+        "SVC-4",
+        "SVC-5",
+        "SVC-6",
+        "SVC-7",
+        "SVC-8",
+        "SVC-9",
+        "SVC-10",
+        "SVC-11",
+        "UMB-1",
+        "UMB-2",
+        "UMB-3",
+        "DOC-1",
+        "DOC-2",
+        "DOC-3"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-2"
+          ],
+          "sha256": "3a3659c62aff8e6bdee17640c98461903c58b44fd614c43d6dd7a09830f1c31e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-2",
+            "UMB-1"
+          ],
+          "sha256": "68f6ee35dee599823f4901757430dbaedd44de21b073dcd9117ec8bd4bc96e1c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/crate_layout.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-2",
+            "SVC-6"
+          ],
+          "sha256": "de9dacef4c687824372725a916f43d9081e0f82e8efdffd5cf90acab0705b06f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "084c3e39aa548ab1c43e50ee6b1cb40abd2f0e17fd41be99d3b5271dd4d28107"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/macro_paths.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-3"
+          ],
+          "sha256": "b42328c82d7c0508a0a987ac9f082c49aacaa96dc78b3615c58c83bb49cc5e31"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "release-plz.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "bf252f09d1108ae4e540494a9c1094a438fdfc103ace75d0ed94f06edbf71a81"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".github/workflows/ci.yml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4",
+            "SVC-11"
+          ],
+          "sha256": "fe1c2609ce6dcbd8899c3287629732ed0a930642c8b52b332e3c25430a28b2d7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/library_guard.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "281ad010f5044cd406b4b4ab582393102df158d4645191d9019c7a4f2a2bc665"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/ci_workflow.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4",
+            "SVC-11"
+          ],
+          "sha256": "eb6c2e44154ed03f3c753c064593296a51cfc96a1d4e580298b2c165afcc10d9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/release_config.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "89cf6c264cb4772e03dc8e9fcfb0dbc0d0f62a890a2d4af1ddb714d23cac39ea"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "sha256": "db3d8f207dc4d6b7e9296370c3f0f9c356d871b332ecd57baa413b6baca36c7d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "sha256": "6dc327919d4680000ab770638a507aaf4f43f28698a58ffd13d81043fc67557b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/source_layout.rs",
+          "kind": "test",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "sha256": "1eeb96e380ed7ebbc299d79430967a2a2d8d74fa3b455fac82c41d147fea305e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-1",
+            "CON-4",
+            "CON-9"
+          ],
+          "sha256": "fac52c7a1b658a2bba9b25b72b95a719f1bc1a64b513eebc0e47a233ae745fe6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/di/contract_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-2",
+            "CON-3",
+            "CON-4",
+            "CON-6",
+            "CON-9"
+          ],
+          "sha256": "513c26ccf1b4a9e91c16440d86f6b0624808962c1902ed274329b2629dd6d753"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4"
+          ],
+          "sha256": "c6056d9459de2c0345496feedfdb2d93dfb31bca6c6b657926536a3f4268ee7a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-1"
+          ],
+          "sha256": "565b7f3b6bf99382f6f0bd898ac927f07dce97fcba66f0bb3f05e91d93ea9947"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/published.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-5"
+          ],
+          "sha256": "ff2488426ed1d3e1d738cd5d8a223e9d8a4f3258ac2f64fc3dec8667b8a08ca1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/published_values.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-5"
+          ],
+          "sha256": "1ad0b7ea189cb6f3fd6391d3f77c4efe935c1c27fd33c907bf63488b894502c1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-6"
+          ],
+          "sha256": "2a2ae89f52655e6e28c2a725d90b270a2bf63eb9fafa5bea492530ba1363964b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/binding.rs",
+          "kind": "source",
+          "criterionIds": [
+            "CON-7",
+            "CON-8"
+          ],
+          "sha256": "e426cd147552240ea65692ac4d05a26ee5e9ecf02b642a4be63cd2bd33e51f4e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_engine_runner.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-7"
+          ],
+          "sha256": "06472c4bf93d72b8c9ad0e67a1c35a7c143bdb7cd8350262b3a925862bd156f9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_published_binding.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-8"
+          ],
+          "sha256": "2b1f00c49bc39eb15ab5a51846bd2883dc486c56088280e206567ba0fe0cf863"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CON-9"
+          ],
+          "sha256": "5fee4b25ec92085c85c9952551bd0cf3798366f6440e0cdf3fd20044fbbed79c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/validation.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-1"
+          ],
+          "sha256": "204c4a68b5ace1f94b9f4422ff353ef915507da0b0234147bd93c3f0110505fd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/provider.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-1",
+            "VAL-3",
+            "SVC-11"
+          ],
+          "sha256": "50cfe638b5d9e3752ec41cfc5fc30cc6c86a24724f59ce2812fc5cd0b27fb9a8"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_validation.rs",
+          "kind": "test",
+          "criterionIds": [
+            "VAL-1"
+          ],
+          "sha256": "14a0f8f3d4cb6f90d15cb6423eaec30a6c0ed3ae862de681381ec2e0c283b9b8"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/app/surface.rs",
+          "kind": "source",
+          "criterionIds": [
+            "VAL-2"
+          ],
+          "sha256": "22b821e8f90fa530b88e3197baa2e824f1c518d5bffef8000f269ce9799aade1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_required_services.rs",
+          "kind": "test",
+          "criterionIds": [
+            "VAL-2"
+          ],
+          "sha256": "c049892db4ab31c34399ffcdb8e0d657a7e460ab090508fee2ed2d9499199259"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_startup_plain_dependency.rs",
+          "kind": "test",
+          "criterionIds": [
+            "VAL-3"
+          ],
+          "sha256": "498b81b24fe80a3cc0c085faf08d7732675d039a59ecea02306e7c956a3fe9de"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/app/builder_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-1",
+            "SVC-10"
+          ],
+          "sha256": "8f5db0ccbaad05b3e11916a98090ade919c7fe414ef2d13416b4603b627f000f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/testing.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-1"
+          ],
+          "sha256": "5e933367dd5fbb00483cba19612208a876fa682d7bb4e9fce4c0f4555dcadd97"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-1"
+          ],
+          "sha256": "2c0142250de9f95829878a662eddb5a78a0537b0261b4ec409e730975ac4c5de"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_platform/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "ab2d53ec3ea3a9a67792307edf187ef43e6d12f4d8b428ad2c28739234d9b9cd"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_suspension/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "cdfe424884716a85a8cb38ead1c5b3f1ea2b4bcc023a28741875aa67f4a3171d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_assets/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "4085a5fb6be9bbb0a2202d7ca3a277e8d0828f6050f25e295ff24ec5cbd83557"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_fonts/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "2e4198ff69134ee945bbf94f6ae44a945b58bd40471209cd62ed7e0d418cf66a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_assets/tests/nsh_tsx_contract_bytes.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-2"
+          ],
+          "sha256": "9c13f65ec68bbe601d8297a382c32ee4471e6cee4f6dba5d03817ba26c7265e0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-3",
+            "SVC-11"
+          ],
+          "sha256": "d39e5a7bcc606e1c023724dfb2a1ab4144b738a52be80ed7c18a3863f4d210f2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "dde252a61657c28febcce961021044b1d9668279848b6f1c0f8dfca57a89a7de"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/storage.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "sha256": "a3b995cbab8d54b375cae4acfdd64628f09159ba300c74e4de35f7fda852d91c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/nsh_tsx_in_memory.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "dbd39af06f49c6b672684e5a29e7e507b19e726c4f2652c6ffc6ed32a9e8a67d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/tests/nsh_tsx_command_promises.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-3",
+            "SVC-11"
+          ],
+          "sha256": "03fb9ce5cf4ef7c9c2459f241c0d51318218c07f4c6c61106496550ceb8b0031"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "eff5e3815c381ea11b39973916efb987021a151dcf139ce0daa05b5aea4676b1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_i18n/tests/formatter.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "sha256": "b0bc1dc90ed99268282ca374380209657d615b47cb79747ac0cf92d2e1bf3fe0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "a176f00fbf9aced20e9a77475b9a0e4c426278540c887c0aff422c1baf2f0922"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5",
+            "SVC-11"
+          ],
+          "sha256": "4ba7940d68177b3d03939dded24ed0bf6721957900cab9069699a26cc58cd2d5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_selection/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "e428fa145f3af179556a9f16583c23bffb3a9aaac1bea8a00d2375a552969532"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/nsh_tsx_store.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-5",
+            "SVC-11"
+          ],
+          "sha256": "60ac836668ad070c9797631631e1e5c6ca7c82e1046d65fed6789d91445b7637"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_clear_deletes.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "f81a82b8d9f6cfe85e291406715a41690733a8ac65fa102a176a9e82413331da"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_input_map/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-6"
+          ],
+          "sha256": "dd41f7a846180f69e6833874df25783a5363082cb33f3a54a143791dd387908d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_application_configuration/src/builder.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-6"
+          ],
+          "sha256": "cbcabf6858dfd2b3d223ff6fca8b791f6a584fc6355661e23cede76c01f80e22"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/testing.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-7"
+          ],
+          "sha256": "f49e5e50be821a71cfac3920049a8ea4ae641a98525862e572757e614afc4b97"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/testing_fakes.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-7"
+          ],
+          "sha256": "922a78b437be0b83d035257bff7c0d236f9fef7be60b0e1c57c3b1d5d978050b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/service_replacement.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-8",
+            "SVC-11"
+          ],
+          "sha256": "8c3ce6f958351495361a19ecfe8c3e77edefc98f57d7c11a18feaf383bf415d0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/ts_service_contracts.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-9"
+          ],
+          "sha256": "59d2cf117cfedd5f0ea9d62612602b81bade3ce4313286c17a886e298a5d0b60"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/extension.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-10"
+          ],
+          "sha256": "d906d21c19cd1fe48d30fe6f6f81d236f05c447626dac8996d81b65008d7a0f9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-10"
+          ],
+          "sha256": "97aef6edd86619d8c46934de8e0beb2996b2cf9d9c8d6a5cdd72ef0eeffb7e4d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_startup_for.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "a6c729997764b521df226acf609c6de788b22a7879de4ed4ffe66faac820a425"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_last_registration_wins.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "92003af5197eee3da0b9262f7f08086149cb1fc62b6ba20633abe5d1036ec4ca"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_requirements_follow_registrations.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "c4275c39bb6ac87f6c58c4433a43061051ec85a55bf5773321e357dd08682f7f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_contract_startup_for.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "7662b864b2fb2083daf1fae2c84114804744f7fed1bc154e46606d224539eeb8"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-1",
+            "SVC-8",
+            "SVC-9"
+          ],
+          "sha256": "08556aac8561f5efd4f214b5edfa7eaaaa102949aa7c121c8dbc52e21b9e674e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/features.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "sha256": "a9ecc346e18c194e92e283046d6732427f1539d0069350b6aa6a35b144aa1677"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/native_module.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-1",
+            "SVC-10"
+          ],
+          "sha256": "ada1cbdd87600192afa41f873cc82708d93adf5c2f3409bb2dcb7436dc0ea4b1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new.rs",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "b46c331066bb1efbc7ec97e3833d8e229dfdcb97dc2e1f501dc119a10891162c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/rust_lib.rs.in",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "5b7101b1a6476c7bc4af5b447b5c32b5bd8b1752c8b7525bfd33c2a0e018df8f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/src/new/mixed_App.tsx.in",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "15295738e72e7f92254a240a9247a2994b96408f307bbf82e54e1284904c0c5f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/new_app_services.rs",
+          "kind": "test",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "sha256": "2f6573aa5cf0d2bd9cbff16c8611b7b2a13c4b2f2469bb3665fd8c145cee1ad1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/native/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "6498a55b7a4fc201fd669246c642b0541a0cf3b97eb81009818e03325d6997a4"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "examples/gallery/App.tsx",
+          "kind": "source",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "32460efb5aed77e2acfd9126541804898e1c9fef0bde99a8f725583c03ac65ec"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".github/workflows/ci.yml",
+          "kind": "runtime",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "sha256": "fe1c2609ce6dcbd8899c3287629732ed0a930642c8b52b332e3c25430a28b2d7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/architecture.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "adb34fbf392e6dfc528e44a138a09725e0cef88e52a26b63916f613ea5546c10"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "32a6e18c39b5ee3220732dc85965599d52678aeee7b9ec61cf16d4e1b7230969"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "1895eb65d0463082fbf9ad0f3345240b3a569c9537a111b92dd481d66d6ee85f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "README.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "cd0c02aceda21ef2cf0c19ee194210a05c917f994e15c7c604fd4f918eb22fc9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "82d1d27457d416ddee5a5efb78fe2b3a543d2f689cfc3eecdbc80b595aa4d7e0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/readme_nsh.rs",
+          "kind": "test",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "529c8c86f426b99ccac76098d1ee7f7286d057975cc190284dc1557312e50e6b"
+        },
+        {
+          "repositoryId": "root",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "a4d5109b9e6a2ec0cd6547d3bce3c0208f70f2b40e58de87a341d796d1e11fec"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/SKILL.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "fb8158eaf1ad7391ee11398d13c608ec003a07a06710f82b556fdedcdb9e1648"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/services.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "952978c945fc315ce5abebbed63a4f68bece66ab91ae6b8a69361e201608267f"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/contracts.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "eb21f9bf507fac3374a54a1e91fffb840a3dab9fd63c6b20c6e0aa05937966ec"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "da81cc8e73ba8a64f440ceb05be29dba6a447f7b8aef3c4870e42d42815d4dc5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/runtime/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "d0a19ab4421ff4eaa704243db0cc7e042b63778fa0c1e1a47076161852341698"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/app/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "3e165bbc43344956454e4784d203c2b53cd1b70ad5248d092bb68e5fa5da87e5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/core/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "6ce3f0cbce56f5a1ab407c73ad06b0e3f21bf2b48ba3ecfd109da275efab051f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/INDEX.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "bb992b392689dca04e59fe6e293e3b04b269fed10ff4ade5bbe75a67907bf0f3"
+        }
+      ],
+      "deltaSummaryMarkdown": "Inspected the uncommitted `git diff -- .agentx/memory` (ten memory files, 25+/25-; `git status` shows no other change except the runtime's `state.json`, so no product source moved). The builder-parity decision is `status: superseded` with `superseded_by` naming the any-thread decision, and its status line says what is replaced (the engine-thread-only contract rule and host-owned TS builder methods); the successor keeps `supersedes` pointing back and `promoted_from: service-crates`, and both promoted decisions (any-thread, crate structure) are `current` with the draft/promotion notes removed and no other content change. `decisions/INDEX.md`'s three status cells, the taxonomy decision's link and the `core`, `core/di`, `runtime` and `app` state backlinks now say \"decision\" and still resolve; `app/knowledge.md` leads with the successor and links the superseded one. `audit_agentx_memory.py` is clean and `context --epic` shows `pendingSupersession: []` with the cited decisions `superseded`/`current`. The delta matches DOC-3's promotion readiness and contradicts no listed rule.",
+      "reattestedFrom": "368891bac68f308edb1f4c69e68a387943832a35a0ae87fd152f30991c974783",
+      "summaryMarkdown": "Final review of the integrated epic at 096e765 (PR #19, CI green at that head, including `cargo test --workspace` and `cargo test -p rayx --all-features`; `check --epic` 48/48). Verified against source: the crate set and dependency rules from `cargo metadata` (core NSH-free with only `rayx_app_macros`; host on the core with no service crate; each of the twelve `rayx_services_*` on `rayx_app`/`rayx_app_nsh` and no other service crate in normal deps; `rayx_services_history`'s dev-dependency on `rayx_services_storage` is test-only and excluded by `crate_layout` by design); `#[contract]`'s five shapes and refusal text; the host's four `require`s with Rust and TS hints in `app/surface.rs`; the host's TS builder holding only core methods, service methods as class extensions in each crate's `builder.rs`; `require_for` declarations matching the docs' and skill's \"Requires\" table; umbrella features (defaults the four, each `dep:` only) and `__private::register` gated per feature; fakes for all twelve plus `MessageFormatter`; `ts_service_contracts` covering all twelve; `rayx new` templates and the gallery registering the four; NSH at `nshx-0.5.0-7` in the patch, CLI pin and gallery config; no old names in RayX or RayX.Root (the changelog header keeps them only because CHANGELOG.md must not be edited); Migration footers name no consumer app; no forbidden path changed. The post-seal CI fix and its `ci_workflow` expectation match. DOC-2: read the rayx skill against the code (crate table, extension-trait names, bindings, `add_host_fakes`, `require_for`, `add_startup_singleton_for`, `HistoryStoreContract`, test names). DOC-3: memory audit clean, backlinks resolve, rules name the new crates. Non-blocking nit for the coordinator (no criterion affected): `crates/rayx_services_history/src/builder.rs` lines 29-30 give `JOURNAL_STORE_HINT` two doc lines, the first belonging to `STORAGE_HINT`, which has none.",
+      "findingIds": [],
+      "recordedAt": "2026-11-18T12:12:41Z"
     }
   },
   "checkpoints": {

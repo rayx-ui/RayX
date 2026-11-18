@@ -4,7 +4,7 @@ agentx:
   scope: decisions/runtime/service-crates
   status: current
   created: 2026-11-18T03:10:00+01:00
-  updated: 2026-11-18T03:10:00+01:00
+  updated: 2026-11-18T12:30:00+01:00
   topics:
     - crates
     - services
@@ -18,11 +18,10 @@ agentx:
 # Decision: RayX's crates: a core of contracts, an NSH host, a crate per service, an umbrella of features
 
 **Date:** 2026-11-16 (names, required services, defaults) and 2026-11-17 (layout, contracts),
-decided with the owner. **Status:** drafted from the design of the epic `service-crates`
+decided with the owner. **Status:** current; promoted from the epic `service-crates`
 (`.agentx/tasks/service-crates/design.json`: `d-crate-names`, `d-layout`, `d-abstractions`,
 `d-i18n-split`, `d-validation`, `d-plain-startup-dependency`, `d-service-crates`, `d-umbrella`,
-`d-template`); source on `main` already follows it. **Promotion** happens when that epic closes,
-as AgentX promotes an epic's decisions; this note then goes. It supersedes no repository
+`d-template`), which implemented it and closed on 2026-11-18. It supersedes no repository
 decision; it changes which crates the [taxonomy decision](../../governance/memory/2026-11-04-governance-memory-taxonomy.md)'s
 domains cover (`core`: `rayx_app`, `runtime`: `rayx_services_*`, `app`: `rayx_app_nsh` and `rayx`).
 

@@ -74,4 +74,4 @@ Code and docs: `crates/rayx_app_nsh/src/lib.rs`, `crates/rayx_app_nsh/src/ts.rs`
 
 Memory: [core](../core/state.md), [runtime](../runtime/state.md),
 [dependencies](../dependencies/state.md) (the NSH pin),
-[TSX contracts and builder extensions decision draft](../../decisions/app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md) (current, 2026-11-17).
+[TSX contracts and builder extensions decision](../../decisions/app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md) (current, 2026-11-17).

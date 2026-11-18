@@ -4,7 +4,7 @@ agentx:
   scope: decisions/app/tsx
   status: current
   created: 2026-11-18T03:10:00+01:00
-  updated: 2026-11-18T03:10:00+01:00
+  updated: 2026-11-18T12:30:00+01:00
   topics:
     - tsx
     - app-builder
@@ -18,13 +18,10 @@ agentx:
 ---
 # Decision: one app builder in Rust and TS, extended by crates, with contracts callable from any thread
 
-**Date:** 2026-11-17, decided with the owner. **Status:** drafted from the design of the epic
-`service-crates` (`.agentx/tasks/service-crates/design.json`: `d-any-thread`, owner of the
-supersession, with `d-contract-kinds`, `d-published-values`, `d-contract-tokens`,
-`d-service-crates`, `d-umbrella`); source on `main` already follows it. **Promotion** happens when
-that epic closes, as AgentX promotes an epic's decisions: the replaced decision then gets
-`status: superseded` and `superseded_by` naming this file, and this note goes. Until then the
-replaced decision stays marked current and `context --epic` lists it under `pendingSupersession`.
+**Date:** 2026-11-17, decided with the owner. **Status:** current; promoted from the epic `service-crates`
+(`.agentx/tasks/service-crates/design.json`: `d-any-thread`, with `d-contract-kinds`,
+`d-published-values`, `d-contract-tokens`, `d-service-crates`, `d-umbrella`), which implemented it
+and closed on 2026-11-18. It supersedes the [builder parity decision](2026-11-15-app-tsx-builder-parity.md).
 
 ## Context
 

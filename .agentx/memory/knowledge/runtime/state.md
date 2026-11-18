@@ -55,4 +55,4 @@ Code and docs: `crates/rayx_services_*/src/lib.rs`, `crates/rayx_services_*/src/
 (`service_replacement`, `ts_service_contracts`, `history_over_operations`, `crate_layout`).
 
 Memory: [core](../core/state.md), [app](../app/state.md),
-[crate structure decision draft](../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16).
+[crate structure decision](../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16).
