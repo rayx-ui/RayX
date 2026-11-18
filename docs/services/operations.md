@@ -42,7 +42,8 @@ The crate's own `diagnostics` feature keeps the latest committed operations and 
 
 Published state:
 
-- `operations()` (TS `operations`): an `OperationState`, the registered targets (sorted) and, with diagnostics, the
+- `operations()` (TS `operations`): an `OperationState`, the registered targets (RayX's implementation publishes them
+  sorted, a TS one may in any order: `targets()` sorts them and `has_target` finds any) and, with diagnostics, the
   latest committed operations and failure codes.
 
 Events:
@@ -192,7 +193,7 @@ class MyOperations {
   next = 0;
   async registerTarget(targetId, handle) {
     this.targets.set(targetId, OperationTarget.of(handle));
-    this.operations.publish({ targets: [...this.targets.keys()], recent_transactions: [], recent_failure_codes: [] });
+    this.operations.publish({ targets: [...this.targets.keys()].sort(), recent_transactions: [], recent_failure_codes: [] });
   }
   async releaseTarget(targetId) { /* ... */ return this.targets.delete(targetId); }
   async begin() { return ++this.next; }

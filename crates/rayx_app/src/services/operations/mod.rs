@@ -214,9 +214,11 @@ impl dyn OperationService {
         })
     }
 
-    /// The registered targets, sorted.
+    /// The registered targets, sorted (whatever order the implementation publishes them in).
     pub fn targets(&self) -> Vec<OperationTargetId> {
-        self.operations().get().targets.clone()
+        let mut targets = self.operations().get().targets.clone();
+        targets.sort();
+        targets
     }
 
     /// Whether the target `target_id` is registered.

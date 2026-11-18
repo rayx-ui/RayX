@@ -139,7 +139,8 @@ impl OperationTransactionDiagnostics {
 /// operations and failure codes.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct OperationState {
-    /// The registered targets, sorted.
+    /// The registered targets: RayX's implementation publishes them sorted, another may in any
+    /// order (every reader here is correct for any).
     pub targets: Vec<OperationTargetId>,
     /// The latest committed operations, oldest first.
     #[serde(default)]
@@ -152,7 +153,7 @@ pub struct OperationState {
 impl OperationState {
     /// Whether a target of `target_id` is registered.
     pub fn has_target(&self, target_id: &OperationTargetId) -> bool {
-        self.targets.binary_search(target_id).is_ok()
+        self.targets.contains(target_id)
     }
 }
 
