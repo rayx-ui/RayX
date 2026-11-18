@@ -101,6 +101,6 @@ fn each_consumer_stops_its_own_listener_of_the_platform_object() {
 #[test]
 fn the_listener_member_is_declared_to_return_its_stop_function() {
     let ts = testing::declarations(&set());
-    let declared = "  onChange(listener: (snapshot: unknown) => void): () => void;";
+    let declared = "  onChange(listener: (snapshot: PlatformSnapshot) => void): () => void;";
     assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
 }

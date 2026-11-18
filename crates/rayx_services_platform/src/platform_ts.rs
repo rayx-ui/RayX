@@ -47,6 +47,7 @@ impl PlatformInfoService {
     /// Calls `listener` with the snapshot after every change of the device or the user's
     /// settings, until the function it returns is called (or the reactive owner of the call
     /// goes), or this object is disposed.
+    #[ts("(listener: (snapshot: PlatformSnapshot) => void): () => void")]
     pub fn on_change(
         &mut self,
         #[args(snapshot)] listener: Callback<JsonValue>,
