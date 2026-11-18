@@ -1,7 +1,8 @@
 //! `rayx new`'s services and features (UMB-2, d-template): a RayX app's `rayx` dependency lists
-//! the features its builder uses beyond the defaults (`storage`, `operations`, `history`), and
-//! both composition roots, the `rust` root and the `mixed` app's `App.tsx`, register the four
-//! services the host requires (platform, suspension, assets, fonts) before storage and history,
+//! the features its builder uses beyond the defaults (`theme`, `storage`, `operations`,
+//! `history`), and both composition roots, the `rust` root and the `mixed` app's `App.tsx`,
+//! register the four services the host requires (platform, suspension, assets, fonts) before the
+//! theme service (which keeps new apps following the system's light/dark), storage and history,
 //! and operations before history, under a comment saying the host requires the four and each can
 //! be replaced by the app's own. The app's README, the CLI's README and `docs/cli/projects.md`
 //! say the same.
@@ -23,7 +24,7 @@ use rayx_cli::setup::FakeMachine;
 const DEFAULT_FEATURES: [&str; 4] = ["platform", "suspension", "assets", "fonts"];
 
 /// Each template's composition root: the file and its builder calls, in the order they must come.
-const ROOTS: [(&str, &str, [&str; 8]); 2] = [
+const ROOTS: [(&str, &str, [&str; 9]); 2] = [
     (
         "mixed",
         "App.tsx",
@@ -33,6 +34,7 @@ const ROOTS: [(&str, &str, [&str; 8]); 2] = [
             ".addSuspension()",
             ".addAssets()",
             ".addFonts()",
+            ".addTheme()",
             ".addStorage()",
             ".addOperations()",
             ".addHistory()",
@@ -47,6 +49,7 @@ const ROOTS: [(&str, &str, [&str; 8]); 2] = [
             ".add_suspension()",
             ".add_assets(|_| {})",
             ".add_fonts(|_| {})",
+            ".add_theme(|_| {})",
             ".add_storage()",
             ".add_operations()",
             ".add_history()",
@@ -196,11 +199,11 @@ fn rayx_features(manifest: &str) -> Vec<String> {
 
 #[test]
 fn the_dependency_line_lists_the_features_beyond_the_defaults() {
-    assert_eq!(RAYX_FEATURES, ["storage", "operations", "history"]);
+    assert_eq!(RAYX_FEATURES, ["theme", "storage", "operations", "history"]);
     assert_eq!(
         rayx_dependency(),
         format!(
-            "rayx = {{ git = \"https://github.com/rayx-ui/RayX\", tag = \"v{}\", features = [\"storage\", \"operations\", \"history\"] }}",
+            "rayx = {{ git = \"https://github.com/rayx-ui/RayX\", tag = \"v{}\", features = [\"theme\", \"storage\", \"operations\", \"history\"] }}",
             env!("CARGO_PKG_VERSION")
         )
     );
@@ -224,7 +227,7 @@ fn the_dependency_line_lists_the_features_beyond_the_defaults() {
 }
 
 #[test]
-fn both_roots_register_the_four_before_storage_and_history() {
+fn both_roots_register_the_four_before_the_theme_storage_and_history() {
     for (template, file, calls) in ROOTS {
         let work = Workspace::empty();
         let app = created(&work, template);
@@ -235,13 +238,13 @@ fn both_roots_register_the_four_before_storage_and_history() {
             "{template}: {calls:?} in order in\n{root}"
         );
         let started = once(&root, ".start()");
-        assert!(at[7] < started, "{template}: history before start()");
-        // The four the host requires come first, operations before history.
+        assert!(at[8] < started, "{template}: history before start()");
+        // The four the host requires come first, then the theme, operations before history.
         let services: Vec<String> = calls[1..].iter().map(|call| service_of(call)).collect();
         assert_eq!(services[..4], DEFAULT_FEATURES, "{template}");
         assert_eq!(
             services[4..],
-            ["storage", "operations", "history"],
+            ["theme", "storage", "operations", "history"],
             "{template}"
         );
     }
@@ -266,6 +269,7 @@ fn the_roots_comment_says_the_host_requires_the_four_and_each_is_replaceable() {
         for needle in [
             "The host requires the first four (platform state, suspension, assets and fonts)",
             "each can be replaced by the app's own implementation of its contract",
+            "the theme keeps the theme's light/dark modifier in step with the system",
             "history needs operations",
         ] {
             assert!(
@@ -297,8 +301,8 @@ fn the_app_s_readme_and_the_cli_s_docs_say_the_same() {
         let readme = read(&app.join("README.md")).replace("\n  ", " ");
         for needle in [
             "the defaults are the four the host requires (`platform`, `suspension`, `assets`, `fonts`)",
-            "`Cargo.toml` lists the others the app uses (`storage`, `operations`, `history`)",
-            "each replaceable by the app's own, then storage, operations and history",
+            "`Cargo.toml` lists the others the app uses (`theme`, `storage`, `operations`, `history`)",
+            "each replaceable by the app's own, then the theme, storage, operations and history",
         ] {
             assert!(
                 readme.contains(needle),
@@ -310,18 +314,18 @@ fn the_app_s_readme_and_the_cli_s_docs_say_the_same() {
     let joined = |text: String| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let cli_readme = joined(read(&manifest_dir.join("README.md")));
     for needle in [
-        "`features = [\"storage\", \"operations\", \"history\"]`; the defaults are the four services the host requires",
-        "`.addPlatform().addSuspension().addAssets().addFonts()` (the four the host requires, each replaceable by the app's own) then `.addStorage().addOperations().addHistory()`",
-        "(`add_platform()`, `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, then `add_storage()`, `add_operations()`, `add_history()`)",
+        "`features = [\"theme\", \"storage\", \"operations\", \"history\"]`; the defaults are the four services the host requires",
+        "`.addPlatform().addSuspension().addAssets().addFonts()` (the four the host requires, each replaceable by the app's own) then `.addTheme().addStorage().addOperations().addHistory()`",
+        "(`add_platform()`, `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, then `add_theme(..)`, `add_storage()`, `add_operations()`, `add_history()`)",
     ] {
         assert!(cli_readme.contains(needle), "the CLI's README: `{needle}`");
     }
     let projects = joined(read(&manifest_dir.join("../../docs/cli/projects.md")));
     for needle in [
-        "`new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addStorage().addOperations().addHistory().start()`",
-        "`RayXAppBuilder::new().add_platform().add_suspension().add_assets(..).add_fonts(..).add_storage().add_operations().add_history().start()`",
-        "Both register the four services the host requires (platform, suspension, assets and fonts) before storage and history",
-        "`features = [\"storage\", \"operations\", \"history\"]`",
+        "`new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addTheme().addStorage().addOperations().addHistory().start()`",
+        "`RayXAppBuilder::new().add_platform().add_suspension().add_assets(..).add_fonts(..).add_theme(..).add_storage().add_operations().add_history().start()`",
+        "Both register the four services the host requires (platform, suspension, assets and fonts) before the theme, storage and history",
+        "`features = [\"theme\", \"storage\", \"operations\", \"history\"]`",
     ] {
         assert!(
             projects.contains(needle),

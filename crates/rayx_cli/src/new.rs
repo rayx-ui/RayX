@@ -9,7 +9,7 @@
 //!    set on RayX's attribute (`#[rayx::native_module]`) and an `App.tsx` that builds and starts
 //!    the app with `RayXAppBuilder`; for `rust`, a root component that builds the same chain and
 //!    calls `.start()`. Both register the four services the host requires (platform, suspension,
-//!    assets, fonts) before storage, operations and history.
+//!    assets, fonts) before the theme, storage, operations and history.
 //! 3. `mixed` and `rust`: write `.cargo/config.toml` with a `[patch.crates-io]` entry (git URL and
 //!    tag) for every NSH crate the default pin patches (RayX's), every NSH crate nsh's generated
 //!    workspace depends on (its hosts, runners and platforms, which crates.io lacks or has as
@@ -84,9 +84,10 @@ pub fn cargo_config(default: &DefaultNsh, also: &[String]) -> String {
 }
 
 /// The `rayx` features a new RayX app's builder uses beyond the defaults (`platform`,
-/// `suspension`, `assets` and `fonts`, the four services the host requires): storage, and history
-/// with the operations it needs.
-pub const RAYX_FEATURES: [&str; 3] = ["storage", "operations", "history"];
+/// `suspension`, `assets` and `fonts`, the four services the host requires): the theme, which
+/// keeps the theme's light/dark modifier in step with the system, storage, and history with the
+/// operations it needs.
+pub const RAYX_FEATURES: [&str; 4] = ["theme", "storage", "operations", "history"];
 
 /// The `rayx` dependency of a new RayX app: RayX at this `rayx`'s own release tag, with
 /// [`RAYX_FEATURES`].
@@ -233,8 +234,9 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                     ),
                     "`App.tsx` builds the app with `RayXAppBuilder` (the four services the \
                      host requires, `addPlatform()`, `addSuspension()`, `addAssets()` and \
-                     `addFonts()`, each replaceable by the app's own, then storage, operations \
-                     and history) and `await`s `start()`, whose `ServiceProvider` resolves them",
+                     `addFonts()`, each replaceable by the app's own, then the theme, storage, \
+                     operations and history) and `await`s `start()`, whose `ServiceProvider` \
+                     resolves them",
                 ),
             ),
         ]
@@ -257,8 +259,8 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                     "`src/lib.rs`'s root component builds the app with `RayXAppBuilder::new()` \
                          (the four services the host requires, `add_platform()`, \
                          `add_suspension()`, `add_assets(..)` and `add_fonts(..)`, each \
-                         replaceable by the app's own, then storage, operations and history) and \
-                         calls `.start()`, which `app_state()` follows",
+                         replaceable by the app's own, then the theme, storage, operations and \
+                         history) and calls `.start()`, which `app_state()` follows",
                 ),
             ),
         ],

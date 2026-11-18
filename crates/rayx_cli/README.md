@@ -366,23 +366,23 @@ runtime (the fork's release archives bring every runtime prebuilt).
 names its nsh from its first commit: it installs the default pin, runs its `nsh init`, makes the app
 a RayX app and pins it.
 
-- **RayX:** the app's `Cargo.toml` depends on `rayx` at this `rayx`'s own tag with the features
-  its builder uses beyond the defaults (git `https://github.com/rayx-ui/RayX`, `tag = "vX.Y.Z"`,
-  `features = ["storage", "operations", "history"]`; the defaults are the four services the host
-  requires), and RayX's files take the place of nsh's: for `mixed` (the default: TSX with a Rust
-  crate at the app's root) a `src/lib.rs` whose UI set is RayX's attribute,
+- **RayX:** the app's `Cargo.toml` depends on `rayx` at this `rayx`'s own tag with the features its
+  builder uses beyond the defaults (git `https://github.com/rayx-ui/RayX`, `tag = "vX.Y.Z"`,
+  `features = ["theme", "storage", "operations", "history"]`; the defaults are the four services the
+  host requires), and RayX's files take the place of nsh's: for `mixed` (the default: TSX with a
+  Rust crate at the app's root) a `src/lib.rs` whose UI set is RayX's attribute,
   `#[rayx::native_module("<specifier>")] fn native(registry: &mut Registry)` (every RayX TS class
-  and RayX's components, and in its body RayX's dev tools: `DevTools` and the `DevLayer`
-  component), an `App.tsx` that builds the app's services with `new RayXAppBuilder()`,
+  and RayX's components, and in its body RayX's dev tools: `DevTools` and the `DevLayer` component),
+  an `App.tsx` that builds the app's services with `new RayXAppBuilder()`,
   `.addPlatform().addSuspension().addAssets().addFonts()` (the four the host requires, each
-  replaceable by the app's own) then `.addStorage().addOperations().addHistory()`, `await`s
-  `start()` and resolves a service from the `ServiceProvider` it gives, and mounts `<DevLayer />`
-  (absolute, out of the layout), its test and a README; for `rust` a root component that builds
-  `RayXAppBuilder::new()` with the same services (`add_platform()`, `add_suspension()`,
-  `add_assets(..)`, `add_fonts(..)`, then `add_storage()`, `add_operations()`, `add_history()`)
-  and calls `.start()`, shows `app_state()` and mounts `dev_layer()`. In a dev build the dev tools
-  are the in-app agent a tool connects to and its layer; a release build has neither. `ts` has no
-  Rust crate to hold RayX's classes, so it needs `--nsh-only`.
+  replaceable by the app's own) then `.addTheme().addStorage().addOperations().addHistory()`,
+  `await`s `start()` and resolves a service from the `ServiceProvider` it gives, and mounts
+  `<DevLayer />` (absolute, out of the layout), its test and a README; for `rust` a root component
+  that builds `RayXAppBuilder::new()` with the same services (`add_platform()`, `add_suspension()`,
+  `add_assets(..)`, `add_fonts(..)`, then `add_theme(..)`, `add_storage()`, `add_operations()`,
+  `add_history()`) and calls `.start()`, shows `app_state()` and mounts `dev_layer()`. In a dev
+  build the dev tools are the in-app agent a tool connects to and its layer; a release build has
+  neither. `ts` has no Rust crate to hold RayX's classes, so it needs `--nsh-only`.
 - **`--nsh-only`:** a plain NSH app, as `nsh init` writes it.
 - **The pin:** `mixed` and `rust` get a `.cargo/config.toml` that patches to the default pin's tag
   the NSH crates RayX patches, those of the hosts, runners and platforms nsh generates for the

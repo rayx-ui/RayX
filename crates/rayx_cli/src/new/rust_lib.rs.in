@@ -18,13 +18,15 @@ pub fn App() -> impl IntoElement {
     // The app's composition root: its configuration and the services every surface starts with
     // (RayX's are listed in its `docs/services.md`). The host requires the first four (platform
     // state, suspension, assets and fonts), and each can be replaced by the app's own
-    // implementation of its contract; history needs operations. `start()` starts them in a task
-    // of its own; `app_state()` follows it.
+    // implementation of its contract; the theme keeps the theme's light/dark modifier in step
+    // with the system; history needs operations. `start()` starts them in a task of its own;
+    // `app_state()` follows it.
     RayXAppBuilder::new()
         .add_platform()
         .add_suspension()
         .add_assets(|_| {})
         .add_fonts(|_| {})
+        .add_theme(|_| {})
         .add_storage()
         .add_operations()
         .add_history()
