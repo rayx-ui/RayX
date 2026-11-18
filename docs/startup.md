@@ -95,7 +95,8 @@ builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore
 services registered as that key before; a registration that is a startup service (`add_startup_*`, the `_for` forms)
 replaces them with its own. So the app's own `dyn I18nService`, registered after `add_i18n(..)`, replaces RayX's
 completely: RayX's never loads its messages. Registered before it, `add_i18n(..)` replaces the app's. What
-`add_i18n(..)` declared it needs (`require_for`) stays declared: the asset and platform services are still checked for. A startup
+`add_i18n(..)` declared its service needs (`require_for`) goes with it: the app's own needs no asset or platform
+service. A startup
 service is removed by the registration of what it was registered as, not of the key it names: one registered
 `add_startup_singleton(MyStore)` (registered as `MyStore`) and naming `dyn KeyValueStore` stays when `dyn KeyValueStore`
 is registered.

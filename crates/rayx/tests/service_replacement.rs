@@ -306,6 +306,25 @@ fn the_app_s_own_i18n_registered_after_add_i18n_replaces_it_completely() {
     assert_eq!(formatter.format("hello", &ana), "Hi, Ana!");
 }
 
+#[test]
+fn the_app_s_own_i18n_after_add_i18n_needs_nothing_rayx_s_needed() {
+    let i18n = FakeI18n::in_language("en");
+    block_on(i18n.add_resource("en".into(), None, r#"{ "hello": "Hi, {$name}!" }"#.into()))
+        .unwrap();
+    let mut builder = RayXAppBuilder::new().add_i18n(|_| {});
+    builder
+        .services_mut()
+        .add_singleton_as::<dyn I18nService>(Arc::clone(&i18n) as Arc<dyn I18nService>);
+    // No asset or platform service: RayX's i18n, which needed them, is replaced.
+    let services = start(builder);
+
+    let formatter = services.required_service::<dyn MessageFormatter>().unwrap();
+    assert_eq!(
+        formatter.format("hello", &Args::new().with("name", "Ana")),
+        "Hi, Ana!"
+    );
+}
+
 /// The app's own services, one of each for the process.
 struct Own {
     platform: Arc<FakePlatform>,

@@ -73,7 +73,10 @@ is made:
 - `services.require_for::<dyn S, dyn T>(hint)`: the registration of `S` resolves `T`. A service crate's builder
   method declares this for every service its implementation resolves (`add_fonts` declares
   `dyn FontService` on `dyn AssetService`), so the app's own `T`, registered before or after it, satisfies it as well
-  as RayX's.
+  as RayX's. A registration's requirements belong to it: declared before registering `S`, they are the next
+  registration of `S`'s (the current one's when none follows), and a later registration of `S` that does not declare
+  them again drops them, so the app's own `dyn FontService` registered after `add_fonts` needs no asset service.
+  What the app or its host requires (`require`) stays.
 - `services.validate()`, which `RayXAppBuilder::build` and `build_async` run first: one `ServiceValidationError`
   listing every problem (`ServiceValidationProblem`): `Missing` (the service, who needs it, the hint saying how to
   register it) and `SingletonOnScoped` (a singleton that depends on a scoped service, directly or through transient

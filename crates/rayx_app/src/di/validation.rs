@@ -22,6 +22,9 @@ pub(crate) struct Requirement {
     pub(crate) needs_name: Cow<'static, str>,
     pub(crate) by: Option<(ServiceKey, Cow<'static, str>)>,
     pub(crate) hint: Cow<'static, str>,
+    /// A registration's requirement belongs to a registration of `by` already (the first one
+    /// after it was declared); until then it waits for one.
+    pub(crate) attached: bool,
 }
 
 /// The requirements of a provider and its clones and scopes.
@@ -34,6 +37,21 @@ impl Requirements {
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .push(requirement);
+    }
+
+    /// What registering `key` does: the requirements the registration it replaces declared go,
+    /// and those declared for `key` since (before this registration) are this one's.
+    pub(crate) fn registered(&self, key: &ServiceKey) {
+        let mut requirements = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        let of_key =
+            |requirement: &Requirement| requirement.by.as_ref().is_some_and(|(by, _)| by == key);
+        requirements.retain(|requirement| !(of_key(requirement) && requirement.attached));
+        for requirement in requirements
+            .iter_mut()
+            .filter(|requirement| of_key(requirement))
+        {
+            requirement.attached = true;
+        }
     }
 
     pub(crate) fn all(&self) -> Vec<Requirement> {

@@ -166,6 +166,7 @@ impl ServiceProvider {
             needs_name: Cow::Borrowed(type_name::<T>()),
             by: None,
             hint: hint.into(),
+            attached: false,
         });
         self
     }
@@ -173,7 +174,10 @@ impl ServiceProvider {
     /// Declares that the registration of `S` depends on `T`: [`validate`](Self::validate) fails
     /// when nothing is registered as `T`, naming `S` and `hint`, and when `S` is a singleton and
     /// `T` scoped. What a registration that resolves another service declares, in place of
-    /// registering it.
+    /// registering it, **before** registering `S`: the requirement belongs to the next
+    /// registration of `S` (or, when none follows, to the current one), and a later registration
+    /// of `S` drops it unless that one declares it again, so an app's own `S` registered after a
+    /// service crate's needs nothing the crate's needed.
     pub fn require_for<S, T>(&mut self, hint: impl Into<Cow<'static, str>>) -> &mut Self
     where
         S: ?Sized + 'static,
@@ -184,6 +188,7 @@ impl ServiceProvider {
             needs_name: Cow::Borrowed(type_name::<T>()),
             by: Some((ServiceKey::of::<S>(), Cow::Borrowed(type_name::<S>()))),
             hint: hint.into(),
+            attached: false,
         });
         self
     }
@@ -320,21 +325,25 @@ impl ServiceProvider {
         self.services.contains_key(key)
     }
 
-    /// What registering a service under `T` does first: removes the startup services
-    /// registered as `T`, so the last registration of a key wins (a registration that is a
-    /// startup service adds its own after).
+    /// What registering a service under `T` does first, so the last registration of a key wins
+    /// completely: removes the startup services registered as `T` (a registration that is a
+    /// startup service adds its own after), and the requirements the registration of `T` it
+    /// replaces declared ([`Self::require_for`]), taking those declared for `T` since as its own.
     fn registering<T>(&mut self)
     where
         T: ?Sized + 'static,
     {
         self.startup
             .remove_registered(&StartupServiceType::of::<T>());
+        self.requirements.registered(&ServiceKey::of::<T>());
     }
 
     /// [`Self::registering`] for the runtime key `key`.
     fn registering_key(&mut self, key: &RuntimeKey) {
         self.startup
             .remove_registered(&StartupServiceType::runtime(key));
+        self.requirements
+            .registered(&ServiceKey::Runtime(key.clone()));
     }
 
     pub fn try_add_service_factory<T>(
