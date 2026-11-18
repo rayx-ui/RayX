@@ -9,9 +9,10 @@
 //! - **Startup.** A Rust root builds `RayXAppBuilder::new()` with its chain and calls
 //!   [`.start()`](StartAppBuilderExt::start) (watching [`app_state`]) or
 //!   [`.start_async()`](StartAppBuilderExt::start_async); TSX builds [`ts::RayXAppBuilder`] and
-//!   awaits its `start()`. Both build the root with [`RayXAppBuilder::build_async`] (its
-//!   configuration's sources may load asynchronously), NSH's services added where the app
-//!   registered none, make the options registered with `validate_on_start`, and await every
+//!   awaits its `start()`. Both require the host's services, register the surface's engine
+//!   runner, build the root with [`RayXAppBuilder::build_async`] (which checks every
+//!   requirement first; its configuration's sources may load asynchronously), make the options
+//!   registered with `validate_on_start`, and await every
 //!   startup service's async initialization in dependency order, each within its timeout (its
 //!   own, else the builder's default). The app is ready, and services resolve, only once all of
 //!   them initialized; an invalid option, one failure or a timeout fails startup.
@@ -39,17 +40,19 @@
 //! - **Translations** are `rayx_services_i18n`'s: its i18n service, `tr!` in a Rust component
 //!   and the `I18nService` class in TSX.
 //! - **The services for TSX** ([`ts`]): each RayX service's TS class has the Rust service's name
-//!   and is its own token (`ApplicationConfigurationService`, `AssetService`, `FontService`,
-//!   `I18nService`, `InputMapService`, `KeyValueStore`, `NavigationService`,
-//!   `PlatformInfoService` and `SuspensionService`, in their crates' sets), and its `onChange`
-//!   hears the service's changes.
+//!   and is its contract's token (`ApplicationConfigurationService`, `AssetService`,
+//!   `FontService`, `HistoryService`, `I18nService`, `InputMapService`, `KeyValueStore`,
+//!   `NavigationService`, `OperationService`, `PlatformInfoService`, `SelectionService` and
+//!   `SuspensionService`, in their crates' sets), and its `onChange` hears the service's
+//!   changes.
 //! - **Services written in TS** live in the same container: `addSingleton(Clock, () => new
 //!   Clock())` and every other lifetime, startup and `As` form, keyed by a TS class or a
 //!   [`ts::ServiceToken`], with the TS startup interfaces `AsyncInitializable` and
 //!   `StartupInitializable` in the same startup graph, and TS options (`addOptions`,
 //!   `configureOptions`, `getOptions`). They are made and resolved on the engine's thread only.
 //!   Rust calls a TS service only through a contract: a trait marked `#[contract]`, resolved as
-//!   `Arc<dyn Trait>` ([`ts::ContractError`] off the engine thread).
+//!   `Arc<dyn Trait>` and called from any thread (off the engine thread through the surface's
+//!   queue; [`ts::ContractError::EngineGone`] once the engine stopped).
 //! - **Extensions.** `#[app_extension]` exports a Rust builder extension to TS as a builder
 //!   method (`add_weather` is `builder.addWeather()`), and a service crate adds its TS builder
 //!   method the same way, a class extension of [`ts::RayXAppBuilder`] acting on it through
@@ -57,8 +60,8 @@
 //!   in the umbrella, makes an app's UI set with [`ts::register`]'s classes, the sets of the
 //!   service crates the umbrella's features enable and RayX's components.
 //!
-//! Everything here runs on the engine's thread. The services themselves stay NSH-free and depend
-//! on [`rayx_app`] only; the `di`, `options`, `configuration`, `services` and `prelude` modules
+//! Everything here runs on the engine's thread. The services' contracts stay NSH-free in
+//! [`rayx_app`]; the `di`, `options`, `configuration`, `services` and `prelude` modules
 //! re-export it, so `#[derive(AppService)]` works in a crate that depends on `rayx_app_nsh` alone.
 
 // Unit tests panic on broken fixtures by design.

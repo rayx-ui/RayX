@@ -49,7 +49,8 @@ pub const fn enabled() -> bool {
     cfg!(rayx_devtools)
 }
 
-/// Whether this build has the dev tools ([`enabled`]), for the app's code.
+/// Whether this build has the dev tools, for the app's code: a dev build, with `RAYX_DEVTOOLS`
+/// not `0`.
 pub const fn devtools_enabled() -> bool {
     enabled()
 }
