@@ -29,18 +29,23 @@ in a TS implementation's, which answers in JS's next turn. `HistoryStore` (in `r
 implementation's extension point: where it keeps each scope's journal (`HistoryJournalV2`), with
 `InMemoryHistoryStore` and `KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at
 once or later: the history loads a scope when a command first awaits it and saves each change behind it, one save at a
-time. A failure nobody awaits (a save behind an edit, a command whose caller gave up) is a `NavigationFailed` event of
-the scope. A save that finds another journal in the store than it expects (another window's or app's history over the
-same store, or a save whose answer was lost) reloads it and rebases on it what the scope changed since it last loaded
-or saved: the stored entries, less those this history dropped since (undone, cleared, evicted), then the entries it
-recorded since, so no writer's entries are lost. Changes made before the app's startup attaches the store are rebased
-on the stored journal the same way once it does. Its `diagnostics` feature keeps the replays that failed in the
-published state.
+time. A failure nobody awaits (a save behind an edit, a command whose caller gave up or dropped its answer unread) is a
+`NavigationFailed` event of the scope. Entries have ids, given when they are recorded and saved with the journal (an
+entry of a journal saved before ids existed gets one when it loads). Histories may share a store (two windows, two app
+instances): a save that finds another journal in the store than it expects reloads it and merges this history's
+entries in by id (the stored entries, less those this history saved and dropped since, each of its own replaced by
+its current copy, then its new ones), so no writer's entries are lost. Each session's undo and redo stacks keep only
+its own entries (and those it loaded at its start): another session's stay in the store for that session. Changes
+made before the app's startup attaches the store are merged with the stored journal the same way once it does. Its
+`diagnostics` feature keeps the replays that failed in the published state.
 
-Each call the history makes of the operation service or the store is bounded by `HistoryOptions::call_timeout_ms`
-(bound from `RayX:Services:History`, `configure_options::<HistoryOptions>(..)`; 30 seconds by default, `None` for
-none): one that does not answer in time (a TS promise that never settles) fails the command with
-`HistoryError::TimedOut` and frees its scope. The timer is the engine's on NSH (through the host's `EngineRunner`);
+Each call the history makes to begin a transaction, submit a record or reach the store is bounded by
+`HistoryOptions::call_timeout_ms` (bound from `RayX:Services:History`, `configure_options::<HistoryOptions>(..)`; 30
+seconds by default, `None` for none): one that does not answer in time (a TS promise that never settles) fails the
+command with `HistoryError::TimedOut`, aborting its transaction and freeing its scope. A TS operation service or store
+that legitimately takes longer than the timeout has its calls aborted: raise the timeout for it, or set `None`
+(`null` in TS) for none. A commit is never cut short: once asked, its change lands, so the scope stays busy until it
+answers and the stacks then follow it. The timer is the engine's on NSH (through the host's `EngineRunner`);
 elsewhere an app registers a `HistoryTimer` service, and without one the calls are unbounded. In TS the options are
 set by the builder methods' callback, after configuration's:
 `builder.addHistory((options) => options.callTimeoutMs(5000))` (or `addPersistentHistory(..)`; `null` for no limit).

@@ -38,9 +38,11 @@ impl HistoryOptions {
 
 #[class]
 impl HistoryOptions {
-    /// How long a call of the operation service or the store may take, in milliseconds, before
-    /// the command making it fails (timed out) and frees its scope; `null` for no limit (30
-    /// seconds by default).
+    /// How long a call of the operation service (beginning a transaction, submitting a record)
+    /// or of the store may take, in milliseconds, before the command making it fails (timed
+    /// out), aborting its transaction and freeing its scope; `null` for no limit. 30 seconds by
+    /// default: raise it for a TS service or store that legitimately takes longer, whose calls
+    /// are aborted otherwise. A commit is never cut short.
     pub fn call_timeout_ms(this: Instance<Self>, timeout: Option<u32>) -> Instance<Self> {
         push(this, |o| {
             o.steps

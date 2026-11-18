@@ -1307,6 +1307,7 @@ mod persistence {
         let target = OperationTargetId::new("history:target").unwrap();
         let record = OperationRecord::from_operation(target.clone(), &Set { value: 1 }).unwrap();
         let entry = rayx_app::services::history::HistoryEntry {
+            id: "persistence:1".into(),
             transaction_id: 1,
             scope_id: scope,
             target_id: target,

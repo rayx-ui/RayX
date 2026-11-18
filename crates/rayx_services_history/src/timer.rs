@@ -14,10 +14,14 @@ pub const HISTORY_CONFIG_PATH: &str = "RayX:Services:History";
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct HistoryOptions {
-    /// How long a call of the operation service or the store may take, in milliseconds,
-    /// before the command making it fails with `HistoryError::TimedOut` and frees its scope
-    /// (`None`: unbounded). A TS implementation whose promise never settles would otherwise
-    /// keep the scope busy for the app's life. 30 seconds by default.
+    /// How long a call of the operation service (beginning a transaction, submitting a
+    /// record) or of the store may take, in milliseconds, before the command making it fails
+    /// with `HistoryError::TimedOut`, aborting its transaction and freeing its scope (`None`:
+    /// unbounded). A TS implementation whose promise never settles would otherwise keep the
+    /// scope busy for the app's life. 30 seconds by default: a TS service or store that
+    /// legitimately takes longer has its calls aborted, so raise it for one (or set `None`). A
+    /// commit is never bounded: once it is asked, its change lands, and the scope stays busy
+    /// until it answers.
     pub call_timeout_ms: Option<u64>,
 }
 

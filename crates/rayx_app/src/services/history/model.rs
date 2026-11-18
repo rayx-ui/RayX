@@ -29,6 +29,11 @@ impl HistoryScopeId {
 /// One undoable step: the operations of one transaction on one target, with their inverses.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct HistoryEntry {
+    /// The entry's identity, given when it is recorded and kept with its journal: unique
+    /// across histories and app runs, so histories sharing a store tell their entries apart (an
+    /// entry of a journal saved before entries had ids gets one when it is loaded).
+    #[serde(default)]
+    pub id: String,
     pub transaction_id: u64,
     pub scope_id: HistoryScopeId,
     pub target_id: OperationTargetId,

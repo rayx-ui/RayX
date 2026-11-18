@@ -16,8 +16,8 @@ use rayx_app::services::history::{
     HistoryScopeState, HistoryService, HistoryState,
 };
 use rayx_app::services::operations::{
-    OperationApplyStatus, OperationEvent, OperationOrigin, OperationReceipt, OperationRecord,
-    OperationService, OperationTargetId,
+    OperationApplyStatus, OperationError, OperationEvent, OperationOrigin, OperationReceipt,
+    OperationRecord, OperationService, OperationTargetId,
 };
 use rayx_app::{ChangeSubscription, EventStream, StateCell};
 
@@ -39,9 +39,12 @@ pub(crate) struct ScopeHistory {
     pub(crate) replaying: bool,
     pub(crate) cleared_through_transaction: u64,
     pub(crate) persisted_revision: Option<u64>,
-    /// The undo entries of the journal the scope last loaded or saved: what a rebase on
-    /// another stored journal tells its own changes by.
-    pub(crate) base: Vec<HistoryEntry>,
+    /// The entries of the scope's journal in the store, as last loaded or saved (another
+    /// history's included): what a save merges this history's entries into.
+    pub(crate) stored: Vec<HistoryEntry>,
+    /// The ids of this history's entries in that journal: an entry among them that is no
+    /// longer on the undo stack was dropped here (undone, cleared, evicted).
+    pub(crate) saved_own: BTreeSet<String>,
     /// How many entries were recorded in it (pushed, not merged): what a replay tells an edit
     /// recorded meanwhile by.
     pub(crate) pushes: u64,
@@ -97,6 +100,9 @@ pub(crate) struct Scopes {
 pub(crate) struct RayxHistory {
     /// Itself, for the work it runs detached.
     pub(crate) this: Weak<Self>,
+    /// What this history's entry ids start with: unique to it, across app runs.
+    session: String,
+    next_entry: std::sync::atomic::AtomicU64,
     /// Bounds each call of the operation service and the store (`None`: unbounded).
     timer: Option<HistoryTimer>,
     timeout: Option<Duration>,
@@ -126,6 +132,8 @@ impl RayxHistory {
     ) -> Arc<Self> {
         let history = Arc::new_cyclic(|this| Self {
             this: this.clone(),
+            session: session_id(),
+            next_entry: std::sync::atomic::AtomicU64::new(1),
             timer,
             timeout,
             operations: Arc::clone(&operations),
@@ -150,6 +158,12 @@ impl RayxHistory {
             .lock()
             .unwrap_or_else(PoisonError::into_inner) = Some(subscription);
         history
+    }
+
+    /// A new entry id.
+    fn next_entry_id(&self) -> String {
+        let number = self.next_entry.fetch_add(1, Ordering::Relaxed);
+        format!("{}:{number}", self.session)
     }
 
     pub(crate) fn lock_state(&self) -> Result<MutexGuard<'_, Scopes>, HistoryError> {
@@ -348,6 +362,7 @@ impl RayxHistory {
                 None
             } else {
                 let entry = HistoryEntry {
+                    id: self.next_entry_id(),
                     transaction_id: receipt.transaction_id,
                     scope_id: scope_id.clone(),
                     target_id: receipt.target_id.clone(),
@@ -385,7 +400,7 @@ impl RayxHistory {
     ) -> Result<(HistoryEntry, u64), HistoryError> {
         let transaction = OpenTransaction {
             operations: &*self.operations,
-            id: Some(self.bounded(self.operations.begin()).await?),
+            id: Some(self.begin_bounded().await?),
         };
         let records: Vec<OperationRecord> = if undo {
             entry.inverse.iter().rev().cloned().collect()
@@ -433,7 +448,9 @@ impl RayxHistory {
             let _ = self.bounded(transaction.abort()).await;
             return Err(HistoryError::StackChanged);
         }
-        self.bounded(transaction.commit()).await?;
+        // Not bounded: a commit that answers late still lands, and the stacks must follow it, so
+        // the scope stays busy until it answers.
+        transaction.commit().await?;
         let mut fresh_inverses = receipts
             .into_iter()
             .map(|receipt| receipt.inverse.ok_or(HistoryError::StackChanged))
@@ -445,6 +462,7 @@ impl RayxHistory {
             (records, fresh_inverses)
         };
         let replayed = HistoryEntry {
+            id: entry.id.clone(),
             transaction_id: entry.transaction_id,
             scope_id: entry.scope_id.clone(),
             target_id: entry.target_id.clone(),
@@ -583,14 +601,93 @@ impl RayxHistory {
         };
         let (answer, answered) = futures::channel::oneshot::channel();
         let work = command(Arc::clone(&history));
-        let scope_id = scope_id.clone();
+        let answer_scope = scope_id.clone();
+        let reporter = Arc::downgrade(&history);
         crate::detached::spawn(Box::pin(async move {
             if let Err(Err(error)) = answer.send(work.await) {
-                history.record_failure(scope_id, &error);
+                history.record_failure(answer_scope, &error);
             }
         }));
-        async move { answered.await.unwrap_or(Err(HistoryError::Poisoned)) }.boxed()
+        Answer {
+            answered,
+            history: reporter,
+            scope_id: scope_id.clone(),
+            read: false,
+        }
+        .boxed()
     }
+
+    /// Begins a transaction, within the timeout: one whose id arrives after it is aborted
+    /// then, so no transaction is left open.
+    pub(crate) async fn begin_bounded(&self) -> Result<u64, HistoryError> {
+        let operations = Arc::clone(&self.operations);
+        let begin: BoxFuture<'static, Result<u64, OperationError>> =
+            async move { operations.begin().await }.boxed();
+        let (Some(timer), Some(timeout)) = (&self.timer, self.timeout) else {
+            return Ok(begin.await?);
+        };
+        match futures::future::select(begin, timer.after(timeout)).await {
+            futures::future::Either::Left((begun, _)) => Ok(begun?),
+            futures::future::Either::Right((_, begin)) => {
+                let operations = Arc::clone(&self.operations);
+                crate::detached::spawn(Box::pin(async move {
+                    if let Ok(late) = begin.await {
+                        let _ = operations.abort(late).await;
+                    }
+                }));
+                Err(HistoryError::TimedOut)
+            }
+        }
+    }
+}
+
+/// A detached command's answer: an error the caller drops unread (it gave up on the command
+/// after the command finished) is a failed step of the scope.
+struct Answer<T> {
+    answered: futures::channel::oneshot::Receiver<Result<T, HistoryError>>,
+    history: Weak<RayxHistory>,
+    scope_id: HistoryScopeId,
+    read: bool,
+}
+
+impl<T> std::future::Future for Answer<T> {
+    type Output = Result<T, HistoryError>;
+
+    fn poll(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
+        let answer = std::task::ready!(self.answered.poll_unpin(cx));
+        self.read = true;
+        std::task::Poll::Ready(answer.unwrap_or(Err(HistoryError::Poisoned)))
+    }
+}
+
+impl<T> Drop for Answer<T> {
+    fn drop(&mut self) {
+        if self.read {
+            return;
+        }
+        if let Ok(Some(Err(error))) = self.answered.try_recv()
+            && let Some(history) = self.history.upgrade()
+        {
+            history.record_failure(self.scope_id.clone(), &error);
+        }
+    }
+}
+
+/// What a history's entry ids start with: the wall clock, the process's random hash keys and a
+/// count of the histories made, so two histories (in one run or two) never share it.
+fn session_id() -> String {
+    use std::hash::{BuildHasher as _, Hasher as _};
+    static HISTORIES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let made = HISTORIES.fetch_add(1, Ordering::Relaxed);
+    let mut hasher = std::collections::hash_map::RandomState::new().build_hasher();
+    hasher.write_u64(nsh_core::time::unix_ms().to_bits());
+    #[cfg(not(target_arch = "wasm32"))]
+    hasher.write_u32(std::process::id());
+    hasher.write_u64(made);
+    format!("{:016x}{:x}", hasher.finish(), made)
 }
 
 /// A command's answer, boxed.

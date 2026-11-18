@@ -1,7 +1,8 @@
 //! Failures nobody awaits, and calls that never answer: a failed save behind an edit and the
 //! failure of a command whose caller gave up are `NavigationFailed` events of the scope; a call
-//! of the store or the operation service that never answers fails the command with `TimedOut`
-//! after the history's timeout and frees its scope; and a lock poisoned while a save is pending
+//! of the store or a submission that never answers fails the command with `TimedOut` after the
+//! history's timeout and frees its scope, while a commit is never cut short (its change lands,
+//! so the stacks wait for it); and a lock poisoned while a save is pending
 //! leaves no save unanswered.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
@@ -155,10 +156,30 @@ impl HistoryStore for Store {
     }
 }
 
-/// The fake, whose commits never answer while `hang` is set.
+/// The fake, whose commits land at once but answer only once `answered` is set while
+/// `late` is, and whose submissions never answer while `stuck` is.
 struct Operations {
     inner: Arc<FakeOperations>,
-    hang: AtomicBool,
+    late: AtomicBool,
+    answered: Arc<AtomicBool>,
+    stuck: AtomicBool,
+}
+
+/// Ready with `value` once `ready` is set (polled again every millisecond meanwhile).
+fn when<T: Send + 'static>(ready: Arc<AtomicBool>, value: T) -> BoxFuture<'static, T> {
+    let mut value = Some(value);
+    futures::future::poll_fn(move |cx| {
+        if ready.load(Ordering::SeqCst) {
+            return Poll::Ready(value.take().expect("polled once ready"));
+        }
+        let waker = cx.waker().clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(1));
+            waker.wake();
+        });
+        Poll::Pending
+    })
+    .boxed()
 }
 
 impl OperationService for Operations {
@@ -194,10 +215,11 @@ impl OperationService for Operations {
     }
 
     fn commit(&self, transaction_id: u64) -> BoxFuture<'_, Result<(), OperationError>> {
-        if self.hang.load(Ordering::SeqCst) {
-            return futures::future::pending().boxed();
+        let committed = now(self.inner.commit(transaction_id));
+        if self.late.load(Ordering::SeqCst) {
+            return when(Arc::clone(&self.answered), committed);
         }
-        self.inner.commit(transaction_id)
+        futures::future::ready(committed).boxed()
     }
 
     fn abort(&self, transaction_id: u64) -> BoxFuture<'_, Result<(), OperationError>> {
@@ -210,6 +232,9 @@ impl OperationService for Operations {
         origin: OperationOrigin,
         transaction_id: Option<u64>,
     ) -> BoxFuture<'_, Result<OperationReceipt, OperationError>> {
+        if self.stuck.load(Ordering::SeqCst) {
+            return futures::future::pending().boxed();
+        }
         self.inner.submit_record(record, origin, transaction_id)
     }
 
@@ -274,7 +299,9 @@ impl Fixture {
         let inner = FakeOperations::new();
         let operations = Arc::new(Operations {
             inner: Arc::clone(&inner),
-            hang: AtomicBool::new(false),
+            late: AtomicBool::new(false),
+            answered: Arc::default(),
+            stuck: AtomicBool::new(false),
         });
         let store = Arc::new(Store {
             inner: InMemoryHistoryStore::default(),
@@ -393,21 +420,43 @@ fn a_save_that_never_answers_times_out_and_frees_the_writer() {
 }
 
 #[test]
-fn a_commit_that_never_answers_times_out_and_frees_the_scope() {
+fn a_commit_answering_after_the_timeout_keeps_the_scope_busy_and_the_stacks_in_step() {
     let f = Fixture::new();
     f.set(1);
-    f.operations.hang.store(true, Ordering::SeqCst);
+    f.set(2);
+    f.operations.late.store(true, Ordering::SeqCst);
+    let mut undo = f.history.undo(f.scope.clone());
+    std::thread::sleep(TIMEOUT * 3);
+    // The commit landed; its answer is late, which is no failure: the undo waits for it.
+    assert!(poll_once(&mut undo).is_pending());
+    assert_eq!(f.value(), 1);
+    // Meanwhile the scope is busy: its inverse is never applied twice.
+    assert_eq!(
+        block_on(f.history.undo(f.scope.clone())),
+        Err(HistoryError::ScopeBusy)
+    );
+    assert_eq!(f.value(), 1);
+    f.operations.answered.store(true, Ordering::SeqCst);
+    assert!(block_on(undo).unwrap());
+    assert_eq!((f.value(), f.history.stack_depths(&f.scope)), (1, (1, 1)));
+    f.operations.late.store(false, Ordering::SeqCst);
+    assert!(block_on(f.history.undo(f.scope.clone())).unwrap());
+    assert_eq!((f.value(), f.history.stack_depths(&f.scope)), (0, (0, 2)));
+}
+
+#[test]
+fn a_submission_that_never_answers_times_out_aborts_and_frees_the_scope() {
+    let f = Fixture::new();
+    f.set(1);
+    f.operations.stuck.store(true, Ordering::SeqCst);
     assert_eq!(
         block_on(f.history.undo(f.scope.clone())),
         Err(HistoryError::TimedOut)
     );
-    // Not busy for good: the next command runs.
-    f.operations.hang.store(false, Ordering::SeqCst);
-    assert_ne!(
-        block_on(f.history.clear_scope(f.scope.clone())),
-        Err(HistoryError::ScopeBusy)
-    );
-    assert_eq!(f.history.stack_depths(&f.scope), (0, 0));
+    assert_eq!((f.value(), f.history.stack_depths(&f.scope)), (1, (1, 0)));
+    f.operations.stuck.store(false, Ordering::SeqCst);
+    assert!(block_on(f.history.undo(f.scope.clone())).unwrap());
+    assert_eq!((f.value(), f.history.stack_depths(&f.scope)), (0, (0, 1)));
 }
 
 #[test]
@@ -442,4 +491,22 @@ fn a_lock_poisoned_while_a_save_is_pending_leaves_no_save_unanswered() {
             .recv_timeout(WAIT)
             .expect("a save waiting behind the poisoned lock is answered");
     }
+}
+
+#[test]
+fn the_failure_of_an_undo_dropped_after_it_answered_is_a_failed_step_of_the_scope() {
+    let f = Fixture::new();
+    f.set(1);
+    f.saves(Saves::Fail);
+    // Everything answers at once: the undo has failed (its save) before it is dropped unread.
+    drop(f.history.undo(f.scope.clone()));
+    assert_eq!(f.failures().len(), 1, "{:?}", f.failures());
+    assert!(
+        f.failures()[0].contains("the quota is full"),
+        "{:?}",
+        f.failures()
+    );
+    // Read, it is the caller's: not reported again.
+    assert!(block_on(f.history.redo(f.scope.clone())).is_err());
+    assert_eq!(f.failures().len(), 1, "{:?}", f.failures());
 }

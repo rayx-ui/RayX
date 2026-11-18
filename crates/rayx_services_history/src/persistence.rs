@@ -1,11 +1,12 @@
 //! Loading a scope from the history's store and saving it there, asynchronously: a scope is
 //! loaded the first time a command uses it, and saved behind each change by one writer at a
 //! time, which runs detached: a command awaits only the outcome of its save, so a command given
-//! up on leaves no save half done. What a scope changed since it last loaded or saved is rebased
-//! on the stored journal whenever the store holds another than it expects (edits recorded
-//! before the load, another history's saves over the same store), so no writer's entries are
-//! lost.
+//! up on leaves no save half done. The journal saved keeps the entries other histories saved
+//! in the same store (their sessions undo them, never this one): when the store holds another
+//! journal than this history expects, it reloads it and merges its own entries in by id, so no
+//! writer's entries are lost.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, MutexGuard, PoisonError};
 
 use futures::FutureExt as _;
@@ -17,41 +18,47 @@ use crate::journal::HistoryJournalV2;
 use crate::service::{RayxHistory, ScopeHistory, Scopes};
 use crate::store::{HistoryStore, HistoryStoreError};
 
-/// How many times a save that meets another journal rebases on it and saves again.
+/// How many times a save that meets another journal merges with it and saves again.
 const SAVE_ATTEMPTS: usize = 3;
 
-/// Puts what `scope` changed since its base (the journal it last loaded or saved) on `stored`:
-/// the stored entries, less those the scope dropped since (undone, cleared, evicted), then the
-/// entries it recorded since. Its base is `stored` from then on.
-pub(crate) fn rebase(scope: &mut ScopeHistory, stored: Option<HistoryJournalV2>) {
-    let stored_revision = stored.as_ref().map(|journal| journal.revision);
-    let stored_entries = stored.map(|journal| journal.entries).unwrap_or_default();
-    let ours = std::mem::take(&mut scope.undo);
-    let dropped: Vec<&HistoryEntry> = scope
-        .base
-        .iter()
-        .filter(|entry| !ours.contains(entry))
-        .collect();
-    let mut undo: Vec<HistoryEntry> = stored_entries
-        .iter()
-        .filter(|entry| !dropped.contains(entry))
-        .cloned()
-        .collect();
-    for entry in ours {
-        if !scope.base.contains(&entry) && !undo.contains(&entry) {
-            undo.push(entry);
+/// `entries` with an id each: an entry of a journal written before entries had ids gets one
+/// from its place and transaction (the same in every history that loads that journal).
+pub(crate) fn with_ids(mut entries: Vec<HistoryEntry>) -> Vec<HistoryEntry> {
+    for (index, entry) in entries.iter_mut().enumerate() {
+        if entry.id.is_empty() {
+            entry.id = format!("legacy:{index}:{}", entry.transaction_id);
         }
     }
-    let differs = undo != stored_entries;
-    scope.undo = undo;
-    scope.base = stored_entries;
-    scope.persisted_revision = stored_revision;
-    let floor = stored_revision.unwrap_or(0);
-    // Past the stored revision when it differs from it, so it is saved.
-    scope.revision = scope.revision.max(floor) + u64::from(differs);
-    if differs {
-        scope.enforce_entry_limit();
+    entries
+}
+
+/// The journal to save for `scope`: the stored entries (another history's included) less the
+/// ones this history saved and dropped since (undone, cleared, evicted), each of its own
+/// replaced by its current copy, then its entries the store does not hold yet. Matched by id;
+/// the scope's live stacks are not changed.
+pub(crate) fn journal_entries(scope: &ScopeHistory) -> Vec<HistoryEntry> {
+    let ours: BTreeMap<&str, &HistoryEntry> = scope
+        .undo
+        .iter()
+        .map(|entry| (entry.id.as_str(), entry))
+        .collect();
+    let mut entries = Vec::with_capacity(scope.stored.len() + scope.undo.len());
+    let mut included = BTreeSet::new();
+    for stored in &scope.stored {
+        let own = ours.get(stored.id.as_str());
+        if own.is_none() && scope.saved_own.contains(&stored.id) {
+            continue;
+        }
+        if included.insert(stored.id.clone()) {
+            entries.push((*own.unwrap_or(&stored)).clone());
+        }
     }
+    for entry in &scope.undo {
+        if included.insert(entry.id.clone()) {
+            entries.push(entry.clone());
+        }
+    }
+    entries
 }
 
 impl RayxHistory {
@@ -93,8 +100,8 @@ impl RayxHistory {
         Ok(())
     }
 
-    /// Puts what the scope recorded since its start on the loaded `journal` (unless it was
-    /// loaded meanwhile).
+    /// Puts the loaded `journal` (this history's own from now on) under what the scope
+    /// recorded since its start (unless it was loaded meanwhile).
     fn merge_loaded(
         &self,
         scope_id: &HistoryScopeId,
@@ -105,7 +112,24 @@ impl RayxHistory {
         if scope.loaded {
             return Ok(());
         }
-        rebase(scope, journal);
+        if let Some(journal) = journal {
+            let loaded = with_ids(journal.entries);
+            let recorded = std::mem::replace(&mut scope.undo, loaded.clone());
+            let had_recorded = !recorded.is_empty();
+            for entry in recorded {
+                if !scope.undo.iter().any(|loaded| loaded.id == entry.id) {
+                    scope.undo.push(entry);
+                }
+            }
+            scope.saved_own = loaded.iter().map(|entry| entry.id.clone()).collect();
+            scope.stored = loaded;
+            // The changes made before the load count on from the saved revision.
+            scope.revision += journal.revision;
+            scope.persisted_revision = Some(journal.revision);
+            if had_recorded {
+                scope.enforce_entry_limit();
+            }
+        }
         scope.loaded = true;
         Ok(())
     }
@@ -218,7 +242,7 @@ impl RayxHistory {
     }
 
     /// Saves `scope_id` at its revision now (loading it first if it was not); a save that
-    /// meets another journal in the store reloads it, rebases the scope's changes on it and
+    /// meets another journal in the store reloads it, merges this history's entries in and
     /// saves again (unless it holds this very journal, a save whose answer was lost).
     async fn save_scope(
         &self,
@@ -237,7 +261,7 @@ impl RayxHistory {
         }
         let mut attempt = 1;
         loop {
-            let (journal, expected_revision) = self.persistence_snapshot(scope_id)?;
+            let (journal, expected_revision, own) = self.persistence_snapshot(scope_id)?;
             if expected_revision == Some(journal.revision) {
                 return Ok(());
             }
@@ -245,48 +269,68 @@ impl RayxHistory {
                 .bounded_store(store.save(journal.clone(), expected_revision))
                 .await?
             {
-                Ok(()) => return self.record_saved(scope_id, journal),
+                Ok(()) => return self.record_saved(scope_id, journal, own),
                 Err(HistoryStoreError::Conflict) if attempt < SAVE_ATTEMPTS => {
                     attempt += 1;
                     let stored = self.bounded(store.load(scope_id)).await?;
                     if stored.as_ref() == Some(&journal) {
-                        return self.record_saved(scope_id, journal);
+                        return self.record_saved(scope_id, journal, own);
                     }
-                    {
-                        let mut state = self.lock_state()?;
-                        let scope = state
-                            .scopes
-                            .get_mut(scope_id)
-                            .ok_or(HistoryError::StackChanged)?;
-                        rebase(scope, stored);
-                    }
-                    self.publish_state();
+                    self.take_stored(scope_id, stored)?;
                 }
                 Err(error) => return Err(error.into()),
             }
         }
     }
 
+    /// The journal to save, the revision expected in the store and the ids of this history's
+    /// entries in it.
     fn persistence_snapshot(
         &self,
         scope_id: &HistoryScopeId,
-    ) -> Result<(HistoryJournalV2, Option<u64>), HistoryError> {
+    ) -> Result<(HistoryJournalV2, Option<u64>, BTreeSet<String>), HistoryError> {
         let state = self.lock_state()?;
         let scope = state
             .scopes
             .get(scope_id)
             .ok_or(HistoryError::StackChanged)?;
         Ok((
-            HistoryJournalV2::new(scope.revision, scope_id.clone(), scope.undo.clone()),
+            HistoryJournalV2::new(scope.revision, scope_id.clone(), journal_entries(scope)),
             scope.persisted_revision,
+            scope.undo.iter().map(|entry| entry.id.clone()).collect(),
         ))
     }
 
-    /// `journal` is the scope's in the store: its base from now on.
+    /// `stored` is the scope's journal in the store: merged with from now on, at a revision
+    /// past it.
+    fn take_stored(
+        &self,
+        scope_id: &HistoryScopeId,
+        stored: Option<HistoryJournalV2>,
+    ) -> Result<(), HistoryError> {
+        {
+            let mut state = self.lock_state()?;
+            let scope = state
+                .scopes
+                .get_mut(scope_id)
+                .ok_or(HistoryError::StackChanged)?;
+            let revision = stored.as_ref().map(|journal| journal.revision);
+            scope.stored = stored
+                .map(|journal| with_ids(journal.entries))
+                .unwrap_or_default();
+            scope.persisted_revision = revision;
+            scope.revision = scope.revision.max(revision.unwrap_or(0)) + 1;
+        }
+        self.publish_state();
+        Ok(())
+    }
+
+    /// `journal` is the scope's in the store, with this history's entries `own`.
     fn record_saved(
         &self,
         scope_id: &HistoryScopeId,
         journal: HistoryJournalV2,
+        own: BTreeSet<String>,
     ) -> Result<(), HistoryError> {
         let mut state = self.lock_state()?;
         let scope = state
@@ -294,7 +338,8 @@ impl RayxHistory {
             .get_mut(scope_id)
             .ok_or(HistoryError::StackChanged)?;
         scope.persisted_revision = Some(journal.revision);
-        scope.base = journal.entries;
+        scope.stored = journal.entries;
+        scope.saved_own = own;
         Ok(())
     }
 }

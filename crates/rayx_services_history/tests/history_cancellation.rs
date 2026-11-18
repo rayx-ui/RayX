@@ -521,18 +521,19 @@ fn two_histories_sharing_a_store_keep_both_s_entries() {
     let (first, first_history, target, first_failures) = app(0);
     let (second, second_history, _, second_failures) = app(0);
     now(first.submit(&target, Set(1), OperationOrigin::LocalUser)).unwrap();
-    // The second's save meets the first's journal: its entries go on top of it.
+    // The second's save meets the first's journal: the store keeps both's entries.
     now(second.submit(&target, Set(2), OperationOrigin::LocalUser)).unwrap();
     now(second.submit(&target, Set(3), OperationOrigin::LocalUser)).unwrap();
     let entries = || now(store.load(&scope)).unwrap().unwrap().entries.len();
     assert_eq!(entries(), 3);
-    assert_eq!(second_history.stack_depths(&scope), (3, 0));
-    // And the first's next save goes on top of both.
     now(first.submit(&target, Set(4), OperationOrigin::LocalUser)).unwrap();
     assert_eq!(entries(), 4);
-    assert_eq!(first_history.stack_depths(&scope), (4, 0));
+    // Each session's stacks hold its own entries only.
+    assert_eq!(first_history.stack_depths(&scope), (2, 0));
+    assert_eq!(second_history.stack_depths(&scope), (2, 0));
     // An undo in one drops only its entry from the stored journal.
     assert!(now(second_history.undo(scope.clone())).unwrap());
+    assert_eq!(entries(), 3);
     now(second.submit(&target, Set(5), OperationOrigin::LocalUser)).unwrap();
     assert_eq!(entries(), 4);
     assert!(
@@ -543,6 +544,45 @@ fn two_histories_sharing_a_store_keep_both_s_entries() {
         second_failures.lock().unwrap().is_empty(),
         "{second_failures:?}"
     );
+}
+
+#[test]
+fn two_histories_sharing_a_store_each_undo_only_their_own_edits() {
+    let store = InMemoryHistoryStore::default();
+    let scope = HistoryScopeId::new("shared:scope").unwrap();
+    let target_id = OperationTargetId::new("shared:target").unwrap();
+    let app = || {
+        let operations: Arc<dyn OperationService> = FakeOperations::new();
+        let history = rayx_services_history::testing::history_with_store(
+            Arc::clone(&operations),
+            Arc::new(store.clone()),
+        );
+        let target = Arc::new(Target::default());
+        now(operations.register_handler(target_id.clone(), Arc::clone(&target))).unwrap();
+        now(history.bind_target_scope(target_id.clone(), scope.clone())).unwrap();
+        (operations, history, target)
+    };
+    let (first, first_history, first_value) = app();
+    let (second, second_history, second_value) = app();
+    let set = |operations: &Arc<dyn OperationService>, value: u64| {
+        now(operations.submit(&target_id, Set(value), OperationOrigin::LocalUser)).unwrap();
+    };
+    set(&first, 1);
+    set(&first, 2);
+    set(&second, 7);
+    // The first's save meets the second's journal.
+    set(&first, 3);
+    let value = |target: &Arc<Target>| *target.0.lock().unwrap();
+    for expected in [2, 1, 0] {
+        assert!(now(first_history.undo(scope.clone())).unwrap());
+        assert_eq!(value(&first_value), expected);
+    }
+    assert!(!now(first_history.undo(scope.clone())).unwrap());
+    assert!(now(second_history.undo(scope.clone())).unwrap());
+    assert_eq!(value(&second_value), 0);
+    assert!(!now(second_history.undo(scope.clone())).unwrap());
+    // The store keeps neither's undone entries.
+    assert!(now(store.load(&scope)).unwrap().unwrap().entries.is_empty());
 }
 
 #[test]
