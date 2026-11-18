@@ -20,7 +20,9 @@ use rayx_cli::nsh::switch::{
 use rayx_cli::project::pins::DEFAULTS;
 
 const FORK: &str = "https://github.com/dXnSix/nsh";
-const OLD_COMMIT: &str = "d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85";
+/// Made-up pins, never the real default, so a pin bump (which moves every file naming the
+/// default) leaves these fixtures alone.
+const OLD_COMMIT: &str = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678";
 const NEW_COMMIT: &str = "c9bf1fe9a2b14c3e5d6f708192a3b4c5d6e7f809";
 
 /// A fake NSH checkout in `nsh/`: `crates/nsh-cli` and `nsh-core` at `version`.
@@ -40,7 +42,7 @@ fn checkout(workspace: &Workspace, version: &str) {
 const MANIFEST: &str = "[package]\nname = \"app\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n\
 [workspace]\n\n[dependencies]\nnsh-core = \"0.5.0\"\n\n\
 # NSH comes from an integration tag of the fork.\n[patch.crates-io]\n\
-nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\n";
+nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }\n";
 
 /// A project in `app/` beside the checkout, whose Cargo never goes to the network.
 fn project(workspace: &Workspace) {
@@ -98,9 +100,9 @@ fn a_folder_is_a_checkout_and_anything_else_a_tag() {
 #[test]
 fn only_nsh_patch_lines_move_and_a_round_trip_gives_the_same_text() {
     let text = "[dependencies]\n\
-        nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\n\n\
+        nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }\n\n\
         [patch.crates-io]\n\
-        nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\r\n\
+        nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }\r\n\
         nsh-app-ui = { path = \"ui\" }\n\
         serde = { git = \"https://github.com/serde-rs/serde\", tag = \"v1\" }\n";
     let there = rewrite_patch(text, |line| {
@@ -108,12 +110,12 @@ fn only_nsh_patch_lines_move_and_a_round_trip_gives_the_same_text() {
     });
     assert_eq!((there.seen, there.changed), (1, 1), "{}", there.text);
     let patched = format!(
-        "nsh-core = {{ path = \"../nsh/crates/nsh-core\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-7\" }}\r\n"
+        "nsh-core = {{ path = \"../nsh/crates/nsh-core\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-4\" }}\r\n"
     );
     assert!(there.text.contains(&patched), "{}", there.text);
     assert!(
         there.text.starts_with(
-            "[dependencies]\nnsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\n"
+            "[dependencies]\nnsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }\n"
         ),
         "a dependency outside [patch.crates-io] stays: {}",
         there.text
@@ -125,7 +127,7 @@ fn only_nsh_patch_lines_move_and_a_round_trip_gives_the_same_text() {
             .contains("serde = { git = \"https://github.com/serde-rs/serde\"")
     );
 
-    let back = rewrite_patch(&there.text, |line| tag_line(line, "nshx-0.5.0-7"));
+    let back = rewrite_patch(&there.text, |line| tag_line(line, "nshx-0.5.0-4"));
     assert_eq!(
         back.text, text,
         "back at the same tag, the text is as it was"
@@ -147,7 +149,7 @@ fn use_points_the_project_at_the_checkout_and_status_shows_it() {
     project(&workspace);
     workspace.write(
         "app/examples/gallery/.cargo/config.toml",
-        "[patch.crates-io]\nnsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\n",
+        "[patch.crates-io]\nnsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }\n",
     );
     let mut out = Vec::new();
     let code = use_in(
@@ -162,13 +164,13 @@ fn use_points_the_project_at_the_checkout_and_status_shows_it() {
     let said = String::from_utf8(out).expect("UTF-8");
     assert!(said.contains("builds NSH from"), "{said}");
     assert!(
-        said.contains("`rayx nshx use nshx-0.5.0-7` moves them back"),
+        said.contains("`rayx nshx use nshx-0.5.0-4` moves them back"),
         "{said}"
     );
 
     let manifest = workspace.read("app/Cargo.toml");
     let line = format!(
-        "nsh-core = {{ path = \"../nsh/crates/nsh-core\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-7\" }}"
+        "nsh-core = {{ path = \"../nsh/crates/nsh-core\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-4\" }}"
     );
     assert!(manifest.contains(&line), "{manifest}");
     let config = workspace.read("app/examples/gallery/.cargo/config.toml");
@@ -196,7 +198,7 @@ fn use_points_the_project_at_the_checkout_and_status_shows_it() {
     let status = String::from_utf8(status).expect("UTF-8");
     assert!(status.contains("  checkout   "), "{status}");
     assert!(
-        status.contains("  back       rayx nshx use nshx-0.5.0-7"),
+        status.contains("  back       rayx nshx use nshx-0.5.0-4"),
         "{status}"
     );
 }
@@ -236,7 +238,7 @@ fn a_checkout_without_a_patched_crate_is_refused_before_anything_changes() {
     checkout(&workspace, "0.5.0");
     project(&workspace);
     let manifest = format!(
-        "{MANIFEST}nsh-base = {{ git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }}\n"
+        "{MANIFEST}nsh-base = {{ git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }}\n"
     );
     workspace.write("app/Cargo.toml", &manifest);
     let error = use_in(
@@ -323,7 +325,7 @@ fn a_tag_puts_the_git_lines_back_at_that_tag() {
     .expect("use the tag");
     assert_eq!(
         workspace.read("app/Cargo.toml"),
-        MANIFEST.replace("nshx-0.5.0-7", "nshx-0.5.0-8")
+        MANIFEST.replace("nshx-0.5.0-4", "nshx-0.5.0-8")
     );
     let said = String::from_utf8(out).expect("UTF-8");
     assert!(
@@ -352,7 +354,7 @@ fn rayx_s_default_pin_is_read_from_its_pins_source() {
 #[test]
 fn a_new_tag_moves_the_tag_and_every_form_of_the_commit_standing_alone() {
     let old = PinText {
-        tag: "nshx-0.5.0-7".into(),
+        tag: "nshx-0.5.0-4".into(),
         commit: OLD_COMMIT.into(),
         version: "0.5.0".into(),
     };
@@ -362,14 +364,14 @@ fn a_new_tag_moves_the_tag_and_every_form_of_the_commit_standing_alone() {
         version: "0.5.0".into(),
     };
     let text = format!(
-        "`nshx-0.5.0-7` at `d47d7fd`, id `d47d7fd6dfdc`, {OLD_COMMIT}, d47d7fd6d.\n\
-         keep: nshx-0.5.0-70, d47d7fd6dfdcb1, ad47d7fd\n"
+        "`nshx-0.5.0-4` at `a1b2c3d`, id `a1b2c3d4e5f6`, {OLD_COMMIT}, a1b2c3d4e.\n\
+         keep: nshx-0.5.0-40, a1b2c3d4e5f607, fa1b2c3d\n"
     );
     assert_eq!(
         moved_text(&text, &old, &new),
         format!(
             "`nshx-0.5.0-8` at `c9bf1fe`, id `c9bf1fe9a2b1`, {NEW_COMMIT}, c9bf1fe9a.\n\
-             keep: nshx-0.5.0-70, d47d7fd6dfdcb1, ad47d7fd\n"
+             keep: nshx-0.5.0-40, a1b2c3d4e5f607, fa1b2c3d\n"
         )
     );
 }
@@ -379,13 +381,13 @@ fn rayx_s_repository_moves_every_tracked_file_but_its_history() {
     let workspace = Workspace::empty();
     let pins = format!(
         "pub const DEFAULTS: Defaults = Defaults {{\n    nsh: DefaultNsh {{\n        \
-         tag: \"nshx-0.5.0-7\",\n        commit: \"{OLD_COMMIT}\",\n        version: \"0.5.0\",\n    }},\n}};\n"
+         tag: \"nshx-0.5.0-4\",\n        commit: \"{OLD_COMMIT}\",\n        version: \"0.5.0\",\n    }},\n}};\n"
     );
     workspace.write("crates/rayx_cli/src/project/pins.rs", &pins);
-    workspace.write("README.md", "The default: `nshx-0.5.0-7` at `d47d7fd`.\n");
-    workspace.write("CHANGELOG.md", "- Pin NSH to nshx-0.5.0-7\n");
-    workspace.write(".agentx/memory/state.md", "nshx-0.5.0-7\n");
-    workspace.write("untracked.md", "nshx-0.5.0-7\n");
+    workspace.write("README.md", "The default: `nshx-0.5.0-4` at `a1b2c3d`.\n");
+    workspace.write("CHANGELOG.md", "- Pin NSH to nshx-0.5.0-4\n");
+    workspace.write(".agentx/memory/state.md", "nshx-0.5.0-4\n");
+    workspace.write("untracked.md", "nshx-0.5.0-4\n");
     let git = |args: &[&str]| {
         let status = std::process::Command::new("git")
             .args(args)
@@ -430,7 +432,7 @@ fn rayx_s_repository_moves_every_tracked_file_but_its_history() {
     );
     for kept in ["CHANGELOG.md", ".agentx/memory/state.md", "untracked.md"] {
         assert!(
-            workspace.read(kept).contains("nshx-0.5.0-7"),
+            workspace.read(kept).contains("nshx-0.5.0-4"),
             "{kept} keeps its text"
         );
     }
@@ -461,10 +463,10 @@ fn a_checkout_of_another_version_moves_the_requirements_and_its_tag_moves_them_b
         "{manifest}"
     );
     use_in(
-        &mut locking_at("nshx-0.5.0-7", workspace.path("app/Cargo.lock")),
+        &mut locking_at("nshx-0.5.0-4", workspace.path("app/Cargo.lock")),
         &workspace.path("app"),
         &workspace.root,
-        "nshx-0.5.0-7",
+        "nshx-0.5.0-4",
         &mut Vec::new(),
     )
     .expect("back at the tag");
@@ -492,7 +494,7 @@ fn latest_takes_the_fork_s_newest_nshx_tag_and_its_version() {
     assert_eq!(
         workspace.read("app/Cargo.toml"),
         MANIFEST
-            .replace("nshx-0.5.0-7", "nshx-0.6.0-2")
+            .replace("nshx-0.5.0-4", "nshx-0.6.0-2")
             .replace("nsh-core = \"0.5.0\"", "nsh-core = \"0.6.0\"")
     );
 }
@@ -540,7 +542,7 @@ fn only_nsh_requirements_the_new_version_misses_move() {
         nsh-app-ui = \"0.5.0\"\n\
         serde = \"1\"\n\n\
         [patch.crates-io]\n\
-        nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\n";
+        nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-4\" }\n";
     let six = semver::Version::parse("0.6.0").expect("0.6.0");
     let (moved, count) = rewrite_requirements(text, |_| Some(six.clone()));
     assert_eq!(count, 2, "{moved}");
