@@ -13,8 +13,9 @@ use rayx_cli::host::{Arch, CommandSpec, HostFacts, Os, Outcome, Runner};
 use rayx_cli::nsh::status_in;
 use rayx_cli::nsh::store::Store;
 use rayx_cli::nsh::switch::{
-    PinText, Target, WAS, checkout_line, crate_version, move_default, moved_text, newest_nshx,
-    rayx_default, rewrite_patch, rewrite_requirements, tag_line, tag_version, target, use_in,
+    PinText, Target, WAS, base_of, checkout_line, crate_version, move_default, moved_text,
+    newest_nshx, rayx_default, relative_path, rewrite_patch, rewrite_requirements, tag_line,
+    tag_version, target, use_in,
 };
 use rayx_cli::project::pins::DEFAULTS;
 
@@ -56,10 +57,6 @@ fn mac() -> HostFacts {
         wsl: false,
         distro: None,
     }
-}
-
-fn slashed(path: &Path) -> String {
-    path.to_string_lossy().replace('\\', "/")
 }
 
 #[test]
@@ -106,12 +103,12 @@ fn only_nsh_patch_lines_move_and_a_round_trip_gives_the_same_text() {
         nsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\r\n\
         nsh-app-ui = { path = \"ui\" }\n\
         serde = { git = \"https://github.com/serde-rs/serde\", tag = \"v1\" }\n";
-    let dir = Path::new("/work/nsh/crates/nsh-core");
-    let there = rewrite_patch(text, |line| Some(checkout_line(line, dir)));
+    let there = rewrite_patch(text, |line| {
+        Some(checkout_line(line, "../nsh/crates/nsh-core"))
+    });
     assert_eq!((there.seen, there.changed), (1, 1), "{}", there.text);
     let patched = format!(
-        "nsh-core = {{ path = \"{}\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-7\" }}\r\n",
-        slashed(dir)
+        "nsh-core = {{ path = \"../nsh/crates/nsh-core\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-7\" }}\r\n"
     );
     assert!(there.text.contains(&patched), "{}", there.text);
     assert!(
@@ -148,6 +145,10 @@ fn use_points_the_project_at_the_checkout_and_status_shows_it() {
     let workspace = Workspace::empty();
     checkout(&workspace, "0.5.0");
     project(&workspace);
+    workspace.write(
+        "app/examples/gallery/.cargo/config.toml",
+        "[patch.crates-io]\nnsh-core = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.5.0-7\" }\n",
+    );
     let mut out = Vec::new();
     let code = use_in(
         &mut Runner::execute(),
@@ -167,10 +168,14 @@ fn use_points_the_project_at_the_checkout_and_status_shows_it() {
 
     let manifest = workspace.read("app/Cargo.toml");
     let line = format!(
-        "nsh-core = {{ path = \"{}\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-7\" }}",
-        slashed(&workspace.path("nsh/crates/nsh-core"))
+        "nsh-core = {{ path = \"../nsh/crates/nsh-core\" }} {WAS}{{ git = \"{FORK}\", tag = \"nshx-0.5.0-7\" }}"
     );
     assert!(manifest.contains(&line), "{manifest}");
+    let config = workspace.read("app/examples/gallery/.cargo/config.toml");
+    assert!(
+        config.contains("nsh-core = { path = \"../../../nsh/crates/nsh-core\" }"),
+        "a config file's path is read against the folder holding .cargo: {config}"
+    );
     let lock = workspace.read("app/Cargo.lock");
     let core = lock
         .split("[[package]]")
@@ -589,7 +594,7 @@ fn local_finds_the_checkout_in_a_folder_above_the_project() {
     assert!(
         workspace
             .read("projects/RayX/RayX/Cargo.toml")
-            .contains(&slashed(&checkout.join("crates").join("nsh-core"))),
+            .contains("nsh-core = { path = \"../../dXn/nsh/nsh/crates/nsh-core\" }"),
         "the patch points at the checkout"
     );
 
@@ -606,5 +611,40 @@ fn local_finds_the_checkout_in_a_folder_above_the_project() {
     assert!(
         error.to_string().contains("no local NSH checkout"),
         "{error}"
+    );
+}
+
+#[test]
+fn paths_are_relative_to_the_file_that_holds_them() {
+    let workspace = Workspace::empty();
+    workspace.write("projects/RayX/RayX/Cargo.toml", "");
+    workspace.write("projects/dXn/nsh/nsh/crates/nsh-core/Cargo.toml", "");
+    assert_eq!(
+        relative_path(
+            &workspace.path("projects/RayX/RayX"),
+            &workspace.path("projects/dXn/nsh/nsh/crates/nsh-core")
+        )
+        .as_deref(),
+        Some("../../dXn/nsh/nsh/crates/nsh-core")
+    );
+    assert_eq!(
+        base_of(&workspace.path("projects/RayX/RayX/examples/gallery/.cargo/config.toml")),
+        workspace.path("projects/RayX/RayX/examples/gallery")
+    );
+    assert_eq!(
+        base_of(&workspace.path("projects/RayX/RayX/Cargo.toml")),
+        workspace.path("projects/RayX/RayX")
+    );
+}
+
+#[cfg(windows)]
+#[test]
+fn another_drive_has_no_relative_path() {
+    assert_eq!(
+        relative_path(
+            Path::new(r"C:\work\app"),
+            Path::new(r"Q:\nsh\crates\nsh-core")
+        ),
+        None
     );
 }

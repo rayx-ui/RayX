@@ -102,6 +102,47 @@ fn slashed(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
 
+/// `path`, canonical where it exists, without the `\\?\` prefix.
+fn canonical(path: &Path) -> PathBuf {
+    plain(fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf()))
+}
+
+/// `to` relative to the folder `from`, `/`-separated (`../../dXn/nsh/nsh/crates/nsh-core`), as a
+/// patch line names it on every machine with the same layout. `None` when no relative path joins
+/// them (another drive): rayx never writes an absolute path into a project's files.
+pub fn relative_path(from: &Path, to: &Path) -> Option<String> {
+    let (from, to) = (canonical(from), canonical(to));
+    let from: Vec<_> = from.components().collect();
+    let to: Vec<_> = to.components().collect();
+    // The drive (Windows' prefix) and the root must agree.
+    if from.first() != to.first() {
+        return None;
+    }
+    let common = from.iter().zip(&to).take_while(|(a, b)| a == b).count();
+    let mut parts: Vec<String> = vec!["..".to_string(); from.len() - common];
+    parts.extend(
+        to[common..]
+            .iter()
+            .map(|part| part.as_os_str().to_string_lossy().into_owned()),
+    );
+    Some(if parts.is_empty() {
+        ".".to_string()
+    } else {
+        parts.join("/")
+    })
+}
+
+/// The folder a file's relative paths are read against: a `Cargo.toml`'s own folder, and for a
+/// `.cargo/config.toml` the folder that holds `.cargo`.
+pub fn base_of(file: &Path) -> PathBuf {
+    let folder = file.parent().unwrap_or(file);
+    if folder.file_name().is_some_and(|name| name == ".cargo") {
+        folder.parent().unwrap_or(folder).to_path_buf()
+    } else {
+        folder.to_path_buf()
+    }
+}
+
 /// The comment `rayx nshx use` leaves on a patch line it points at a checkout, before what the
 /// line was.
 pub const WAS: &str = "# rayx nshx use, was ";
@@ -171,14 +212,12 @@ fn git_of(line: &PatchLine) -> Option<(String, Option<String>)> {
     Some((git, tag))
 }
 
-/// `line` pointed at `dir`, keeping what it was.
-pub fn checkout_line(line: &PatchLine, dir: &Path) -> String {
+/// `line` pointed at `path` (relative to the file's base, `/`-separated), keeping what it was.
+pub fn checkout_line(line: &PatchLine, path: &str) -> String {
     let was = line.was.as_ref().unwrap_or(&line.value);
     format!(
-        "{}{} = {{ path = \"{}\" }} {WAS}{was}",
-        line.indent,
-        line.name,
-        slashed(dir)
+        "{}{} = {{ path = \"{path}\" }} {WAS}{was}",
+        line.indent, line.name
     )
 }
 
@@ -428,11 +467,11 @@ struct Plan {
     requirements: usize,
 }
 
-/// The edits `rewrite` makes to the patch lines of `files` and `version_of` to their NSH version
-/// requirements.
+/// The edits `rewrite` (given each line and its file's [`base_of`]) makes to the patch lines of
+/// `files`, and `version_of` to their NSH version requirements.
 fn plan(
     files: &[PathBuf],
-    mut rewrite: impl FnMut(&PatchLine) -> Option<String>,
+    mut rewrite: impl FnMut(&PatchLine, &Path) -> Option<String>,
     version_of: impl Fn(&str) -> Option<semver::Version>,
 ) -> Plan {
     let mut plan = Plan {
@@ -444,7 +483,8 @@ fn plan(
         let Ok(before) = fs::read_to_string(path) else {
             continue;
         };
-        let rewritten = rewrite_patch(&before, &mut rewrite);
+        let base = base_of(path);
+        let rewritten = rewrite_patch(&before, |line| rewrite(line, &base));
         plan.patched += rewritten.seen;
         let (after, moved) = if path.file_name().is_some_and(|name| name == "Cargo.toml") {
             rewrite_requirements(&rewritten.text, &version_of)
@@ -635,6 +675,7 @@ fn use_checkout(
 ) -> Result<u8> {
     let crates = checkout_crates(checkout);
     let mut missing = Vec::new();
+    let mut unreachable = Vec::new();
     let mut back = None;
     let Plan {
         edits,
@@ -642,19 +683,30 @@ fn use_checkout(
         requirements,
     } = plan(
         &project_files(root),
-        |line| {
+        |line, base| {
             let (_, tag) = git_of(line)?;
             back = back.take().or(tag);
-            match crates.get(&line.name) {
-                Some(dir) => Some(checkout_line(line, dir)),
+            let Some(dir) = crates.get(&line.name) else {
+                missing.push(line.name.clone());
+                return None;
+            };
+            match relative_path(base, dir) {
+                Some(path) => Some(checkout_line(line, &path)),
                 None => {
-                    missing.push(line.name.clone());
+                    unreachable.push(base.to_path_buf());
                     None
                 }
             }
         },
         |name| crates.get(name).and_then(|dir| crate_version(dir)),
     );
+    if let Some(base) = unreachable.first() {
+        bail!(
+            "{} and {} share no folder (another drive?), and rayx never writes an absolute path; move the checkout beside the project",
+            checkout.display(),
+            base.display()
+        );
+    }
     if patched == 0 {
         bail!(
             "{} patches no NSH crate in [patch.crates-io]; `rayx nshx use` moves those lines",
@@ -728,7 +780,7 @@ fn use_tag(runner: &mut Runner, root: &Path, tag: &str, out: &mut dyn Write) -> 
         requirements,
     } = plan(
         &project_files(root),
-        |line| tag_line(line, tag),
+        |line, _| tag_line(line, tag),
         |_| version.clone(),
     );
     if patched == 0 {
