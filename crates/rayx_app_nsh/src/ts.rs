@@ -34,7 +34,7 @@
 
 use nsh_core::element::{Registry, TsAlias};
 
-pub use crate::app::builder_ts::RayXAppBuilder;
+pub use crate::app::builder_ts::{ContractFactory, RayXAppBuilder};
 pub use crate::app::ready_ts::ReadyContext;
 pub use crate::configuration::configuration_builder_ts::ConfigurationBuilder;
 pub use crate::configuration::options_ts::{OptionsBuilder, OptionsToken};

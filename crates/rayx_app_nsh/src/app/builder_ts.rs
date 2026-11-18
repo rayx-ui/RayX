@@ -13,6 +13,7 @@ use crate::ts::ConfigurationBuilder;
 use std::collections::HashMap;
 
 use nsh_core::JsonValue;
+use nsh_core::element::{Arg, JsIn, JsValue, PropError, TsTypes};
 use rayx_app::di::RuntimeKey;
 
 use crate::app::ready_ts as ready;
@@ -421,7 +422,50 @@ impl RayXAppBuilder {
     }
 }
 
+/// A function TS passes to a service crate's builder method that makes the implementation of a
+/// contract `C` (`addHistoryWithStore(() => new MyStore())`): it is called with the resolving
+/// `ServiceProvider`, as `addSingletonAs`'s factory is, and is itself the token of the TS service
+/// it makes. [`RayXAppBuilder::add_contract_singleton`] registers it.
+pub struct ContractFactory<C: ?Sized> {
+    handle: JsHandle,
+    factory: Factory,
+    contract: std::marker::PhantomData<fn() -> Box<C>>,
+}
+
+impl<C: ?Sized + crate::ts::Contract> Arg for ContractFactory<C> {
+    fn ts_type(_types: &mut TsTypes) -> String {
+        format!("(services: ServiceProvider) => {}", C::INTERFACE)
+    }
+
+    fn from_js(value: JsIn<'_>) -> Result<Self, PropError> {
+        Ok(Self {
+            handle: <JsHandle as JsValue>::from_js(value)?,
+            factory: Factory::from_js(value)?,
+            contract: std::marker::PhantomData,
+        })
+    }
+}
+
 impl RayXAppBuilder {
+    /// Registers the TS singleton `factory` makes as contract `C`'s implementation, which Rust
+    /// resolves as `C::Dyn` (made by `start()`, before any Rust startup factory runs): what a
+    /// service crate's builder method that takes a TS implementation does
+    /// (`addHistoryWithStore(() => new MyStore())`), as `addSingletonAs` does with a token.
+    pub fn add_contract_singleton<C: ?Sized + crate::ts::Contract>(
+        builder: Instance<Self>,
+        factory: ContractFactory<C>,
+        sys: &System,
+    ) -> Result<Instance<Self>, String> {
+        add_ts_service(
+            builder,
+            ServiceLifetime::Singleton,
+            ServiceKeyArg::of_contract::<C>(factory.handle),
+            factory.factory,
+            sys,
+            false,
+        )
+    }
+
     /// `builder` with `extend` applied to its Rust builder, for chaining: what a service crate's
     /// TS builder method (a class extension of `RayXAppBuilder`) does with its Rust
     /// registration, as the builder's own methods do. Fails, for TS to throw, once the builder

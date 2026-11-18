@@ -407,6 +407,18 @@ pub struct ServiceKeyArg {
 }
 
 impl ServiceKeyArg {
+    /// `handle` (a factory's function) as the token of a TS implementation of contract `C`
+    /// registered by a builder method ([`crate::ts::ContractFactory`]).
+    pub(crate) fn of_contract<C: ?Sized + crate::di::contract_ts::Contract>(
+        handle: JsHandle,
+    ) -> Self {
+        Self {
+            handle,
+            name: C::NAME.to_owned(),
+            contract: Some(crate::di::contract_ts::ContractDef::of::<C>()),
+        }
+    }
+
     /// The token's JS object.
     pub fn handle(&self) -> &JsHandle {
         &self.handle
