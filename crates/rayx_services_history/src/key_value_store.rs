@@ -8,7 +8,10 @@ use rayx_app::di::{
 };
 use rayx_app::services::history::HistoryScopeId;
 use rayx_app::services::storage::KeyValueStore;
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::future::poll_fn;
+use std::sync::{Arc, Mutex, MutexGuard, OnceLock, PoisonError, Weak};
+use std::task::{Poll, Waker};
 
 /// The bucket of the app's [`KeyValueStore`] that [`KeyValueHistoryStore`] keeps journals in.
 pub const HISTORY_BUCKET: &str = "rayx.history";
@@ -18,13 +21,103 @@ pub const HISTORY_BUCKET: &str = "rayx.history";
 /// its values (NSH's storage on a device, through `rayx_services_storage`, or a TS
 /// implementation's, which answers in JS's next turn). It initializes after the key-value
 /// store.
+///
+/// A save or a delete checks the scope's stored revision and writes in one step, under a lock
+/// of the scope in the key-value store shared by every `KeyValueHistoryStore` in the process
+/// over that store: histories of separate windows, surfaces and app instances in one process
+/// over one `dyn KeyValueStore` never overwrite or delete a journal another wrote meanwhile.
+/// Over separate key-value stores, or across processes, the step is not atomic: a
+/// [`KeyValueStore`] has no compare step.
 #[derive(Clone)]
 pub struct KeyValueHistoryStore {
     store: Arc<dyn KeyValueStore>,
-    /// Holds a save's or a delete's revision check and its write together, across their
-    /// awaits.
-    saving: Arc<futures::lock::Mutex<()>>,
     initialization: StartupInitializationState,
+}
+
+/// The lock of a scope in a key-value store: the one every `KeyValueHistoryStore` of the process
+/// over that store holds while it checks the scope's revision and writes, across their awaits.
+/// Stores over other key-value stores, and other scopes, never wait for it.
+#[derive(Default)]
+struct ScopeLock {
+    state: Mutex<ScopeLockState>,
+}
+
+#[derive(Default)]
+struct ScopeLockState {
+    held: bool,
+    /// The tasks waiting for it, each woken when it is released.
+    waiting: Vec<Waker>,
+}
+
+impl ScopeLock {
+    /// The lock of `scope` in `store`, shared by the process's history stores over it.
+    fn of(store: &Arc<dyn KeyValueStore>, scope: &HistoryScopeId) -> Arc<ScopeLock> {
+        // The store's address names it while a history store over it lives, which every save
+        // and delete holding or awaiting the lock does.
+        type Locks = HashMap<(usize, String), Weak<ScopeLock>>;
+        static LOCKS: OnceLock<Mutex<Locks>> = OnceLock::new();
+        let mut locks = LOCKS
+            .get_or_init(Mutex::default)
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        let key = (
+            Arc::as_ptr(store).cast::<()>() as usize,
+            scope.as_str().to_owned(),
+        );
+        if let Some(lock) = locks.get(&key).and_then(Weak::upgrade) {
+            return lock;
+        }
+        // A lock no save or delete holds or waits for any more goes with the next new one.
+        locks.retain(|_, lock| lock.strong_count() > 0);
+        let lock = Arc::default();
+        locks.insert(key, Arc::downgrade(&lock));
+        lock
+    }
+
+    fn state(&self) -> MutexGuard<'_, ScopeLockState> {
+        self.state.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    /// Holds the lock, once no other holds it, until the guard drops.
+    async fn hold(self: Arc<Self>) -> ScopeGuard {
+        poll_fn(|context| {
+            let mut state = self.state();
+            if state.held {
+                if !state
+                    .waiting
+                    .iter()
+                    .any(|waker| waker.will_wake(context.waker()))
+                {
+                    state.waiting.push(context.waker().clone());
+                }
+                Poll::Pending
+            } else {
+                state.held = true;
+                Poll::Ready(())
+            }
+        })
+        .await;
+        ScopeGuard(self)
+    }
+}
+
+/// A held [`ScopeLock`], released when it drops.
+struct ScopeGuard(Arc<ScopeLock>);
+
+impl Drop for ScopeGuard {
+    fn drop(&mut self) {
+        let waiting = {
+            let mut state = self.0.state();
+            state.held = false;
+            std::mem::take(&mut state.waiting)
+        };
+        // Woken with the lock's state released: a waker may poll its task on the spot (the
+        // history's detached saves do), which takes the lock then. Every waiter is woken, so one
+        // that was dropped meanwhile loses no other's turn.
+        for waker in waiting {
+            waker.wake();
+        }
+    }
 }
 
 impl KeyValueHistoryStore {
@@ -32,7 +125,6 @@ impl KeyValueHistoryStore {
     pub fn new(store: Arc<dyn KeyValueStore>) -> Self {
         Self {
             store,
-            saving: Arc::default(),
             initialization: StartupInitializationState::default(),
         }
     }
@@ -72,7 +164,7 @@ impl HistoryStore for KeyValueHistoryStore {
         expected: Option<u64>,
     ) -> BoxFuture<'_, Result<(), HistoryStoreError>> {
         async move {
-            let _saving = self.saving.lock().await;
+            let _saving = ScopeLock::of(&self.store, &journal.scope_id).hold().await;
             let current = self
                 .load_journal(&journal.scope_id)
                 .await?
@@ -101,7 +193,7 @@ impl HistoryStore for KeyValueHistoryStore {
         expected: u64,
     ) -> BoxFuture<'a, Result<bool, HistoryStoreError>> {
         async move {
-            let _saving = self.saving.lock().await;
+            let _saving = ScopeLock::of(&self.store, scope).hold().await;
             let current = self
                 .load_journal(scope)
                 .await?

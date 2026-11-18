@@ -71,15 +71,22 @@ waits for: where it keeps each scope's journal (`HistoryJournalV2`), with `InMem
 `KeyValueHistoryStore`. Its `load`, `save` and `delete_scope` return futures, answered at once or later; `save` and
 `delete_scope` take the revision the history expects in the store and check it and write in one step (a save fails
 with `Conflict`, a delete answers `false`), so a journal another history saved meanwhile is never overwritten or
-deleted. The history loads a scope when a command first awaits it and saves each change behind it, one save at a
-time. A failure nobody awaits (a save behind an edit, a command whose caller gave up or dropped its answer unread) is a
-`NavigationFailed` event of the scope. Entries have ids, given when they are recorded and saved with the journal (an
-entry of a journal saved before ids existed gets one when it loads). Histories may share a store (two windows, two app
-instances): a save that finds another journal in the store than it expects reloads it and merges this history's
-entries in by id (the stored entries, less those this history saved and dropped since, each of its own replaced by
-its current copy, then its new ones), so no writer's entries are lost. Each session's undo and redo stacks keep only
-its own entries (and those it loaded at its start): another session's stay in the store for that session. Changes
-made before the app's startup attaches the store are merged with the stored journal the same way once it does.
+deleted. `InMemoryHistoryStore` makes the step under its own lock. `KeyValueHistoryStore` makes it under a lock of the
+scope in its key-value store, shared by every `KeyValueHistoryStore` in the process over that store, so it holds for
+the histories of every window, surface and app instance of one process that use one `dyn KeyValueStore`. Over separate
+key-value stores, and across processes, it does not hold: a `KeyValueStore` has no compare step (none of RayX's has
+one), so two of them writing one scope's journal into one storage can overwrite or delete each other's. Those
+histories need a store of the app's with a real compare-and-swap (a `HistoryStore`, or a TS `HistoryStoreContract`,
+over a backend that offers one). The history loads a scope when a command first awaits it and saves each change behind
+it, one save at a time. A failure nobody awaits (a save behind an edit, a command whose caller gave up or dropped its
+answer unread) is a `NavigationFailed` event of the scope. Entries have ids, given when they are recorded and saved
+with the journal (an entry of a journal saved before ids existed gets one when it loads). Histories may share a store
+(two windows, two app instances of one process, over one key-value store): a save that finds another journal in the
+store than it expects reloads it and merges this history's entries in by id (the stored entries, less those this
+history saved and dropped since, each of its own replaced by its current copy, then its new ones), so no writer's
+entries are lost. Each session's undo and redo stacks keep only its own entries (and those it loaded at its start):
+another session's stay in the store for that session. Changes made before the app's startup attaches the store are
+merged with the stored journal the same way once it does.
 
 The crate's own `diagnostics` feature keeps the replays that failed in the published state.
 
