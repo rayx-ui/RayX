@@ -4,9 +4,9 @@ agentx:
   scope: knowledge/app
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
-    - rayx_app
+    - rayx_app_nsh
     - nsh
     - tsx
     - rayx

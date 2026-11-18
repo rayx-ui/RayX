@@ -4,7 +4,7 @@ agentx:
   scope: knowledge
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-15T03:00:00+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
     - taxonomy
   supersedes: []
@@ -18,11 +18,11 @@ it was chosen: [taxonomy decision](../decisions/governance/memory/2026-11-04-gov
 
 | Domain | Covers | Code |
 | --- | --- | --- |
-| [core](core/INDEX.md) | the pure-Rust core: DI, configuration, options, the app builder | `crates/rayx_core`, `crates/rayx_app_macros` |
-| [core/di](core/di/INDEX.md) | services, lifetimes, scopes, async startup, `#[derive(AppService)]` | `crates/rayx_core/src/di`, `src/services` |
-| [core/configuration](core/configuration/INDEX.md) | configuration sources and .NET's options model | `crates/rayx_core/src/configuration`, `src/options` |
-| [runtime](runtime/INDEX.md) | the app services and the platform traits `rayx_app` implements | `crates/rayx_runtime` |
-| [app](app/INDEX.md) | the NSH layer, TSX classes, and the `rayx` umbrella | `crates/rayx_app`, `crates/rayx` |
+| [core](core/INDEX.md) | the NSH-free core: DI, configuration, options, the app builder, published values, every service's contract and its fake | `crates/rayx_app`, `crates/rayx_app_macros` |
+| [core/di](core/di/INDEX.md) | services, lifetimes, scopes, async startup, validation, `#[derive(AppService)]` | `crates/rayx_app/src/di`, `src/services/app` |
+| [core/configuration](core/configuration/INDEX.md) | configuration sources and .NET's options model | `crates/rayx_app/src/configuration`, `src/options` |
+| [runtime](runtime/INDEX.md) | RayX's service implementations, one crate per service | `crates/rayx_services_*` |
+| [app](app/INDEX.md) | the NSH host (start, scopes, binding, TS side, contracts' TS adapters) and the `rayx` umbrella | `crates/rayx_app_nsh`, `crates/rayx` |
 | [components](components/INDEX.md) | the component library, RayX's theme type and the gallery app | `crates/rayx_components`, `examples/gallery` |
 | [cli](cli/INDEX.md) | `rayx`, the command-line tool | `crates/rayx_cli` |
 | [dependencies](dependencies/INDEX.md) | git-tag-only rule, the NSH fork pin, dXn crates | `Cargo.toml` |
