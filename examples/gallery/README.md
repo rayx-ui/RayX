@@ -27,10 +27,10 @@ From `RayX/`, with the `rayx` this repository builds (it runs the nsh the projec
 and installs it the first time):
 
 ```sh
-cargo run -p rayx-cli -- app run -C examples/gallery                 # this desktop; TSX edits reload
-cargo run -p rayx-cli -- app run -C examples/gallery --target web    # a browser (after `rayx setup --web`)
-cargo run -p rayx-cli -- app check -C examples/gallery               # cargo check, then tsc against the crate's types
-cargo run -p rayx-cli -- app test -C examples/gallery                # App.test.tsx, headless
+cargo run -p rayx-cli -- app -C examples/gallery run                 # this desktop; TSX edits reload
+cargo run -p rayx-cli -- app -C examples/gallery run --target web    # a browser (after `rayx setup --web`)
+cargo run -p rayx-cli -- app -C examples/gallery check               # cargo check, then tsc against the crate's types
+cargo run -p rayx-cli -- app -C examples/gallery test                # App.test.tsx, headless
 cargo test -p rayx-gallery                                           # the crate and its headless TSX tests
 ```
 

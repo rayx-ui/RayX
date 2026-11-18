@@ -122,4 +122,4 @@ Never edit it by hand; `theme_keys!` makes the keys and the modifier enums from 
 
 [`examples/gallery`](../examples/gallery/README.md) is a mixed NSH app whose screens are TSX, so they reload as you save:
 every component's Figma properties in a playground, its variants and sizes, and the Figma page's examples, with the
-theme's modes in a toolbar. Run it with `cargo run -p rayx-cli -- app run -C examples/gallery`.
+theme's modes in a toolbar. Run it with `cargo run -p rayx-cli -- app -C examples/gallery`. run
