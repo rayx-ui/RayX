@@ -42,7 +42,8 @@ impl HistoryOptions {
     /// or of the store may take, in milliseconds, before the command making it fails (timed
     /// out), aborting its transaction and freeing its scope; `null` for no limit. 30 seconds by
     /// default: raise it for a TS service or store that legitimately takes longer, whose calls
-    /// are aborted otherwise. A commit is never cut short.
+    /// are aborted otherwise. A commit is never cut short: one that never answers keeps its
+    /// scope busy until the operation service answers or fails it.
     pub fn call_timeout_ms(this: Instance<Self>, timeout: Option<u32>) -> Instance<Self> {
         push(this, |o| {
             o.steps

@@ -21,7 +21,10 @@ pub struct HistoryOptions {
     /// scope busy for the app's life. 30 seconds by default: a TS service or store that
     /// legitimately takes longer has its calls aborted, so raise it for one (or set `None`). A
     /// commit is never bounded: once it is asked, its change lands, and the scope stays busy
-    /// until it answers.
+    /// until it answers, so a commit that never answers keeps its scope busy (`ScopeBusy`) for
+    /// good. That is the trade-off for never undoing a change twice; an operation service
+    /// recovers its scope by answering the commit, or failing it (the replay then fails and
+    /// frees the scope).
     pub call_timeout_ms: Option<u64>,
 }
 

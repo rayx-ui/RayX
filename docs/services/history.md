@@ -45,7 +45,9 @@ seconds by default, `None` for none): one that does not answer in time (a TS pro
 command with `HistoryError::TimedOut`, aborting its transaction and freeing its scope. A TS operation service or store
 that legitimately takes longer than the timeout has its calls aborted: raise the timeout for it, or set `None`
 (`null` in TS) for none. A commit is never cut short: once asked, its change lands, so the scope stays busy until it
-answers and the stacks then follow it. The timer is the engine's on NSH (through the host's `EngineRunner`);
+answers and the stacks then follow it. A commit that never answers therefore keeps its scope busy (`ScopeBusy`) for
+the app's life: the price of never undoing a change twice. The operation service recovers the scope by answering the
+commit, or by failing it (rejecting its promise, in TS): the replay then fails and frees the scope. The timer is the engine's on NSH (through the host's `EngineRunner`);
 elsewhere an app registers a `HistoryTimer` service, and without one the calls are unbounded. In TS the options are
 set by the builder methods' callback, after configuration's:
 `builder.addHistory((options) => options.callTimeoutMs(5000))` (or `addPersistentHistory(..)`; `null` for no limit).

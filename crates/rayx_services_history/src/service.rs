@@ -692,26 +692,34 @@ impl<T> Drop for Answer<T> {
         if self.read {
             return;
         }
-        if let Ok(Some(Err(error))) = self.answered.try_recv()
+        if let Ok(Some(Err(failure))) = self.answered.try_recv()
+            && !failure.reported
             && let Some(history) = self.history.upgrade()
         {
-            history.record_failure(self.scope_id.clone(), &error);
+            history.record_failure(self.scope_id.clone(), &failure.error);
         }
     }
 }
 
-/// What a history's entry ids start with: the wall clock, the process's random hash keys and a
-/// count of the histories made, so two histories (in one run or two) never share it.
+/// What a history's entry ids start with: 128 bits from the system's entropy (the page's Web
+/// Crypto in a browser, NSH's on an NSH web build), so two histories (in one run or two, in two
+/// tabs) never share it. Where the system has none, the wall clock, the process's hash keys and
+/// a count of the histories made stand in.
 fn session_id() -> String {
-    use std::hash::{BuildHasher as _, Hasher as _};
     static HISTORIES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     let made = HISTORIES.fetch_add(1, Ordering::Relaxed);
+    let mut random = [0u8; 16];
+    if getrandom::fill(&mut random).is_ok() {
+        let random: String = random.iter().map(|byte| format!("{byte:02x}")).collect();
+        return format!("{random}{made:x}");
+    }
+    use std::hash::{BuildHasher as _, Hasher as _};
     let mut hasher = std::collections::hash_map::RandomState::new().build_hasher();
     hasher.write_u64(nsh_core::time::unix_ms().to_bits());
     #[cfg(not(target_arch = "wasm32"))]
     hasher.write_u32(std::process::id());
     hasher.write_u64(made);
-    format!("{:016x}{:x}", hasher.finish(), made)
+    format!("{:016x}{made:x}", hasher.finish())
 }
 
 /// A command's answer, boxed.
