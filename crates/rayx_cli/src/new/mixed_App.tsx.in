@@ -6,7 +6,7 @@ import { DevLayer, KeyValueStore, RayXAppBuilder } from "__SPECIFIER__";
 // state, suspension, assets and fonts), and each can be replaced by the app's own
 // implementation of its contract; history needs operations. `start()` resolves with the root
 // `ServiceProvider` once every startup service is ready; resolving a service after it is
-// synchronous.
+// synchronous, and a service's commands return promises.
 const status = signal("Starting");
 const launches = signal(0);
 new RayXAppBuilder()
@@ -18,10 +18,11 @@ new RayXAppBuilder()
   .addOperations()
   .addHistory()
   .start()
-  .then((services) => {
+  .then(async (services) => {
+    // The key-value store's commands return promises (a TS implementation answers later).
     const store = services.getRequiredService(KeyValueStore);
-    const count = Number(store.get("app", "launches") ?? "0") + 1;
-    store.set("app", "launches", String(count));
+    const count = Number((await store.get("app", "launches")) ?? "0") + 1;
+    await store.set("app", "launches", String(count));
     launches.set(count);
     status.set("Ready");
   })

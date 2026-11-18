@@ -8,4 +8,7 @@ test("starts the app's services", async () => {
   const app = await open("./App.tsx");
   await app.waitFor("text:Ready");
   expect(app.texts()).toContain("Ready");
+  // The launch counter read and wrote the app's key-value store.
+  await app.waitFor("text:Launch 1");
+  expect(app.texts()).toContain("Launch 1");
 });

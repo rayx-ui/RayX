@@ -329,3 +329,19 @@ fn the_app_s_readme_and_the_cli_s_docs_say_the_same() {
         );
     }
 }
+
+#[test]
+fn the_tsx_root_awaits_the_key_value_store_s_promises() {
+    let work = Workspace::empty();
+    let app = created(&work, "mixed");
+    let root = read(&app.join("App.tsx"));
+    for awaited in [
+        "await store.get(\"app\", \"launches\")",
+        "await store.set(\"app\", \"launches\"",
+    ] {
+        once(&root, awaited);
+    }
+    assert!(root.contains(".then(async (services) =>"), "{root}");
+    let test = read(&app.join("App.test.tsx"));
+    once(&test, "text:Launch 1");
+}
