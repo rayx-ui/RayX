@@ -1,7 +1,7 @@
 name: RayX
 
 # Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the NSH-free
-# crates (the core and the services), on Ubuntu; and the `rayx` command-line tool (`rayx-cli`),
+# crates (the core, with every service's contract, and the dev tools' protocol), on Ubuntu; and the `rayx` command-line tool (`rayx-cli`),
 # which runs on every desktop, on Linux, macOS and Windows. Runs on every pull request
 # (release-plz's release pull requests included) and every push to `main`. The toolchain is
 # rust-toolchain.toml's.
