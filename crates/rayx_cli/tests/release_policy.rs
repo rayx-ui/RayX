@@ -117,7 +117,10 @@ fn releasing_section(title: &str) -> String {
 fn releasing_md_covers_the_first_release_of_rayx_cli() {
     let section = releasing_section("How a release happens");
     for needle in [
-        "builds the `rayx` binaries for all six targets without publishing them",
+        // The release pull request opens on demand, and only the tag builds the binaries
+        // (`pr-run-mode = "skip"`, which `release_config.rs` checks in `dist-workspace.toml`).
+        "When you want a release, start the Release-plz workflow by hand",
+        "The binaries are not built on the pull request (`pr-run-mode = \"skip\"`): the tag's Release run builds them",
         "The tag starts dist's Release workflow",
         "carried `git_tag_name = \"rayx-cli-v{{ version }}\"` until `v0.6.0`",
         "Remove the line in the first commit after the release's tag",
