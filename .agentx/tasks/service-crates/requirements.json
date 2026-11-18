@@ -176,6 +176,11 @@
           "id": "SVC-10",
           "verification": "automated",
           "descriptionMarkdown": "An app crate's builder extension is a TS builder method too: `#[app_extension] fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder`, registered by the app's set, gives every TS `RayXAppBuilder` the method `addWeather()` (in JS and in the declarations, with the function's docs), which runs the Rust function on the builder and returns the builder, and throws once the builder started, chaining with RayX's own methods (`new RayXAppBuilder().addStorage().addWeather().start()`). The flat TS function `addWeather` goes; `apply(..)` stays for TS functions of the builder; the macro's refusals stay compile errors. Test group `crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs`; the groups that used `apply(addX)` (`nsh_tsx_ready`, the umbrella's `native_module` and `native_module_attribute`) pass on the methods."
+        },
+        {
+          "id": "SVC-11",
+          "verification": "automated",
+          "descriptionMarkdown": "The gaps found while documenting the services are closed, so nothing a service offers is limited without need: CI runs and lints the umbrella with every feature (its feature-gated groups run); navigation's TS commands return promises and work over a TS implementation; the last registration of a key wins completely (startup entries and the requirements a registration declared go with it); `add_startup_singleton_for::<dyn Trait, Impl>` registers an app's own implementation of a contract as a startup service; TS has `addInMemoryStorage()` and `addHistoryWithStore(..)` (a history store written in TS, contract `HistoryJournalStore`); clearing a history scope deletes its journal from the store. Groups `di_startup_for`, `di_last_registration_wins`, `di_requirements_follow_registrations` (rayx_app), `nsh_contract_startup_for` (rayx_app_nsh), `nsh_tsx_command_promises` (navigation), `nsh_tsx_in_memory` (storage), `nsh_tsx_store`, `history_clear_deletes` (history), `service_replacement` (rayx, every feature), `ci_workflow` (rayx-cli)."
         }
       ]
     },

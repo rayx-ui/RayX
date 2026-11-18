@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 104,
-  "planRevision": 8,
+  "revision": 128,
+  "planRevision": 10,
   "specHashes": {
-    "requirements": "949a9040a097193404369c5a8ab94406aef6467815ca587482a0a26b36034038",
+    "requirements": "9c7a48a18fd7249d750d536a896b48395c4e4bc8224330a3aeec042961357500",
     "design": "a5a4637afa32bed7daedc3193c5b9fece25c02ca2fdc3006cf5739566eb09aa9",
-    "plan": "c44a0c33cd75b2ac7058bbe1aaf958e3f20855aecbf0a54f6ab7fac4fdadc696"
+    "plan": "629f3f171ce48e5d3df4e7515e11ee4317cbf586b7b566d2e2d6738b585aaa00"
   },
   "tasks": {
     "t01-crate-renames": {
@@ -118,13 +118,28 @@
       ]
     },
     "t19-docs": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t20-root": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t21-memory": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
+    },
+    "t22-service-gaps": {
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     }
   },
   "validationBatches": {
@@ -227,6 +242,36 @@
         }
       },
       "recordedAt": "2026-11-18T01:27:16Z"
+    },
+    "a7c4553aded74bc271ebe157f97d9d0996cfbdd2e0b71f10554c9f760371d45f": {
+      "snapshot": {
+        "specHash": "8167c8004424fa5bcca3f9072a3da02f6f8c08181626a4c9c6aa72ae7a3da11f",
+        "repositories": {
+          "rayx": "7b26ae5c18770be8411e54f86df55e68a0b55375f36d11cea812eabe095dd9da",
+          "root": "db0c013b511c2c21508b8fb2332f740be538196cda7ccddc20650fe879aad1fd"
+        }
+      },
+      "recordedAt": "2026-11-18T05:24:04Z"
+    },
+    "cc37aa418e8330738019670e7647c74a5220dcf1a558fc4f3153d6dfcf6d66c1": {
+      "snapshot": {
+        "specHash": "8167c8004424fa5bcca3f9072a3da02f6f8c08181626a4c9c6aa72ae7a3da11f",
+        "repositories": {
+          "rayx": "59b6d4dd54e923c5bd32b947aabe5a5a3faec1e1b0e3edb9f14a5d64fd4ba1f3",
+          "root": "df47ef0b0e10a29bb5ed99733a128cc6324e993f63684704ca787618f55d441d"
+        }
+      },
+      "recordedAt": "2026-11-18T05:50:14Z"
+    },
+    "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6": {
+      "snapshot": {
+        "specHash": "8167c8004424fa5bcca3f9072a3da02f6f8c08181626a4c9c6aa72ae7a3da11f",
+        "repositories": {
+          "rayx": "482e8b3e98ddeb6a7144c11f4f31032bf89c46ff6f275bc770a895566abce069",
+          "root": "df47ef0b0e10a29bb5ed99733a128cc6324e993f63684704ca787618f55d441d"
+        }
+      },
+      "recordedAt": "2026-11-18T06:04:42Z"
     }
   },
   "checkResults": {
@@ -926,6 +971,176 @@
       "logPath": "artifacts-temp/agentx/service-crates/s6-consumers-final-64a63a8d72fc.log",
       "logSha256": "f8e6d0fe0e757165dd24117a5de3c4ac69b78bd4193d07a628143762be377d01",
       "inputsHash": "6e036fa7f8069ae240ba76666d9a987fd83edc16e2414343eff5edd5f20724d8"
+    },
+    "s7-docs/c-no-old-names/final": {
+      "checkId": "c-no-old-names",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "definitionHash": "8beb87b225717f5f6cc05e4ebc1685c88a56d2a6ec7b5944e8f080be9832c899",
+      "basisHash": "5e5388c0deff9ec0b3b47042993d1f145437316ef1222d6598681871ae88158e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0663,
+      "recordedAt": "2026-11-18T06:04:32Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-d146c8c7c05a.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "4c3fdcea442ce158ae8c860ddedbc5047e284ee0b6f984f5ee5ed4236819c43d"
+    },
+    "s7-docs/c-no-old-names-root/final": {
+      "checkId": "c-no-old-names-root",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "cc37aa418e8330738019670e7647c74a5220dcf1a558fc4f3153d6dfcf6d66c1",
+      "definitionHash": "18c88f22df9e21b681c8f2951420503d3e710ee3e17fd89af390c766052a663f",
+      "basisHash": "79387f1135c0e0d994572603d596767dd60d7cb27a4570179123a1803356b089",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0446,
+      "recordedAt": "2026-11-18T05:49:51Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-bfebb866bddd.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "88d80b6d1799d18ea0d5ebf9ab3a22603355c7c1068707c5dc83016843714496"
+    },
+    "s7-docs/c-rayx-skill/final": {
+      "checkId": "c-rayx-skill",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "cc37aa418e8330738019670e7647c74a5220dcf1a558fc4f3153d6dfcf6d66c1",
+      "definitionHash": "33a0aca2776055a47e8d2f66afc174728136a5d71a74667a97f9b774bf361ee1",
+      "basisHash": "8df4e460a6479b2b9f640d73319bf1bcc4dbced8d965f9b7464a6c5843abd4dc",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.0195,
+      "recordedAt": "2026-11-18T05:49:51Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-c3c6460c15e9.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inputsHash": "e37dd5e17138bbb2b99aadf6a67f6373c2dbb200310164c0510592b4bbaa3a6e"
+    },
+    "s7-docs/c-gaps-core/final": {
+      "checkId": "c-gaps-core",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "a7c4553aded74bc271ebe157f97d9d0996cfbdd2e0b71f10554c9f760371d45f",
+      "definitionHash": "4c9fda0a38b8fcb4a809392489db0aa27c546dfb660bf3a9092e5aeb9bdbe0d4",
+      "basisHash": "aef93bfb871b1df353cc6961e2351ebb0869dcf2f5967c864d7abbc6ec392879",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 21,
+      "durationSeconds": 0.3028,
+      "recordedAt": "2026-11-18T05:23:46Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-03911fddc46b.log",
+      "logSha256": "c9f0b2484c1984161ba069d5600f90b8ec4afd32a050695044d595af44441929",
+      "inputsHash": "a26dd589aa5a288e286736c95dd55e074fcef1690217f85129bf31a7e0ca5ff1"
+    },
+    "s7-docs/c-gaps-host/final": {
+      "checkId": "c-gaps-host",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "definitionHash": "a938efab577274c61782d478996b0028ea857aef7403c43da86518f6a4df1cb6",
+      "basisHash": "65aae5dac9dfb6944ac42a92af3f3a220083a21675ba46ff4589e4f48600f353",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 1,
+      "durationSeconds": 2.8662,
+      "recordedAt": "2026-11-18T06:04:35Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-6cd8f23fcdb8.log",
+      "logSha256": "be9749bd3ae4c53ac17f98b93a280f6551bee286618b7d4fbb3d4d77858edde2",
+      "inputsHash": "4e21a7fd7878149adcd64df3d5e0af18f1d81662fdc04735142df3349465d1fe"
+    },
+    "s7-docs/c-gaps-navigation/final": {
+      "checkId": "c-gaps-navigation",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "definitionHash": "d77cdec3f66f5586282d9d7b94a954ab499b1d957155388b9d3473ea01c1b238",
+      "basisHash": "2cce9a5b129037386734e4127d995445c5dea53c5970b7841e692e48673a4c5e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 1,
+      "durationSeconds": 0.4762,
+      "recordedAt": "2026-11-18T06:04:36Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-5993073a5eee.log",
+      "logSha256": "44f806331b52d366197f6d51730adcb89a2d5260edca42bf64fdb819deeb21db",
+      "inputsHash": "9adf38d881cc7ef7b95ac8381180e9f81888e4a284c2367b5a08f5969d1aac51"
+    },
+    "s7-docs/c-gaps-storage/final": {
+      "checkId": "c-gaps-storage",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "definitionHash": "a3fa34bc7b11b05069ce604296fa3e6b927b2f239b7723f3206ed06603288240",
+      "basisHash": "ace400d234f46cd5d64e04f7e95d0e54b58f0178a55e969c64e71b1cee4c69c8",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 0.4445,
+      "recordedAt": "2026-11-18T06:04:36Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-ae34b565a28b.log",
+      "logSha256": "e09a7db6f9f1037ad9722859e8f4198742f9d280d1d8d7fe2979a81980313ef0",
+      "inputsHash": "510675761d49dc36af80972f92b499771d6bf0a0a6ff11e31a13477a6b4b78cf"
+    },
+    "s7-docs/c-gaps-history/final": {
+      "checkId": "c-gaps-history",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "definitionHash": "aaceaf4ecd2de0dace0079ab34f434a0269cb2c938c89d77d3b40001d7bd44d8",
+      "basisHash": "461a3cd8ee8ec789f20d54ddb4e3d0ed3e0fdd95da68693ab10f5e578906168a",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 6,
+      "durationSeconds": 5.1891,
+      "recordedAt": "2026-11-18T06:04:41Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-f6bbd79b466b.log",
+      "logSha256": "110389c4b66ae57322fec00b696d4479bc48c93c9f9e10b1117a8dc518d54af7",
+      "inputsHash": "79521270e0528f5f376ff6dd48dea5698f55d0836cffe933763f12a7a83f8e5e"
+    },
+    "s7-docs/c-gaps-umbrella/final": {
+      "checkId": "c-gaps-umbrella",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "definitionHash": "134b1584e847de2e9101a9b40fe18030fa55d3516099b3a8c3ec95c87a80f432",
+      "basisHash": "cdbf694f3dad46143d880853edecdb7d861e9eeec13c8b8e97a9a3125e41d00d",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 10,
+      "durationSeconds": 0.4886,
+      "recordedAt": "2026-11-18T06:04:42Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-8b9c2b231e5c.log",
+      "logSha256": "c6a14ab7e10d451bb21d320c76615ccb325646fee5f580403f75ef53012c9da8",
+      "inputsHash": "01419f1879818bf09e63af52e77520c20a35e47b3c0543791fc71fe83ad13370"
+    },
+    "s7-docs/c-gaps-ci/final": {
+      "checkId": "c-gaps-ci",
+      "boundaryId": "s7-docs",
+      "phase": "final",
+      "batchId": "a7c4553aded74bc271ebe157f97d9d0996cfbdd2e0b71f10554c9f760371d45f",
+      "definitionHash": "efae1dbaa39aa23e3360c2e4e1df2597ad0995131f76cd62d8408f2ca26a7411",
+      "basisHash": "9fd9b62fe73277971561199cc5dda3e1ef0d03e68ea0e7e2dd877c379fecc36a",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 5,
+      "durationSeconds": 0.2829,
+      "recordedAt": "2026-11-18T05:24:04Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s7-docs-final-4a7b8709abaf.log",
+      "logSha256": "9fa92119df7ce305117df22da35fc68561369a8e55bf35f81bd85487a237bd2c",
+      "inputsHash": "0f92ca44cae30e848101429e8fc1e171a781dcce63d49987ee9584fe44f76746"
     }
   },
   "reviews": {
@@ -2270,6 +2485,279 @@
         "S6-F1"
       ],
       "recordedAt": "2026-11-18T02:04:44Z"
+    },
+    "s7-docs": {
+      "reviewerId": "reviewer-s7-independent",
+      "snapshotId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "criterionIds": [
+        "DOC-1",
+        "DOC-2",
+        "DOC-3",
+        "SVC-11"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "docs/architecture.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "adb34fbf392e6dfc528e44a138a09725e0cef88e52a26b63916f613ea5546c10"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "32a6e18c39b5ee3220732dc85965599d52678aeee7b9ec61cf16d4e1b7230969"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/tsx.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "1895eb65d0463082fbf9ad0f3345240b3a569c9537a111b92dd481d66d6ee85f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "82d1d27457d416ddee5a5efb78fe2b3a543d2f689cfc3eecdbc80b595aa4d7e0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services.md",
+          "kind": "runtime",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "sha256": "32a6e18c39b5ee3220732dc85965599d52678aeee7b9ec61cf16d4e1b7230969"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/SKILL.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "fb8158eaf1ad7391ee11398d13c608ec003a07a06710f82b556fdedcdb9e1648"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/services.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "952978c945fc315ce5abebbed63a4f68bece66ab91ae6b8a69361e201608267f"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/contracts.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "eb21f9bf507fac3374a54a1e91fffb840a3dab9fd63c6b20c6e0aa05937966ec"
+        },
+        {
+          "repositoryId": "root",
+          "path": "AGENTS.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "a4d5109b9e6a2ec0cd6547d3bce3c0208f70f2b40e58de87a341d796d1e11fec"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "sha256": "da81cc8e73ba8a64f440ceb05be29dba6a447f7b8aef3c4870e42d42815d4dc5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/runtime/state.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "9dda54c711e11fe041da35d5314836073560281a028564f42de1d69a07009867"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/knowledge/INDEX.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "bb992b392689dca04e59fe6e293e3b04b269fed10ff4ade5bbe75a67907bf0f3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".agentx/memory/decisions/INDEX.md",
+          "kind": "source",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "sha256": "e76906177af4f93737a549c2c0e38b6d7844a3f53269a86a2b2a643e2777ac4c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/provider.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "50cfe638b5d9e3752ec41cfc5fc30cc6c86a24724f59ce2812fc5cd0b27fb9a8"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/lifecycle.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "9afd17d54be02bb4d93f24a02cd8473ba85f1b46c894955ad237b43b871782b9"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "83d8666b1c6e9a63f37349ddc36930aab9d557d4b3877e805865c8e20755d791"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/journal_store.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "db486a10f7e4bdc42b9937e8e17e0eeeba1531c5421da859b3403f06b81cce4a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/src/region_ts.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "4fc90b733cdb1e587a1ad93df3788daf6f4576c50ac205021112b1c5536a3bde"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".github/workflows/ci.yml",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "b1286ddb902e205e55c6d0721aacfeb0fb116bf6c3fc853c0d6d338074e3c479"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_last_registration_wins.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "92003af5197eee3da0b9262f7f08086149cb1fc62b6ba20633abe5d1036ec4ca"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_requirements_follow_registrations.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "c4275c39bb6ac87f6c58c4433a43061051ec85a55bf5773321e357dd08682f7f"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_startup_for.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "a6c729997764b521df226acf609c6de788b22a7879de4ed4ffe66faac820a425"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_clear_deletes.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "f81a82b8d9f6cfe85e291406715a41690733a8ac65fa102a176a9e82413331da"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/nsh_tsx_store.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "60ac836668ad070c9797631631e1e5c6ca7c82e1046d65fed6789d91445b7637"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/tests/nsh_tsx_command_promises.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "03fb9ce5cf4ef7c9c2459f241c0d51318218c07f4c6c61106496550ceb8b0031"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/nsh_tsx_in_memory.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "dbd39af06f49c6b672684e5a29e7e507b19e726c4f2652c6ffc6ed32a9e8a67d"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/ci_workflow.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "sha256": "d330064c70596925fa9551847f379fb86acedbc7f5703da87bfd14ec627e9331"
+        }
+      ],
+      "summaryMarkdown": "I re-reviewed the delta 3972fc4 at snapshot 44c4f33c. **S7-F13 is resolved**, and with it all thirteen s7 findings.\n\n**The change.** `EngineRunner::run` still runs its work to the end, so S5-F10's fire-and-forget `register_target` keeps registering. The new `run_cancellable` polls the work once, then stops it when the caller drops its future (`answer`: `poll_canceled` checked after each poll). History's `HistoryTimer::engine` uses it, so an answered call's 30 s timer ends and no longer holds the quit.\n\n**Other timers.** No other engine timer goes through the runner: startup's and the devtools' timers run in their own tasks, untracked.\n\n**Tests.** `nsh_engine_runner_dropped` (a dropped cancellable 10 s timer; the quit ends in under 130 ms) and `nsh_engine_runner_quit` (a slow running call completes at quit) both pass here.\n\n**Criteria.**\n\n- **DOC-1:** docs current; no old names; every complete TSX block passes strict `tsc`.\n- **DOC-2:** the `rayx` skill's per-service examples are checked against the code; `rayx-components` and AGENTS.md are right.\n- **DOC-3:** memory and decision drafts ready.\n- **SVC-11:** the service gaps are closed, including the history store's compare-and-delete, process-wide journal locks, the NSH store with no copy, and the quit-time drain with cancellable timers.\n\nAll hold.",
+      "findingIds": [
+        "S7-F1",
+        "S7-F2",
+        "S7-F3",
+        "S7-F4",
+        "S7-F5",
+        "S7-F6",
+        "S7-F7",
+        "S7-F8",
+        "S7-F9",
+        "S7-F10",
+        "S7-F11",
+        "S7-F12",
+        "S7-F13"
+      ],
+      "recordedAt": "2026-11-18T06:05:13Z"
     }
   },
   "checkpoints": {
@@ -2326,6 +2814,15 @@
       },
       "reviewHash": "fea63770c4cdf303fec74c474020c7c5a143820a8a84d44bffea3fbd23b469ba",
       "recordedAt": "2026-11-18T02:04:54Z"
+    },
+    "s7-docs": {
+      "snapshotId": "44c4f33c5987f0045ce0e3d0379348ab6ae779a13ceb8ef2d3670c49005becf6",
+      "commits": {
+        "rayx": "3972fc46c545f442270bb35dcdd7985d3eadedf1",
+        "root": "c67c33b66edbd4b96b0f4e005998b79cdc53e687"
+      },
+      "reviewHash": "ddb2697ba71ff246e84171316e88730eaba2e9b1e3f426846dce455a756c1aa0",
+      "recordedAt": "2026-11-18T06:05:24Z"
     }
   },
   "findings": [
@@ -3403,9 +3900,317 @@
         }
       ],
       "boundaryId": "s6-consumers"
+    },
+    {
+      "id": "S7-F1",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Clearing a history scope can delete another history's freshly saved entries for good.** Added by 5bc7668.\n\n*Where*: `crates/rayx_services_history/src/persistence.rs:~272-288`. For a cleared, empty scope the writer loads the stored journal, checks `revision == expected_revision`, then calls `store.delete_scope(scope_id)`. That delete is unconditional: `HistoryStore::delete_scope` (`store.rs:53`) and the TS contract's `deleteScope` (`journal_store.rs:55`) take no expected revision.\n\n*Observed* (helper's probe, two histories sharing a store):\n\n- History B saves (`save rev2 n2 expSome(1)`) between A's load and A's delete. A's `delete` then removes the journal, and the store ends at `None`.\n- The loss is permanent: B's earlier entry is in its `saved_own`, so its next merge treats it as removed by another writer. B saves only `(rev 4, 1 entry)`, and a restarted history has depth 1 while B holds 2.\n- A TS `deleteScope` that times out but runs later in JS can likewise wipe a journal saved after it (inferred).\n\n*Expected*: the module's promise that no writer's entries are lost. Before this commit a clear was a conditional save of an empty journal, which conflicted and merged instead.\n\n*Repair*: make the delete conditional. Give `delete_scope` an expected revision, with TS `deleteScope(scope, expectedRevision): Promise<boolean>` and a compare-and-delete in `KeyValueHistoryStore` and `InMemoryHistoryStore`. Treat `false` as a conflict and reload/merge, as `save` does. Or fall back to the conditional empty save for a store that cannot delete conditionally. Add a test with a save that lands between the load and the delete.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_clear_deletes.rs",
+          "symbol": "a_save_landing_before_a_clear_s_delete_keeps_its_entries"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/store.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F2",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A clear made while a delete is in flight saves an empty journal instead of deleting.**\n\n*Where*: `crates/rayx_services_history/src/persistence.rs:~355-366`. `record_deleted` sets `scope.cleared = false` unconditionally. `record_saved` guards the same reset (~line 381: \"A clear made after this journal was taken is still to be saved\"), but `record_deleted` has no such check.\n\n*Observed* (probe): an edit and a second clear during the delete's load leave `save rev4 n0 expNone`, an empty journal in the store. That contradicts `docs/services/history.md` (\"the scope's journal is deleted from it\").\n\n*Repair*: pass the deleted snapshot's revision into `record_deleted`, and reset `cleared` only when it equals `scope.revision`. Test a second clear during a delete.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_clear_deletes.rs",
+          "symbol": "a_clear_made_while_a_delete_runs_saves_no_empty_journal"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F3",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Only a navigation region's first TS command waits for the region to be made, and a failed `ensureRegion` is never retried.**\n\n*Where*: `crates/rayx_services_navigation/src/region_ts.rs:~36-49` (`region()` sets `unmade = false` before awaiting `ensure_region`) and `:~144` (the future started in `of()` is dropped, which is why the new test sees `ensure panel` called twice).\n\n*Observed*, over a TS `NavigationService`:\n\n- A second command issued before the first settles skips the wait and reaches the service before `ensureRegion` finished.\n- If `ensureRegion` rejects, the flag stays false, so later commands never retry and run against an unmade region.\n\n*Expected* (SVC-11): navigation's TS commands work over a TS implementation.\n\n*Repair*: keep one shared ensure future per region object, await it in every command, and reset it on failure so the next command retries. Add a test with two commands issued at once and one with a failing `ensureRegion`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/tests/nsh_tsx_region_making.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/src/region_ts.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F4",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**`add_startup_singleton_for`'s startup role is reported inconsistently, and a positive assertion was lost.**\n\n*Where*: `crates/rayx_app/src/di/lifecycle.rs:~631` (`contains` matches on `key`).\n\n- **Inconsistent role:** for an implementation `I` that names its own startup key, `has_startup_role::<dyn T>()` is false after `add_startup_singleton_for::<dyn T, I>`, but true after the factory form, which matches `service_type == T`. Removal is correct in both cases because it uses `registered_as`.\n- **Lost assertion:** `crates/rayx_app/tests/di_startup_for.rs` (`..._the_startup_only_form_is_registered_as_the_trait`) used to assert that the follower loads once, and now only asserts its removal (`loads() == 0`). Nothing in `rayx_app` checks any more that an unreplaced `add_startup_service_for` runs.\n\n*Repair*: have `has_startup_role`/`contains` also match `registered_as`. Restore the \"runs once when not replaced\" assertion beside the removal one.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/di_startup_for.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/lifecycle.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F5",
+      "criterionIds": [
+        "DOC-2"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**`references/services.md` lacks the per-service examples DOC-2 and d-docs-skill require.**\n\n*Expected*: DOC-2 says every service comes with examples of registering RayX's implementation, replacing it in Rust and in TS, and calling it from another thread. d-docs-skill says one section per service with those examples; the owner asked on 2026-11-15 for \"every service with examples\".\n\n*Observed*: only storage has all four. Platform has partial TS replacement and an other-thread state read. History and operations have partial TS. For the other services (suspension, assets, fonts, navigation, i18n/`MessageFormatter`, selection, input map, application configuration), Rust replacement, TS replacement and other-thread calls are missing, and several show only the builder signature or options.\n\n*Repair*: give each service's section short examples:\n\n- register RayX's implementation (with its options);\n- replace it in Rust (`add_singleton_as::<dyn Trait>(..)`, or `add_startup_singleton_for`);\n- implement it in TS (`class … implements <Name>Contract`, `addSingletonAs(<Name>, () => new …)`, with the shapes its state, events and constants need);\n- call one command from another thread.\n\nCheck them against `crates/rayx/tests/ts_service_contracts.rs` and `service_replacement.rs`, which already contain working versions of each.",
+      "regressionRefs": [
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/services.md"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F6",
+      "criterionIds": [
+        "DOC-2",
+        "DOC-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**The skills and docs contain smaller inaccuracies when read against the code.** Paths are under RayX.Root `.claude/skills/` unless noted.\n\n- **Top-level `await` in TSX examples (probable, not run):** `const services = await new RayXAppBuilder()…start();` at a module's top level appears in `rayx/SKILL.md:83`, `rayx/references/services.md:49,123`, `rayx/references/contracts.md:159` and `rayx-components/SKILL.md:61`, and in RayX's `README.md:60`, `docs/getting-started.md:68`, `docs/services.md:64`, `docs/configuration.md:93` and several `docs/services/*.md`. NSH's dev bundle is CommonJS (`nsh-bundler/src/bundle.rs`, `format: Cjs`), so top-level `await` cannot run there. RayX's own roots (`mixed_App.tsx.in`, the gallery's `App.tsx`) use `.start().then(..)`. Show `.then` or an async function, or say the snippet runs inside one.\n- **Calls without a receiver:** `require_for::<…>(hint)` and `add_startup_service_for` are shown as if they were builder calls (`rayx/SKILL.md:147`, `contracts.md:128,133`). They exist only on `ServiceProvider` (`builder.services_mut().…`).\n- **TS builder method that takes a TS implementation:** `contracts.md:132-139` presents it as an `#[app_extension]`. An app extension takes only the builder; this needs a `#[class_extension(RayXAppBuilder)]` with `sys: System` calling `RayXAppBuilder::add_contract_singleton` (`rayx_services_history/src/builder.rs:163-203`).\n- **Missing or unconvertible members:** `contracts.md:171-173` says they fail `start()`. That holds for singletons and startup forms only; a scoped or transient implementation logs when made and panics on first read (`contract_ts.rs`, `nsh_tsx_contract_kinds`).\n- **`services.md` tables:**\n  - The storage row's TS column omits `addInMemoryStorage()`.\n  - The TS commands of `I18nService`, `OperationService` and `HistoryService` are not marked as promises, and `instanceId`/`targets` are getters, not methods.\n  - Bytes are understated: a TS answer may be `number[] | Uint8Array`, assets' `loadBytes` included.\n  - Enum variants are said to use \"Rust names\"; several types are `snake_case` or tagged (input map, application configuration, navigation).\n- **Names and paths:**\n  - `HistoryStore` is used without its path (`rayx::services::history::HistoryStore`), against the DON'Ts' rule.\n  - The extension-trait pattern `<Name>AppBuilderExt` misses `AssetAppBuilderExt`, `FontAppBuilderExt` and `OperationsAppBuilderExt`.\n  - `PlatformReadyAppBuilderExt` is not in the prelude.\n  - Operations' `diagnostics` feature has no `rayx` feature.\n  - The `futures` dependency the Rust examples need is never mentioned.\n  - `on_quit_request` turning `ask_before_quit` on, and off when dropped, is not mentioned.\n- **`rayx-components`' app examples:** they write `use rayx_components::prelude::*;` (`rayx-components/SKILL.md:74`, `references/button.md:11,131`, `references/theming.md:57,141`). An app depends on `rayx` alone, so it is `rayx::components::prelude::*` (`rayx/src/lib.rs:69`). RayX.Root's `AGENTS.md:51` lists `rayx_app_macros` without `contract_nsh!`.\n\n*Repair*: correct each item. For the TSX snippets, use `.then` or an async-function framing consistently across the skills and RayX's docs.",
+      "regressionRefs": [
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/SKILL.md"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/contracts.md"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "README.md"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F7",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A `NavigationRegion` disposed while a command waits for the region to be made panics.** A regression from 0a20d6d.\n\n*Where*: `crates/rayx_services_navigation/src/region_ts.rs:~76-84`. After `call.clone().await`, `region()` calls `this.with(..)` to update `made`. On a disposed instance that panics (\"NavigationRegion is disposed\"). Before 0a20d6d nothing touched `this` after the await.\n\n*Observed* (helper's headless probe, with a TS implementation whose `ensureRegion` waits 20 ms): `const p = panel.back(); await tick(5); panel.dispose(); await p`. The `nsh-engine` thread panics at `region_ts.rs:78`, and `p` rejects with the panic's message. NSH catches it natively, but a build where panics abort (wasm32 web, `panic = \"abort\"`) would abort the app.\n\n*Expected*: a command on a region disposed meanwhile resolves or rejects without a panic.\n\n*Repair*: hold `made` in an `Rc<RefCell<Made>>` cloned before the await and update that, or skip the update when `this.is_disposed()`. Add the dispose-while-waiting case to `nsh_tsx_region_making`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/tests/nsh_tsx_region_making.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_navigation/src/region_ts.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F8",
+      "criterionIds": [
+        "DOC-1",
+        "SVC-11"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**`docs/services/history.md` overstates `KeyValueHistoryStore`'s atomicity when separate store instances share one key-value store.**\n\n*Where*: `docs/services/history.md:~70-77` says `save` and `delete_scope` \"check it and write in one step … so a journal another history saved meanwhile is never overwritten or deleted\", and that histories may share a store across \"two windows, two app instances\".\n\n*Observed*: `crates/rayx_services_history/src/key_value_store.rs:26,104` makes check-then-write atomic only through a per-instance futures `Mutex` (`saving`), because `KeyValueStore` has no compare-and-swap. Each surface's provider builds its own `KeyValueHistoryStore` (one per `add_persistent_history`), and so does each app instance. Two windows or instances over the same NSH storage can therefore both pass the check and overwrite or delete each other's journal. `InMemoryHistoryStore` and a TS store with a real compare-and-swap are fine.\n\n*Expected*: the docs state what holds, or the key-value store gets a real compare step.\n\n*Repair*: narrow the doc. Within one `KeyValueHistoryStore` the step is atomic; across surfaces and app instances it needs a store with a real compare-and-swap. Alternatively, share one lock per underlying `KeyValueStore` across a process's histories (a process-wide map keyed by the store's identity) and add a compare-and-swap to `KeyValueStore` for the cross-process case.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_shared_key_value_store.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/key_value_store.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services/history.md"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F9",
+      "criterionIds": [
+        "DOC-2",
+        "DOC-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**The new examples in `references/services.md` run, but some fail NSH's strict type check, one gives Rust a wrong answer, and a few details are off.** Paths are in RayX.Root `.claude/skills/rayx/references/services.md` unless noted.\n\n- **Wrong behaviour:** the TS operations service (`:~903-908`) publishes `targets: [...this.targets.keys()]` in insertion order. `OperationState.targets` is documented as sorted, and `has_target` uses `binary_search` (`crates/rayx_app/src/services/operations/model.rs:142,155`), so with several targets Rust's `has_target` can answer wrongly. Fix: publish `[...this.targets.keys()].sort()`.\n- **Strict `tsc`:** NSH apps are `strict: true` (nsh-cli `templates/tsconfig/*.json`), and `nsh check` runs `tsc`. A class that `implements` an interface takes no parameter types from it, so these fail:\n  - implicit-`any` parameters, e.g. `:638` `request`, `:746` `change`, `:909` `handle`, `:914,922` `record`/`origin`, `:984` `expectedRevision`, `:1140-1147` `status`, `:1226` `entries`, `:1232` `candidate`, `:1314` `options`;\n  - `new ContractState(null)` (`:373`), which becomes `ContractState<null>`;\n  - `faces: []` (`:456,460`), inferred `never[]`;\n  - `const scopes = {}; scopes[id] = …` (`:1043-1045`);\n  - the `Defaults.platform()` helper returning `unknown` (`:208-209`).\n\n  Fix: type them with the set's TS aliases and explicit `ContractState<…>` arguments, or present the classes as plain JS as the tests do.\n- **Wrong summary:** the `HistoryEvent` summary at `:950` (\"recorded, undone, redone, failed, cleared, bounded\") does not match the variants (`Recorded`, `ScopeCleared`, `AvailabilityChanged`, `UndoCompleted`, `RedoCompleted`, `NavigationFailed`; `crates/rayx_app/src/services/history/model.rs:56-65`).\n- **Missing dependency:** the `Defaults` Rust module (`:188-204`) uses `serde_json`, which the stated assumptions (`:137-141`) omit.\n- **Missing feature:** `rayx_services_history`'s own `diagnostics` feature is not mentioned (operations' is).\n- **Fragments:** three RayX docs fragments still `await` without the \"inside `start()`'s `.then(async …)`\" note the other pages carry: `docs/navigation.md:82`, `docs/services/history.md:188-189`, `docs/services/navigation.md:167-168`.\n\n*Repair*: fix each item, and check the TS snippets with `nsh check` (or a `tsc --strict` pass over the set's declarations).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/operations_unsorted_targets.rs"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/services.md"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/navigation.md"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F10",
+      "criterionIds": [
+        "SVC-11",
+        "DOC-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**63d650c identifies \"one NSH storage\" by an id stored in that storage's own contents, so a copy joins the wrong store and a cleared id splits it.**\n\n*Where*: `crates/rayx_services_storage/src/nsh_store.rs:~389-424` (`join`) keys the process registry by the value of `rayx/.store` read from the storage. `resolve_over` (~:449-455) returns a private store when it is first resolved off the engine thread.\n\n*Observed*:\n\n- **Copied storage (confirmed by the helper's probe `copied_storage`):** a surface over another NSH storage that holds a copy of the first one's entries (a copied data directory, a seeded backend) gets the same store (`Arc::ptr_eq` true). Its writes land in the first storage and never in its own, contrary to `docs/services/storage.md:~100` (\"a surface over another storage … has a store of its own\").\n- **Cleared id (by reading):** TSX `Storage.clear()` or removing `rayx/.store` deletes the id, which is rewritten only at the next flush. A surface starting before that gets a second store over the same storage, with two mirrors and two history locks: the divergence 63d650c set out to fix.\n- **Off-engine resolve (by reading):** a provider whose `NshKeyValueStore` is first resolved off its engine thread gets its own `Arc`. It shares the mirror through `joined()`, but `KeyValueHistoryStore`'s lock is keyed by the `Arc` (`crates/rayx_services_history/src/key_value_store.rs:~66`), so its histories get a separate lock.\n\n*Expected*: one store per actual NSH storage, and one history lock per store, whatever the storage contains.\n\n*Repair*: key the registry by an identity the storage's contents cannot carry, such as NSH's storage or backend instance identity or a path. Otherwise, verify a joining surface through its own engine (a per-join nonce written and read back) before joining. Have the off-engine resolve return the registered store once joined, or let `KeyValueStore` expose a lock identity that `KeyValueHistoryStore` keys by.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/nsh_storage_shared_entries.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_scope_lock.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/src/nsh_store.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F11",
+      "criterionIds": [
+        "DOC-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**The TS \"Implement it in TS\" examples in RayX's service docs still fail NSH's strict check.** The skill's versions were fixed and pass `tsc --strict` (16 blocks, 0 errors, helper re-run against declarations regenerated from `main`), but the coordinator's `tsc_check/run.sh` does not cover RayX's docs.\n\n*Observed* (helper compiled all 57 `tsx` blocks of RayX's docs against the current declarations; errors that only come from missing app context are left out):\n\n- `docs/services/storage.md:~144`: implicit-`any` parameters, `keys()`/`clear()` with empty bodies, and `MyStore` not matching the class token's overload (TS2769 at `addSingletonAs(KeyValueStore, …)`).\n- `docs/services/assets.md:~165`: `new ContractState(null)` (TS2345).\n- `docs/services/fonts.md:~157`: `faces` inferred `never[]`.\n- `docs/services/i18n.md:~259`: a partial `I18nState` inferred too narrowly.\n- `docs/services/input-map.md:~169`: `ContractState({})`.\n- `docs/services/operations.md:~188`: `targets: []` plus implicit-`any` parameters.\n- TS2769 and implicit-`any` in `docs/services/navigation.md:~201`, `history.md:~220`, `suspension.md:~165`, `application-configuration.md:~149` and `selection.md:~113`.\n- `docs/tsx.md:~186` uses the value `Greeter` as a type (TS2749).\n- RayX.Root's `rayx-components/SKILL.md:39` and `references/button.md:103` are multi-root TSX listings. Compiled as a file they are a syntax error (TS2657), which would silence every semantic error in a combined check run.\n\n*Expected* (DOC-1, \"describe what is\"): the docs' TS implementations type-check as NSH apps compile them.\n\n*Repair*: give the docs the skill's typed versions (explicit `ContractState<T>`, typed parameters, complete members). Run the strict check over RayX's docs too, excluding or wrapping the multi-root listings, and fix `docs/tsx.md`'s `Greeter` (`typeof Greeter` or its interface).",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services/storage.md"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx-components/SKILL.md"
+        },
+        {
+          "repositoryId": "root",
+          "path": ".claude/skills/rayx/references/services.md"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F12",
+      "criterionIds": [
+        "SVC-11",
+        "DOC-1"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A write to RayX's NSH store made off the engine thread as the app quits is now lost, and the docs do not say so.** A behaviour change from 941d4ef.\n\n*Observed* (helper's probe `quit_off_thread`): a `Destroying` subscriber has another thread run `block_on(store.set(..))`, the old `nsh_storage_quit` pattern. It now answers `Err(Backend(\"the surface's engine is gone\"))`, and the device holds nothing. Before 941d4ef the write waited in the mirror and the `Destroyed` flush wrote it. SVC-3's acceptance (\"the flush before quitting heard through `dyn SuspensionService`'s events\") covered that case, and `nsh_storage_quit` was rewritten to save on the engine thread instead. The same applies to a history whose operation commits on another thread at quit: its save goes through the runner and fails as a step failure.\n\n`docs/services/storage.md:~87-93` says \"nothing waits to be written as the app quits\" and that what the app saves on the engine thread on `Destroying` reaches the device. `docs/services/suspension.md:~82` says to save synchronously on `Destroying`. Neither says that a save off the engine thread at quit fails.\n\n*Expected*: either an off-thread save made while the app hears `Destroying` still reaches the device, or the docs and skill say plainly that it does not.\n\n*Repair*: have the engine drain the runner's queue after the `Destroying` listeners and before it stops, with a test of an off-thread save on `Destroying`. Otherwise, state the limit in `storage.md`, `suspension.md` and the `rayx` skill's storage and suspension sections: save on the engine thread on `Destroying`, since an off-thread save then fails with \"the surface's engine is gone\".",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_engine_runner_quit.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_storage/tests/nsh_storage_quit_off_thread.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_quit_off_thread.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/binding.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services/storage.md"
+        }
+      ],
+      "boundaryId": "s7-docs"
+    },
+    {
+      "id": "S7-F13",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Since 1e7ec7f the quit waits for every running engine job until it ends, including timers nobody awaits any more. An app that used its history in the last 30 s now always waits the full 150 ms at quit.** Found by reading the code, not measured.\n\n*Where*:\n\n- `crates/rayx_app_nsh/src/binding.rs:~86-96`: `Work::track` now keeps its `Waiting` until the work ends, where before it held it only until the first poll.\n- `EngineRunner::run` starts the work as an engine task with `start_task(self.work.track(..))` (`:~254-295`). Dropping the future `run` returned does not cancel that task: nothing watches the oneshot's cancellation.\n- History bounds every call to its operation service and store with `select(call, timer.after(timeout))` (`crates/rayx_services_history/src/service.rs:~182-186`). On NSH the timer is `HistoryTimer::engine` (`timer.rs:61-71`, registered at `builder.rs:126`), that is `runner.run(|| timer(duration))` with the 30 s default `call_timeout_ms`.\n\n*Observed*: each bounded history call, every background save behind an edit included, leaves a 30 s engine timer running after its call answered and its side of the `select` was dropped. Before 1e7ec7f such timers stopped counting after their first poll. That was the point, as the earlier repair said: \"started work counts only until its first poll, so long timers don't hold the quit\". Now, while any such timer is pending, `waiting > 0` throughout the drain, so the quit runs to `QUIT_DRAIN_LIMIT` (150 ms) instead of ending after 50 ms of quiet.\n\nIt stays bounded and loses nothing, but it reverses a stated property of the drain, and every abandoned call leaves a 30 s task on the engine.\n\n*Expected*: work nobody waits for any more neither holds the quit nor keeps running on the engine.\n\n*Repair*: have `EngineRunner::run` stop the engine task when its caller drops the returned future, for example by racing the work against `send.cancellation()` inside the task, so the dropped side of history's `select` ends its timer. Alternatively, don't track timer-only work. Add a case to `nsh_engine_runner_quit` where a dropped `run(|| timer(10 s))` lets the quit end after about 50 ms.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/nsh_engine_runner_dropped.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/binding.rs",
+          "symbol": "run_cancellable"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/timer.rs"
+        }
+      ],
+      "boundaryId": "s7-docs"
     }
   ],
-  "handoffMarkdown": "Gallery starts RayX with the four and names its features (8bd41e2).",
+  "handoffMarkdown": "Gaps closed (3266c97..5bc7668).",
   "protectedPaths": {
     "rayx": {
       "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",

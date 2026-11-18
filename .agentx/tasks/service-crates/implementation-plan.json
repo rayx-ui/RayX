@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 8,
+  "revision": 10,
   "title": "RayX's services as replaceable crates: abstractions in rayx_app, implementations in rayx_services_*",
   "validationMode": "sprint",
   "repositories": [
@@ -1284,13 +1284,11 @@
       "criterionIds": [
         "DOC-1"
       ],
-      "descriptionMarkdown": "No file names the old crates or APIs: `git grep` exits 1 when it finds nothing (a match prints it and exits 0, failing the check).",
+      "descriptionMarkdown": "No file names the old crates or APIs: `git grep` finds nothing (the wrapper exits 0 only when git grep finds no match).",
       "argv": [
-        "git",
-        "grep",
-        "--untracked",
-        "-n",
-        "-E",
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['git','grep','--untracked','-n','-E']+sys.argv[1:]);sys.exit(0 if r.returncode==1 else 1)",
         "rayx_core|rayx_runtime|add_nsh_services|NshServicesAppBuilderExt|use_platform_sync|keep_platform_current",
         "--",
         "docs",
@@ -1303,7 +1301,7 @@
       ],
       "cwd": ".",
       "expected": {
-        "exitCode": 1
+        "exitCode": 0
       },
       "inputs": [
         "docs/**",
@@ -1320,13 +1318,11 @@
       "criterionIds": [
         "DOC-2"
       ],
-      "descriptionMarkdown": "No RayX.Root guide or skill names the old crates or APIs: `git grep` exits 1 when it finds nothing.",
+      "descriptionMarkdown": "No RayX.Root guide or skill names the old crates or APIs: `git grep` finds nothing (the wrapper exits 0 only when git grep finds no match).",
       "argv": [
-        "git",
-        "grep",
-        "--untracked",
-        "-n",
-        "-E",
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['git','grep','--untracked','-n','-E']+sys.argv[1:]);sys.exit(0 if r.returncode==1 else 1)",
         "rayx_core|rayx_runtime|add_nsh_services|NshServicesAppBuilderExt|use_platform_sync",
         "--",
         "AGENTS.md",
@@ -1334,7 +1330,7 @@
       ],
       "cwd": ".",
       "expected": {
-        "exitCode": 1
+        "exitCode": 0
       },
       "inputs": [
         "AGENTS.md",
@@ -1509,6 +1505,237 @@
         "crates/rayx_app_nsh/src/**",
         "crates/rayx_app_nsh/tests/headless/**",
         "crates/rayx_services_assets/**"
+      ]
+    },
+    {
+      "id": "c-gaps-core",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "Last registration wins, requirements follow registrations, startup for a trait (new groups).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "di_startup_for",
+        "--test",
+        "di_last_registration_wins",
+        "--test",
+        "di_requirements_follow_registrations"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/di_*.rs"
+      ]
+    },
+    {
+      "id": "c-gaps-host",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "A contract implementation registered as a startup service on NSH (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_contract_startup_for"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/nsh_contract_startup_for.rs"
+      ]
+    },
+    {
+      "id": "c-gaps-navigation",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "Navigation's TS commands as promises (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_navigation",
+        "--test",
+        "nsh_tsx_command_promises"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_navigation/**"
+      ]
+    },
+    {
+      "id": "c-gaps-storage",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "TS addInMemoryStorage (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_storage",
+        "--test",
+        "nsh_tsx_in_memory"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_storage/**"
+      ]
+    },
+    {
+      "id": "c-gaps-history",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "A history store written in TS; clearing a scope deletes its journal (new groups).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_history",
+        "--test",
+        "nsh_tsx_store",
+        "--test",
+        "history_clear_deletes"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_history/**"
+      ]
+    },
+    {
+      "id": "c-gaps-umbrella",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "Replacing services end to end, every feature.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--all-features",
+        "--test",
+        "service_replacement"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_*/**",
+        "crates/rayx/**"
+      ]
+    },
+    {
+      "id": "c-gaps-ci",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "CI runs the umbrella with every feature.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-cli",
+        "--test",
+        "ci_workflow"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        ".github/workflows/**",
+        "crates/*/Cargo.toml",
+        "crates/rayx_cli/**"
       ]
     }
   ],
@@ -2416,6 +2643,38 @@
             {
               "repositoryId": "rayx",
               "path": ".agentx/memory/knowledge/app/state.md"
+            }
+          ]
+        },
+        {
+          "id": "t22-service-gaps",
+          "title": "Close the service gaps documenting them found",
+          "descriptionMarkdown": "Corrective task from t19's findings (the owner's rule: no limitations where they can be made to work): CI runs the umbrella with every feature; navigation's TS commands return promises; the last registration of a key wins completely (startup entries and declared requirements); `add_startup_singleton_for`; TS `addInMemoryStorage()` and `addHistoryWithStore(..)`; clearing a history scope deletes its journal. Commits 3266c97..5bc7668.",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "supportingCriterionIds": [],
+          "designIds": [
+            "d-abstractions",
+            "d-service-crates",
+            "d-validation"
+          ],
+          "dependsOn": [
+            "t19-docs"
+          ],
+          "checkIds": [
+            "c-gaps-core",
+            "c-gaps-host",
+            "c-gaps-navigation",
+            "c-gaps-storage",
+            "c-gaps-history",
+            "c-gaps-umbrella",
+            "c-gaps-ci"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/di/provider.rs"
             }
           ]
         }
