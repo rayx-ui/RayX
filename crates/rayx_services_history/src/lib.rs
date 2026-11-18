@@ -24,6 +24,7 @@ mod journal;
 mod key_value_store;
 mod lifecycle;
 mod limits;
+mod options_ts;
 mod persistence;
 mod retained_records;
 mod service;
@@ -41,6 +42,7 @@ pub use history_ts::HistoryService;
 pub use journal::{HISTORY_JOURNAL_VERSION, HistoryJournalError, HistoryJournalV2};
 pub use key_value_store::{HISTORY_BUCKET, KeyValueHistoryStore};
 pub use limits::{HistoryLimitError, HistoryLimits, encoded_size, enforce};
+pub use options_ts::HistoryOptions as TsHistoryOptions;
 pub use store::{HistoryStore, HistoryStoreError, InMemoryHistoryStore};
 pub use timer::{HISTORY_CONFIG_PATH, HistoryOptions, HistoryTimer};
 
@@ -70,13 +72,15 @@ pub const OPERATION_RECORD: TsAlias = TsAlias {
 
 /// Adds the history's TS side to an app's set: its class [`HistoryService`], the contract a TS
 /// implementation follows (the TS interface `HistoryServiceContract`, [`HistoryServiceContract`]
-/// in Rust) and `builder.addHistory()` and `builder.addPersistentHistory()`.
+/// in Rust), the options class [`TsHistoryOptions`] (`HistoryOptions` in TS) and
+/// `builder.addHistory(..)` and `builder.addPersistentHistory(..)`.
 pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(OPERATION_RECORD)
         .ts_alias(HISTORY_STATE)
         .ts_alias(HISTORY_EVENT)
         .contract_class::<HistoryServiceContract, HistoryService>()
+        .class::<TsHistoryOptions>()
         .class_extension::<HistoryBuilder>();
 }
 

@@ -10,7 +10,9 @@ use rayx_app::services::history::HistoryService;
 use rayx_app::services::operations::OperationService;
 use rayx_app::services::storage::KeyValueStore;
 use rayx_app::{AppBuilder, ServiceProvider};
-use rayx_app_nsh::ts::RayXAppBuilder;
+use rayx_app_nsh::ts::{RayXAppBuilder, record};
+
+use crate::options_ts::{HistoryOptions as TsHistoryOptions, HistoryStep};
 
 use crate::key_value_store::KeyValueHistoryStore;
 use crate::service::{RayxHistory, Starting};
@@ -34,7 +36,7 @@ pub trait HistoryAppBuilderExt: AppBuilder {
     /// `add_operations()` from `rayx_services_operations`, or the app's own), with history kept
     /// in memory only.
     fn add_history(self) -> Self {
-        register(self, false)
+        register(self, false, Vec::new())
     }
 
     /// Like [`add_history`](Self::add_history), with each scope's history persisted in
@@ -44,38 +46,50 @@ pub trait HistoryAppBuilderExt: AppBuilder {
         let store: Arc<dyn HistoryStore> = Arc::new(store);
         self.services_mut()
             .replace_app_service::<dyn HistoryStore>(store);
-        register(self, true)
+        register(self, true, Vec::new())
     }
 
     /// Like [`add_history`](Self::add_history), with each scope's history kept in the app's
     /// `dyn KeyValueStore` (which it requires: `add_storage()` from `rayx_services_storage`, or
     /// the app's own) by a [`KeyValueHistoryStore`], so it persists wherever the store does: on
     /// NSH, in the device's storage.
-    fn add_persistent_history(mut self) -> Self {
-        let services = self.services_mut();
-        services.require_for::<dyn HistoryStore, dyn KeyValueStore>(STORAGE_HINT);
-        services.replace_app_service_factory_as::<dyn HistoryStore>(|services| {
-            let store = services
-                .required_service::<dyn KeyValueStore>()
-                .unwrap_or_else(|error| {
-                    panic!("the history store needs a key-value store: {error}")
-                });
-            Arc::new(KeyValueHistoryStore::new(store))
-        });
-        register(self, true)
+    fn add_persistent_history(self) -> Self {
+        add_persistent(self, Vec::new())
     }
 }
 
 impl<T> HistoryAppBuilderExt for T where T: AppBuilder {}
 
+/// `add_persistent_history`, with TS's recorded option `steps` after configuration's.
+fn add_persistent<B: AppBuilder>(mut builder: B, steps: Vec<HistoryStep>) -> B {
+    let services = builder.services_mut();
+    services.require_for::<dyn HistoryStore, dyn KeyValueStore>(STORAGE_HINT);
+    services.replace_app_service_factory_as::<dyn HistoryStore>(|services| {
+        let store = services
+            .required_service::<dyn KeyValueStore>()
+            .unwrap_or_else(|error| panic!("the history store needs a key-value store: {error}"));
+        Arc::new(KeyValueHistoryStore::new(store))
+    });
+    register(builder, true, steps)
+}
+
 /// Registers RayX's history as `dyn HistoryService` (a startup service keyed by it), kept in
-/// the app's `dyn HistoryStore` when `stored`.
-fn register<B: AppBuilder>(mut builder: B, stored: bool) -> B {
+/// the app's `dyn HistoryStore` when `stored`, its options bound from configuration, then set
+/// by `steps` (TS's options callback).
+fn register<B: AppBuilder>(mut builder: B, stored: bool, steps: Vec<HistoryStep>) -> B {
     let services = builder.services_mut();
     services.require_for::<dyn HistoryService, dyn OperationService>(OPERATIONS_HINT);
-    services
+    let options = services
         .add_options::<HistoryOptions>()
         .bind(HISTORY_CONFIG_PATH);
+    if !steps.is_empty() {
+        // TS's options callback, after configuration's.
+        options.configure(move |options| {
+            for step in &steps {
+                step.apply(options);
+            }
+        });
+    }
     services.replace_service_factory_as::<RayxHistory>(move |services| {
         let timeout = services
             .options::<HistoryOptions>()
@@ -128,17 +142,26 @@ pub struct HistoryBuilder;
 #[class_extension(RayXAppBuilder)]
 impl HistoryBuilder {
     /// Registers the app's history (undo and redo of operations, kept in memory); it needs an
-    /// operation service (`addOperations`).
-    pub fn add_history(this: Instance<RayXAppBuilder>) -> Result<Instance<RayXAppBuilder>, String> {
-        RayXAppBuilder::extend_with(this, HistoryAppBuilderExt::add_history)
+    /// operation service (`addOperations`). `configure` sets its options
+    /// (`options.callTimeoutMs(5000)`) after configuration's; one that throws makes this call
+    /// throw.
+    pub fn add_history(
+        this: Instance<RayXAppBuilder>,
+        #[args(options)] configure: Option<Callback<Instance<TsHistoryOptions>>>,
+    ) -> Result<Instance<RayXAppBuilder>, String> {
+        let steps = record(TsHistoryOptions::new(), configure, TsHistoryOptions::take)?;
+        RayXAppBuilder::extend_with(this, move |builder| register(builder, false, steps))
     }
 
     /// Registers the app's history kept in its key-value store (so on NSH in the device's
     /// storage); it needs an operation service (`addOperations`) and a key-value store
-    /// (`addStorage`).
+    /// (`addStorage`). `configure` sets its options (`options.callTimeoutMs(5000)`) after
+    /// configuration's; one that throws makes this call throw.
     pub fn add_persistent_history(
         this: Instance<RayXAppBuilder>,
+        #[args(options)] configure: Option<Callback<Instance<TsHistoryOptions>>>,
     ) -> Result<Instance<RayXAppBuilder>, String> {
-        RayXAppBuilder::extend_with(this, HistoryAppBuilderExt::add_persistent_history)
+        let steps = record(TsHistoryOptions::new(), configure, TsHistoryOptions::take)?;
+        RayXAppBuilder::extend_with(this, move |builder| add_persistent(builder, steps))
     }
 }

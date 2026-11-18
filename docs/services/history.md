@@ -41,7 +41,9 @@ Each call the history makes of the operation service or the store is bounded by 
 (bound from `RayX:Services:History`, `configure_options::<HistoryOptions>(..)`; 30 seconds by default, `None` for
 none): one that does not answer in time (a TS promise that never settles) fails the command with
 `HistoryError::TimedOut` and frees its scope. The timer is the engine's on NSH (through the host's `EngineRunner`);
-elsewhere an app registers a `HistoryTimer` service, and without one the calls are unbounded.
+elsewhere an app registers a `HistoryTimer` service, and without one the calls are unbounded. In TS the options are
+set by the builder methods' callback, after configuration's:
+`builder.addHistory((options) => options.callTimeoutMs(5000))` (or `addPersistentHistory(..)`; `null` for no limit).
 
 ## Use
 
