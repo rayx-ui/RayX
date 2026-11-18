@@ -93,6 +93,8 @@ committing:
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+cargo clippy -p rayx --all-features --all-targets -- -D warnings
+cargo test -p rayx --all-features
 cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown
 ```
 
@@ -108,7 +110,8 @@ integration-test group in `crates/<crate>/tests/<feature>.rs` (`di_provider`, `d
 behavior change gets a new group. The umbrella's groups that need service features beyond the defaults
 (`service_replacement`, `ts_service_contracts`, `history_over_operations`) declare
 `required-features` and run with `cargo test -p rayx --all-features --test <group>`;
-`cargo test --workspace` skips them.
+`cargo test --workspace` skips them, so CI runs `cargo test -p rayx --all-features` (and lints
+it), and `crates/rayx_cli/tests/ci_workflow.rs` fails for a feature-gated group CI never runs.
 `crates/rayx/tests/crate_layout.rs` checks the crates, their folders and the dependency rules
 above.
 
