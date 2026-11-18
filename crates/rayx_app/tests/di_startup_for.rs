@@ -260,9 +260,52 @@ fn di_startup_for_the_startup_only_form_is_registered_as_the_trait() {
     provider.add_startup_service_for::<dyn Greeter, _>(Arc::clone(&follower));
     assert!(provider.has_startup_role::<dyn Greeter>());
 
-    // A later registration of the trait removes it.
+    // Not replaced, it runs once.
+    run(&provider).expect("startup runs");
+    assert_eq!(follower.loads(), 1);
+    assert_eq!(*log.lock().unwrap(), ["follower"]);
+}
+
+#[test]
+fn di_startup_for_the_startup_only_form_is_removed_by_a_later_registration_of_the_trait() {
+    let log = Log::default();
+    let mut provider = ServiceProvider::new();
+    let follower = Arc::new(Loaded::new("follower", &log));
+    provider.add_startup_service_for::<dyn Greeter, _>(Arc::clone(&follower));
+
     provider
         .add_singleton_as::<dyn Greeter>(Arc::new(Loaded::new("own", &log)) as Arc<dyn Greeter>);
+    assert!(!provider.has_startup_role::<dyn Greeter>());
     run(&provider).expect("startup runs");
     assert_eq!(follower.loads(), 0);
+}
+
+#[test]
+fn di_startup_for_the_trait_has_the_startup_role_of_an_implementation_naming_its_own_key() {
+    struct Elsewhere;
+    let log = Log::default();
+
+    let mut shared = ServiceProvider::new();
+    shared.add_startup_singleton_for::<dyn Greeter, _>(Arc::new(
+        Loaded::new("shared", &log).keyed(StartupServiceType::of::<Elsewhere>()),
+    ));
+    assert!(
+        shared.has_startup_role::<dyn Greeter>(),
+        "what it is registered as"
+    );
+    assert!(shared.has_startup_role::<Elsewhere>(), "the key it names");
+
+    let mut made = ServiceProvider::new();
+    let made_log = Arc::clone(&log);
+    made.add_startup_singleton_factory_for::<dyn Greeter, _>(move |_| {
+        Arc::new(Loaded::new("made", &made_log).keyed(StartupServiceType::of::<Elsewhere>()))
+    });
+    assert!(
+        made.has_startup_role::<dyn Greeter>(),
+        "the factory form alike"
+    );
+
+    shared.add_singleton_as::<dyn Greeter>(Arc::new(Loaded::new("own", &log)) as Arc<dyn Greeter>);
+    assert!(!shared.has_startup_role::<dyn Greeter>(), "replaced");
+    assert!(!shared.has_startup_role::<Elsewhere>());
 }

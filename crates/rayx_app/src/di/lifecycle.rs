@@ -628,10 +628,12 @@ impl StartupRegistry {
             .retain(|factory| factory.service_type != service_type);
     }
 
+    /// Whether a startup service is keyed or registered as `service_type` (a factory's by what
+    /// it is registered as: the service it makes is not made yet).
     pub(crate) fn contains(&self, service_type: StartupServiceType) -> bool {
         self.services
             .iter()
-            .any(|service| service.key == service_type)
+            .any(|service| service.key == service_type || service.registered_as == service_type)
             || self
                 .factories
                 .iter()

@@ -651,6 +651,8 @@ impl ServiceProvider {
         self
     }
 
+    /// Whether a startup service is registered as `T` (`add_startup_singleton_for::<T, _>`, say)
+    /// or keyed by `T` (the key it names).
     pub fn has_startup_role<T>(&self) -> bool
     where
         T: ?Sized + 'static,
