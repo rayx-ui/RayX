@@ -2,8 +2,8 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../_archive/RayX.Old`), which is not
-a dependency. The workspace has nineteen crates sharing one version (`rayx`, `rayx_app`,
-`rayx_app_nsh`, the twelve `rayx_services_<name>`, `rayx_components`, `rayx_devtools_protocol`,
+a dependency. The workspace has twenty crates sharing one version (`rayx`, `rayx_app`,
+`rayx_app_nsh`, the thirteen `rayx_services_<name>`, `rayx_components`, `rayx_devtools_protocol`,
 `rayx_app_macros` and `rayx-cli`), and the gallery app's crate:
 
 - `crates/rayx_app`: the pure-Rust core: dependency injection (singleton, scoped and transient
@@ -15,7 +15,7 @@ a dependency. The workspace has nineteen crates sharing one version (`rayx`, `ra
   NSH-free services depends on it alone.
 - `crates/rayx_services_<name>`: RayX's implementation of one service each (platform,
   suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map,
-  application configuration) on the core's contract `rayx_app::services::<name>`, with its NSH
+  application configuration, theme) on the core's contract `rayx_app::services::<name>`, with its NSH
   side, TS class, set (`register`) and builder extension (`add_<name>`, which replaces any
   implementation registered before and declares, with `require_for`, the services it resolves). A
   service crate depends on `rayx_app`, `rayx_app_nsh` and `nsh-core`, never on another service

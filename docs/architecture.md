@@ -7,7 +7,7 @@ service it registers; an app's own crate of NSH-free services depends on `rayx_a
 | --- | --- | --- |
 | `rayx_app` | The core: dependency injection (singleton, scoped and transient services, scopes, async startup, required services and declared dependencies), configuration sources, .NET's options model, the `RayXAppBuilder`, every service's contract (`rayx_app::services::<name>`) and a fake of each (`rayx_app::testing`) | no |
 | `rayx_app_nsh` | The NSH host: the app's start on each surface (requiring the platform, suspension, asset and font services), a root provider per surface, a scope per screen, view-model activation and binding, `add_app_settings`, the dev tools' agent, and the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts with `ContractState` and `ContractEvents`) | yes |
-| `rayx_services_<name>` | RayX's implementation of one core service contract each, on NSH, with its builder extension, its TS class and its set: `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage`, `rayx_services_navigation` (with its regions as NSH navigation stacks), `rayx_services_i18n` (with `tr!`), `rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`, `rayx_services_input_map`, `rayx_services_application_configuration` | yes |
+| `rayx_services_<name>` | RayX's implementation of one core service contract each, on NSH, with its builder extension, its TS class and its set: `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage`, `rayx_services_navigation` (with its regions as NSH navigation stacks), `rayx_services_i18n` (with `tr!`), `rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`, `rayx_services_input_map`, `rayx_services_application_configuration`, `rayx_services_theme` (the theme's modifier contexts, light/dark with the color scheme) | yes |
 | `rayx_components` | The component library: the design system's tokens as an NSH theme document (`theme.json`, generated from the Figma export) read through typed keys, its modes as the document's modifiers, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
 | `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_app`, `rayx_app_nsh` and `rayx`; `#[app_extension]` and `#[contract]`, re-exported by `rayx_app_nsh` and `rayx`; `contract_nsh!`, re-exported by `rayx_app_nsh`; `#[native_module]`, used as `#[rayx::native_module]` | no |
@@ -58,7 +58,7 @@ CLI's `tests/library_guard.rs` its dependency tree.
 
 Each service crate is an optional dependency of the umbrella behind one feature named after the service:
 `application_configuration`, `assets`, `fonts`, `history`, `i18n`, `input_map`, `navigation`, `operations`,
-`platform`, `selection`, `storage` and `suspension`. A feature enables its crate and nothing else; no feature implies
+`platform`, `selection`, `storage`, `suspension` and `theme`. A feature enables its crate and nothing else; no feature implies
 another, so a service that needs one the app did not register (history over operations, i18n over the platform and
 asset services) fails the app's start with the missing service's hint, as any missing dependency does.
 

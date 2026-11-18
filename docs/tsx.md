@@ -21,7 +21,8 @@ It is NSH's `#[native_module("my-app")]` on the function, whose body first regis
 configuration and options classes, `ContractState` and `ContractEvents`), the set of each service crate the umbrella's
 features enable (its class, its contract's interface, its options classes and its builder method:
 `rayx_services_i18n::register` gives `addI18n(..)`, `addMessageFormatter()`, `I18nService`, `I18nServiceContract` and
-`I18nOptions`) and RayX's components with their theme document (`rayx::components::register`), and nothing else. With
+`I18nOptions`, and `rayx_services_theme::register` gives `addTheme(..)`, `ThemeService`, `ThemeServiceContract` and
+`ThemeOptions`) and RayX's components with their theme document (`rayx::components::register`), and nothing else. With
 the default features the builder has `addPlatform()`, `addSuspension()`, `addAssets(..)` and `addFonts(..)`; a feature
 off leaves its method and class out of the set and its declarations. The function's own body adds the app's exports:
 

@@ -24,6 +24,7 @@ the feature `<name>`. The features marked default are the four services the NSH 
 | [Selection](services/selection.md) | The active selection area and its status | `selection` | `add_selection()`; `addSelection()` | navigation | |
 | [Input map](services/input-map.md) | Key and pointer bindings per context, in three layers | `input_map` | `add_input_map(..)`; `addInputMap(..)` | storage | `RayX:Services:InputMap` |
 | [Application configuration](services/application-configuration.md) | The app's own settings: motion, scrolling, tooltips, layout direction | `application_configuration` | `add_application_configuration(..)`; `addApplicationConfiguration(..)` | platform | `RayX:Application` |
+| [Theme](services/theme.md) | The theme's modifier contexts on each surface, and light/dark following the color scheme or the app's choice | `theme` | `add_theme(..)`; `addTheme(..)` | platform | `RayX:Services:Theme` |
 
 "Requires" names the services RayX's implementation resolves: the app registers each, RayX's or its own, or the build
 fails naming it ([Startup](startup.md#how-the-app-starts)). No feature implies another.
@@ -78,7 +79,8 @@ new RayXAppBuilder()
 `add_<service>(..)` registers RayX's implementation as the app's `dyn Trait`, replacing any registered before. A
 service registers no other: it declares what it depends on (`add_i18n` the asset and platform services, `add_fonts`
 the asset service, `add_history` an operation service, `add_persistent_history` and `add_input_map` a key-value store,
-`add_selection` a navigation service, `add_application_configuration` the platform service), and the build fails
+`add_selection` a navigation service, `add_application_configuration` and `add_theme` the platform service), and
+the build fails
 naming each one missing with how to add it.
 
 **Configured through options.** A service reads its options with RayX's [options model](configuration.md) from the
@@ -166,7 +168,9 @@ The NSH host, `rayx_app_nsh`, starts the app; the service crates do the rest on 
   services read and register through NSH from any thread, and so does the [key-value store](services/storage.md),
   which reads and writes NSH's storage itself, shared by every window over it; the [navigation](services/navigation.md) service shows its location as
   NSH's app address; the [i18n](services/i18n.md) formatter keeps `tr!` and NSH's locale on the i18n service from its
-  startup on.
+  startup on; the [theme](services/theme.md) service picks the theme's modifier contexts on each surface and keeps its
+  light/dark modifier in step with the color scheme or the app's choice (without it a theme shows its modifiers'
+  defaults: RayX's, `light`; density, OS and contrast are the app's to pick with `set_context`).
 
 ## Writing a service
 

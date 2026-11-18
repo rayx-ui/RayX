@@ -29,7 +29,7 @@
     [Storage](services/storage.md), [Navigation](services/navigation.md), [Selection](services/selection.md),
     [Input map](services/input-map.md), [Platform](services/platform.md), [Suspension](services/suspension.md),
     [Application configuration](services/application-configuration.md), [Assets](services/assets.md),
-    [Fonts](services/fonts.md)
+    [Fonts](services/fonts.md), [Theme](services/theme.md)
 - [CHANGELOG](../CHANGELOG.md): every release, with `Migration:` notes for breaking changes.
 
 ## The CLI

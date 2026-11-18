@@ -13,15 +13,16 @@ nsh's, on the API RayX documents in its `docs/tsx.md` and `docs/startup.md`:
 
 | Template | `src/lib.rs` | The app's start |
 | --- | --- | --- |
-| `mixed` | `#[rayx::native_module("<specifier>")]` on `fn native`: every RayX TS class, RayX's components and, in its body, RayX's dev tools (`DevTools`, `DevLayer`) | `App.tsx`: `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addStorage().addOperations().addHistory().start()`, then a service from the `ServiceProvider` it resolves with |
-| `rust` | `#[rayx::native_module("<specifier>")]`: RayX's TS classes and components, and the root component `App` | `App`: `RayXAppBuilder::new().add_platform().add_suspension().add_assets(..).add_fonts(..).add_storage().add_operations().add_history().start()`, then `app_state()` |
+| `mixed` | `#[rayx::native_module("<specifier>")]` on `fn native`: every RayX TS class, RayX's components and, in its body, RayX's dev tools (`DevTools`, `DevLayer`) | `App.tsx`: `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addTheme().addStorage().addOperations().addHistory().start()`, then a service from the `ServiceProvider` it resolves with |
+| `rust` | `#[rayx::native_module("<specifier>")]`: RayX's TS classes and components, and the root component `App` | `App`: `RayXAppBuilder::new().add_platform().add_suspension().add_assets(..).add_fonts(..).add_theme(..).add_storage().add_operations().add_history().start()`, then `app_state()` |
 
 Both register the four services the host requires (platform, suspension, assets and fonts) before
-storage and history, with a comment saying so: each can be replaced by the app's own
-implementation of its contract, and history needs operations. Both mount RayX's dev tools' layer
+the theme, storage and history, with a comment saying so: each can be replaced by the app's own
+implementation of its contract, the theme keeps the theme's light/dark modifier in step with the
+system, and history needs operations. Both mount RayX's dev tools' layer
 at the root (`<DevLayer />`, `dev_layer()`), which only a dev build carries, and test that the app
 reaches `Ready` (`App.test.tsx`). Beside them: `rayx` in `Cargo.toml` at this `rayx`'s tag with the
-features the builder uses beyond the defaults, `features = ["storage", "operations", "history"]`
+features the builder uses beyond the defaults, `features = ["theme", "storage", "operations", "history"]`
 (the defaults are the four the host requires), a README, and the pin ([below](#the-nsh-pin)).
 
 ## Finding the project

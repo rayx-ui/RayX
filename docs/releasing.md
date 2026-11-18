@@ -59,7 +59,9 @@ the `v0.5.0` tag does not have, carried the line until `v0.5.1`, and `rayx-cli`,
 from `rayx-ui/RayX.CLI` (never released there), carried `git_tag_name = "rayx-cli-v{{ version }}"`
 until `v0.6.0`. `rayx_components` and `rayx_devtools_protocol` carried the line until
 `v0.11.0`. `rayx_app_nsh`, the NSH host's name after `v0.11.0` (where it was
-`rayx_app`), and the `rayx_services_*` crates carried it until `v0.12.0`. A crate that is never
+`rayx_app`), and the `rayx_services_*` crates carried it until `v0.12.0`. `rayx_services_theme`, new after
+`v0.12.0`, carries `git_tag_name = "rayx_services_theme-v{{ version }}"` until the release that first has it
+(`release_automation.rs`' `NEW_SINCE_THE_LAST_RELEASE` names it meanwhile). A crate that is never
 released (`release = false`, such as `rayx-gallery`)
 still needs it, and keeps it: release-plz looks every workspace crate up in the previous tag.
 
