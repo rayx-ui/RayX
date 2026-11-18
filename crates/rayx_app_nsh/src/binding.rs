@@ -64,7 +64,7 @@ const QUIT_TICK: Duration = Duration::from_millis(2);
 /// The work a surface's runners took, as the app's quit waits for it ([`drain`]).
 #[derive(Default)]
 struct Work {
-    /// Jobs queued and not run yet, and work started and not polled yet.
+    /// Jobs queued and not run yet, and work started and not ended yet.
     waiting: AtomicUsize,
     /// Changes each time work arrives, runs or ends.
     activity: AtomicU64,
@@ -82,22 +82,16 @@ impl Work {
         self.activity.fetch_add(1, Ordering::SeqCst);
     }
 
-    /// `work`, waiting until it is first polled; its end counts as activity.
+    /// `work`, waiting until it ends (or is dropped), so the app's quit waits for work already
+    /// running (a TS store's write, say) up to [`QUIT_DRAIN_LIMIT`].
     fn track<T, F: std::future::Future<Output = T>>(
         self: &Arc<Self>,
         work: F,
     ) -> impl std::future::Future<Output = T> + use<T, F> {
-        let mut waiting = Some(self.arrived());
-        let work_done = Arc::clone(self);
+        let waiting = self.arrived();
         async move {
-            let mut work = std::pin::pin!(work);
-            let output = std::future::poll_fn(|context| {
-                let polled = work.as_mut().poll(context);
-                drop(waiting.take());
-                polled
-            })
-            .await;
-            work_done.touch();
+            let output = work.await;
+            drop(waiting);
             output
         }
     }
@@ -115,9 +109,9 @@ impl Drop for Waiting {
 
 /// The app quits (an NSH quit listener the host owns): runs what is queued for the engine and
 /// the work it starts, as the engine stops, after the app's quit listeners ran (where RayX's
-/// suspension service publishes `Destroying`). It ends once nothing waits and nothing arrived,
-/// ran or ended for [`QUIT_SETTLE`], or after [`QUIT_DRAIN_LIMIT`]; while it runs, the engine
-/// turns, so the queue's task runs each job and the work started is polled.
+/// suspension service publishes `Destroying`). It ends once nothing is queued or running and
+/// nothing arrived, ran or ended for [`QUIT_SETTLE`], or after [`QUIT_DRAIN_LIMIT`]; while it
+/// runs, the engine turns, so the queue's task runs each job and the work started is polled.
 async fn drain(work: Arc<Work>) {
     let started = nsh_core::time::now();
     let mut seen = work.activity.load(Ordering::SeqCst);
@@ -199,9 +193,9 @@ impl std::error::Error for EngineGone {}
 /// As the app quits, after NSH's quit listeners ran (RayX's suspension service publishes
 /// `Destroying` from one) and before the engine stops, the host runs what is queued and the work
 /// it starts, and what other threads queue meanwhile (a thread that heard `Destroying`, say),
-/// until nothing waits and nothing arrived, ran or ended for 50 ms, within NSH's quit timeout
-/// (`QUIT_TIMEOUT`, 200 ms), 150 ms at most; work still running then is dropped when the engine
-/// stops. A `run` queued after that resolves `Err(EngineGone)` (a `post` is dropped unrun), and
+/// until nothing is queued or still running (work already running is waited for) and nothing
+/// arrived, ran or ended for 50 ms, within NSH's quit timeout (`QUIT_TIMEOUT`, 200 ms), 150 ms
+/// at most; work still running then is dropped when the engine stops. A `run` queued after that resolves `Err(EngineGone)` (a `post` is dropped unrun), and
 /// once the engine stopped both give `Err(EngineGone)`.
 #[derive(Clone)]
 pub struct EngineRunner {

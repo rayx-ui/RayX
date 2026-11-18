@@ -95,7 +95,8 @@ What the app saves as it hears `Destroying` reaches the device, on the engine th
 from another thread (a thread the listener handed the save to, an operation committing there) through the engine
 runner: as the app quits, after NSH's quit listeners (where `Destroying` is published) and before the engine stops,
 the host runs every call queued for the engine and the work it starts, and the calls other threads queue meanwhile,
-until none waits and none arrived, ran or ended for 50 ms, 150 ms at most (inside NSH's 200 ms quit timeout). A call
+until none is queued or still running (a call already running, a TS store's slow write say, is waited for)
+and none arrived, ran or ended for 50 ms, 150 ms at most (inside NSH's 200 ms quit timeout). A call
 queued after that, or once the engine stopped, fails with `StorageError::Backend("the surface's engine is gone")`
 (the runner's `EngineGone`), and the device does not get it.
 

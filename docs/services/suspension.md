@@ -83,8 +83,8 @@ let events = suspension.events().subscribe(|event| match event.kind {
   waits for the app only briefly. On NSH a save on the engine thread, where the event is heard, is done at once; one
   another thread makes (a thread the listener handed it to) completes when its calls reach the engine thread through
   the surface's engine runner (RayX's storage, a TS contract) before the engine stops: the host runs them after the
-  quit listeners, until none arrived, ran or ended for 50 ms, 150 ms at most. A call that reaches the engine later
-  fails with `EngineGone`.
+  quit listeners, until none is queued or still running and none arrived, ran or ended for 50 ms, 150 ms at
+  most. A call that reaches the engine later fails with `EngineGone`.
 - Timestamps are optional and come from the system clock where the target has one.
 
 ### Asking before quitting

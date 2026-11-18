@@ -1,8 +1,9 @@
 //! The surface's engine runner as the app quits, headless: work another thread queues for the
 //! engine after it heard the app quit (an NSH quit listener, where RayX's suspension service
 //! publishes `Destroying`) runs on the engine thread before the engine stops, the work that
-//! work starts too, and work queued in turn as each answers; once the engine stopped, the
-//! runner answers `Err(EngineGone)`.
+//! work starts too (work already running is waited for, within the quit's limit), and work
+//! queued in turn as each answers; once the engine stopped, the runner answers
+//! `Err(EngineGone)`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -76,6 +77,13 @@ fn Root() -> impl IntoElement {
                                 on_engine_thread()
                             }));
                             seen.push(format!("{ran:?}"));
+                            // Work already running for longer than the quiet window (a TS
+                            // store's slow write): the quit waits for it to end.
+                            let ran = block_on(runner.run(|| async {
+                                timer(Duration::from_millis(90)).await;
+                                on_engine_thread()
+                            }));
+                            seen.push(format!("slow {ran:?}"));
                             let posted = runner.post(|| {
                                 POSTED
                                     .lock()
@@ -134,6 +142,7 @@ fn work_queued_as_the_app_quits_runs_before_the_engine_stops() {
             "Ok((1, true))",
             "Ok((2, true))",
             "Ok(true)",
+            "slow Ok(true)",
             "Ok(())"
         ]
     );
