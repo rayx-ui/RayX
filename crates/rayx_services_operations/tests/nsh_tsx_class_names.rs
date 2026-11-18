@@ -56,7 +56,7 @@ fn the_operation_classes_carry_their_members() {
     for declared in [
         "export interface OperationServiceContract {",
         "  registerTarget(targetId: string, handler: OperationTargetHandle): void;",
-        "  submitRecord(record: OperationRecord, origin: OperationOrigin, transactionId: number | null): OperationReceipt;",
+        "  submitRecord(record: OperationRecord, origin: OperationOrigin, transactionId: number | null): Promise<OperationReceipt>;",
         "  readonly instanceId: number;",
         "export type OperationState = ",
         "export type OperationEvent = ",

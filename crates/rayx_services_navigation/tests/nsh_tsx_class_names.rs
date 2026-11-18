@@ -63,9 +63,9 @@ fn the_navigation_classes_carry_their_members() {
     }
     for declared in [
         "export interface NavigationServiceContract {",
-        "  navigate(request: NavigationRequest): NavigationResult;",
-        "  goToEntry(region: string, index: number): NavigationResult;",
-        "  applyLocation(location: string): NavigationResult[];",
+        "  navigate(request: NavigationRequest): Promise<NavigationResult>;",
+        "  goToEntry(region: string, index: number): Promise<NavigationResult>;",
+        "  applyLocation(location: string): Promise<NavigationResult[]>;",
         "  readonly defaultHistoryMode: NavigationHistoryMode;",
         "export type NavigationState = ",
         "export type NavigationEvent = ",

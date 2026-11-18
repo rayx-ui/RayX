@@ -3,7 +3,8 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    FnArg, Ident, ItemTrait, Pat, ReturnType, TraitItem, TraitItemFn, Type, spanned::Spanned,
+    FnArg, Ident, ItemTrait, Pat, ReturnType, TraitItem, TraitItemFn, Type, parse::Parser as _,
+    spanned::Spanned,
 };
 
 /// What every refusal says a contract's members may be.
@@ -163,8 +164,8 @@ pub(crate) fn expand_mode(
                 let ok = result_ok(ret);
                 let unit =
                     ok.is_some_and(|ok| matches!(ok, Type::Tuple(tuple) if tuple.elems.is_empty()));
-                let ts = ts_signature(f, &m.params, ok.map(ts_result_of).as_deref());
-                let ts_attrs = ts_attrs(f, &ts);
+                let ts = awaited(&ts_signature(f, &m.params, ok.map(ts_result_of).as_deref()));
+                let ts_attrs = command_ts_attrs(f, &ts);
                 // A command answering nothing awaits JS's `void`; one answering a value takes it
                 // as JSON, its bytes as they are (a `Uint8Array` as a `number[]`).
                 let (answer, to_json) = if unit {
@@ -241,8 +242,19 @@ pub(crate) fn expand_mode(
                 });
             }
             Kind::Command => {
-                // The interface keeps the method as written (its `#[ts("…")]` included).
-                interface.push(quote!(#f));
+                // The interface keeps the method as written, its own `#[ts("…")]` with its
+                // result a promise (NSH declares one as written).
+                let mut written = f.clone();
+                if written.attrs.iter().any(|attr| attr.path().is_ident("ts")) {
+                    let ts_attrs = command_ts_attrs(f, "");
+                    written.attrs.retain(|attr| !attr.path().is_ident("ts"));
+                    for attr in ts_attrs {
+                        written
+                            .attrs
+                            .extend(syn::Attribute::parse_outer.parse2(attr)?);
+                    }
+                }
+                interface.push(quote!(#written));
                 let ReturnType::Type(_, ret) = output else {
                     unreachable!("checked: a command returns a Result");
                 };
@@ -832,8 +844,8 @@ fn result_ok(ty: &Type) -> Option<&Type> {
 }
 
 /// A member's TS signature from its Rust types, as NSH's `#[ts("…")]` writes it:
-/// `(city: string): Forecast`, the result left out for `void` (NSH adds the promise of an
-/// `async` member).
+/// `(city: string): Forecast`, the result left out for `void`. NSH declares a `#[ts("…")]` as
+/// written, a command's included: [`awaited`] makes its result a promise.
 fn ts_signature(f: &TraitItemFn, params: &[(&Ident, &Type)], result: Option<&str>) -> String {
     let params: Vec<String> = params
         .iter()
@@ -843,6 +855,60 @@ fn ts_signature(f: &TraitItemFn, params: &[(&Ident, &Type)], result: Option<&str
     match result {
         Some(result) if result != "null" => format!("({}): {result}", params.join(", ")),
         _ => format!("({})", params.join(", ")),
+    }
+}
+
+/// `signature` (`(name: string): Forecast`) with its result a promise (`Promise<Forecast>`), as
+/// TS's `async` method implementing the command returns it; one without a result (`void`, which
+/// a promise of nothing satisfies) or with a promise already stays as it is.
+fn awaited(signature: &str) -> String {
+    let mut depth = 0usize;
+    let mut close = None;
+    for (index, char) in signature.char_indices() {
+        match char {
+            '(' => depth += 1,
+            ')' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    close = Some(index);
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+    let Some(close) = close else {
+        return signature.to_owned();
+    };
+    let (params, rest) = signature.split_at(close + 1);
+    let Some(result) = rest.trim_start().strip_prefix(':').map(str::trim) else {
+        return signature.to_owned();
+    };
+    if result.is_empty() || result == "void" || result.starts_with("Promise<") {
+        return signature.to_owned();
+    }
+    format!("{params}: Promise<{result}>")
+}
+
+/// A command's `#[ts("…")]` attributes: its own, each with its result [`awaited`], when it has
+/// any, else one with `ts`.
+fn command_ts_attrs(f: &TraitItemFn, ts: &str) -> Vec<TokenStream> {
+    let own: Vec<TokenStream> = f
+        .attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident("ts"))
+        .map(|attr| match attr.parse_args::<syn::LitStr>() {
+            Ok(written) => {
+                let signature = syn::LitStr::new(&awaited(&written.value()), written.span());
+                quote!(#[ts(#signature)])
+            }
+            Err(_) => quote!(#attr),
+        })
+        .collect();
+    if own.is_empty() {
+        vec![quote!(#[ts(#ts)])]
+    } else {
+        own
     }
 }
 
@@ -1367,6 +1433,21 @@ mod tests {
         );
         assert_eq!(ts(quote!(serde_json::Value)), "unknown");
         assert_eq!(ts(quote!(my::Forecast)), "Forecast");
+    }
+
+    #[test]
+    fn a_command_s_result_is_declared_as_a_promise() {
+        assert_eq!(
+            awaited("(bucket: string, key: string): number[] | Uint8Array | null"),
+            "(bucket: string, key: string): Promise<number[] | Uint8Array | null>"
+        );
+        assert_eq!(
+            awaited("(run: (x: number) => void): boolean"),
+            "(run: (x: number) => void): Promise<boolean>"
+        );
+        assert_eq!(awaited("(id: string)"), "(id: string)");
+        assert_eq!(awaited("(): void"), "(): void");
+        assert_eq!(awaited("(): Promise<string>"), "(): Promise<string>");
     }
 
     #[test]

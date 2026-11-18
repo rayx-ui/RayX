@@ -44,8 +44,8 @@ fn the_history_class_carries_its_members() {
     }
     for declared in [
         "export interface HistoryServiceContract {",
-        "  undo(scopeId: string): boolean;",
-        "  retainedRecords(scopeId: string): OperationRecord[];",
+        "  undo(scopeId: string): Promise<boolean>;",
+        "  retainedRecords(scopeId: string): Promise<OperationRecord[]>;",
         "  readonly history: ContractState<HistoryState>;",
         "export type HistoryState = ",
         "export type HistoryEvent = ",

@@ -83,7 +83,7 @@ fn the_set_declares_both_for_load_bytes() {
     let set = testing::set(rayx_services_assets::register);
     let declarations = testing::declarations(&set);
     assert!(
-        declarations.contains("loadBytes(path: string): number[] | Uint8Array;"),
+        declarations.contains("loadBytes(path: string): Promise<number[] | Uint8Array>;"),
         "{declarations}"
     );
 }
