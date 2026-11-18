@@ -1,7 +1,8 @@
 //! The gallery's TSX screens on the gallery's crate, headless: `App.tsx` bundles against the
-//! crate's UI set (RayX's library and the glyphs), shows the Button page, its playground sets
-//! the Figma properties, and its toolbar switches the theme's modes. (`nsh test` runs
-//! `App.test.tsx` the same way, with the nsh the project pins.)
+//! crate's UI set (RayX's library and the glyphs), starts RayX with the four services the host
+//! requires, shows the Button page, its playground sets the Figma properties, and its toolbar
+//! switches the theme's modes. (`nsh test` runs `App.test.tsx` the same way, with the nsh the
+//! project pins.)
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -128,6 +129,26 @@ impl Gallery {
                 .dispatch_event(id, kind, EventPayload::None);
         }
     }
+}
+
+#[test]
+fn the_gallery_starts_rayx_with_the_services_the_host_requires() {
+    let mut gallery = Gallery::start();
+    let settled =
+        gallery.wait(|s| s.ids.contains_key("rayx-started") || s.ids.contains_key("rayx-failed"));
+    let failure: Vec<_> = gallery
+        .screen
+        .texts
+        .values()
+        .filter(|t| t.starts_with("RayX did not start"))
+        .collect();
+    assert!(settled, "RayX's start did not settle");
+    assert!(
+        gallery.screen.ids.contains_key("rayx-started"),
+        "{failure:?}"
+    );
+    assert!(failure.is_empty(), "{failure:?}");
+    drop(gallery.engine);
 }
 
 const DEFAULT: &str = r#"<Button text="Button" iconLeft={<Glyph name="plus" />} iconRight={<Glyph name="chevronRight" />} showRightIcon={false} />"#;
