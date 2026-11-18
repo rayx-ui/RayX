@@ -185,6 +185,7 @@ history's journals are in NSH's storage through the app's `dyn KeyValueStore` (`
   function that stops it.
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const history = services.getRequiredService(HistoryService);
 await history.bindTargetScope("doc", "editor");
 const stop = history.onChange(() => undoEnabled.set(history.canUndo("editor")));

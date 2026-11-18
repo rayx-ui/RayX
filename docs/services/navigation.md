@@ -164,6 +164,7 @@ every command of the region waits for that one call, those issued at once includ
 not); a command after a failed call tries again.
 
 ```tsx
+// Inside `start()`'s `.then(async (services) => { … })`:
 const navigation = services.getRequiredService(NavigationService);
 await navigation.navigate("/projects/12");
 const stop = navigation.onChange(({ region, from, to }) => render(to));
