@@ -16,10 +16,14 @@ use rayx::prelude::*;
 fn native(registry: &mut Registry) {}
 ```
 
-It is NSH's `#[native_module("my-app")]` on the function, whose body first registers every RayX TS class
-(`rayx::app_nsh::register`: the builder, the provider and its tokens, the startup classes and interfaces, the options
-classes and the services' classes) and RayX's components with their theme document (`rayx::components::register`),
-and nothing else. The function's own body adds the app's exports:
+It is NSH's `#[native_module("my-app")]` on the function, whose body first registers RayX's TS classes
+(`rayx::app_nsh::register`: the builder, the provider and its tokens, the startup classes and interfaces, the
+configuration and options classes, `ContractState` and `ContractEvents`), the set of each service crate the umbrella's
+features enable (its class, its contract's interface, its options classes and its builder method:
+`rayx_services_i18n::register` gives `addI18n(..)`, `addMessageFormatter()`, `I18nService`, `I18nServiceContract` and
+`I18nOptions`) and RayX's components with their theme document (`rayx::components::register`), and nothing else. With
+the default features the builder has `addPlatform()`, `addSuspension()`, `addAssets(..)` and `addFonts(..)`; a feature
+off leaves its method and class out of the set and its declarations. The function's own body adds the app's exports:
 
 ```rust
 #[rayx::native_module("my-app")]
@@ -36,7 +40,8 @@ fn native(registry: &mut Registry) {
 TSX imports the set by its specifier (`import { RayXAppBuilder } from "my-app"`), and the crate gains `pub fn
 registry()`, as with NSH's attribute. Keep the attribute's line in the crate's source: NSH's CLI reads the set's
 specifier from it, and the web runtime keeps the set by that name. A hand-written `#[native_module]` registers the same
-with `rayx::app_nsh::register(registry)` and `rayx::components::register(registry)`. If the crate depends on `nsh-core`,
+with `rayx::app_nsh::register(registry)`, each service crate's `register(registry)`
+(`rayx::services::storage::register(registry)`, …) and `rayx::components::register(registry)`. If the crate depends on `nsh-core`,
 depend on it in `[dependencies]` (or not at all): the attribute takes NSH's core from the crate's own dependency when it
 names one, so `nsh-core` in `[dev-dependencies]` alone breaks the crate's normal build.
 
@@ -49,6 +54,10 @@ Rust, in the root component:
 pub fn App() -> impl IntoElement {
     RayXAppBuilder::new()
         .add_app_settings("my-app")
+        .add_platform()
+        .add_suspension()
+        .add_assets(|_| {})
+        .add_fonts(|_| {})
         .add_storage()
         .add_i18n(|options| {
             options.default_language("en");
@@ -65,6 +74,10 @@ import { I18nService, RayXAppBuilder } from "my-app";
 
 const services = await new RayXAppBuilder()
   .addAppSettings("my-app")
+  .addPlatform()
+  .addSuspension()
+  .addAssets()
+  .addFonts()
   .addStorage()
   .addI18n((options) => options.defaultLanguage("en"))
   .start();
@@ -78,13 +91,15 @@ const i18n = services.getRequiredService(I18nService);
   `start()`, the builder's other methods throw.
 - Options callbacks (`addI18n((options) => …)`) take the Rust options' methods in camelCase, and apply after the
   configuration binds, as in Rust.
-- A service crate's builder method (`addNavigation(..)`, `addFonts(..)`, …) exists, in JS and in the declarations,
-  once the crate's set is registered (`rayx_services_navigation::register(registry)`).
+- A service crate's builder method (`addNavigation(..)`, `addFonts(..)`, …) and class exist, in JS and in the
+  declarations, once the crate's set is registered: the umbrella's feature of its name on (`features = ["navigation"]`),
+  or `rayx_services_navigation::register(registry)` in a hand-written set. Each registers RayX's implementation,
+  replacing any registered before.
 - `defaultInitializationTimeout(ms)` and every TS timeout are in milliseconds.
 - `start()` requires the platform, suspension, asset and font services (`addPlatform()`, `addSuspension()`,
-  `addAssets()`, `addFonts()` from their crates' sets, or the app's own) and rejects naming each one missing.
-- A service crate's builder method and class exist once its set is registered in the native module's body:
-  `rayx_services_i18n::register(registry)` gives `addI18n(..)`, `addMessageFormatter()` and the `I18nService` class.
+  `addAssets()`, `addFonts()`, or the app's own implementations of their contracts) and rejects naming each one
+  missing, with the TS method or contract that adds it; so does a service whose dependency is missing (`addFonts()`
+  without an asset service).
 
 See [Startup](startup.md).
 
@@ -118,21 +133,25 @@ A Rust bridge takes the provider as `Instance<ServiceProvider>` and resolves in 
 
 ## RayX's services
 
-Each is resolved by its class, and its `onChange` (`onLifecycle`, `askBeforeQuit`) returns a function that stops the
-listener.
+Each is resolved by its class, which is the service's token and has the Rust trait's name; it wraps whichever
+implementation is registered, RayX's or the app's own, Rust or TS. Queries answer at once; commands that wait on the
+service return promises. Every `onChange` (`onLifecycle`, `onEvent`, `askBeforeQuit`) returns a function that stops the
+listener (it also stops when the reactive owner of the call goes, or the object is disposed).
 
-| Class | Rust service | What it does |
-| --- | --- | --- |
-| `I18nService` | `dyn I18nService`, formatted by `dyn MessageFormatter` | `t(id, args)`, `has(id)`, `formatDate(instant, options)` in the user's time zone, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, and, as promises, `setLanguage(language)`, `followPlatform()`, `setTimeZone(zone)`, `loadMessages()`, `addResource(language, namespace, json)`; `rayx_services_i18n`'s set ([I18n](services/i18n.md#tsx)) |
-| `NavigationService` | `dyn NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`; `region(name)` gives a `NavigationRegion` ([Navigation](navigation.md#from-tsx)); in `rayx_services_navigation`'s set |
-| `SelectionService` | `dyn SelectionService` | The active selection area: `state()`, `activeArea()`, `status()`, `onChange`, and, as promises, `activate`, `publishStatus`, `deactivate`, `clear` ([Selection](services/selection.md#tsx)); in `rayx_services_selection`'s set |
-| `KeyValueStore` | `dyn KeyValueStore` | Text and JSON values by bucket and key, in NSH's storage, as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear`; `capabilities` ([Storage](services/storage.md#tsx)); in `rayx_services_storage`'s set |
-| `ApplicationConfigurationService` | `dyn ApplicationConfigurationService` | The app's settings: `current()`, `layoutDirection()`, `reducedMotion()`, `replaceOptions(settings)` (a promise) ([Application configuration](services/application-configuration.md#tsx)); in `rayx_services_application_configuration`'s set |
-| `InputMapService` | `dyn InputMapService` | Bindings: `resolve(contexts, binding)`, `bindingsFor(action)`, `current()`, `revision()`, and, as promises, `applyUserDocument(expectedRevision, document)`, `load()` ([Input map](services/input-map.md#use)); in `rayx_services_input_map`'s set |
-| `AssetService` | `AssetService` | Asset URLs: `url(path)`, `urlForScale(path, scale)` |
-| `FontService` | `FontService` | Font aliases: `family(alias)`, `aliases()` |
-| `PlatformInfoService` | `PlatformInfoService` | The device: `current()`, `onChange` ([Platform](services/platform.md#tsx)) |
-| `SuspensionService` | `SuspensionService` | The app's lifecycle: `lifecycle()`, `onLifecycle`, `askBeforeQuit(listener)`, `quit()` ([Suspension](services/suspension.md#tsx)) |
+| Class | Rust trait | Members | Set (feature) |
+| --- | --- | --- | --- |
+| `PlatformInfoService` | `dyn PlatformInfoService` | `current()`, `onChange` ([Platform](services/platform.md#tsx)) | `platform` |
+| `SuspensionService` | `dyn SuspensionService` | `lifecycle()`, `onLifecycle`, `askBeforeQuit(listener)`, `quit()` ([Suspension](services/suspension.md#tsx)) | `suspension` |
+| `AssetService` | `dyn AssetService` | `url(path)`, `urlForScale(path, scale)` ([Assets](services/assets.md#tsx)) | `assets` |
+| `FontService` | `dyn FontService` | `family(alias)`, `aliases()` ([Fonts](services/fonts.md#tsx)) | `fonts` |
+| `KeyValueStore` | `dyn KeyValueStore` | `capabilities`; as promises: `get`, `set`, `getJson`, `setJson`, `remove`, `keys`, `clear` ([Storage](services/storage.md#tsx)) | `storage` |
+| `NavigationService` | `dyn NavigationService` | The URL region: `navigate(uri)`, `back()`, `forward()`, `current()`, `onChange`; `region(name)` gives a `NavigationRegion` (`navigate`, `back`, `forward`, `goTo`, `close`, `pages`, `onChange`) ([Navigation](navigation.md#from-tsx)) | `navigation` |
+| `I18nService` | `dyn I18nService`, formatted by `dyn MessageFormatter` | `t(id, args)`, `has(id)`, `formatDate(instant, options)`, `formatNumber(value, options)`, `timeZone()`, `locale()`, `languages()`, `direction()`, `onChange`; as promises: `setLanguage(language)`, `followPlatform()`, `setTimeZone(zone)`, `loadMessages()`, `addResource(language, namespace, json)` ([I18n](services/i18n.md#tsx)) | `i18n` |
+| `OperationService` | `dyn OperationService` | `instanceId`, `targets`, `onEvent`; as promises: `registerTarget`, `releaseTarget`, `begin`, `commit`, `abort`, `submitRecord`, `publishRemoteRecord`; with `OperationTarget` ([Operations](services/operations.md#tsx)) | `operations` |
+| `HistoryService` | `dyn HistoryService` | `canUndo(scope)`, `canRedo(scope)`, `depths(scope)`, `onChange`; as promises: `bindTargetScope`, `undo`, `redo`, `clearScope`, `setScopeEntryLimit`, `retainedRecords` ([History](services/history.md#tsx)) | `history` |
+| `SelectionService` | `dyn SelectionService` | `state()`, `activeArea()`, `status()`, `onChange`; as promises: `activate`, `publishStatus`, `deactivate`, `clear` ([Selection](services/selection.md#tsx)) | `selection` |
+| `InputMapService` | `dyn InputMapService` | `current()`, `revision()`, `resolve(contexts, binding)`, `bindingsFor(action)`, `onChange`; as promises: `load()`, `applyUserDocument(expectedRevision, document)` ([Input map](services/input-map.md#tsx)) | `input_map` |
+| `ApplicationConfigurationService` | `dyn ApplicationConfigurationService` | `current()`, `layoutDirection()`, `reducedMotion()`, `onChange`; as a promise: `replaceOptions(settings)` ([Application configuration](services/application-configuration.md#tsx)) | `application_configuration` |
 
 ```tsx
 const i18n = services.getRequiredService(I18nService);
@@ -170,9 +189,10 @@ new RayXAppBuilder()
 - Every Rust registration has its twin: `addSingleton`, `addScoped`, `addTransient`, their `As` forms, and the
   `addStartup…` forms ([Startup](startup.md#startup-services-in-ts)). A factory gets the resolving provider and may
   resolve TS and Rust services; one that throws fails the resolve with its message.
-- A RayX service's class is not a token for a TS service: register under a TS class or a `ServiceToken`.
+- A RayX service's class is the token of its contract: register a TS implementation of the service under it
+  ([below](#implementing-a-service-in-ts)), and the app's own services under a TS class or a `ServiceToken`.
 - **The engine thread.** TS services are made and resolved on the engine thread only. A TS service is made in a call
-  from JS (a TS `getService`); startup and contract services are made by `start()`. Rust resolving a TS service off
+  from JS (a TS `getService`); startup services and contract singletons are made by `start()`. Rust resolving a TS service off
   the engine thread fails (`ServiceResolutionError::WrongThread`); resolving one that is not made yet, outside a call
   from JS, fails too. To Rust, a TS service is an opaque entry; Rust calls it only through a contract.
 
@@ -183,6 +203,15 @@ A contract is a Rust trait TS implements, which Rust resolves as `Arc<dyn Trait>
 ```rust
 #[rayx::contract]
 pub trait WeatherSource {
+    /// The latest forecast, published by the implementation.
+    #[state(ts = "string")]
+    fn latest(&self) -> &StateCell<String>;
+    /// Each alert as it comes.
+    #[events(ts = "string")]
+    fn alerts(&self) -> &EventStream<String>;
+    /// The source's name, read once.
+    #[constant]
+    fn name(&self) -> String;
     /// The forecast for `city`.
     async fn forecast(&self, city: String) -> Result<String, WeatherError>;
     /// Notes `line`.
@@ -191,32 +220,101 @@ pub trait WeatherSource {
 
 // In the app's set: `registry.contract::<dyn WeatherSource>()`.
 let source = services.required_service::<dyn WeatherSource>()?;
+let now = source.latest().get();
 let forecast = source.forecast("Rijeka".into()).await?;
 ```
 
 ```tsx
-import { RayXAppBuilder, weatherSourceToken, type WeatherSource } from "my-app";
+import { ContractEvents, ContractState, RayXAppBuilder, weatherSourceToken, type WeatherSource } from "my-app";
 
 class OpenMeteo implements WeatherSource {
-  async forecast(city: string) { return `sunny in ${city}`; }
+  latest = new ContractState("unknown");
+  alerts = new ContractEvents();
+  name = "Open-Meteo";
+  async forecast(city: string) {
+    this.latest.publish(`sunny in ${city}`);
+    return this.latest.value;
+  }
   note(line: string) { console.log(line); }
 }
 
 new RayXAppBuilder().addSingletonAs(weatherSourceToken(), () => new OpenMeteo());
 ```
 
-- TS gets the interface `WeatherSource` and the token function `weatherSourceToken()`; every registration form takes
-  the token, and Rust resolves the implementation with the same lifetime. `start()` makes a singleton (and every
-  startup form) before any Rust startup service's factory runs, so such a factory may read its state; Rust startup
-  services that depend on `dyn WeatherSource` initialize after it.
-- An `async fn` returns `Result<T, E>`, where `E: From<ContractError> + From<Exception>` (`String` is one): what TS
-  throws arrives as the `Exception`. A method returning nothing runs on the spot inside a call from JS and is posted, in
-  order, otherwise.
-- Calls reach TS from any thread: off the engine thread they go through the surface's queue (`EngineRunner`), as
-  do calls from Rust code JS runs outside a call (a stop function), and once the engine stopped they fail with
-  `ContractError::EngineGone`.
-- A contract has no generics, associated items, supertraits or default bodies; its values cross to JS (`String`,
-  numbers, `#[derive(JsObject)]` structs).
+### Shapes
+
+A contract's members are of five kinds, and TS implements each in its own way:
+
+| Kind | Rust | TS implementation | Rust reads it |
+| --- | --- | --- | --- |
+| Published state | `#[state] fn m(&self) -> &StateCell<T>` | a field `m = new ContractState(initial)`, `m.publish(value)` on each change | `m().get()` and `m().subscribe(..)`, synchronously, from any thread |
+| Published events | `#[events] fn m(&self) -> &EventStream<E>` | a field `m = new ContractEvents()`, `m.publish(event)` | `m().subscribe(..)`, each event once, on any thread; nothing is kept |
+| Constant | `#[constant] fn m(&self) -> T` | a field (or getter) `m` | `m()`, read once |
+| Command | `async fn m(&self, ..) -> Result<T, E>` | an `async` method; what it throws is the error | `m(..).await` |
+| Posted command | `fn m(&self, ..)` returning nothing | a method | `m(..)`, not awaited |
+
+- TS names are camelCase (`root_region_name` is `rootRegionName`). Commands' values cross as JS values (`String`,
+  numbers, `#[derive(JsObject)]` structs); state, events and constants as JSON (`serde` types, their fields as serde
+  names them), with `ts = "…"` on the attribute giving the TS type where the Rust type does not say it, and
+  `#[ts("(..): ..")]` on a command its TS signature.
+- A command's error type `E` is `From<ContractError> + From<Exception>` (`String` is one): what TS throws arrives as
+  the `Exception`, and a call that never reached TS as a `ContractError`.
+- `publish` throws, keeping the value, when the value is not what the contract's state (or events) hold.
+- A contract has no generics, associated items, supertraits or default bodies; the trait gains `Send + Sync`.
+
+### Threads and costs
+
+- **Published state and constants** are linked once and then cost nothing to read: a singleton's (and every startup
+  form's) in `start()`, before any Rust startup service's factory runs, so such a factory may read them; a scoped or
+  transient implementation's when it is resolved on the engine thread, or on its first read when it was resolved on
+  another thread, which then waits for the engine. So a factory that runs off the engine thread must not read a TS
+  contract's state, events or constants: resolve the contract there and read it afterwards.
+- **Commands** reach TS from any thread. On the engine thread a call goes straight to JS and its future resolves in
+  JS's next turn; off it, the call goes through the surface's queue (`EngineRunner`), waits for the engine thread, and
+  its answer comes back the same way, so it costs a hop to the engine thread and back and runs in turn with the UI's
+  work. Calls from Rust code JS runs outside a call (a stop function) are queued the same way. Once the engine
+  stopped, a call fails with `ContractError::EngineGone`.
+- **Posted commands** run on the spot inside a call from JS and are posted, in order, otherwise.
+- Rust startup services that depend on `dyn WeatherSource` initialize after it.
+
+### The interface and the token
+
+TS gets the interface `WeatherSource` (`#[rayx::contract(ts = "WeatherSourceContract")]` names it) and the token
+function `weatherSourceToken()`, which the app adds to its set with `registry.contract::<dyn WeatherSource>()`
+(`ContractRegistryExt`, in the prelude). Every registration form takes the token, and Rust resolves the
+implementation with the same lifetime.
+
+RayX's services are contracts too: each core trait's TS interface is `<Name>Contract` (`PlatformInfoServiceContract`,
+`KeyValueStoreContract`, `I18nServiceContract`, …) and its token is the service's class, which the service crate's set registers
+(`registry.contract_class::<..>()`).
+
+## Implementing a service in TS
+
+An app replaces RayX's implementation of a service with its own TS class: it implements the service's
+`<Name>Contract` and registers under the service's class, in place of the builder method that registers RayX's.
+Rust then resolves it as `dyn Trait`, RayX's other services use it, the host's requirement counts it, and
+`getRequiredService(<Name>)` wraps it like RayX's:
+
+```tsx
+import { ContractState, PlatformInfoService, RayXAppBuilder, type PlatformInfoServiceContract } from "my-app";
+
+class MyPlatform implements PlatformInfoServiceContract {
+  platform = new ContractState(snapshot); // the JSON of a PlatformSnapshot
+  isInitialized() { return true; }
+  async initialize() {}
+}
+
+const services = await new RayXAppBuilder()
+  .addStartupSingletonAs(PlatformInfoService, () => new MyPlatform())
+  .addSuspension()
+  .addAssets()
+  .addFonts()
+  .start();
+```
+
+Register it with a startup form (`isInitialized()` and `async initialize()`) when it must load before the services that
+use it; RayX's startup services that depend on the trait wait for it. Each service's page shows its contract under
+"Replace it".
 
 ## Options
 

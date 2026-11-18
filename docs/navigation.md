@@ -1,7 +1,7 @@
 # Navigation
 
-The navigation service (`add_navigation(..)` from `rayx_services_navigation`) keeps a journal per region: the main region follows the app's URL, and
-any number of named regions (a side panel, tabs, a dialog) navigate on their own. The URL region's route is the
+The navigation service (`add_navigation(..)` from `rayx_services_navigation`, the `rayx` feature `navigation`) keeps a
+journal per region: the main region follows the app's URL, and any number of named regions (a side panel, tabs, a dialog) navigate on their own. The URL region's route is the
 location's path; the other regions' routes are in its query (`/projects/12?panel=%2Fsettings`). The service itself,
 its routes and options are in [the navigation service](services/navigation.md).
 
@@ -17,15 +17,16 @@ let pages = navigation_region("root", |route| {
 })?;
 ```
 
-`navigation_view` shows a region as its current route alone, rendered again on every navigation: for a region with no
-stack, such as tabs or a side panel.
+`navigation_view` shows a region as its current route alone (`None` before the region's first navigation), rendered
+again on every navigation: for a region with no stack, such as tabs or a side panel.
 
 ```rust
 let panel = navigation_view("panel", |route| side_panel(route))?;
 ```
 
-Both are `rayx_services_navigation`'s (in `rayx::prelude`), called in a component's body, under the app's services:
-they follow whichever `dyn NavigationService` the app registered.
+Both are `rayx_services_navigation`'s (in `rayx::prelude` with the `navigation` feature), called in a component's
+body, under the app's services: they follow whichever `dyn NavigationService` the app registered, RayX's or its own,
+and fail with an `AppError` when the app has none.
 
 ## The location on NSH
 
@@ -62,7 +63,9 @@ NSH's address and its moves out of the navigation, startup included.
 
 `NavigationService`, resolved from the provider `start()` gives, drives the URL region: `navigate(uri)`, `back()`,
 `forward()`, `current()` and `onChange`; in Rust, `services.required_service::<dyn NavigationService>()`. Its classes
-come with the navigation's set (`rayx_services_navigation::register(registry)`).
+come with the navigation's set (the `navigation` feature, or `rayx_services_navigation::register(registry)` in a
+hand-written set). Over a TS implementation of the navigation service these members throw: the app awaits its own
+implementation's commands instead ([the navigation service](services/navigation.md#tsx)).
 
 `navigation.region("panel")` drives a named region (made when missing), as `navigation_region("panel")` shows one in
 a Rust component:

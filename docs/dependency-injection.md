@@ -29,6 +29,10 @@ Register services on the app builder, in the app's composition root:
 
 ```rust
 RayXAppBuilder::new()
+    .add_platform()
+    .add_suspension()
+    .add_assets(|_| {})
+    .add_fonts(|_| {})
     .add_singleton(ApiClient { base_url: "https://api.example.com".into() })
     .add_scoped(|services| EditorState::new(services.required_service::<ApiClient>().unwrap()))
     .add_transient(|_| Draft::default())
@@ -49,7 +53,38 @@ new RayXAppBuilder()
 - `add_startup_singleton`, `add_startup_scoped`, `add_startup_transient` (and their `_as` forms) register a service
   that initializes asynchronously before the app is ready.
 - Service crates add their own builder extensions on the `AppBuilder` trait (`add_history()`,
-  `add_navigation(..)`, …), so an app registers a whole feature in one call.
+  `add_navigation(..)`, …), so an app registers a whole feature in one call. Each registers its service as the app's
+  `dyn Trait`, replacing any registered before; an app that wants its own implementation registers it instead
+  ([App services](services.md#replacing-a-service)).
+
+## Required services and declared dependencies
+
+What an app needs, and what each registration needs, is declared rather than registered, and checked before anything
+is made:
+
+- `services.require::<dyn T>(hint)`: the app (or its host) needs `T`. RayX's NSH host requires
+  `dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService` and `dyn FontService` at the start
+  ([Startup](startup.md#how-the-app-starts)).
+- `services.require_for::<dyn S, dyn T>(hint)`: the registration of `S` resolves `T`. A service crate's builder
+  method declares this for every service its implementation resolves (`add_fonts` declares
+  `dyn FontService` on `dyn AssetService`), so the app's own `T`, registered before or after it, satisfies it as well
+  as RayX's.
+- `services.validate()`, which `RayXAppBuilder::build` and `build_async` run first: one `ServiceValidationError`
+  listing every problem (`ServiceValidationProblem`): `Missing` (the service, who needs it, the hint saying how to
+  register it) and `SingletonOnScoped` (a singleton that depends on a scoped service, directly or through transient
+  ones). On NSH the start fails with `AppError::Services` before any source loads or any factory runs.
+
+```text
+the app's services are not complete:
+- `dyn rayx_app::services::fonts::FontService` needs `dyn rayx_app::services::assets::AssetService`, which is not
+  registered: add_assets(..) (addAssets in TS) from rayx_services_assets, or register your own dyn AssetService
+```
+
+A service's own crate writes the hint; an app's own extension declares its dependencies the same way:
+
+```rust
+builder.services_mut().require_for::<WeatherService, dyn KeyValueStore>("add_storage() from rayx_services_storage");
+```
 
 ## Resolving
 

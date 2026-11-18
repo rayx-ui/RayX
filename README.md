@@ -77,10 +77,12 @@ const store = services.getRequiredService(KeyValueStore);
 | Crate | What it is |
 | --- | --- |
 | `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;`, `#[rayx::native_module]` and one feature per service crate (defaults `platform`, `suspension`, `assets`, `fonts`) |
-| `rayx_app` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
-| `rayx_services_<name>` | RayX's implementation of one service each (platform, suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map, application configuration), on NSH |
-| `rayx_app_nsh` | The NSH layer: the app's start, surfaces, screens, view-model binding, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
-| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]` |
+| `rayx_app` | The core: dependency injection, configuration, options, the app builder, every service's contract (`rayx_app::services::<name>`) and a fake of each (`rayx_app::testing`); no NSH, builds for wasm32 |
+| `rayx_app_nsh` | The NSH host: the app's start (requiring the platform, suspension, asset and font services), surfaces, screens, view-model binding, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
+| `rayx_services_<name>` | RayX's implementation of one service each (platform, suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map, application configuration), on NSH, with its TS class |
+| `rayx_components` | The component library and its theme, for Rust and TSX |
+| `rayx_devtools_protocol` | The dev tools' agent protocol |
+| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]`, `#[native_module]` |
 | `rayx-cli` | The `rayx` command-line tool |
 
 ## Documentation
@@ -96,11 +98,13 @@ The [documentation index](docs/INDEX.md) lists every guide:
 - [Navigation](docs/navigation.md)
 - [TSX](docs/tsx.md)
 - [App services](docs/services.md)
+- [Components and theme](docs/components.md)
+- [Dev tools](docs/devtools.md)
 - [The `rayx` CLI](crates/rayx_cli/README.md)
 
 ## Status
 
-0.x, on NSH 0.3. A minor release (`0.5` → `0.6`) may break the API; [CHANGELOG.md](CHANGELOG.md) lists every release,
+0.x, on NSH 0.5 (the fork's `nshx-*` tags). A minor release (`0.5` → `0.6`) may break the API; [CHANGELOG.md](CHANGELOG.md) lists every release,
 with `Migration:` notes for each break.
 
 ## License

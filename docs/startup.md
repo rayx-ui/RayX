@@ -73,11 +73,27 @@ naming the service.
 
 ## How the app starts
 
-Starting the app builds the root provider (its configuration sources may load asynchronously), makes the options
-registered with `validate_on_start`, makes the startup services that factories make, and initializes every startup
-service in dependency order, the services of one layer concurrently. The app is ready, and services resolve, only once
-all of them initialized.
+Starting the app checks the registrations, builds the root provider (its configuration sources may load
+asynchronously), makes the options registered with `validate_on_start`, makes the startup services that factories make,
+and initializes every startup service in dependency order, the services of one layer concurrently. The app is ready,
+and services resolve, only once all of them initialized.
 
+- **Required services:** on NSH the start requires the platform, suspension, asset and font services
+  (`dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService`, `dyn FontService`): RayX's
+  (`add_platform()`, `add_suspension()`, `add_assets(..)`, `add_fonts(..)`, from the umbrella's default features) or
+  the app's own, in Rust or TS. Nothing is registered for the app: `RayXAppBuilder::new()` and `new RayXAppBuilder()`
+  are empty.
+- **Declared dependencies:** a service crate's builder method declares what its service resolves instead of
+  registering it (`add_i18n` the asset and platform services, `add_fonts` the asset service, `add_history` an operation
+  service, `add_persistent_history` and `add_input_map` a key-value store, `add_selection` a navigation service,
+  `add_application_configuration` the platform service). Each is satisfied by RayX's implementation or the app's own
+  `dyn Trait`, registered before or after it.
+- **The checks:** before any source loads or any factory runs, the build checks every requirement and fails with one
+  `ServiceValidationError` listing each service missing, who needs it and how to register it (`add_fonts(..) from
+  rayx_services_fonts, or register your own dyn FontService`; in TS, the TS method and contract), and each singleton
+  that depends on a scoped service ([Dependency injection](dependency-injection.md#required-services-and-declared-dependencies)).
+  A startup service waiting for a key nothing registered fails startup with `MissingDependency`, a cycle with
+  `CircularDependency`.
 - **Failure:** one failing service fails startup, with the services that failed and why; nothing is installed.
 - **Timeout:** each service may set `initialization_timeout()`; one that sets none gets the builder's default
   (`default_initialization_timeout(..)`, 30 s unless set; TS's `defaultInitializationTimeout(ms)`). A service past its
@@ -125,7 +141,8 @@ builder
 ```
 
 - Hooks run one after another, in the order they were added; `on_ready_when(predicate, hook)` runs its hook only when
-  the predicate holds for the root provider, and `on_ready_when_platform` asks the platform service's snapshot.
+  the predicate holds for the root provider, and `on_ready_when_platform` (`PlatformReadyAppBuilderExt`, in
+  `rayx::app::services::platform`) asks the platform service's snapshot, and does not run without one.
 - A hook gets a `ReadyContext` (`services()`, `options::<T>()`) and returns a `ReadyResult` (`?` takes service resolution and options errors); the first that fails
   stops the rest and fails startup (`AppError::Ready`, `AppState::Failed`).
 - On NSH they run on the engine's thread, so they may call NSH's functions; `app_state()` turns `Ready` after them.
@@ -146,25 +163,36 @@ builder.onReady(async (context) => {
 
 ```tsx
 const services = await new RayXAppBuilder()
+  .addPlatform()
+  .addSuspension()
+  .addAssets()
+  .addFonts()
   .addStorage()
   .addI18n()
-  .start();                           // once: rejects if a service failed or timed out
+  .start();                           // once: rejects if a service is missing, failed or timed out
 const scope = services.createScope(); // on a screen's mount
 scope.dispose();                      // in its cleanup
 ```
 
 The app's crate is `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {}`, whose set holds the
-builder and every RayX class
-([TSX](tsx.md#the-apps-crate)). `start()` is asynchronous because startup awaits the services; everything after it is
-synchronous. A TSX app has no root component, so `start()` also keeps the platform and suspension services current
-from NSH.
+builder, RayX's classes and the set of each service crate the umbrella's features enable (here `storage` and `i18n`
+besides the defaults; [TSX](tsx.md#the-apps-crate)). `start()` is asynchronous because startup awaits the services;
+everything after it is synchronous. RayX's platform and suspension services keep themselves current from NSH from
+their startup on, in a TSX app as in a Rust one.
 
 ## Starting from a Rust root
 
 ```rust
 #[component]
 fn Root() -> impl IntoElement {
-    RayXAppBuilder::new().add_storage().add_i18n(|_| {}).start();
+    RayXAppBuilder::new()
+        .add_platform()
+        .add_suspension()
+        .add_assets(|_| {})
+        .add_fonts(|_| {})
+        .add_storage()
+        .add_i18n(|_| {})
+        .start();
     dynamic(|| match rayx_app_nsh::app_state() {
         AppState::Ready => home().into_element(),
         AppState::Failed(message) => error_screen(message).into_element(),
@@ -177,4 +205,4 @@ fn Root() -> impl IntoElement {
 starting) keeps that app. `app_state()` is `NotStarted`, `Starting`, `Ready` or `Failed(message)`; reading it
 subscribes, so the root shows a splash until the app is ready. `start_async()` instead gives the root provider, or the
 `AppError`, to await in an NSH task. The start requires the platform, suspension, asset and font services and fails,
-before anything is made, naming each one missing.
+before anything is made, naming each one missing (`AppError::Services`; `AppState::Failed` with its message).

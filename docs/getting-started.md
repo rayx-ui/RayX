@@ -27,9 +27,12 @@ Depend on a tag, the same one for every RayX crate:
 ```toml
 [dependencies]
 rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z", features = ["i18n"] } # apps, with a prelude
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
-rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
+rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # crates of NSH-free services and contracts
+rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # crates with an NSH side
 ```
+
+A crate that needs one of RayX's services without the umbrella depends on its crate from the same tag
+(`rayx_services_storage = { git = "…", tag = "vX.Y.Z" }`).
 
 `rayx` has one feature per service crate, named after the service (`application_configuration`, `assets`, `fonts`,
 `history`, `i18n`, `input_map`, `navigation`, `operations`, `platform`, `selection`, `storage`, `suspension`); each
@@ -120,8 +123,7 @@ RayX is 0.x: a minor release (`0.5` → `0.6`) may break the API. Each breaking 
   `suspension`, `assets` and `fonts`: add the features of every other service the app registers (`storage`,
   `operations`, `history`, `i18n`, …), and use `rayx::services::<name>` for a service crate's items
   (`rayx::navigation` is `rayx::services::navigation`, likewise `history`, `operations` and `selection`).
-- From `v0.11`: `rayx_core` is `rayx_app` now and the old `rayx_app` (the NSH layer) is `rayx_app_nsh`;
+- From `v0.11`: the core is `rayx_app` and the NSH layer `rayx_app_nsh` (the NSH layer was `rayx_app` before);
   rename the dependencies and their paths (`rayx::core` is `rayx::app`, the old `rayx::app` is `rayx::app_nsh`).
-- From `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths.
-- From `nsh-app` `v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_core`) and their
-  paths, and move to `dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.
+- The crates' earlier names, and the renames from `nsh-app` `v0.3.0`, are in [Releasing RayX](releasing.md) and the
+  `Migration:` notes of [CHANGELOG.md](../CHANGELOG.md).

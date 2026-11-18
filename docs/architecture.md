@@ -1,17 +1,17 @@
 # Architecture
 
-RayX is a set of crates released together under one version. An app depends on the umbrella `rayx`; a service crate
-depends on `rayx_app` alone.
+RayX is a set of crates released together under one version. An app depends on the umbrella `rayx`, with a feature per
+service it registers; an app's own crate of NSH-free services depends on `rayx_app` alone.
 
 | Crate | What it holds | NSH |
 | --- | --- | --- |
-| `rayx_app` | Dependency injection (singleton, scoped and transient services, scopes, async startup), configuration sources, .NET's options model and the `RayXAppBuilder` | no |
-| `rayx_services_<name>` | RayX's implementation of one core service contract each, on NSH: `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_navigation` (with its regions as NSH navigation stacks), `rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`, `rayx_services_input_map`, `rayx_services_application_configuration`, `rayx_services_i18n`, `rayx_services_storage` | yes |
-| `rayx_app_nsh` | The NSH layer: the app's start on each surface, a root provider per surface, a scope per screen, view-model activation and binding, the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts and the services' classes), and the NSH side of the services | yes |
+| `rayx_app` | The core: dependency injection (singleton, scoped and transient services, scopes, async startup, required services and declared dependencies), configuration sources, .NET's options model, the `RayXAppBuilder`, every service's contract (`rayx_app::services::<name>`) and a fake of each (`rayx_app::testing`) | no |
+| `rayx_app_nsh` | The NSH host: the app's start on each surface (requiring the platform, suspension, asset and font services), a root provider per surface, a scope per screen, view-model activation and binding, `add_app_settings`, the dev tools' agent, and the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts with `ContractState` and `ContractEvents`) | yes |
+| `rayx_services_<name>` | RayX's implementation of one core service contract each, on NSH, with its builder extension, its TS class and its set: `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage`, `rayx_services_navigation` (with its regions as NSH navigation stacks), `rayx_services_i18n` (with `tr!`), `rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`, `rayx_services_input_map`, `rayx_services_application_configuration` | yes |
 | `rayx_components` | The component library: the design system's tokens as an NSH theme document (`theme.json`, generated from the Figma export) read through typed keys, its modes as the document's modifiers, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
 | `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_app`, `rayx_app_nsh` and `rayx`; `#[app_extension]` and `#[contract]`, re-exported by `rayx_app_nsh` and `rayx`; `#[native_module]`, used as `#[rayx::native_module]` | no |
-| `rayx` | The umbrella: re-exports the other crates (each service crate behind a feature of its name) and dXn.I18n and dXn.Intl, with a prelude, and `#[rayx::native_module]`, the attribute of a TSX app's UI set | yes |
+| `rayx` | The umbrella: re-exports the other crates (each service crate behind a feature of its name, the four the host requires by default) and dXn.I18n and dXn.Intl, with a prelude, and `#[rayx::native_module]`, the attribute of a TSX app's UI set | yes |
 | `rayx-cli` | The `rayx` command-line tool | no (runs the `nsh` CLI) |
 
 ## Two layers
@@ -19,12 +19,27 @@ depends on `rayx_app` alone.
 The core has no NSH dependency: it builds for every target, `wasm32-unknown-unknown` included, and holds each service's
 contract (a `#[contract]` trait in `rayx_app::services`) with a fake of each in `rayx_app::testing`. RayX's
 implementations are the service crates, one per service, on NSH; an app registers its own implementation of any
-contract, in Rust or TS, in place of RayX's.
+contract, in Rust or TS, in place of RayX's ([App services](services.md#replacing-a-service)).
 
-`rayx_app_nsh` and `rayx_components` are the crates that depend on NSH. `rayx_app_nsh` ties the core's lifetimes to what NSH runs (see
+`rayx_app_nsh` ties the core's lifetimes to what NSH runs (see
 [Dependency injection](dependency-injection.md#lifetimes-on-nsh)) and gives TSX the same builder and container (see
 [TSX](tsx.md)): a TSX app builds and starts itself in TS, its services written in TS live in the one container, and
-Rust reaches them through contracts.
+Rust reaches them through contracts. It registers no service for the app; it requires the four it starts with.
+
+## Dependency rules
+
+| Crate | May depend on | Never on |
+| --- | --- | --- |
+| `rayx_app` | `rayx_app_macros`, dXn.I18n and dXn.Intl, plain Rust crates | NSH, any other RayX crate; it keeps building for `wasm32-unknown-unknown` |
+| `rayx_app_nsh` | `rayx_app`, `rayx_app_macros`, `rayx_devtools_protocol`, NSH, dXn.Reactive | a service crate |
+| `rayx_services_<name>` | `rayx_app`, `rayx_app_nsh`, `nsh-core` (and what its service needs: dXn.I18n and dXn.Intl for i18n) | another service crate: a service it needs is resolved by trait and declared (`require_for`) |
+| `rayx_components` | `nsh-core`, `nsh-base` | the other RayX crates |
+| `rayx_devtools_protocol` | serde, serde_json | RayX, NSH, sockets, threads, clocks; it builds for `wasm32-unknown-unknown` |
+| `rayx` | every crate above, each service crate optional | |
+| `rayx-cli` | its own tools | any RayX, NSH, gpux or GPUI crate (it runs the `nsh` CLI) |
+
+`crates/rayx/tests/crate_layout.rs` checks the packages, their folders and these rules over `cargo metadata`, and the
+CLI's `tests/library_guard.rs` its dependency tree.
 
 ## The umbrella
 
