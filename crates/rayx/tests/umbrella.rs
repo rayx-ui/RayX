@@ -93,14 +93,19 @@ fn the_crates_are_reachable_by_name() {
     let _: fn(RayXAppBuilder) = StartAppBuilderExt::start;
     // The screen's (or the surface root's) provider, for Rust components.
     let _: fn() -> Result<ServiceProvider, AppError> = services;
-    // The component library and its theme: the document, its typed keys and modifiers.
-    assert!(rayx::components::theme::DOCUMENT.contains("\"spacing-size-default-lvl5-height\""));
-    let key = rayx::components::theme::keys::platform::density::size::default::lvl5::HEIGHT;
-    assert_eq!(key.name(), "spacing-size-default-lvl5-height");
-    assert_eq!(
-        rayx::components::theme::modifiers::Accent::DEFAULT,
-        rayx::components::theme::modifiers::Accent::Cyan
+    // The component library and its theme: the default document (tokens named by their DTCG
+    // paths), RayX's roles and their reads.
+    assert!(
+        rayx::components::theme::DOCUMENT.contains("\"platform-density-size-default-lvl5-height\"")
     );
+    let role = rayx::components::theme::roles::SPACING_DEFAULT_LVL5_HEIGHT;
+    assert_eq!(role.name(), "spacing-default-lvl5-height");
+    assert!(
+        rayx::components::theme::roles::all()
+            .iter()
+            .any(|r| r.name == role.name() && r.required)
+    );
+    let _: fn(nsh_core::element::Role) -> nsh_core::color::Hsla = rayx::components::theme::value;
     let _register = rayx::components::register;
 }
 

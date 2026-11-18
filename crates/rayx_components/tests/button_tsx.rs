@@ -1,7 +1,8 @@
 //! RayX's `Button` from TSX, headless: an app's UI set that registers the library exports it with
 //! typed declarations, a TSX screen sets the Figma props in camel case and fills the slots with
-//! JSX, presses reach `onPress`, RayX's tokens are classes (`bg-surfaces-app`, `p-gap4`), and
-//! `setModifier` switches the modes. The expected values are the theme document's (`theme.json`).
+//! JSX, presses reach `onPress`, RayX's roles are classes (`bg-surface-app`, `p-gap4` reading
+//! `spacing-gap4`), and `setModifier` switches the modes. The expected values are those RayX's
+//! default theme gives the roles.
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
 #![allow(unsafe_code, clippy::expect_used, clippy::unwrap_used)]
@@ -22,13 +23,13 @@ import { Button } from "test/native";
 
 const presses = signal(0);
 mount(() => (
-  <View class="bg-surfaces-app p-gap4 gap-gap2 items-start">
+  <View class="bg-surface-app p-gap4 gap-gap2 items-start">
     <Button text="Save" variant="primary" onPress={() => presses.set(presses() + 1)} />
     <Button text="Inbox" iconLeft={<Text>+</Text>} showSlotRight slotRight={<Text>3</Text>} />
     <Button text="Small" size="small" outlined />
     <Button text="Off" disabled onPress={() => presses.set(presses() + 100)} />
     <Button text="Touch" variant="ghost" onPress={() => { setModifier("accent", "sky"); setModifier("density", "touch"); }} />
-    <Text class="text-surfaces-text-muted">{`presses ${presses()}`}</Text>
+    <Text class="text-surface-text-muted">{`presses ${presses()}`}</Text>
   </View>
 ));
 "#;
@@ -156,11 +157,11 @@ fn a_tsx_screen_uses_buttons_tokens_and_modes() {
         app.screen.shown()
     );
 
-    // RayX's tokens are the app's classes: the page's fill and padding.
+    // RayX's roles are the app's classes: the page's fill and padding.
     let save = app.screen.button("Save").unwrap();
     let page = *app.screen.parents.get(&save).unwrap();
     let fill = app.screen.styles.get(&page).unwrap().background_color;
-    assert_eq!(fill, hex(0xf5f5f5ff), "surfaces-app, light");
+    assert_eq!(fill, hex(0xf5f5f5ff), "surface-app, light");
     assert_eq!(
         app.screen.origins.get(&save).unwrap().0,
         12.0,

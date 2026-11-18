@@ -1,15 +1,21 @@
 //! `Button`: RayX's button (Figma `buttons/Button`), on nsh-base's `Button`.
 //!
 //! nsh-base's `Button` owns the behavior: presses, keyboard activation, focus, the disabled
-//! state and the role screen readers hear. This file gives it RayX's look, from the theme's
-//! typed keys: the variant's role colors (`theme.colors.roles.<role>`), the size's level 5
-//! (`platform.density.size.<size>.lvl5`), its spacing, radius and `title1Bold` text style.
+//! state and the role screen readers hear. This file gives it RayX's look, from RayX's roles
+//! only: the variant's intent (`intent-<variant>-…`), the size's level 5
+//! (`spacing-<size>-lvl5-…`), its spacing, radius and `text-<size>-title1-bold` text style, and
+//! the surface, interaction and border-width roles. Any theme that maps them draws it.
 
+use nsh_core::element::Typography;
 use nsh_core::prelude::*;
 
-use crate::theme::keys::platform::density::borders;
-use crate::theme::keys::theme::colors::{interaction, surfaces};
-use crate::theme::{ComponentSize, RoleKeys, value, weight};
+use crate::theme::roles::{
+    BORDER_WIDTH_FOCUS_RING, BORDER_WIDTH_OUTLINE, INTERACTION_DISABLED_BG,
+    INTERACTION_DISABLED_BORDER, INTERACTION_DISABLED_FG, INTERACTION_FOCUS_RING,
+    INTERACTION_FOCUS_RING_DANGER, INTERACTION_FOCUS_RING_SUCCESS, SURFACE_BORDER, SURFACE_LINK,
+    SURFACE_LINK_HOVER,
+};
+use crate::theme::{ComponentSize, IntentRoles, value};
 
 /// A [`Button`]'s color and emphasis (Figma's `variant`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, PropEnum)]
@@ -53,8 +59,8 @@ pub struct ButtonProps {
     /// `link`.
     #[prop(default)]
     pub variant: Prop<ButtonVariant>,
-    /// Adds a `surfaces/border` border (`borders/outlineWidth`) and keeps the variant's fill;
-    /// disabled, the border is `interaction/disabledBorder`. `link` draws no border.
+    /// Adds a `surface-border` border (`border-width-outline`) and keeps the variant's fill;
+    /// disabled, the border is `interaction-disabled-border`. `link` draws no border.
     #[prop(default)]
     pub outlined: Prop<bool>,
     /// The size (level 5): `small` for dense toolbars and tables, `default` for most forms and
@@ -68,7 +74,7 @@ pub struct ButtonProps {
     /// Shows `iconLeft` (it shows only when given).
     #[prop(default = true)]
     pub show_left_icon: Prop<bool>,
-    /// The leading icon, drawn in a square of `lvl5/adornmentSize` in the label's color (an SVG
+    /// The leading icon, drawn in a square of the level's `adornment-size` in the label's color (an SVG
     /// with `stroke="currentColor"` or `fill="currentColor"` follows it).
     pub icon_left: Prop<Option<Slot>>,
     /// Shows `iconRight` (it shows only when given).
@@ -79,8 +85,8 @@ pub struct ButtonProps {
     /// Shows `slotLeft`.
     #[prop(default)]
     pub show_slot_left: Prop<bool>,
-    /// Content between the leading icon and the label, such as a Badge: `lvl5/adornmentSize`
-    /// high and at least as wide, centered and clipped.
+    /// Content between the leading icon and the label, such as a Badge: the level's
+    /// `adornment-size` high and at least as wide, centered and clipped.
     pub slot_left: Prop<Option<Slot>>,
     /// Shows `slotRight`.
     #[prop(default)]
@@ -125,22 +131,13 @@ pub enum ButtonEvent {
 #[component]
 pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
     // One memo of the look: every binding below reads it, and runs again only when the theme
-    // or a prop it depends on changes it.
+    // (a picked context, a patch, another document) or a prop it depends on changes it.
     let look = computed(move || {
         Look::of(
             props.variant.get(),
             props.size.get(),
             props.outlined.get(),
             props.disabled.get(),
-        )
-    });
-    // A weight and an outline width are no bindings in NSH: read once, from the tokens the
-    // button is made with (the same for every size and density in the export).
-    let at_rest = props.size.get_untracked().keys();
-    let (font_weight, ring_width) = untracked(|| {
-        (
-            weight(value(at_rest.text.title1_bold.font_weight)),
-            value(borders::FOCUS_RING_WIDTH),
         )
     });
 
@@ -199,12 +196,9 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
         .border_color(move || look.with(|l| l.border))
         .bg(move || look.with(|l| l.bg))
         // The label's text style and color, which the label and the icons inherit (an icon's
-        // `currentColor` is its view's text color).
+        // `currentColor` is its view's text color): the size's typography, whole and bound.
         .text_color(move || look.with(|l| l.fg))
-        .text_size(move || px(look.with(|l| l.font_size)))
-        .line_height(move || px(look.with(|l| l.line_height)))
-        .letter_spacing(move || px(look.with(|l| l.letter_spacing)))
-        .font_weight(font_weight)
+        .typography(move || look.with(|l| l.text.clone()))
         .transition_colors()
         .duration(120.0_f32)
         .ease_out()
@@ -217,7 +211,7 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
                 .text_color(move || look.with(|l| l.fg_hover))
         })
         .focus_visible(|s| {
-            s.outline(px(ring_width))
+            s.outline(move || px(look.with(|l| l.ring_width)))
                 .outline_color(move || look.with(|l| l.ring))
         })
         .child(icon(props.icon_left, props.show_left_icon))
@@ -227,39 +221,36 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
         .child(icon(props.icon_right, props.show_right_icon))
 }
 
-/// What a button draws with, for its variant, size, outline and disabled state.
+/// What a button draws with, for its variant, size, outline and disabled state: each field the
+/// value of one of RayX's roles (`theme::value`), or a constant (transparent, 0). Public for the
+/// crate's tests (`tests/button_roles.rs`), not API.
+#[doc(hidden)]
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Look {
-    pub(crate) bg: AdaptiveColor,
-    pub(crate) bg_hover: AdaptiveColor,
-    pub(crate) bg_active: AdaptiveColor,
-    pub(crate) fg: AdaptiveColor,
-    pub(crate) fg_hover: AdaptiveColor,
-    pub(crate) border: AdaptiveColor,
-    pub(crate) border_width: f32,
-    pub(crate) ring: AdaptiveColor,
-    pub(crate) height: f32,
-    pub(crate) inset: f32,
-    pub(crate) gap: f32,
-    pub(crate) radius: f32,
-    pub(crate) adornment: f32,
-    pub(crate) font_size: f32,
-    pub(crate) line_height: f32,
-    pub(crate) letter_spacing: f32,
+pub struct Look {
+    pub bg: Hsla,
+    pub bg_hover: Hsla,
+    pub bg_active: Hsla,
+    pub fg: Hsla,
+    pub fg_hover: Hsla,
+    pub border: Hsla,
+    pub border_width: f32,
+    pub ring: Hsla,
+    pub ring_width: f32,
+    pub height: f32,
+    pub inset: f32,
+    pub gap: f32,
+    pub radius: f32,
+    pub adornment: f32,
+    pub text: Typography,
 }
 
 impl Look {
-    /// The tokens Figma's `buttons/Button` binds, for these props, read where the button is
+    /// The roles Figma's `buttons/Button` binds, for these props, read where the button is
     /// (reactive in a binding).
-    pub(crate) fn of(
-        variant: ButtonVariant,
-        size: ComponentSize,
-        outlined: bool,
-        disabled: bool,
-    ) -> Self {
-        let sizes = size.keys();
-        let none = AdaptiveColor::TRANSPARENT;
-        let role = |r: RoleKeys| {
+    pub fn of(variant: ButtonVariant, size: ComponentSize, outlined: bool, disabled: bool) -> Self {
+        let sizes = size.roles();
+        let none = Hsla::default();
+        let intent = |r: IntentRoles| {
             (
                 value(r.bg),
                 value(r.bg_hover),
@@ -268,12 +259,12 @@ impl Look {
                 value(r.text),
             )
         };
-        let neutral = RoleKeys::NEUTRAL;
+        let neutral = IntentRoles::NEUTRAL;
         let (bg, bg_hover, bg_active, fg, fg_hover) = match variant {
-            ButtonVariant::Neutral => role(neutral),
-            ButtonVariant::Primary => role(RoleKeys::PRIMARY),
-            ButtonVariant::Danger => role(RoleKeys::DANGER),
-            ButtonVariant::Success => role(RoleKeys::SUCCESS),
+            ButtonVariant::Neutral => intent(neutral),
+            ButtonVariant::Primary => intent(IntentRoles::PRIMARY),
+            ButtonVariant::Danger => intent(IntentRoles::DANGER),
+            ButtonVariant::Success => intent(IntentRoles::SUCCESS),
             ButtonVariant::Ghost => (
                 none,
                 value(neutral.bg_hover),
@@ -285,52 +276,50 @@ impl Look {
                 none,
                 none,
                 none,
-                value(surfaces::LINK),
-                value(surfaces::LINK_HOVER),
+                value(SURFACE_LINK),
+                value(SURFACE_LINK_HOVER),
             ),
         };
         let ring = value(match variant {
-            ButtonVariant::Danger => interaction::FOCUS_RING_DANGER,
-            ButtonVariant::Success => interaction::FOCUS_RING_SUCCESS,
-            _ => interaction::FOCUS_RING,
+            ButtonVariant::Danger => INTERACTION_FOCUS_RING_DANGER,
+            ButtonVariant::Success => INTERACTION_FOCUS_RING_SUCCESS,
+            _ => INTERACTION_FOCUS_RING,
         });
         let outlined = outlined && variant != ButtonVariant::Link;
         let border_width = if outlined {
-            value(borders::OUTLINE_WIDTH)
+            value(BORDER_WIDTH_OUTLINE)
         } else {
             0.0
         };
         let level = sizes.level(5);
-        let text = sizes.text.title1_bold;
         let mut look = Look {
             bg,
             bg_hover,
             bg_active,
             fg,
             fg_hover,
-            border: value(surfaces::BORDER),
+            border: value(SURFACE_BORDER),
             border_width,
             ring,
-            height: value(level.height).0,
-            inset: value(level.inset).0,
-            gap: value(sizes.content).0,
-            radius: value(sizes.radius).0,
-            adornment: value(level.adornment_size).0,
-            font_size: value(text.font_size).0,
-            line_height: value(text.line_height).0,
-            letter_spacing: value(text.letter_spacing).0,
+            ring_width: value(BORDER_WIDTH_FOCUS_RING),
+            height: value(level.height),
+            inset: value(level.inset),
+            gap: value(sizes.content),
+            radius: value(sizes.radius),
+            adornment: value(level.adornment_size),
+            text: value(sizes.text.title1_bold),
         };
         if disabled {
             let fill = match variant {
                 ButtonVariant::Ghost | ButtonVariant::Link => none,
-                _ => value(interaction::DISABLED_BG),
+                _ => value(INTERACTION_DISABLED_BG),
             };
             look.bg = fill;
             look.bg_hover = fill;
             look.bg_active = fill;
-            look.fg = value(interaction::DISABLED_FG);
-            look.fg_hover = value(interaction::DISABLED_FG);
-            look.border = value(interaction::DISABLED_BORDER);
+            look.fg = value(INTERACTION_DISABLED_FG);
+            look.fg_hover = value(INTERACTION_DISABLED_FG);
+            look.border = value(INTERACTION_DISABLED_BORDER);
         }
         look
     }

@@ -10,9 +10,9 @@
 //!   `RayXAppBuilder`, `ServiceProvider`, the startup and options classes).
 //! - [`services`]: RayX's implementations of the services, one crate and one feature each, an
 //!   enabled crate at `rayx::services::<name>` with its builder extension in the prelude.
-//! - [`components`] ([`rayx_components`]): RayX's component library: the design system's theme
-//!   (its tokens as an NSH theme document read through typed keys, its modes as the document's
-//!   modifiers) and its components (`Button`), for Rust views and TSX.
+//! - [`components`] ([`rayx_components`]): RayX's component library: the design system's roles
+//!   (`theme::roles`), its default theme (an NSH theme document that maps them, whose modes are
+//!   its modifiers) and its components (`Button`), for Rust views and TSX.
 //! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
 //!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and

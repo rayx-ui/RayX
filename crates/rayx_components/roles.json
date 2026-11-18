@@ -1,0 +1,1878 @@
+[
+  {
+    "name": "surface-app",
+    "type": "color",
+    "doc": "Background of the whole application window; the bottom layer every other surface sits on. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-panel1",
+    "type": "color",
+    "doc": "Background of panels laid directly on `surfaces/app` (sidebars, cards, toolbars); first layer of the surface stack. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-panel1-hover",
+    "type": "color",
+    "doc": "Hover background for an element resting on `surfaces/panel1`. Panels rarely have a hover state; use only when a panel-colored element is interactive. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-panel1-selected",
+    "type": "color",
+    "doc": "Selected background for an element resting on `surfaces/panel1`. Panels rarely have a selected state; use only when a panel-colored element can be selected. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-panel2",
+    "type": "color",
+    "doc": "Background of panels nested inside `surfaces/panel1` (or placed directly on `surfaces/app`); second layer of the surface stack. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-panel2-hover",
+    "type": "color",
+    "doc": "Hover background for an element resting on `surfaces/panel2`. Panels rarely have a hover state; use only when a panel-colored element is interactive. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-panel2-selected",
+    "type": "color",
+    "doc": "Selected background for an element resting on `surfaces/panel2`. Panels rarely have a selected state; use only when a panel-colored element can be selected. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-overlay",
+    "type": "color",
+    "doc": "Background of elements floating above the whole app: dialogs, popovers, menus, tooltips, notifications. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-text",
+    "type": "color",
+    "doc": "Main text color on every surface of the set. Meets WCAG AAA against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Monochrome icons use it too (or `textMuted` when they should be muted). Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color on every surface of the set. Meets WCAG AAA where possible and at least WCAG AA. Monochrome icons use it when they should recede. Aliases the surface set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "surface-alternate-row-bg",
+    "type": "color",
+    "doc": "Background of every second row in tables, lists, trees and property grids. Translucent, so it works on any surface (panel1, panel2, overlay); the row itself has no background. Hover and selected rows use the neutral element backgrounds.",
+    "required": false
+  },
+  {
+    "name": "surface-link",
+    "type": "color",
+    "doc": "Text color of inline links and link-style buttons at rest.",
+    "required": true
+  },
+  {
+    "name": "surface-link-hover",
+    "type": "color",
+    "doc": "Text color of links while hovered.",
+    "required": true
+  },
+  {
+    "name": "surface-border",
+    "type": "color",
+    "doc": "Main border color of components, on any surface or fill: inputs, outlined buttons, toggles, checkboxes and radios. Translucent black (light) / white (dark), so it composites onto whichever background it sits on, colored fills included.",
+    "required": true
+  },
+  {
+    "name": "surface-border-muted",
+    "type": "color",
+    "doc": "Muted border color for surfaces and dividers: panels, overlays, cards, tables, separators, the window edge and outlines that should recede. Translucent black (light) / white (dark), so it composites onto whichever background it sits on.",
+    "required": false
+  },
+  {
+    "name": "surface-text-danger",
+    "type": "color",
+    "doc": "Danger text and icons drawn directly on a surface: destructive menu items, field error messages, negative values. At least WCAG AA (5.9:1 Light, 8:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a danger fill uses `roles/danger/text`. The same in every accent.",
+    "required": false
+  },
+  {
+    "name": "surface-text-success",
+    "type": "color",
+    "doc": "Success text and icons drawn directly on a surface: positive values, success messages, valid-field hints. At least WCAG AA (4.6:1 Light, 10:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a success fill uses `roles/success/text`. The same in every accent.",
+    "required": false
+  },
+  {
+    "name": "surface-scrim",
+    "type": "color",
+    "doc": "Backdrop behind modal overlays (Dialog, AlertDialog, Sheet): a translucent black layer between the app and the overlay that dims the content below. The same in every accent.",
+    "required": false
+  },
+  {
+    "name": "surface-text-info",
+    "type": "color",
+    "doc": "Informational text and icons drawn directly on a surface: outlined info tags, notes, hints that carry information. At least WCAG AA (6.2:1 Light, 8.4:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on an info fill uses `roles/alerts/info/text`. The same in every accent.",
+    "required": false
+  },
+  {
+    "name": "surface-text-warning",
+    "type": "color",
+    "doc": "Warning text and icons drawn directly on a surface: outlined warning tags, cautions, values near a limit. At least WCAG AA (4.6:1 Light, 10.5:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a warning fill uses `roles/alerts/warning/text`. The same in every accent.",
+    "required": false
+  },
+  {
+    "name": "surface-on-media",
+    "type": "color",
+    "doc": "Text and icons drawn over pictures and video, such as the Video control bar on `surfaces/scrim`: white in both color modes, because the media below stays the same in Light and Dark. The same in every accent.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-neutral-bg-strong",
+    "type": "color",
+    "doc": "Strongest neutral background, laid over the element's own surface: tracks (switch, slider, group box), indicators (carousel, stepper), skeletons and placeholders, avatars and tags. Next step after bgSelected.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-neutral-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-neutral-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-neutral-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-primary-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-primary-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-primary-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-primary-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-primary-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-primary-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-primary-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-primary-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-primary-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-primary-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-danger-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-danger-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-danger-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-danger-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-danger-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-danger-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-danger-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-danger-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-danger-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-danger-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-success-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-success-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-success-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-success-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-success-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-success-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-success-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-success-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-success-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-success-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "required": true
+  },
+  {
+    "name": "intent-alerts-info-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-info-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-warning-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-error-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-bg",
+    "type": "color",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-bg-translucent",
+    "type": "color",
+    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-bg-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-bg-selected",
+    "type": "color",
+    "doc": "Background of the element when selected or toggled on. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-bg-selected-hover",
+    "type": "color",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-text",
+    "type": "color",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-text-muted",
+    "type": "color",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-text-subtle",
+    "type": "color",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-accent",
+    "type": "color",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "intent-alerts-success-bg-active",
+    "type": "color",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "required": false
+  },
+  {
+    "name": "interaction-disabled-bg",
+    "type": "color",
+    "doc": "Background of a disabled component, laid over the element's own surface: a muted gray veil that darkens in light mode and lightens in dark mode. Also used when the disabled component is selected or toggled on.",
+    "required": true
+  },
+  {
+    "name": "interaction-disabled-fg",
+    "type": "color",
+    "doc": "Text and icon color of a disabled component, laid over the element's own surface: readable but clearly inactive, darkening in light mode and lightening in dark mode. Also used when the disabled component is selected or toggled on.",
+    "required": true
+  },
+  {
+    "name": "interaction-disabled-border",
+    "type": "color",
+    "doc": "Border of a disabled component, laid over the element's own surface: a gray edge one step stronger than `disabledBg`, darkening in light mode and lightening in dark mode. Also used when the disabled component is selected or toggled on.",
+    "required": true
+  },
+  {
+    "name": "interaction-focus-ring",
+    "type": "color",
+    "doc": "Focus ring drawn around the keyboard-focused component (buttons, inputs, checkboxes, list items). Follows the theme accent.",
+    "required": true
+  },
+  {
+    "name": "interaction-focus-ring-danger",
+    "type": "color",
+    "doc": "Focus ring drawn around a keyboard-focused danger component (danger buttons, invalid fields). The same in every accent.",
+    "required": true
+  },
+  {
+    "name": "interaction-focus-ring-success",
+    "type": "color",
+    "doc": "Focus ring drawn around a keyboard-focused success component (success buttons, valid fields). The same in every accent.",
+    "required": true
+  },
+  {
+    "name": "interaction-drag-border",
+    "type": "color",
+    "doc": "Border or outline of an element while it is being dragged (data table columns, dock panels, property grid rows).",
+    "required": false
+  },
+  {
+    "name": "interaction-drop-target",
+    "type": "color",
+    "doc": "Highlight fill of a valid drop target while something is dragged over it (dock zones, lists). Uses the translucent tint of the current accent.",
+    "required": false
+  },
+  {
+    "name": "interaction-caret",
+    "type": "color",
+    "doc": "Blinking text cursor in editable fields (inputs, number fields, OTP fields, text areas, code editor).",
+    "required": false
+  },
+  {
+    "name": "interaction-text-selection-fg",
+    "type": "color",
+    "doc": "Text color of selected text inside editable fields; sits on `textSelectionBg`.",
+    "required": false
+  },
+  {
+    "name": "interaction-text-selection-bg",
+    "type": "color",
+    "doc": "Highlight behind selected text inside editable fields. Follows the theme accent.",
+    "required": false
+  },
+  {
+    "name": "spacing-gap1",
+    "type": "number",
+    "doc": "Layout gap step 1 of 8, between tightly related components. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap2",
+    "type": "number",
+    "doc": "Layout gap step 2 of 8, between related components. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap3",
+    "type": "number",
+    "doc": "Layout gap step 3 of 8, between form rows. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap4",
+    "type": "number",
+    "doc": "Layout gap step 4 of 8, between form rows and small groups. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap5",
+    "type": "number",
+    "doc": "Layout gap step 5 of 8, between groups. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap6",
+    "type": "number",
+    "doc": "Layout gap step 6 of 8, between sections. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap7",
+    "type": "number",
+    "doc": "Layout gap step 7 of 8, between large sections. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-gap8",
+    "type": "number",
+    "doc": "Layout gap step 8 of 8, between page regions. For gaps between components and blocks, not inside a component (use elements/<size>/sizes/hgap* for that).",
+    "required": false
+  },
+  {
+    "name": "spacing-inset1",
+    "type": "number",
+    "doc": "Inset scale, step 1: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset2",
+    "type": "number",
+    "doc": "Inset scale, step 2: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset3",
+    "type": "number",
+    "doc": "Inset scale, step 3: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset4",
+    "type": "number",
+    "doc": "Inset scale, step 4: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset5",
+    "type": "number",
+    "doc": "Inset scale, step 5: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset6",
+    "type": "number",
+    "doc": "Inset scale, step 6: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset7",
+    "type": "number",
+    "doc": "Inset scale, step 7: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-inset8",
+    "type": "number",
+    "doc": "Inset scale, step 8: padding inside a container, the same on every side. Pairs with spacing/gap1-8 for the space between items.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl1-height",
+    "type": "number",
+    "doc": "Level 1: height of thin indicators (progress bars, meters, slider tracks), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl1-inset",
+    "type": "number",
+    "doc": "Level 1: left and right inset of indicators (progress bar, slider track, badge dot), small size. An indicator holds no content, so this is half of lvl2/inset, rounded up to the grid of 2.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl1-inner-height",
+    "type": "number",
+    "doc": "Level 1: height of the nested inner element in indicators (progress bar, slider track, badge dot), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl1-inner-inset",
+    "type": "number",
+    "doc": "Level 1: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in indicators (progress bar, slider track, badge dot), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl1-adornment-size",
+    "type": "number",
+    "doc": "Level 1: adornment size (icons and slot content) in indicators (progress bar, slider track, badge dot), small size. An indicator has no glyph; this equals innerHeight.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl2-height",
+    "type": "number",
+    "doc": "Level 2: height of selection marks and tiny glyph controls (checkbox, radio, count badge, close button), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl2-inset",
+    "type": "number",
+    "doc": "Level 2: left and right inset of selection marks and tiny glyph controls (checkbox, radio, count badge, close button), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl2-inner-height",
+    "type": "number",
+    "doc": "Level 2: height of the nested inner element (thumb, segment, check) in selection marks and tiny glyph controls (checkbox, radio, count badge, close button), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl2-inner-inset",
+    "type": "number",
+    "doc": "Level 2: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in selection marks and tiny glyph controls (checkbox, radio, count badge, close button), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl2-adornment-size",
+    "type": "number",
+    "doc": "Level 2: adornment size (icons and slot content) in selection marks and tiny glyph controls (checkbox check, radio dot, count badge, close button), small size. Fits inside innerHeight with 1 px on each side.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl3-height",
+    "type": "number",
+    "doc": "Level 3: height of switches, slider thumbs and small pills, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl3-inset",
+    "type": "number",
+    "doc": "Level 3: left and right inset of switches, slider thumbs and small pills, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl3-inner-height",
+    "type": "number",
+    "doc": "Level 3: height of the nested inner element (thumb, segment, check) in switches, slider thumbs and small pills, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl3-inner-inset",
+    "type": "number",
+    "doc": "Level 3: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in switches, slider thumbs and small pills, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl3-adornment-size",
+    "type": "number",
+    "doc": "Level 3: adornment size (icons and slot content) in switches, slider thumbs and small pills, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl4-height",
+    "type": "number",
+    "doc": "Level 4: height of tags, kbd and inline chips, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl4-inset",
+    "type": "number",
+    "doc": "Level 4: left and right inset of tags, kbd and inline chips, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl4-inner-height",
+    "type": "number",
+    "doc": "Level 4: height of the nested inner element in tags, kbd and inline chips, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl4-inner-inset",
+    "type": "number",
+    "doc": "Level 4: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in tags, kbd and inline chips, small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl4-adornment-size",
+    "type": "number",
+    "doc": "Level 4: adornment size (icons and slot content) in tags, kbd and inline chips, small size. Equals min(line height of text/title2Regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl5-height",
+    "type": "number",
+    "doc": "Level 5: height of interactive controls (buttons, fields, selects, tabs, chips, segmented controls), small size.",
+    "required": true
+  },
+  {
+    "name": "spacing-small-lvl5-inset",
+    "type": "number",
+    "doc": "Level 5: left and right inset of interactive controls (buttons, fields, selects, tabs, chips, segmented controls), small size.",
+    "required": true
+  },
+  {
+    "name": "spacing-small-lvl5-inner-height",
+    "type": "number",
+    "doc": "Level 5: height of the nested inner element (thumb, segment, check) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl5-inner-inset",
+    "type": "number",
+    "doc": "Level 5: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl5-adornment-size",
+    "type": "number",
+    "doc": "Level 5: adornment size (icons and slot content) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), small size. Equals min(line height of text/title1Bold, innerHeight - 4).",
+    "required": true
+  },
+  {
+    "name": "spacing-small-lvl6-height",
+    "type": "number",
+    "doc": "Level 6: height of repeating rows (list, menu, tree, table, sidebar, dock tab), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl6-inset",
+    "type": "number",
+    "doc": "Level 6: left and right inset of repeating rows (list, menu, tree, table, sidebar, dock tab), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl6-inner-height",
+    "type": "number",
+    "doc": "Level 6: height of the nested inner element in rows (menu items, tree and list rows, table rows, sidebar items), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl6-inner-inset",
+    "type": "number",
+    "doc": "Level 6: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in rows (menu items, tree and list rows, table rows, sidebar items), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl6-adornment-size",
+    "type": "number",
+    "doc": "Level 6: adornment size (icons and slot content) in repeating rows (list, menu, tree, table, sidebar, dock tab), small size. Equals min(line height of text/regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl7-height",
+    "type": "number",
+    "doc": "Level 7: height of strips and headers that hold controls (toolbars, accordion headers, app rail items), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl7-inset",
+    "type": "number",
+    "doc": "Level 7: left and right inset of strips and headers that hold controls (toolbars, accordion headers, app rail items), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl7-inner-height",
+    "type": "number",
+    "doc": "Level 7: height of the nested inner element in bars (accordion headers, app rail items, toolbars, panel headers), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl7-inner-inset",
+    "type": "number",
+    "doc": "Level 7: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in bars (accordion headers, app rail items, toolbars, panel headers), small size.",
+    "required": false
+  },
+  {
+    "name": "spacing-small-lvl7-adornment-size",
+    "type": "number",
+    "doc": "Level 7: adornment size (icons and slot content) in strips and headers that hold controls (toolbars, accordion headers, app rail items), small size. Equals min(line height of text/title2Regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "radius-small",
+    "type": "number",
+    "doc": "Default outer corner radius of components in the small size (buttons, inputs, tags, cards).",
+    "required": true
+  },
+  {
+    "name": "radius-small-inner",
+    "type": "number",
+    "doc": "Corner radius of elements nested inside a component in the small size (buttons inside a segmented button, thumbs) and of the smallest components (checkboxes).",
+    "required": false
+  },
+  {
+    "name": "spacing-small-content",
+    "type": "number",
+    "doc": "Space between the parts of one small element: icon, label, caret, badge. Used by buttons, tabs, tags, chips, text fields, selects and accordion headers.",
+    "required": true
+  },
+  {
+    "name": "spacing-small-items",
+    "type": "number",
+    "doc": "Space between small elements in a bar or group: tab bar, toolbar, segmented and toggle-button bars, chip bar, zoom control, app rail. Also the padding around bar separators.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl1-height",
+    "type": "number",
+    "doc": "Level 1: height of thin indicators (progress bars, meters, slider tracks), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl1-inner-height",
+    "type": "number",
+    "doc": "Level 1: height of the nested inner element in indicators (progress bar, slider track, badge dot), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl1-inner-inset",
+    "type": "number",
+    "doc": "Level 1: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in indicators (progress bar, slider track, badge dot), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl1-adornment-size",
+    "type": "number",
+    "doc": "Level 1: adornment size (icons and slot content) in indicators (progress bar, slider track, badge dot), default size. An indicator has no glyph; this equals innerHeight.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl1-inset",
+    "type": "number",
+    "doc": "Level 1: left and right inset of indicators (progress bar, slider track, badge dot), default size. An indicator holds no content, so this is half of lvl2/inset, rounded up to the grid of 2.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl2-height",
+    "type": "number",
+    "doc": "Level 2: height of selection marks and tiny glyph controls (checkbox, radio, count badge, close button), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl2-inset",
+    "type": "number",
+    "doc": "Level 2: left and right inset of selection marks and tiny glyph controls (checkbox, radio, count badge, close button), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl2-inner-height",
+    "type": "number",
+    "doc": "Level 2: height of the nested inner element (thumb, segment, check) in selection marks and tiny glyph controls (checkbox, radio, count badge, close button), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl2-inner-inset",
+    "type": "number",
+    "doc": "Level 2: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in selection marks and tiny glyph controls (checkbox, radio, count badge, close button), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl2-adornment-size",
+    "type": "number",
+    "doc": "Level 2: adornment size (icons and slot content) in selection marks and tiny glyph controls (checkbox check, radio dot, count badge, close button), default size. Fits inside innerHeight with 1 px on each side.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl3-height",
+    "type": "number",
+    "doc": "Level 3: height of switches, slider thumbs and small pills, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl3-inset",
+    "type": "number",
+    "doc": "Level 3: left and right inset of switches, slider thumbs and small pills, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl3-inner-height",
+    "type": "number",
+    "doc": "Level 3: height of the nested inner element (thumb, segment, check) in switches, slider thumbs and small pills, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl3-inner-inset",
+    "type": "number",
+    "doc": "Level 3: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in switches, slider thumbs and small pills, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl3-adornment-size",
+    "type": "number",
+    "doc": "Level 3: adornment size (icons and slot content) in switches, slider thumbs and small pills, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl4-height",
+    "type": "number",
+    "doc": "Level 4: height of tags, kbd and inline chips, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl4-inset",
+    "type": "number",
+    "doc": "Level 4: left and right inset of tags, kbd and inline chips, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl4-inner-height",
+    "type": "number",
+    "doc": "Level 4: height of the nested inner element in tags, kbd and inline chips, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl4-inner-inset",
+    "type": "number",
+    "doc": "Level 4: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in tags, kbd and inline chips, default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl4-adornment-size",
+    "type": "number",
+    "doc": "Level 4: adornment size (icons and slot content) in tags, kbd and inline chips, default size. Equals min(line height of text/title2Regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl5-height",
+    "type": "number",
+    "doc": "Level 5: height of interactive controls (buttons, fields, selects, tabs, chips, segmented controls), default size.",
+    "required": true
+  },
+  {
+    "name": "spacing-default-lvl5-inset",
+    "type": "number",
+    "doc": "Level 5: left and right inset of interactive controls (buttons, fields, selects, tabs, chips, segmented controls), default size.",
+    "required": true
+  },
+  {
+    "name": "spacing-default-lvl5-inner-height",
+    "type": "number",
+    "doc": "Level 5: height of the nested inner element (thumb, segment, check) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl5-inner-inset",
+    "type": "number",
+    "doc": "Level 5: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl5-adornment-size",
+    "type": "number",
+    "doc": "Level 5: adornment size (icons and slot content) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), default size. Equals min(line height of text/title1Bold, innerHeight - 4).",
+    "required": true
+  },
+  {
+    "name": "spacing-default-lvl6-height",
+    "type": "number",
+    "doc": "Level 6: height of repeating rows (list, menu, tree, table, sidebar, dock tab), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl6-inset",
+    "type": "number",
+    "doc": "Level 6: left and right inset of repeating rows (list, menu, tree, table, sidebar, dock tab), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl6-inner-height",
+    "type": "number",
+    "doc": "Level 6: height of the nested inner element in rows (menu items, tree and list rows, table rows, sidebar items), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl6-inner-inset",
+    "type": "number",
+    "doc": "Level 6: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in rows (menu items, tree and list rows, table rows, sidebar items), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl6-adornment-size",
+    "type": "number",
+    "doc": "Level 6: adornment size (icons and slot content) in repeating rows (list, menu, tree, table, sidebar, dock tab), default size. Equals min(line height of text/regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl7-height",
+    "type": "number",
+    "doc": "Level 7: height of strips and headers that hold controls (toolbars, accordion headers, app rail items), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl7-inset",
+    "type": "number",
+    "doc": "Level 7: left and right inset of strips and headers that hold controls (toolbars, accordion headers, app rail items), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl7-inner-height",
+    "type": "number",
+    "doc": "Level 7: height of the nested inner element in bars (accordion headers, app rail items, toolbars, panel headers), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl7-inner-inset",
+    "type": "number",
+    "doc": "Level 7: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in bars (accordion headers, app rail items, toolbars, panel headers), default size.",
+    "required": false
+  },
+  {
+    "name": "spacing-default-lvl7-adornment-size",
+    "type": "number",
+    "doc": "Level 7: adornment size (icons and slot content) in strips and headers that hold controls (toolbars, accordion headers, app rail items), default size. Equals min(line height of text/title2Regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "radius-default",
+    "type": "number",
+    "doc": "Default outer corner radius of components in the default size (buttons, inputs, tags, cards).",
+    "required": true
+  },
+  {
+    "name": "radius-default-inner",
+    "type": "number",
+    "doc": "Corner radius of elements nested inside a component in the default size (buttons inside a segmented button, thumbs) and of the smallest components (checkboxes).",
+    "required": false
+  },
+  {
+    "name": "spacing-default-content",
+    "type": "number",
+    "doc": "Space between the parts of one default element: icon, label, caret, badge. Used by buttons, tabs, tags, chips, text fields, selects and accordion headers.",
+    "required": true
+  },
+  {
+    "name": "spacing-default-items",
+    "type": "number",
+    "doc": "Space between default elements in a bar or group: tab bar, toolbar, segmented and toggle-button bars, chip bar, zoom control, app rail. Also the padding around bar separators.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl1-height",
+    "type": "number",
+    "doc": "Level 1: height of thin indicators (progress bars, meters, slider tracks), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl1-inner-height",
+    "type": "number",
+    "doc": "Level 1: height of the nested inner element in indicators (progress bar, slider track, badge dot), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl1-inner-inset",
+    "type": "number",
+    "doc": "Level 1: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in indicators (progress bar, slider track, badge dot), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl1-adornment-size",
+    "type": "number",
+    "doc": "Level 1: adornment size (icons and slot content) in indicators (progress bar, slider track, badge dot), large size. An indicator has no glyph; this equals innerHeight.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl1-inset",
+    "type": "number",
+    "doc": "Level 1: left and right inset of indicators (progress bar, slider track, badge dot), large size. An indicator holds no content, so this is half of lvl2/inset, rounded up to the grid of 2.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl2-height",
+    "type": "number",
+    "doc": "Level 2: height of selection marks and tiny glyph controls (checkbox, radio, count badge, close button), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl2-inner-height",
+    "type": "number",
+    "doc": "Level 2: height of the nested inner element (thumb, segment, check) in selection marks and tiny glyph controls (checkbox, radio, count badge, close button), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl2-inset",
+    "type": "number",
+    "doc": "Level 2: left and right inset of selection marks and tiny glyph controls (checkbox, radio, count badge, close button), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl2-inner-inset",
+    "type": "number",
+    "doc": "Level 2: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in selection marks and tiny glyph controls (checkbox, radio, count badge, close button), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl2-adornment-size",
+    "type": "number",
+    "doc": "Level 2: adornment size (icons and slot content) in selection marks and tiny glyph controls (checkbox check, radio dot, count badge, close button), large size. Fits inside innerHeight with 1 px on each side.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl3-height",
+    "type": "number",
+    "doc": "Level 3: height of switches, slider thumbs and small pills, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl3-inner-height",
+    "type": "number",
+    "doc": "Level 3: height of the nested inner element (thumb, segment, check) in switches, slider thumbs and small pills, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl3-inner-inset",
+    "type": "number",
+    "doc": "Level 3: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in switches, slider thumbs and small pills, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl3-inset",
+    "type": "number",
+    "doc": "Level 3: left and right inset of switches, slider thumbs and small pills, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl3-adornment-size",
+    "type": "number",
+    "doc": "Level 3: adornment size (icons and slot content) in switches, slider thumbs and small pills, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl4-height",
+    "type": "number",
+    "doc": "Level 4: height of tags, kbd and inline chips, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl4-inset",
+    "type": "number",
+    "doc": "Level 4: left and right inset of tags, kbd and inline chips, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl4-adornment-size",
+    "type": "number",
+    "doc": "Level 4: adornment size (icons and slot content) in tags, kbd and inline chips, large size. Equals min(line height of text/title2Regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl4-inner-height",
+    "type": "number",
+    "doc": "Level 4: height of the nested inner element in tags, kbd and inline chips, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl4-inner-inset",
+    "type": "number",
+    "doc": "Level 4: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in tags, kbd and inline chips, large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl5-height",
+    "type": "number",
+    "doc": "Level 5: height of interactive controls (buttons, fields, selects, tabs, chips, segmented controls), large size.",
+    "required": true
+  },
+  {
+    "name": "spacing-large-lvl5-inner-height",
+    "type": "number",
+    "doc": "Level 5: height of the nested inner element (thumb, segment, check) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl5-inner-inset",
+    "type": "number",
+    "doc": "Level 5: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl5-inset",
+    "type": "number",
+    "doc": "Level 5: left and right inset of interactive controls (buttons, fields, selects, tabs, chips, segmented controls), large size.",
+    "required": true
+  },
+  {
+    "name": "spacing-large-lvl5-adornment-size",
+    "type": "number",
+    "doc": "Level 5: adornment size (icons and slot content) in interactive controls (buttons, fields, selects, tabs, chips, segmented controls), large size. Equals min(line height of text/title1Bold, innerHeight - 4).",
+    "required": true
+  },
+  {
+    "name": "spacing-large-lvl6-height",
+    "type": "number",
+    "doc": "Level 6: height of repeating rows (list, menu, tree, table, sidebar, dock tab), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl6-inset",
+    "type": "number",
+    "doc": "Level 6: left and right inset of repeating rows (list, menu, tree, table, sidebar, dock tab), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl6-adornment-size",
+    "type": "number",
+    "doc": "Level 6: adornment size (icons and slot content) in repeating rows (list, menu, tree, table, sidebar, dock tab), large size. Equals min(line height of text/regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl6-inner-height",
+    "type": "number",
+    "doc": "Level 6: height of the nested inner element in rows (menu items, tree and list rows, table rows, sidebar items), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl6-inner-inset",
+    "type": "number",
+    "doc": "Level 6: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in rows (menu items, tree and list rows, table rows, sidebar items), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl7-height",
+    "type": "number",
+    "doc": "Level 7: height of strips and headers that hold controls (toolbars, accordion headers, app rail items), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl7-inset",
+    "type": "number",
+    "doc": "Level 7: left and right inset of strips and headers that hold controls (toolbars, accordion headers, app rail items), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl7-adornment-size",
+    "type": "number",
+    "doc": "Level 7: adornment size (icons and slot content) in strips and headers that hold controls (toolbars, accordion headers, app rail items), large size. Equals min(line height of text/title2Regular, innerHeight - 4).",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl7-inner-height",
+    "type": "number",
+    "doc": "Level 7: height of the nested inner element in bars (accordion headers, app rail items, toolbars, panel headers), large size.",
+    "required": false
+  },
+  {
+    "name": "spacing-large-lvl7-inner-inset",
+    "type": "number",
+    "doc": "Level 7: inset between the outer edge and the inner element (height = innerHeight + 2 x innerInset) in bars (accordion headers, app rail items, toolbars, panel headers), large size.",
+    "required": false
+  },
+  {
+    "name": "radius-large",
+    "type": "number",
+    "doc": "Default outer corner radius of components in the large size (buttons, inputs, tags, cards).",
+    "required": true
+  },
+  {
+    "name": "radius-large-inner",
+    "type": "number",
+    "doc": "Corner radius of elements nested inside a component in the large size (buttons inside a segmented button, thumbs) and of the smallest components (checkboxes).",
+    "required": false
+  },
+  {
+    "name": "spacing-large-content",
+    "type": "number",
+    "doc": "Space between the parts of one large element: icon, label, caret, badge. Used by buttons, tabs, tags, chips, text fields, selects and accordion headers.",
+    "required": true
+  },
+  {
+    "name": "spacing-large-items",
+    "type": "number",
+    "doc": "Space between large elements in a bar or group: tab bar, toolbar, segmented and toggle-button bars, chip bar, zoom control, app rail. Also the padding around bar separators.",
+    "required": false
+  },
+  {
+    "name": "border-width-separator",
+    "type": "number",
+    "doc": "Width of separators and dividers.",
+    "required": false
+  },
+  {
+    "name": "border-width-outline",
+    "type": "number",
+    "doc": "Width of control outlines.",
+    "required": true
+  },
+  {
+    "name": "border-width-underline",
+    "type": "number",
+    "doc": "Width of selection underlines (tabs, app rail).",
+    "required": false
+  },
+  {
+    "name": "border-width-focus-ring",
+    "type": "number",
+    "doc": "Width of the keyboard focus ring: the stroke of focus-ring layers and the spread of the focusRing/* drop shadows. Pairs with `theme/colors/general/focusRing` (its color).",
+    "required": true
+  },
+  {
+    "name": "radius-1",
+    "type": "number",
+    "doc": "Corner radius scale, step 1: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-2",
+    "type": "number",
+    "doc": "Corner radius scale, step 2: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-3",
+    "type": "number",
+    "doc": "Corner radius scale, step 3: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-4",
+    "type": "number",
+    "doc": "Corner radius scale, step 4: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-5",
+    "type": "number",
+    "doc": "Corner radius scale, step 5: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-6",
+    "type": "number",
+    "doc": "Corner radius scale, step 6: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-7",
+    "type": "number",
+    "doc": "Corner radius scale, step 7: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-8",
+    "type": "number",
+    "doc": "Corner radius scale, step 8: for containers such as popups, dialogs and panels. Controls use size/{size}/borders/radius.",
+    "required": false
+  },
+  {
+    "name": "radius-full",
+    "type": "number",
+    "doc": "Generic fully rounded corner (pill or circle at any size).",
+    "required": false
+  },
+  {
+    "name": "font-primary",
+    "type": "font",
+    "doc": "Primary UI font family used by all component and body text unless a text style says otherwise.",
+    "required": false
+  },
+  {
+    "name": "font-mono",
+    "type": "font",
+    "doc": "Monospace font family for code, keyboard shortcuts and tabular numbers.",
+    "required": false
+  },
+  {
+    "name": "spacing-min-target",
+    "type": "number",
+    "doc": "Minimum hit area for interactive elements. Apply as hit area / hit slop in code, not as visual size.",
+    "required": false
+  },
+  {
+    "name": "text-h1",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-h2",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-h3",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-h4",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-h5",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-body1",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-body2",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-display1",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-display2",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-title1-bold",
+    "type": "typography",
+    "required": true
+  },
+  {
+    "name": "text-small-title1-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-title2-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-title3-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-subtitle1-bold",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-subtitle1-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-small-code",
+    "type": "typography",
+    "doc": "Monospaced code text of components in the small size: code editors, code views, code blocks and inline code.",
+    "required": false
+  },
+  {
+    "name": "text-default-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-default-title1-bold",
+    "type": "typography",
+    "required": true
+  },
+  {
+    "name": "text-default-title1-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-default-title2-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-default-title3-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-default-subtitle1-bold",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-default-subtitle1-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-default-code",
+    "type": "typography",
+    "doc": "Monospaced code text of components in the default size: code editors, code views, code blocks and inline code.",
+    "required": false
+  },
+  {
+    "name": "text-large-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-large-title1-bold",
+    "type": "typography",
+    "required": true
+  },
+  {
+    "name": "text-large-title1-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-large-title2-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-large-title3-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-large-subtitle1-bold",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-large-subtitle1-regular",
+    "type": "typography",
+    "required": false
+  },
+  {
+    "name": "text-large-code",
+    "type": "typography",
+    "doc": "Monospaced code text of components in the large size: code editors, code views, code blocks and inline code.",
+    "required": false
+  },
+  {
+    "name": "blur-bg-none",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-default",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-sm",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-md",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-lg",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-xl",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-xxl",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-bg-xxxl",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-none",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-sm",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-default",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-md",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-lg",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-xl",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-xxl",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "blur-xxxl",
+    "type": "blur",
+    "required": false
+  },
+  {
+    "name": "shadow-none",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-sm",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-default",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-md",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-lg",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-xl",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-xxl",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-focus-ring-primary",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-focus-ring-danger",
+    "type": "shadow",
+    "required": false
+  },
+  {
+    "name": "shadow-focus-ring-success",
+    "type": "shadow",
+    "required": false
+  }
+]
