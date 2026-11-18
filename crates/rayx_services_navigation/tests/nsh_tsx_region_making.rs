@@ -1,6 +1,7 @@
 //! A `NavigationRegion` over a navigation service written in TS, headless: the service makes the
 //! region later, so every command waits for the one call making it (two commands issued at once
-//! included), and a command after a failed call makes the region again.
+//! included), a command after a failed call makes the region again, and a command on a region
+//! disposed while it waits rejects.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -109,5 +110,27 @@ fn a_command_after_a_failed_make_makes_the_region_again() {
         shown,
         "done rejected true|/after|/before|ensure panel,ensure panel,made panel,forward panel,\
          back panel"
+    );
+}
+
+#[test]
+fn a_command_on_a_region_disposed_while_it_waits_rejects() {
+    let shown = run(r#"
+    const panel = navigation.region("panel");
+    const pending = panel.back();
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    panel.dispose();
+    try {
+      await pending;
+      lines.push("resolved");
+    } catch (error) {
+      lines.push(`rejected ${error}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    lines.push(mine.asked.join(","));
+"#);
+    assert_eq!(
+        shown,
+        "done rejected Error: the region was disposed while the command waited|ensure panel,made panel"
     );
 }

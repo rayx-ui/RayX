@@ -57,6 +57,7 @@ fn making(navigation: &Arc<dyn NavigationService>, name: &str) -> Making {
 
 /// What a command of `this` runs on: the service and the region's name, the region made (every
 /// command waits for the one call making it; after a failed one, the next command calls again).
+/// A region disposed while its command waits rejects that command.
 async fn region(
     this: &Instance<NavigationRegion>,
 ) -> Result<(Arc<dyn NavigationService>, String), String> {
@@ -75,6 +76,9 @@ async fn region(
     });
     if let Some(call) = waiting {
         let answer = call.clone().await;
+        if this.is_disposed() {
+            return Err("the region was disposed while the command waited".to_owned());
+        }
         this.with(|this| {
             let mut made = this.made.borrow_mut();
             // Only the answer of the current call counts (one failed, the next may run).
