@@ -1,12 +1,12 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 76,
-  "planRevision": 7,
+  "revision": 95,
+  "planRevision": 8,
   "specHashes": {
     "requirements": "949a9040a097193404369c5a8ab94406aef6467815ca587482a0a26b36034038",
     "design": "a5a4637afa32bed7daedc3193c5b9fece25c02ca2fdc3006cf5739566eb09aa9",
-    "plan": "f0fbe65549aa224d166e3a1b10a7002b70abd3de41c5306fa33430091b2c1f04"
+    "plan": "c44a0c33cd75b2ac7058bbe1aaf958e3f20855aecbf0a54f6ab7fac4fdadc696"
   },
   "tasks": {
     "t01-crate-renames": {
@@ -76,16 +76,28 @@
       ]
     },
     "t12-operations-history-selection": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t13-input-map-configuration": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t14-fakes-and-replacement": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t15-ts-implementations": {
-      "status": "pending"
+      "status": "done",
+      "workerIds": [
+        "claude-d81eb260"
+      ]
     },
     "t16-umbrella": {
       "status": "pending"
@@ -176,6 +188,16 @@
         }
       },
       "recordedAt": "2026-11-17T21:56:14Z"
+    },
+    "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62": {
+      "snapshot": {
+        "specHash": "aab76af034aaf33619d7593ad3c8187c966a07da35be1cee87b5cbd12d722885",
+        "repositories": {
+          "rayx": "bfddca7842500ebc361ef3dc3dd869877bc7f2b7541b4d31fe58b8618ab8b101",
+          "root": "49fa8adfcb0512e8fcb8eb021ae47cef2d61a3e61d475bd09e72456d67f366dc"
+        }
+      },
+      "recordedAt": "2026-11-18T00:58:20Z"
     }
   },
   "checkResults": {
@@ -637,6 +659,176 @@
       "logPath": "artifacts-temp/agentx/service-crates/s4-service-crates-final-717a7b2ccdff.log",
       "logSha256": "adb5353d694de7655623696d63813a493e8928be0801478b471fad15d026fdc3",
       "inputsHash": "c4f7682d9471cccdb45458cf0ac554f9ca9474bfa22e78e09c142bfe13e2c140"
+    },
+    "s5-service-crates-rest/c-core-wasm/final": {
+      "checkId": "c-core-wasm",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "51484270ab9a705ddacd8d3c2004fb5441ad324c1204f8472f2c53f611f12238",
+      "basisHash": "9a73b17551c5b027fae360b256c477dd5779266501dd933557513b1401ac7b8f",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 0,
+      "durationSeconds": 0.1751,
+      "recordedAt": "2026-11-18T00:57:40Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-f06e0b6175b0.log",
+      "logSha256": "fecede7c2157efe2f16c8c8b9dce94b0fb4dd384dca8207046c8bf7636eb0ffe",
+      "inputsHash": "6c88e750529d82acfe485bcadbb7a6ea35cf96a7b5caaf2c125bda8f38b512cf"
+    },
+    "s5-service-crates-rest/c-release-wiring/final": {
+      "checkId": "c-release-wiring",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "44720a59a63a9184b7a5bcb71f863cc04c0f0045d261a3f6c80f2ff1628aa988",
+      "basisHash": "f471a09fdd14c15b2c677b3270122ca65fb9e1f16c3ab64ad6789b7b409280b0",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 26,
+      "durationSeconds": 1.0456,
+      "recordedAt": "2026-11-18T00:57:41Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-50e9b21a7ac5.log",
+      "logSha256": "d984b2d6f7dd6de5a6ceed6f2c4584b0bb2397dbd865c2d1f4d5730e2f4dea98",
+      "inputsHash": "5ef05549d4ed452a9146590405deb4936779cde06a684e1f5bf713bdcde3fe82"
+    },
+    "s5-service-crates-rest/c-source-layout/final": {
+      "checkId": "c-source-layout",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "9cc6ebb6eded7a16b6f66f8134fe30553b720d9ec2c0c18b6e065c889cf5cd69",
+      "basisHash": "8d252444854f20c7e581ad9f05c0bbc8ad75473c80dfc22ea6dd2ab2104ac085",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 2.5426,
+      "recordedAt": "2026-11-18T00:57:44Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-6ca1be5a01eb.log",
+      "logSha256": "049429e452055ddded46ef1042e525440b82ddcf9d16351f1d3050888b6f983e",
+      "inputsHash": "af89c9e154287b0a0c6a397ae1e4fdb23b61cb537d0511891dce1dc646747086"
+    },
+    "s5-service-crates-rest/c-svc-ops-history-selection/final": {
+      "checkId": "c-svc-ops-history-selection",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "310777690b89d1222c04425b3b9a9010e773e531761c9f2da5fe3055605a07ce",
+      "basisHash": "479ccb3c48396de0fa9db6836431e5c172ef42ffd8a80d355746629baa9e981e",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 101,
+      "durationSeconds": 17.5642,
+      "recordedAt": "2026-11-18T00:58:01Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-8936891a0a8a.log",
+      "logSha256": "31a5e47f0d57f8fa6a1ebf921bbb6924e6fb6efa11a29b19b1489666d30cbf2b",
+      "inputsHash": "aa9299aaea63c9873a74731c444642b94f80fed856f5bdb4d0410389e8e3e939"
+    },
+    "s5-service-crates-rest/c-svc-input-config/final": {
+      "checkId": "c-svc-input-config",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "e89202ccd22a68c1cf9682a52a791536a341b6e18021925371b95e66bb1eb3ea",
+      "basisHash": "78c4658825a80b60ae8d3f14abbacc8027e5b954f71f9083265d3246dae53dcf",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 41,
+      "durationSeconds": 1.1054,
+      "recordedAt": "2026-11-18T00:58:02Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-834b7af11468.log",
+      "logSha256": "8be6d9d77da5e31edf92c8049e7f24463cdd318db7b33dd5f99a2e5f31fa105b",
+      "inputsHash": "8da78aecf6c1d6b91ba80b58eb69419d986a8ecb314cde4a9108d9180eb70a00"
+    },
+    "s5-service-crates-rest/c-crate-rules/final": {
+      "checkId": "c-crate-rules",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "90e862c68d802c5ed8bdfa95733a575629db00e416b5696c60da1727e0f388c6",
+      "basisHash": "d669972ed6be37043aa9ffac731e3b1761fa2425573aa1b955aedd6243a9ee08",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 9,
+      "durationSeconds": 2.2873,
+      "recordedAt": "2026-11-18T00:58:05Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-0323dc1f6b41.log",
+      "logSha256": "77e031290ffad7cd0055cc44772e67753fe05ed735ba2f2f60ea5a27af669064",
+      "inputsHash": "eede9cd85cf18b24f763713f251dde86c797f0096b8566bc220be41a50788150"
+    },
+    "s5-service-crates-rest/c-testing-fakes/final": {
+      "checkId": "c-testing-fakes",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "2f75de67ca7c1ce49213b9508197d6d84e295ae322ae31126188abb14a299ec7",
+      "basisHash": "6c72e1c32291fc284ae4a75e558827cdf739b8808095ce30364351a94683f5e9",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 28,
+      "durationSeconds": 0.1775,
+      "recordedAt": "2026-11-18T00:58:05Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-06d7011d490b.log",
+      "logSha256": "c7a9e5f27471c0842c508f36b34907f9f529608ea35a62287e78517275cdbb9f",
+      "inputsHash": "8697f06143c3e0d164b80776efeb01ebbaa010650718f2183100c74568f9c60b"
+    },
+    "s5-service-crates-rest/c-service-replacement/final": {
+      "checkId": "c-service-replacement",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "b638642f8b920bcfdd78da67c421ea26f9fd1c15503c686fadc7aeb8c8d0bc2a",
+      "basisHash": "54c3c154ad8520d4f3d1d2eeef266f6f47a1ccc38bc824c8f478e9308aef58dc",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 8,
+      "durationSeconds": 7.0247,
+      "recordedAt": "2026-11-18T00:58:12Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-b958ae68c3fa.log",
+      "logSha256": "50e1ad0947f7c9c25f838105aaf8fb11fdf95fa0edccc9be4845c295029bd454",
+      "inputsHash": "1eb52ef0ca083cf03c19e15852fbc6a362df702eecfadbd70d1595495d940582"
+    },
+    "s5-service-crates-rest/c-ts-contracts/final": {
+      "checkId": "c-ts-contracts",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "3dde3cce3e4eb99ade884a766fd3633db5dfc2d9747110449974f77b47622446",
+      "basisHash": "132696d6a91d7accd392f1d79dea352a855807cef0f4ee6c6ae6f0100136cbc6",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 17,
+      "durationSeconds": 7.7069,
+      "recordedAt": "2026-11-18T00:58:20Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-8dfa4e0d5273.log",
+      "logSha256": "ce1459592daae778a5a1a52aa0e873395080d24a304970b3fa58c0ab1326b878",
+      "inputsHash": "c55c2e6fd1a61dd563b79bbdd775b3417584fe2e19c1e5032e057c49fc9fe3a1"
+    },
+    "s5-service-crates-rest/c-contract-bytes/final": {
+      "checkId": "c-contract-bytes",
+      "boundaryId": "s5-service-crates-rest",
+      "phase": "final",
+      "batchId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "definitionHash": "1c6aca5a300467691fef08bb218af92b27ff4c20570ebe5db9df0a86d72e6a46",
+      "basisHash": "650ccf3e60339a716ee7b5c2dad75dbe276c4a0848ce2e6cdb9cc9d61290e486",
+      "status": "passed",
+      "exitCode": 0,
+      "testCount": 2,
+      "durationSeconds": 0.4,
+      "recordedAt": "2026-11-18T00:58:20Z",
+      "messageMarkdown": "Expectation matched",
+      "logPath": "artifacts-temp/agentx/service-crates/s5-service-crates-rest-final-8c108368bf80.log",
+      "logSha256": "a131aa58df2a52e0156f4ebfa809401944150ffd8915b001804ebc6791b89f09",
+      "inputsHash": "d61f9dcc37ee857de80ef776d490716d5c991f1f31da4dcb4b00c9cce70db2ae"
     }
   },
   "reviews": {
@@ -1502,6 +1694,306 @@
         "S4-F7"
       ],
       "recordedAt": "2026-11-17T21:56:33Z"
+    },
+    "s5-service-crates-rest": {
+      "reviewerId": "reviewer-s5-independent",
+      "snapshotId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "criterionIds": [
+        "CRATES-2",
+        "CRATES-4",
+        "LAYOUT-1",
+        "SVC-5",
+        "SVC-6",
+        "SVC-7",
+        "SVC-8",
+        "SVC-9"
+      ],
+      "verdict": "passed",
+      "anchors": [
+        {
+          "repositoryId": "rayx",
+          "path": "Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-2",
+            "SVC-6"
+          ],
+          "sha256": "19c293d6adad05f072801ca841eda0909ef11d80060928ff19ca9ef462b3aa2c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/Cargo.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-2"
+          ],
+          "sha256": "c6f02a34e0b80db7d5c86fb6bf21e6703b3bf34af5e8c54a14a518c85cb37598"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/crate_layout.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-2",
+            "SVC-6"
+          ],
+          "sha256": "da8cfb5818043e4eb29d70b355066fae352dad23fa9d2292e930b936d5d63bd8"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "release-plz.toml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "bf252f09d1108ae4e540494a9c1094a438fdfc103ace75d0ed94f06edbf71a81"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": ".github/workflows/ci.yml",
+          "kind": "source",
+          "criterionIds": [
+            "CRATES-4",
+            "SVC-6"
+          ],
+          "sha256": "ecbe40fc565e2d5850b8df4614f41204c5e29f9f81bcbbe5260101bf6237d7b0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/library_guard.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4"
+          ],
+          "sha256": "281ad010f5044cd406b4b4ab582393102df158d4645191d9019c7a4f2a2bc665"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_cli/tests/ci_workflow.rs",
+          "kind": "test",
+          "criterionIds": [
+            "CRATES-4",
+            "SVC-6"
+          ],
+          "sha256": "2822a29fa7ff668b3709123ecae2b481cae8028ddc135f5cd9b8a55a28820f0c"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/services/mod.rs",
+          "kind": "source",
+          "criterionIds": [
+            "LAYOUT-1"
+          ],
+          "sha256": "f561c23e721961013d98b38fa6acf8f11c9cd984af095fedd99a98baca7f6f8e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/tests/source_layout.rs",
+          "kind": "test",
+          "criterionIds": [
+            "LAYOUT-1"
+          ],
+          "sha256": "1eeb96e380ed7ebbc299d79430967a2a2d8d74fa3b455fac82c41d147fea305e"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "b7215391e3e478d523120d2686b5ec930e3dcdf78c1fb098aec17679e08cbae3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/operations/target.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "2dcbb0f50261d401e2bf5a979aa320bac59c857b55aa836da3bc7590184b8433"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/operations/transaction.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "c4fdc9d5905208353ab5deda68bf1f442f29191b1b2b38804bc4039b301701e0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "920acdd7f9717862d6cc217aadcb41c3f40a3ce2c21e5775d269a40c77bfe66b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_selection/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "5da8d1ae4fd4365adda0591a5370d134b8f824b243b57a7f0a37bf817ccc6d35"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/tests/operations.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "1b395df20bb6249e74eb8607ab5a9b24e977b4dd1d805b377374307da3ba6fb2"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "c67dd0e9f9b9ab6b414d01637c688b30a45870c8c90e93209e8404067ecc2fe6"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_selection/tests/selection.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "sha256": "0d1ade5fa5888cada3e7b3210989a113fbe5926f49def899e0db2b229ffb9de7"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_input_map/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-6"
+          ],
+          "sha256": "b3015f362664fa6b48c93c9fdf4ed019104b56e38d0f4d637d5a4cb67cf4a8c5"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_application_configuration/src/service.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-6"
+          ],
+          "sha256": "277f643e731e86b509fae937a5667091fea7a34631f80c7d5bf9202cb8616d3a"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_input_map/tests/input_map.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-6"
+          ],
+          "sha256": "db9a1a61f5132a74a7fd7446b31394411a0922f9ac4538cd3b37686c844903f3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_application_configuration/tests/application_configuration.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-6"
+          ],
+          "sha256": "8694e409d686e7ac1ba3bdc9560820e6ae0eb67c256f0bcca1ceac76ee5671c3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/testing.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-7"
+          ],
+          "sha256": "f49e5e50be821a71cfac3920049a8ea4ae641a98525862e572757e614afc4b97"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/testing_fakes.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-7"
+          ],
+          "sha256": "922a78b437be0b83d035257bff7c0d236f9fef7be60b0e1c57c3b1d5d978050b"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/src/lib.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-8",
+            "SVC-9"
+          ],
+          "sha256": "f60f5c473602d80a547424e9b9144c968f8450831487554fbf6060a9639ca0a1"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/service_replacement.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-8"
+          ],
+          "sha256": "f51464f8f746a7ff806e29f7ee697ac88be6a5b6b2214a0c8c3bb0f5e32544f3"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/di/lifecycle.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-9"
+          ],
+          "sha256": "a6476d1c41aea0bdfe4d3045a2cd6f80a1e3beece3805972d754daa8a6ddcfab"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_nsh/src/binding.rs",
+          "kind": "source",
+          "criterionIds": [
+            "SVC-9"
+          ],
+          "sha256": "1d85f2f8759912f4597ad81c2cde683d01fd53158ccdd8e5232ee0758a58a1d0"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/ts_service_contracts.rs",
+          "kind": "test",
+          "criterionIds": [
+            "SVC-9"
+          ],
+          "sha256": "b25e852e8d39fcd57a4cc2aa6d844f132ca2f013685e515af9195ccbfca90e36"
+        }
+      ],
+      "summaryMarkdown": "I re-reviewed s5 at snapshot 0d6347e1 (eb0b206..0a9c047). All 22 findings are resolved:\n\n- **S5-F20:** the merged journal appends only ids this history never saved, so an entry another history undid stays out (`history_entry_ids`).\n- **S5-F21:** a failure carries whether the replay reported it, and the dropped-caller path reports only unreported ones; a refused undo dropped unread gives one event (`history`).\n- **S5-F22:** entry-id prefixes take 128 bits from `getrandom` 0.4.3, with Web Crypto on `wasm32-unknown-unknown` and the clock/hash mix only as a fallback. Unbounded commits and how an operation service recovers its scope are documented.\n\nThe repaired history groups pass (`history` 29, `history_entry_ids` 4). The sprint's ten checks pass at this snapshot.\n\nCriteria:\n\n- **CRATES-2:** final crate set and dependency rules; no `rayx_runtime`.\n- **CRATES-4:** release, CI and library-guard wiring.\n- **LAYOUT-1:** the host's `services/` holds only what service crates build on.\n- **SVC-5:** operations by-id transactions and class-handle targets; history and selection over their traits, with async persistence, cancellation and conflict merging.\n- **SVC-6:** input map and application configuration crates.\n- **SVC-7:** fakes of every contract, matching RayX's services.\n- **SVC-8:** replacement from Rust.\n- **SVC-9:** all twelve contracts implemented in TS, including history over a TS operation service and store.\n\nAll hold at their source and test anchors.",
+      "findingIds": [
+        "S5-F1",
+        "S5-F2",
+        "S5-F3",
+        "S5-F4",
+        "S5-F5",
+        "S5-F6",
+        "S5-F7",
+        "S5-F8",
+        "S5-F9",
+        "S5-F10",
+        "S5-F11",
+        "S5-F12",
+        "S5-F13",
+        "S5-F14",
+        "S5-F15",
+        "S5-F16",
+        "S5-F17",
+        "S5-F18",
+        "S5-F19",
+        "S5-F20",
+        "S5-F21",
+        "S5-F22"
+      ],
+      "recordedAt": "2026-11-18T00:58:50Z"
     }
   },
   "checkpoints": {
@@ -1540,6 +2032,15 @@
       },
       "reviewHash": "479b58c0314d605fc416663ac07f55def19671d8f9127f53753f528518d93f86",
       "recordedAt": "2026-11-17T21:56:41Z"
+    },
+    "s5-service-crates-rest": {
+      "snapshotId": "0d6347e1fd174567786acb769f18c4565ed20523b785bef1686697f285ea5a62",
+      "commits": {
+        "rayx": "0a9c0474873af1eb6fc778f13c982d126f53e1ba",
+        "root": "f8f986197908b834f4302803f1880231d6cbb7ee"
+      },
+      "reviewHash": "e23af5cd064186b8e8e46300cb37f8b1c59ceb5e4f2157f9730632164542133c",
+      "recordedAt": "2026-11-18T00:59:04Z"
     }
   },
   "findings": [
@@ -2132,9 +2633,473 @@
         }
       ],
       "boundaryId": "s4-service-crates"
+    },
+    {
+      "id": "S5-F1",
+      "criterionIds": [
+        "SVC-5",
+        "SVC-9"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**`dyn OperationService`'s transaction helpers keep the open transaction in a thread-local across `.await`, so with an operation service that answers asynchronously, tasks see each other's transactions.**\n\n*Where*: `crates/rayx_app/src/services/operations/transaction.rs:76-108` (`begin` checks `current_transaction_id(service_id)`, then `push`es after `service.begin().await`) and `:132-150` (`pop` after `commit()`/`abort()` is awaited, possibly on another thread). History opens one around its replay: `crates/rayx_services_history/src/service.rs:308-345` (`begin_transaction(New)`, then `submit_record(.., Some(transaction.id())).await` per record). `lifecycle.rs` uses `begin_transaction(Reject)` to tell whether a scope is busy.\n\n*Observed*: RayX's own operation service answers at once, so nothing interleaves. A TS operation service, which SVC-9 requires history to work over, makes every command await JS's next turn. Reproduced by a scratch program running RayX's history over a `FakeOperations` wrapper whose `submit_record` takes several polls:\n\n- **Two tasks on one thread:** while task A's `undo(\"a\")` waits, task B's `clear_scope(\"b\")` returns `Err(ScopeBusy)` although nothing touches scope b. B's `submit` joins A's transaction (id 3). When A's undo then fails and aborts, B's unrelated edit is reverted and never recorded.\n- **A transaction moved across threads:** begun on one thread and committed on another, it stays open on the first thread forever. Later separate submits there share its id and merge into one undo entry, and `clear_scope` is `ScopeBusy` from then on.\n\n*Expected* (d-any-thread, SVC-5/SVC-9): history works over any `dyn OperationService` called from any thread, and a transaction holds only the operations its own task submits.\n\n*Repair*:\n\n- Have history pass ids explicitly: `begin()`, then `submit_record(.., Some(id))` for each record, then `commit(id)`/`abort(id)`, with no thread-local. Detect a busy scope from history's own state, not `begin_transaction(Reject)`.\n- Make the ambient-transaction helpers safe for async: either limit them to a synchronous closure (`with_transaction(mode, |tx| ..)` with no await inside), or carry the transaction explicitly. If neither, document in `docs/services/operations.md` and the rustdoc that they must not span an `.await` with an asynchronous service.\n- Add a test of history over a delayed operation service with two interleaved tasks, and one with a commit on another thread.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/operations/transaction.rs",
+          "symbol": "enter"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_async_operations.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/operations_transactions.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F2",
+      "criterionIds": [
+        "SVC-5",
+        "SVC-9"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**History's undo and redo are not safe while their replay is in flight. That window is reachable on one thread now that operations can answer asynchronously.**\n\n*Where*: `crates/rayx_services_history/src/service.rs:192-230` (`replay`) and `:369-388` (`peek_entry`).\n\n- **Wrong entry popped:** after awaiting `resubmit`, `replay` takes `from.pop()` without checking that the popped entry is the one replayed. Reproduced: while `undo(\"a\")` awaits, a local edit `a = 9` commits and is recorded. The undo then pops the new edit's entry instead of the replayed one. The user's edit is overwritten (a = 0) and its entry lost. The race existed across threads before; an asynchronous service makes it reachable on one thread.\n- **Busy forever on cancellation:** `peek_entry` sets `scope.replaying = true`, and only the `Err` path or success clears it. Dropping the `undo`/`redo` future while it awaits (a timeout or `select`, a caller that gives up) leaves every later `undo`, `redo` and `clear_scope` for that scope returning `ScopeBusy` for the life of the app.\n\n*Expected*: an edit recorded during a replay is kept, and a cancelled replay frees its scope.\n\n*Repair*: remove the replayed entry by identity (its `transaction_id` or an entry id), or fail with `StackChanged` and keep the newly recorded entry. Clear `replaying` from a drop guard held across the await. Add tests: an edit committed during a delayed undo, and a dropped undo future followed by a successful undo.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/service.rs",
+          "symbol": "replay"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_async_operations.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F3",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Submitting into an unknown or already-closed transaction id commits alone under that id.**\n\n*Where*: `crates/rayx_services_operations/src/service.rs:204` and `:234-243` (`pending.get_mut(&transaction_id)` is `None`, so the receipt is emitted at once and keeps the stale id). `FakeOperations` in `crates/rayx_app/src/testing.rs` does the same.\n\n*Effect*: a receipt can carry an id that is already committed, so history merges unrelated later submits into one entry (see S5-F1's second case). A submit racing an `abort` is committed instead of undone.\n\n*Expected* (\"transactions by id\", d-abstractions): a submit names an open transaction or fails.\n\n*Repair*: return `OperationError::TransactionClosed` (or `UnknownTransaction`) when `Some(id)` is not open: check before applying, and again after if it closed meanwhile. Do the same in the fake, and test both.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/tests/operations_closed_transactions.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/src/service.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F4",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A target handler's handle is leaked when nobody takes it.**\n\n*Where*: `crates/rayx_app/src/services/operations/target.rs:140-160`. Serializing an `OperationTargetHandle` puts the handler into the process-wide `HANDLES` map, and only `take` (`OperationTarget.of` on the TS side) removes it. The contract adapter serializes command arguments eagerly.\n\n*Effect*: if the TS implementation's `registerTarget` rejects or throws before taking it, never takes it, or the engine is gone, the handler and everything it captures stay alive for the life of the process.\n\n*Expected*: a handler lives as long as its registration.\n\n*Repair*: give the serialized handle a guard that removes it from `HANDLES` when the call fails or resolves without it being taken. For example, the Rust side of `register_target` keeps the number and removes it after the call returns; or entries are weak-owned by the caller's registration.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/operations/target.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/tests/nsh_tsx_target_handles.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F5",
+      "criterionIds": [
+        "SVC-5",
+        "SVC-9"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Persistent history cannot work over a TS key-value store.**\n\n*Where*: `crates/rayx_services_history/src/key_value_store.rs:48-52`. `now()` polls the store's future once (`now_or_never`) and otherwise fails with \"the key-value store did not answer at once\".\n\n*Observed*: with a TS implementation of `KeyValueStore`, which always answers in JS's next turn, every history load and save fails with `Backend`. The write may still land after the failure is reported. The doc comment admits this, but SVC-9 says RayX's consumers of a contract work over a TS implementation, and storage is one of the contracts others resolve. `ts_service_contracts` exercises storage through the input map only.\n\n*Expected*: `add_persistent_history()` works over any `dyn KeyValueStore`, or the limit is a recorded decision.\n\n*Repair*: make `HistoryStore` asynchronous (load at startup through the async store, write behind with awaited saves), or decide with the owner and record that persistent history needs a store that answers at once. Then refuse a TS store at startup with a clear error instead of failing each save.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/key_value_store.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_late_store.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F6",
+      "criterionIds": [
+        "SVC-7"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Three fakes in `rayx_app::testing` differ from the contract behaviour they stand in for.** Confirmed with a scratch probe.\n\n- **`FakeI18n::add_resource` drops the messages that parsed when one in the same resource fails.** Where: `crates/rayx_app/src/testing.rs:1455-1468`. `change(&mut changed)?` returns before committing, which contradicts the fake's own comment (~line 1551) and RayX's service, which keeps the parsed messages and reports the error.\n- **`FakeHistory` publishes changes that are not changes.** Where: `testing.rs:1052-1063`, where `change` always bumps `revision` and inserts the scope with `or_default`. An undo or redo on an empty stack, `clear_scope` on an empty scope, or `set_scope_entry_limit` with nothing over the limit each publish, and an unknown scope is created. `crates/rayx_app/tests/testing_fakes.rs:355` asserts three publishes, the third being a no-op undo. RayX's history publishes only real changes.\n- **`FakeInputMap::load` answers from the published cell (`testing.rs:~1302`), not the state under its lock.** Just after another thread's `apply_user_document` returns, before its publish lands, `load` can give the previous document.\n\n*Repair*:\n\n- In `FakeI18n::answer`, run the change, commit `changed` when it differs, then return the result.\n- In `FakeHistory`, bump and publish only when the scope changed (skip empty-stack steps and unknown scopes), and fix the test to expect two publishes.\n- Add a `read` accessor to `FakeState` and use it in `FakeInputMap::load`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/testing.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/tests/testing_fakes.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F7",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Nothing tests RayX's history over RayX's operation service.**\n\n*Observed*:\n\n- Every group in `crates/rayx_services_history/tests/` (`history.rs:17-19` and the others) runs RayX's history over `FakeOperations`.\n- `crates/rayx/tests/service_replacement.rs` runs it over the app's own operations, and `ts_service_contracts.rs` over a TS one.\n- `crates/rayx/tests/umbrella.rs` only resolves the two services; nothing undoes one through the other.\n\nBefore the move, history's groups undid through RayX's operation service, so that integration, including `instance_id` as the contract's constant and the receipts' transaction ids, no longer has a test.\n\n*Repair*: add a group in the `rayx` umbrella (both features on) or as a dev-dependency-free integration test in `rayx`, where `add_operations().add_history()` records, undoes and redoes an edit through RayX's own operation service, inside and outside a transaction.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx/tests/history_over_operations.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F8",
+      "criterionIds": [
+        "SVC-5",
+        "SVC-9"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**Cancelling a history command while its save or commit is in flight leaves persistent history broken or the stacks wrong for good.** This is a regression from the repair of S5-F2 and S5-F5 (7280a2a), reproduced by the helper's delayed-store probe.\n\n**Save cancelled mid-write.** Where: `crates/rayx_services_history/src/persistence.rs:109` and `:136-141` (`store.save(journal, expected).await?`, then `record_persisted_revision`), and `Writer::drop` at `:177-188`. Replay, `clear_scope` and `set_scope_entry_limit` await `persist_scope` inline.\n\n- If the caller drops the command while `store.save` is pending, a store whose write is already under way still writes. A TS `KeyValueStore` is one: its `set` is queued when called.\n- `record_persisted_revision` never runs, and `Writer::drop` discards the popped scope.\n- Observed: the store is at revision 3 while history still expects 2. Every later save of the scope fails with a revision conflict (reported as a failed step), and the store never catches up.\n\n**Replay cancelled while its commit is pending.** Where: `service.rs:~374` and `217-234`.\n\n- The operations' commit is started when called, as through the TS adapter, so the change is applied, but the stacks never move.\n- Observed: `a` is undone, but the depths stay (1, 0). The next undo applies the same inverse again, which is wrong for any non-idempotent operation.\n\n*Expected*: once a save or a replay's transaction has started, cancelling the caller neither loses its bookkeeping nor desynchronizes the stacks.\n\n*Repair*: run the writer loop with `detached::spawn`, and run the replay from `begin` onward the same way, with commands awaiting a oneshot of the result. Cancelling the caller then cancels only the wait. Alternatively, on a revision conflict, reload the stored revision and retry. Add tests that drop a replay or clear while a delayed save is pending, and while a delayed commit is pending.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_cancellation.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs",
+          "symbol": "write"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F9",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A redo racing a new edit is applied but not recorded.**\n\n*Where*: `crates/rayx_services_history/src/service.rs:227-230`. After the redo's transaction committed, the replayed entry is looked up in `redo` by identity. An edit recorded during the redo cleared `redo`, so the lookup fails with `StackChanged`.\n\n*Observed* (probe): `a` goes 9 → 1, the redo returns `Err(StackChanged)`, the depths are (1, 0), and there is no entry or event for the redo's change. The user cannot undo it.\n\n*Expected*: either the redo is refused before its change commits, or its change is recorded.\n\n*Repair*: check that the entry is still present before `commit` and abort if not. Or, when it is gone after the commit, push the replayed entry onto the undo stack anyway. Add a test of a redo racing a recorded edit.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_cancellation.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/service.rs",
+          "symbol": "resubmit"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F10",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Regression from 2bd1001: an operation target's handle now lives only as long as the caller's future.**\n\n*Where*: `crates/rayx_app_macros/src/contract.rs:193-211`. `__rayx_arguments` is moved into the returned future and dropped when that future is dropped.\n\n*Observed*: the TS call is started or queued when it is made (`crates/rayx_app_nsh/src/binding.rs:136-170`). A caller that drops the future early releases the handle number before TS runs. That covers fire-and-forget `register_target`, a `select` or a timeout. `OperationTarget.of` then throws (\"taken already, or never crossed\"), and the registration silently fails, where it worked before the repair.\n\n*Expected*: a handle crossed in a call stays takeable until TS answers that call, whatever the caller does.\n\n*Repair*: move the arguments into the engine-side closure given to `call_json`. They are `Send`, and are dropped when the TS call answers or the engine drops the job. Add a test that registers a target and drops the future at once.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/tests/nsh_tsx_target_handles.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app_macros/src/contract.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F11",
+      "criterionIds": [
+        "SVC-5",
+        "SVC-9"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**History depends on operation transaction ids being unique and increasing, and the contract does not say so. Several repair tests also run in no sprint check.**\n\n*Transaction ids*: history's clear boundary compares `receipt.transaction_id <= cleared_through_transaction` (`crates/rayx_services_history/src/service.rs:~281`), and recording merges receipts with equal ids. `OperationService::begin`, `submit_record` and `OperationReceipt` (`crates/rayx_app/src/services/operations/`) do not require ids to be unique and increasing per service. A TS implementation that reuses ids or does not increase them would make history drop or merge unrelated edits.\n\n*Checks*: these new groups run in none of s5's nine checks, so the runtime's proof does not cover them. All pass when run alone.\n\n- `crates/rayx_app/tests/operations_transactions.rs`\n- `crates/rayx_app/tests/operations_contract.rs`, changed\n- `crates/rayx_services_assets/tests/nsh_tsx_contract_bytes.rs`, which covers the host's new `ContractJson` conversion\n- `crates/rayx/tests/history_over_operations.rs`\n\n*Repair*: state the id requirement in the contract's rustdoc and the TS `OperationServiceContract`, and in `docs/services/operations.md`. Add the four groups to s5's checks: extend `c-testing-fakes`, `c-svc-ops-history-selection`, `c-service-replacement`, or a new check.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_operations/tests/operations_transaction_ids.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/operations/mod.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services/operations.md"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F12",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**A failed save behind an edit is never reported, nor is the failure of a detached command whose caller left.** This is a regression from the S5-F8 repair (6813dbe).\n\n*Where*:\n\n- `crates/rayx_services_history/src/persistence.rs:105-110`: every attached `persist_scope` registers a waiter in `save_waiters`.\n- `:126-129`: `persist_behind` calls `persist_scope` and drops its receiver at once.\n- `:182-190`: `write()` calls `record_failure` only when `waiters.is_empty()`. With a dead waiter present it sends into a closed channel instead.\n- `service.rs:~527-529`: `detached()` discards a failed `answer.send`.\n\n*Observed*, with the helper's probe of a store whose save fails:\n\n- A recorded edit yields only `HistoryEvent::Recorded`, with no `NavigationFailed`.\n- An undo dropped while its save fails yields neither `NavigationFailed` nor `UndoCompleted`: the replay returns at the `?` on persist (`service.rs:242`), and nobody hears the error.\n\n*Expected*: `docs/services/history.md:32` says \"a save nothing awaits that fails is a `NavigationFailed` event of the scope\", which the code did before the repair. A storage failure, such as a full quota, must not silently lose persistent history.\n\n*Repair*:\n\n- Make `persist_behind` register no waiter.\n- In `write()`, call `record_failure` when no waiter's `send` succeeds.\n- In `detached()`, report an `Err` whose caller is gone through `record_failure`.\n- Add tests: a failing save behind an edit, and a dropped undo whose save fails, each giving a `NavigationFailed` event.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_failures.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs",
+          "symbol": "write"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F13",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A save conflict now means the last writer wins, silently. That is a behaviour decision nobody recorded.**\n\n*Where*: `crates/rayx_services_history/src/persistence.rs:219-229` (on `Conflict` it reloads, takes the stored revision and saves over it unless the stored journal is exactly its own). `docs/services/history.md:32-34` documents it, and `history_cancellation::a_save_that_meets_another_revision_reloads_it_and_saves_over_it` asserts it.\n\n*Observed* (probe): two histories share one store and scope, as two windows or app instances over NSH's shared storage would. Surface 1 saves 2 entries; surface 2's save conflicts, reloads and saves over them. The store keeps 1 entry, surface 1's entries are gone, and nothing reports it.\n\nBefore this sprint a conflict was an error, so optimistic concurrency protected another writer's journal. A journal from an earlier run is not affected, because scopes load before they save.\n\n*Expected*: either the owner decides that last-writer-wins is acceptable and it is recorded (d-abstractions or a history decision, plus the docs), or another writer's entries are not silently lost.\n\n*Repair*: ask the owner. If shared stores are supported, merge the stored entries missing from memory beneath this history's own before saving over, or report the conflict as a `NavigationFailed` of the scope instead of overwriting.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs",
+          "symbol": "rebase"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_cancellation.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F14",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Detached history commands can now hang forever, and so can the save writer after a poisoned lock.**\n\n*Observed*:\n\n- **A promise that never settles:** since 6813dbe, undo, redo, clear and set-limit run detached to the end. With a TS operation service or store whose promise never settles, the command keeps its `Arc<RayxHistory>` and the scope's `replaying` flag alive for the life of the app. That scope is busy (`ScopeBusy`) permanently, where dropping the future used to free it.\n- **A poisoned lock:** in `crates/rayx_services_history/src/persistence.rs:165-167`, `write()` returns when the scopes lock is poisoned without resetting `writing` or answering the popped scope's waiters. Every later save-backed command then waits forever. There is a temporary cycle (history → save-waiter sender → waker → detached task → `Arc<history>`) until the writer answers.\n\n*Expected*: a command that cannot finish does not hold its scope or the writer forever.\n\n*Repair*:\n\n- Reset `writing` and answer (or drop) every waiter on each exit from `write()`, through a guard.\n- Bound a replay's wait on its operation service and store with the startup or a configurable timeout. Or let a cancelled caller free `replaying` while the detached work, when it finishes, records what it did.\n- Add a test with a store that never answers.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/timer.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_failures.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F15",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**An edit committed while a redo's commit is pending ends up below the redo in the undo stack, although the redo applied first.**\n\n*Where*: `crates/rayx_services_history/src/service.rs:~365-379` checks that the entry is still there before `commit`, then `commit().await`. Meanwhile an edit can record (clearing `redo`). The new branch at `:233-238` then pushes the replayed entry on top of the edit.\n\n*Effect*: the undo order is inverted. The next undo reverts the redo's change over the user's later edit. Found by reading the code, not reproduced; narrow.\n\n*Expected*: undo entries keep the order in which their changes applied.\n\n*Repair*: remember the undo stack's length (or the entry's position) at the check, and insert the replayed entry there rather than on top. Add a test with a gated commit and an edit recorded during it.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_cancellation.rs",
+          "symbol": "an_edit_recorded_while_a_redo_s_commit_is_pending_stays_above_it"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F16",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**When two histories share a store, a conflict rebase puts the other writer's entries into this session's live undo stack.** This is a regression from the S5-F13 repair (e60431f).\n\n*Where*: `crates/rayx_services_history/src/persistence.rs:23-55` (`rebase`), called from `save_scope` (~line 261). It replaces `scope.undo` with the stored entries (less those this history dropped) plus its own new ones.\n\n*Observed* (helper's probe [8b], two histories sharing one store and scope):\n\n- Surface 1 holds value 2 with its own entries 1 and 2, then edits to 3. Its save conflicts and rebases, leaving depths (4, 0) with surface 2's \"7\" entry inside.\n- The first undo gives 2, which is correct.\n- The second undo replays surface 2's entry, whose inverse is `Set(0)`, so surface 1's value jumps 2 → 0. That is an edit surface 1 never made, while its own entry \"2\" lies under it; the correct result is 1.\n\n*Expected*: a session's undo replays only the changes it applied (or ones it loaded as its own history at startup). Merging another writer's journal must not change what this session's undo does.\n\n*Repair*: keep the rebase in the persisted journal only. Build the journal to save as stored entries plus this session's changes, but leave the live `undo` stack to this session's entries, with their base. Alternatively, report the conflict and merge at the next load. Add a test where two histories share a store, then undo twice on one and check the values.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_cancellation.rs",
+          "symbol": "two_histories_sharing_a_store_each_undo_only_their_own_edits"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs",
+          "symbol": "journal_entries"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F17",
+      "criterionIds": [
+        "SVC-5",
+        "SVC-9"
+      ],
+      "severity": "major",
+      "status": "resolved",
+      "descriptionMarkdown": "**A commit that outlives the timeout leaves its change applied while history reports failure.** This is a regression from the S5-F14 repair (e60431f), and it brings back S5-F8's stacks desync.\n\n*Where*: `crates/rayx_services_history/src/service.rs:~436`, `self.bounded(transaction.commit()).await?`. The transaction's id has already been taken by the commit, so nothing aborts it when the timer fires; `replay` then frees the scope and records `TimedOut`.\n\n*Observed* (helper's probe [11], an operation service whose commit lands but whose answer never arrives, with the timer firing at once):\n\n- The undo returns `Err(TimedOut)`, yet `a = 1` (the undo committed) and the depths stay (2, 0).\n- The next undo applies the same inverse again, giving depths (1, 1): one entry undone twice and one undo lost. With non-idempotent operations this corrupts the target.\n\n`history_failures::a_commit_that_never_answers_times_out_and_frees_the_scope` checks only that the scope is freed, not the stacks or the target.\n\n*Expected*: after a timed-out replay, either its change is undone, or the stacks reflect it.\n\n*Repair*: do not bound `commit`. Bound `begin` and each `submit_record`, and abort on their timeout. Alternatively, treat a commit timeout as an unknown outcome: keep the scope busy until the commit answers, or move the entry. Extend the test to assert the target value and the depths after a commit that never answers. Related: a `begin` that times out but later answers opens a TS transaction nobody closes. Abort the late id when it arrives.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_failures.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/service.rs",
+          "symbol": "resubmit"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F18",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**Rebase identifies entries by full equality. Two equal but distinct entries collapse into one, and an entry extended in place can be duplicated.** Found by reasoning, not reproduced.\n\n*Where*: `crates/rayx_services_history/src/persistence.rs:23-55` (`!ours.contains`, `!undo.contains`, `dropped.contains`).\n\n*Observed*:\n\n- **Collapse:** two writers' entries that compare equal collapse into one. Both start transaction ids at 1, and the same edit from the same state is identical.\n- **Duplicate:** `record_receipt` can extend `undo.last()` for the same transaction after a save whose answer was lost (it timed out but landed). After a rebase, the stored old copy (neither in `base` nor dropped) and the extended copy both appear, so one undo applies its inverses twice.\n\n*Expected*: each recorded change appears exactly once in the merged journal.\n\n*Repair*: give each entry a stable identity (the service's `instance_id`, the transaction id and a sequence number), rebase by identity, and replace the stored copy with this history's when the ids match.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_entry_ids.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_app/src/services/history/model.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F19",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A detached command's error still reaches nobody when it is answered before the caller drops the receiver unread. The 30 s default timeout is also undocumented as a trade-off.**\n\n*Observed*:\n\n- **Lost error:** `detached()` reports an error only when `answer.send` fails. With services that answer at once, `drop(history.undo(..))` completes inside the call, its failed save's error is sent into the channel, and the caller then drops the receiver: no `NavigationFailed` (helper's probe [9]). Only Rust fire-and-forget callers hit this; a TS promise rejects instead.\n- **Default timeout:** `HistoryOptions::call_timeout_ms` defaults to 30 s, so a TS operation call that legitimately takes longer is aborted. Saves that land after their timeout are handled by the lost-write check.\n\n*Repair*:\n\n- In the future `detached()` returns, report an `Err` result that the caller never polled (for example, a guard that calls `record_failure` when the future is dropped holding an unread error).\n- Say in `HistoryOptions`' rustdoc, its TS class and `docs/services/history.md` that slow TS implementations need a longer `callTimeoutMs`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_failures.rs"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "docs/services/history.md"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F20",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A merged journal brings back an entry another writer undid, and puts it out of order.**\n\n*Where*: `crates/rayx_services_history/src/persistence.rs:55-59`, the final loop of `journal_entries`. It appends every live undo entry whose id is not yet included. That covers ids this session loaded or saved before (in `saved_own`) which another writer has since removed from the store.\n\n*Observed* (helper's probe [12]):\n\n- An earlier run saves [\"1\",\"2\"], and two sessions load it.\n- Session 1 undoes \"2\" and edits \"5\", so the store holds [\"1\",\"5\"].\n- Session 2 edits \"7\", and the store becomes [\"1\",\"5\",\"2\",\"7\"]. The undone \"2\" is back, above \"5\".\n- After a restart, undo would replay 7, 2, 5, an order that never happened.\n\n*Expected*: an id in `saved_own` that is missing from the stored journal was removed by another writer, so it stays out of the saved journal. It may stay in this session's live stack. Only ids this history has never saved are appended.\n\n*Repair*: in the final loop, append only `!scope.saved_own.contains(&entry.id) && included.insert(..)`. Add this case to `history_entry_ids` or `history_cancellation`.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history_entry_ids.rs",
+          "symbol": "an_entry_another_history_undid_stays_out_of_the_merged_journal"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/persistence.rs",
+          "symbol": "journal_entries"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F21",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**A failed command whose caller dropped the future unread is reported twice.**\n\n*Where*: `crates/rayx_services_history/src/service.rs:~272`. `replay` calls `record_failure` on a resubmit error. The same error then reaches the dropped-caller reporting: `detached()`'s failed send (`:~608`) or the answer's drop (`:~674`).\n\n*Observed* (helper's probe [13]): an undo that the target refuses, with its future dropped unread, gives `NavigationFailed` twice. Awaited, it gives once.\n\n*Expected*: one failure, one event.\n\n*Repair*: mark errors that `replay` already recorded so the dropped-caller path skips them, or report only from one place. Add a dropped-unread refused-undo case to `history_failures` that counts the events.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/tests/history.rs",
+          "symbol": "a_refused_undo_dropped_unread_is_one_failed_step"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/service.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
+    },
+    {
+      "id": "S5-F22",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "severity": "minor",
+      "status": "resolved",
+      "descriptionMarkdown": "**History session ids can collide on `wasm32-unknown-unknown`, and a commit that never answers now keeps its scope busy with no word in the docs.**\n\n*Session ids* (by reading, not reproduced): `crates/rayx_services_history/src/service.rs:681-691` (`session_id`) hashes with `std::collections::hash_map::RandomState`, which has no randomness source on that target, and there is no pid there. The prefix then depends only on `unix_ms` and a per-process counter. Two browser tabs that make their first history in the same millisecond (session restore opens tabs together) share a prefix. Their entry ids (`<prefix>:1`, …) collide, and a merge replaces one tab's entries with the other's.\n\n*Docs*: with S5-F17's repair (no limit on `commit`), a commit that never answers keeps its scope busy for the app's life. That is a deliberate trade-off, but `HistoryOptions`' docs do not mention it.\n\n*Repair*: draw the prefix from a real random source (`getrandom` with its `js` feature, or NSH's), and add a line to `HistoryOptions`' rustdoc, its TS class and `docs/services/history.md` about commits not being bounded.",
+      "regressionRefs": [
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/service.rs",
+          "symbol": "session_id"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/Cargo.toml"
+        },
+        {
+          "repositoryId": "rayx",
+          "path": "crates/rayx_services_history/src/timer.rs"
+        }
+      ],
+      "boundaryId": "s5-service-crates-rest"
     }
   ],
-  "handoffMarkdown": "I18n (1e99bbe): I18nService contract + Rust-only MessageFormatter in rayx_services_i18n; add_i18n requires platform and assets.",
+  "handoffMarkdown": "TS implementations of all twelve contracts (5a26f3c); fixed EngineRunner in stop functions and TS contract factories first.",
   "protectedPaths": {
     "rayx": {
       "rayx:rust-toolchain.toml": "a203d7182f316258763e5eb0f81455729a7da60db4ecbce4aedeef59057ed333",

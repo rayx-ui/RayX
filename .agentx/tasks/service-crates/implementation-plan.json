@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "epicId": "service-crates",
-  "revision": 7,
+  "revision": 8,
   "title": "RayX's services as replaceable crates: abstractions in rayx_app, implementations in rayx_services_*",
   "validationMode": "sprint",
   "repositories": [
@@ -965,7 +965,11 @@
         "-p",
         "rayx_app",
         "--test",
-        "testing_fakes"
+        "testing_fakes",
+        "--test",
+        "operations_transactions",
+        "--test",
+        "operations_contract"
       ],
       "cwd": ".",
       "expected": {
@@ -978,7 +982,9 @@
         "crates/rayx_app/Cargo.toml",
         "crates/rayx_app/src/**",
         "crates/rayx_app_macros/src/**",
-        "crates/rayx_app/tests/testing_fakes.rs"
+        "crates/rayx_app/tests/testing_fakes.rs",
+        "crates/rayx_app/tests/operations_transactions.rs",
+        "crates/rayx_app/tests/operations_contract.rs"
       ]
     },
     {
@@ -1046,7 +1052,9 @@
         "rayx",
         "--all-features",
         "--test",
-        "ts_service_contracts"
+        "ts_service_contracts",
+        "--test",
+        "history_over_operations"
       ],
       "cwd": ".",
       "expected": {
@@ -1078,7 +1086,8 @@
         "crates/rayx_services_suspension/**",
         "crates/rayx/Cargo.toml",
         "crates/rayx/src/**",
-        "crates/rayx/tests/ts_service_contracts.rs"
+        "crates/rayx/tests/ts_service_contracts.rs",
+        "crates/rayx/tests/history_over_operations.rs"
       ]
     },
     {
@@ -1467,6 +1476,39 @@
         "crates/rayx_app/src/**",
         "crates/rayx_app_macros/src/**",
         "crates/rayx_app/tests/di_startup_plain_dependency.rs"
+      ]
+    },
+    {
+      "id": "c-contract-bytes",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-9"
+      ],
+      "descriptionMarkdown": "A TS contract answering bytes as a typed array or ArrayBuffer (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_assets",
+        "--test",
+        "nsh_tsx_contract_bytes"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_assets/**"
       ]
     }
   ],
@@ -2140,7 +2182,8 @@
             "t13-input-map-configuration"
           ],
           "checkIds": [
-            "c-ts-contracts"
+            "c-ts-contracts",
+            "c-contract-bytes"
           ],
           "sourceRefs": [
             {
