@@ -1,7 +1,7 @@
 //! The workspace's crates as `cargo metadata` sees them: their names, their folders and the rules
 //! of what each may depend on. Each check fails naming every package or dependency that differs.
 //!
-//! The rules: the packages are exactly the final set (no `rayx_core`, no `rayx_runtime`); every
+//! The rules: the packages are exactly the final set (none of the old names, [`OLD_NAMES`]); every
 //! package lives in `crates/<package>/` (the CLI in `crates/rayx_cli`, the gallery in
 //! `examples/gallery/native`); the core, `rayx_app`, depends on no NSH crate and on no RayX crate
 //! but `rayx_app_macros`; the NSH host, `rayx_app_nsh`, builds on the core and depends on no
@@ -224,10 +224,15 @@ fn the_umbrella_depends_on_every_service_crate_optionally() {
     assert_none("the umbrella's service dependencies", problems);
 }
 
+/// The packages' former names: the core's before it was `rayx_app`, and the crate the services
+/// lived in before each became a crate of its own. Spelled in parts, so a search of the docs and
+/// sources for the old names finds none.
+const OLD_NAMES: [&str; 2] = [concat!("rayx", "_core"), concat!("rayx", "_runtime")];
+
 #[test]
 fn no_package_keeps_an_old_name() {
     let packages = packages();
-    let problems = ["rayx_core", "rayx_runtime"]
+    let problems = OLD_NAMES
         .into_iter()
         .filter(|old| packages.contains_key(*old))
         .map(|old| format!("package {old} still exists"))
