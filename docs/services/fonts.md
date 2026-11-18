@@ -124,7 +124,8 @@ too.
 `FontService`, resolved from the provider `start()` gives, wraps whichever `dyn FontService` is registered:
 
 - `family(alias)`: the `fontFamily` for an alias (its family and fallbacks), or the name itself as a family;
-- `aliases()`: every alias, resolved (`{ alias, requested_family, resolved_family, glyph_fallback_families }`).
+- `aliases()`: every alias, resolved: a `ResolvedFontAlias[]` (`{ alias, requested_family, resolved_family,
+  glyph_fallback_families }`).
 
 ```tsx
 const fonts = services.getRequiredService(FontService);

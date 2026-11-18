@@ -68,7 +68,7 @@ fn the_class_the_contract_and_add_application_configuration_are_declared() {
     let add = "addApplicationConfiguration(configure?: ((options: ApplicationConfigurationOptions) => void) | null): RayXAppBuilder;";
     for declared in [
         "export declare class ApplicationConfigurationService {",
-        "  replaceOptions(settings: unknown): Promise<boolean>;",
+        "  replaceOptions(settings: ApplicationConfiguration): Promise<boolean>;",
         "export interface ApplicationConfigurationServiceContract {",
         "export type ApplicationConfigurationSnapshot = ",
         "export type ApplicationConfiguration = ",

@@ -51,6 +51,7 @@ impl ApplicationConfigurationService {
     }
 
     /// The settings now.
+    #[ts("(): ApplicationConfiguration")]
     pub fn current(&self) -> JsonValue {
         json(&self.service.options())
     }
@@ -72,6 +73,7 @@ impl ApplicationConfigurationService {
     /// Replaces the settings with `settings` (all of them, as `current()` gives them; not the
     /// startup-only name and description); resolves with whether they changed, or rejects with
     /// the service's error.
+    #[ts("(settings: ApplicationConfiguration): boolean")]
     pub async fn replace_options(
         this: Instance<Self>,
         settings: JsonValue,
@@ -86,6 +88,7 @@ impl ApplicationConfigurationService {
 
     /// Calls `listener` with the settings after every change, until the function it returns is
     /// called (or the reactive owner of the call goes), or this object is disposed.
+    #[ts("(listener: (settings: ApplicationConfiguration) => void): () => void")]
     pub fn on_change(
         &mut self,
         #[args(settings)] listener: Callback<JsonValue>,

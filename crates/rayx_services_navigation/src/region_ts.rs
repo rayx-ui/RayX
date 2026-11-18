@@ -156,12 +156,14 @@ impl NavigationRegion {
     }
 
     /// The region's journal up to the current entry, bottom to top: its routes.
+    #[ts("(): NavigationRoute[]")]
     pub fn pages(&self) -> JsonValue {
         page_routes(self.navigation.as_ref(), &self.name)
     }
 
     /// Calls `listener` with the pages after every change of them, until the function it
     /// returns is called (or the reactive owner of the call goes), or this object is disposed.
+    #[ts("(listener: (pages: NavigationRoute[]) => void): () => void")]
     pub fn on_change(
         &mut self,
         #[args(pages)] listener: Callback<JsonValue>,

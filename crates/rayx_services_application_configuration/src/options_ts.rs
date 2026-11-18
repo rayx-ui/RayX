@@ -99,7 +99,9 @@ impl ApplicationConfigurationOptions {
 
     /// Merges `settings` (an object, as `RayX:Application` in `appsettings.json` has them:
     /// `{ notifications: { maxItems: 3 } }`) over the settings: its objects into theirs, its
-    /// other values in their place. Throws for a value of the wrong type.
+    /// other values in their place, its keys matched ignoring case, `_` and `-`. Throws for a
+    /// value of the wrong type.
+    #[ts("(settings: Record<string, unknown>): ApplicationConfigurationOptions")]
     pub fn merge(this: Instance<Self>, settings: JsonValue) -> Result<Instance<Self>, String> {
         if !settings.is_object() {
             return Err("merge takes an object of settings".into());

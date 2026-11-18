@@ -149,13 +149,19 @@ registered:
 
 - `navigate(uri)`, `back()`, `forward()`, `refresh()`: the root region; each a promise of the `NavigationResult`
   (`{ region, direction, status, route }`), rejected with the service's error;
-- `current()`: the root region's current route and its status, `null` before the first navigation;
+- `current()`: the root region's current route and its status (a `RoutingData`, `{ status, route }`), `null` before
+  the first navigation;
 - `region(name)`: the `NavigationRegion` `name`, made when missing;
-- `onChange(({ region, from, to }) => ..)`: every route change, until the function it returns is called.
+- `onChange(({ region, from, to }) => ..)`: every route change (a `RouteChangedEvent`, `from` `null` for the region's
+  first), until the function it returns is called.
+
+A route is a `NavigationRoute` in TS, the JSON of Rust's `Route` (`uri`, `path`, `params`, `query_params`,
+`passed_parameters`, `component`, `pattern`, …); `status` a `RoutingStatus` (`"Success"`, `"FailedNotFound"`, …) and
+`direction` a `NavigationDirection` (`"New"`, `"Back"`, `"Forward"`, `"Refresh"`).
 
 `NavigationRegion` has `navigate(uri, replace?)`, `back()`, `forward()`, `refresh()`, `goTo(index)`, `close()` (each a
-promise; `close` of whether the region was open), `pages()` (its journal up to the current entry, bottom to top) and
-`onChange((pages) => ..)`; see
+promise; `close` of whether the region was open), `pages()` (its journal up to the current entry, bottom to top: a
+`NavigationRoute[]`) and `onChange((pages) => ..)`; see
 [Navigation regions](../navigation.md#from-tsx).
 
 The classes' commands are promises, over RayX's implementation and a TS one alike; their reads (`current()`,

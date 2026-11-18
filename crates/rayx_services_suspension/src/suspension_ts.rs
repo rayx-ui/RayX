@@ -55,6 +55,7 @@ impl SuspensionService {
     /// window }`: the app's start, focus, background and foreground, its window's changes, the
     /// system's wakes from sleep, its quit), until the function it returns is called (or the
     /// reactive owner of the call goes), or this object is disposed.
+    #[ts("(listener: (event: SuspensionEvent) => void): () => void")]
     pub fn on_lifecycle(
         &mut self,
         #[args(event)] listener: Callback<JsonValue>,
@@ -73,6 +74,7 @@ impl SuspensionService {
     /// this object is disposed, the user's requests to quit (the app's Quit item, its quit key)
     /// call `listener` instead of quitting: the app asks, saves or waits, then calls `quit()`.
     /// Once no listener is left, a request quits again. Desktops only.
+    #[ts("(listener: () => void): () => void")]
     pub fn ask_before_quit(&mut self, listener: Callback<JsonValue>) -> Result<Stop, String> {
         let suspension = Arc::clone(&self.suspension);
         let asking = Arc::clone(&self.asking);

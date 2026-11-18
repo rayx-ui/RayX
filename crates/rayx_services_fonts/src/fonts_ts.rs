@@ -38,6 +38,7 @@ impl FontService {
 
     /// Every alias, resolved: `{ alias, requested_family, resolved_family,
     /// glyph_fallback_families }`.
+    #[ts("(): ResolvedFontAlias[]")]
     pub fn aliases(&self) -> JsonValue {
         json(&self.service.resolved_aliases())
     }

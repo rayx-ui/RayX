@@ -114,6 +114,7 @@ impl SelectionService {
     /// Calls `listener` with the selection (as `state()` gives it) after every change, until
     /// the function it returns is called (or the reactive owner of the call goes), or this
     /// object is disposed.
+    #[ts("(listener: (state: SelectionState) => void): () => void")]
     pub fn on_change(
         &mut self,
         #[args(state)] listener: Callback<JsonValue>,

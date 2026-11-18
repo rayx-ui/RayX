@@ -144,8 +144,8 @@ fn each_consumer_stops_its_own_listener_of_the_suspension_object() {
 fn listener_members_are_declared_to_return_their_stop_function() {
     let ts = testing::declarations(&set());
     for declared in [
-        "  onLifecycle(listener: (event: unknown) => void): () => void;",
-        "  askBeforeQuit(listener: (value: unknown) => void): () => void;",
+        "  onLifecycle(listener: (event: SuspensionEvent) => void): () => void;",
+        "  askBeforeQuit(listener: () => void): () => void;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

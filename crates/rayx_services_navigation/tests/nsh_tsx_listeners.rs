@@ -69,8 +69,8 @@ fn each_consumer_stops_its_own_listener_of_a_shared_service_object() {
 fn listener_members_are_declared_to_return_their_stop_function() {
     let ts = testing::declarations(&set());
     for declared in [
-        "  onChange(listener: (event: unknown) => void): () => void;",
-        "  onChange(listener: (pages: unknown) => void): () => void;",
+        "  onChange(listener: (event: RouteChangedEvent) => void): () => void;",
+        "  onChange(listener: (pages: NavigationRoute[]) => void): () => void;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

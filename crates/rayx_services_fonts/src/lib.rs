@@ -42,12 +42,20 @@ pub const FONT_STATE: TsAlias = TsAlias {
     doc: "The fonts registered and the aliases resolved: the JSON of Rust's `FontState`.",
 };
 
+/// A resolved alias in TS.
+pub const RESOLVED_FONT_ALIAS: TsAlias = TsAlias {
+    name: "ResolvedFontAlias",
+    ts: "{ alias: string; requested_family: string; resolved_family: string; glyph_fallback_families: string[] }",
+    doc: "An alias resolved against the fonts that loaded (`resolved_family`: the family, or its load fallback's when it did not load): the JSON of Rust's `ResolvedFontAlias`.",
+};
+
 /// Adds the font service's TS side to an app's set: its class [`FontService`], its options
 /// classes, the contract a TS implementation follows (the TS interface `FontServiceContract`,
 /// [`FontContract`] in Rust) and `builder.addFonts(..)`.
 pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(FONT_STATE)
+        .ts_alias(RESOLVED_FONT_ALIAS)
         .class::<TsFontOptions>()
         .class::<FontAliasOptions>()
         .contract_class::<FontContract, FontService>()

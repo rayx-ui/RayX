@@ -130,7 +130,7 @@ fn the_options_class_is_declared_with_rust_s_methods() {
     for declared in [
         "export declare class ApplicationConfigurationOptions {",
         "  name(name: string): ApplicationConfigurationOptions;",
-        "  merge(settings: unknown): ApplicationConfigurationOptions;",
+        "  merge(settings: Record<string, unknown>): ApplicationConfigurationOptions;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

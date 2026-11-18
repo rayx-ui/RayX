@@ -68,8 +68,43 @@ pub const NAVIGATION_REQUEST: TsAlias = TsAlias {
 /// A navigation's result in TS.
 pub const NAVIGATION_RESULT: TsAlias = TsAlias {
     name: "NavigationResult",
-    ts: "{ region: string; direction: string; status: string; route: Record<string, unknown> }",
+    ts: "{ region: string; direction: NavigationDirection; status: RoutingStatus; route: NavigationRoute }",
     doc: "How a navigation went: the JSON of Rust's `NavigationResult`.",
+};
+
+/// A route in TS.
+pub const NAVIGATION_ROUTE: TsAlias = TsAlias {
+    name: "NavigationRoute",
+    ts: "{ uri: string; base_uri: string; path: string; query: string; fragment: string; location: string; segments: string[]; params: Record<string, string>; query_params: Record<string, string>; passed_parameters: unknown; component: string | null; pattern: string; prewarm: boolean }",
+    doc: "A URI resolved against the navigation's routes: its parts, the route it matched (`pattern`, `component`, `params`) and the parameters passed with the navigation (`passed_parameters`, `null` when none): the JSON of Rust's `Route`.",
+};
+
+/// A route with how resolving it went, in TS.
+pub const ROUTING_DATA: TsAlias = TsAlias {
+    name: "RoutingData",
+    ts: "{ status: RoutingStatus; route: NavigationRoute }",
+    doc: "A route and how resolving it went: the JSON of Rust's `RoutingData`.",
+};
+
+/// How a navigation went, in TS.
+pub const ROUTING_STATUS: TsAlias = TsAlias {
+    name: "RoutingStatus",
+    ts: "\"None\" | \"Success\" | \"FailedNotFound\" | \"ComponentNotFound\" | \"SkippedSameRoute\" | \"SkippedExternalRoute\" | \"SkippedNoHistory\" | \"Cancelled\"",
+    doc: "How a navigation went: Rust's `RoutingStatus`.",
+};
+
+/// Which way a navigation went, in TS.
+pub const NAVIGATION_DIRECTION: TsAlias = TsAlias {
+    name: "NavigationDirection",
+    ts: "\"New\" | \"Back\" | \"Forward\" | \"Refresh\"",
+    doc: "Which way a navigation went: Rust's `NavigationDirection`.",
+};
+
+/// A region's route change in TS.
+pub const ROUTE_CHANGED_EVENT: TsAlias = TsAlias {
+    name: "RouteChangedEvent",
+    ts: "{ region: string; from: NavigationRoute | null; to: NavigationRoute }",
+    doc: "A region's route changed (`from`: `null` for the region's first): the JSON of Rust's `RouteChangedEvent`.",
 };
 
 /// A history mode in TS.
@@ -90,6 +125,11 @@ pub fn register(registry: &mut Registry) {
         .ts_alias(NAVIGATION_REQUEST)
         .ts_alias(NAVIGATION_RESULT)
         .ts_alias(NAVIGATION_HISTORY_MODE)
+        .ts_alias(NAVIGATION_ROUTE)
+        .ts_alias(ROUTING_DATA)
+        .ts_alias(ROUTING_STATUS)
+        .ts_alias(NAVIGATION_DIRECTION)
+        .ts_alias(ROUTE_CHANGED_EVENT)
         .class::<TsNavigationOptions>()
         .class::<NavigationRegion>()
         .contract_class::<NavigationContract, NavigationService>()

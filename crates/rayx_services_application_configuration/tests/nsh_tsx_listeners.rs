@@ -15,6 +15,7 @@ fn on_change_is_declared_to_return_its_stop_function() {
         .nth(1)
         .and_then(|rest| rest.split("\n}\n").next())
         .unwrap_or_else(|| panic!("no class ApplicationConfigurationService in\n{ts}"));
-    let declared = "  onChange(listener: (settings: unknown) => void): () => void;";
+    let declared =
+        "  onChange(listener: (settings: ApplicationConfiguration) => void): () => void;";
     assert!(class.contains(declared), "no `{declared}` in\n{class}");
 }

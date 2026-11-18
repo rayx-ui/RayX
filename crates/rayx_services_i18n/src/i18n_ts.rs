@@ -77,6 +77,7 @@ impl I18nService {
     }
 
     /// The message `id` formatted with `args`; throws for an argument that is an object.
+    #[ts("(id: string, args?: Record<string, string | number | boolean | null> | null): string")]
     pub fn t(&self, id: String, args: Option<JsonValue>) -> Result<String, String> {
         let formatter = self.formatter()?;
         Ok(formatter.format(&id, &arguments(formatter.as_ref(), args)?))

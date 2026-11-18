@@ -116,7 +116,7 @@ changes.
 `ApplicationConfigurationService`, resolved from the provider `start()` gives, wraps whichever
 `dyn ApplicationConfigurationService` is registered:
 
-- `current()`: the settings (their JSON, snake_case keys);
+- `current()`: the settings (their JSON, snake_case keys: an `ApplicationConfiguration` in TS);
 - `layoutDirection()` (`"ltr"` or `"rtl"`) and `reducedMotion()`, at once;
 - `replaceOptions(settings)`: a promise of whether they changed; it takes all the settings, as `current()` gives
   them;

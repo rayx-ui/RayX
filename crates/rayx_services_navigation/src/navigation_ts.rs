@@ -88,6 +88,7 @@ impl NavigationService {
     }
 
     /// The root region's current route and its status, `null` before the first navigation.
+    #[ts("(): RoutingData | null")]
     pub fn current(&self) -> JsonValue {
         self.service
             .current()
@@ -103,6 +104,7 @@ impl NavigationService {
     /// Calls `listener` with `{ region, from, to }` after every route change, until the
     /// function it returns is called (or the reactive owner of the call goes), or this object
     /// is disposed.
+    #[ts("(listener: (event: RouteChangedEvent) => void): () => void")]
     pub fn on_change(
         &mut self,
         #[args(event)] listener: Callback<JsonValue>,
