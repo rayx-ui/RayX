@@ -89,8 +89,15 @@ store reads or writes it there: at once where it is reachable, else through the 
 thread (the call answers once the engine ran it, and fails once the engine is gone). A write fails when the storage is
 full. A startup service keyed by `dyn KeyValueStore`, which the input map and history initialize after, has NSH load
 the device's entries on the engine thread as the app starts. The store keeps no copy of them: NSH's backend keeps
-every change itself, so nothing waits to be written as the app quits, and what the app saves on the engine thread as
-it hears `Destroying` reaches the device.
+every change itself, so the store has nothing of its own to write as the app quits.
+
+What the app saves as it hears `Destroying` reaches the device, on the engine thread (where it hears it) at once, and
+from another thread (a thread the listener handed the save to, an operation committing there) through the engine
+runner: as the app quits, after NSH's quit listeners (where `Destroying` is published) and before the engine stops,
+the host runs every call queued for the engine and the work it starts, and the calls other threads queue meanwhile,
+until none waits and none arrived, ran or ended for 50 ms, 150 ms at most (inside NSH's 200 ms quit timeout). A call
+queued after that, or once the engine stopped, fails with `StorageError::Backend("the surface's engine is gone")`
+(the runner's `EngineGone`), and the device does not get it.
 
 Each provider has its own store; the entries are NSH's. NSH shares one storage's entries between every surface
 (window, engine) given the same backend, each operation serialized, so the stores of the surfaces over one storage,

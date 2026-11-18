@@ -13,8 +13,10 @@
 
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::thread::ThreadId;
+use std::time::Duration;
 
 use dxn_reactive::collections::ObservableList;
 use dxn_reactive::{
@@ -24,6 +26,8 @@ use dxn_reactive::{
 use futures::StreamExt as _;
 use futures::channel::mpsc::{UnboundedSender, unbounded};
 use nsh_core::JsonValue;
+use nsh_core::element::desktop::{QUIT_TIMEOUT, on_app_quit};
+use nsh_core::element::reactive::create_root;
 use nsh_core::prelude::*;
 use rayx_app::{ChangeSubscription, EventStream, StateCell};
 use serde::Serialize;
@@ -31,28 +35,133 @@ use serde::Serialize;
 /// What runs on the engine's thread for a change made on another thread.
 type Job = Box<dyn FnOnce() + Send>;
 
+/// The surface's dispatcher: what is sent through it runs on its engine's thread.
+struct Dispatcher {
+    jobs: UnboundedSender<Job>,
+    /// The work its runners take.
+    work: Arc<Work>,
+}
+
 thread_local! {
     /// The surface's dispatcher on this (the engine's) thread, once the app started.
-    static DISPATCHER: RefCell<Option<UnboundedSender<Job>>> = const { RefCell::new(None) };
+    static DISPATCHER: RefCell<Option<Dispatcher>> = const { RefCell::new(None) };
     /// TSX listeners of the bindings by id: a TSX function is not `Send`.
     static LISTENERS: RefCell<HashMap<u64, Vec<Callback<JsonValue>>>> = RefCell::new(HashMap::new());
     static NEXT_ID: Cell<u64> = const { Cell::new(0) };
 }
 
+/// How long the app's quit waits for more work once none is waiting and nothing arrived, ran or
+/// ended: time for a thread that heard `Destroying` to queue its work.
+const QUIT_SETTLE: Duration = Duration::from_millis(50);
+
+/// The longest the app's quit runs the runner's work: inside NSH's [`QUIT_TIMEOUT`] for the quit
+/// listeners, so the engine stops when it ends.
+const QUIT_DRAIN_LIMIT: Duration = QUIT_TIMEOUT.saturating_sub(Duration::from_millis(50));
+
+/// How often the app's quit looks at the work.
+const QUIT_TICK: Duration = Duration::from_millis(2);
+
+/// The work a surface's runners took, as the app's quit waits for it ([`drain`]).
+#[derive(Default)]
+struct Work {
+    /// Jobs queued and not run yet, and work started and not polled yet.
+    waiting: AtomicUsize,
+    /// Changes each time work arrives, runs or ends.
+    activity: AtomicU64,
+}
+
+impl Work {
+    /// Work arrived: waiting until [`Waiting`] goes.
+    fn arrived(self: &Arc<Self>) -> Waiting {
+        self.waiting.fetch_add(1, Ordering::SeqCst);
+        self.touch();
+        Waiting(Arc::clone(self))
+    }
+
+    fn touch(&self) {
+        self.activity.fetch_add(1, Ordering::SeqCst);
+    }
+
+    /// `work`, waiting until it is first polled; its end counts as activity.
+    fn track<T, F: std::future::Future<Output = T>>(
+        self: &Arc<Self>,
+        work: F,
+    ) -> impl std::future::Future<Output = T> + use<T, F> {
+        let mut waiting = Some(self.arrived());
+        let work_done = Arc::clone(self);
+        async move {
+            let mut work = std::pin::pin!(work);
+            let output = std::future::poll_fn(|context| {
+                let polled = work.as_mut().poll(context);
+                drop(waiting.take());
+                polled
+            })
+            .await;
+            work_done.touch();
+            output
+        }
+    }
+}
+
+/// Work waiting: ran (or dropped unrun) when dropped.
+struct Waiting(Arc<Work>);
+
+impl Drop for Waiting {
+    fn drop(&mut self) {
+        self.0.touch();
+        self.0.waiting.fetch_sub(1, Ordering::SeqCst);
+    }
+}
+
+/// The app quits (an NSH quit listener the host owns): runs what is queued for the engine and
+/// the work it starts, as the engine stops, after the app's quit listeners ran (where RayX's
+/// suspension service publishes `Destroying`). It ends once nothing waits and nothing arrived,
+/// ran or ended for [`QUIT_SETTLE`], or after [`QUIT_DRAIN_LIMIT`]; while it runs, the engine
+/// turns, so the queue's task runs each job and the work started is polled.
+async fn drain(work: Arc<Work>) {
+    let started = nsh_core::time::now();
+    let mut seen = work.activity.load(Ordering::SeqCst);
+    let mut quiet_since = started;
+    loop {
+        timer(QUIT_TICK).await;
+        let now = nsh_core::time::now();
+        let activity = work.activity.load(Ordering::SeqCst);
+        if activity != seen || work.waiting.load(Ordering::SeqCst) > 0 {
+            seen = activity;
+            quiet_since = now;
+        } else if now.saturating_duration_since(quiet_since) >= QUIT_SETTLE {
+            return;
+        }
+        if now.saturating_duration_since(started) >= QUIT_DRAIN_LIMIT {
+            return;
+        }
+    }
+}
+
 /// Starts the task that runs on the engine's thread what bindings send from other threads; it
-/// lives as long as the surface. The app's startup calls it, where the engine runs Rust code.
+/// lives as long as the surface, and runs what is queued as the app quits ([`drain`]). The
+/// app's startup calls it, where the engine runs Rust code.
 pub(crate) fn start_dispatcher() {
     if DISPATCHER.with_borrow(Option::is_some) {
         return;
     }
     let (send, mut jobs) = unbounded::<Job>();
-    DISPATCHER.with_borrow_mut(|dispatcher| *dispatcher = Some(send));
+    let work = Arc::new(Work::default());
+    DISPATCHER.with_borrow_mut(|dispatcher| {
+        *dispatcher = Some(Dispatcher {
+            jobs: send,
+            work: Arc::clone(&work),
+        });
+    });
     Owner::detached().run(move || {
         drop(spawn(async move {
             while let Some(job) = jobs.next().await {
                 job();
             }
         }));
+        // A root of its own, never disposed: under no owner NSH drops what `on_app_quit` keeps
+        // (its cleanup) at once, and the app's quit would not wait for the work.
+        create_root(move || on_app_quit(move || drain(Arc::clone(&work))));
     });
 }
 
@@ -60,7 +169,7 @@ pub(crate) fn start_dispatcher() {
 /// through it runs on this thread.
 #[cfg(rayx_devtools)]
 pub(crate) fn dispatcher() -> Option<UnboundedSender<Job>> {
-    DISPATCHER.with_borrow(Clone::clone)
+    DISPATCHER.with_borrow(|dispatcher| dispatcher.as_ref().map(|it| it.jobs.clone()))
 }
 
 /// The surface's engine went: what a call through an [`EngineRunner`] gives once the engine
@@ -85,14 +194,23 @@ impl std::error::Error for EngineGone {}
 /// task where NSH's runtime is entered, the call's op inside a synchronous call from JS; queued
 /// where Rust code JS runs outside a call, a stop function say, can start no task); on any
 /// other thread it queues it for the engine, which drains the queue in a task of its own (NSH
-/// wakes the engine for it). Once the engine stops, queued and later work resolves
-/// `Err(EngineGone)`. Nothing ever blocks the engine thread waiting for itself.
+/// wakes the engine for it). Nothing ever blocks the engine thread waiting for itself.
+///
+/// As the app quits, after NSH's quit listeners ran (RayX's suspension service publishes
+/// `Destroying` from one) and before the engine stops, the host runs what is queued and the work
+/// it starts, and what other threads queue meanwhile (a thread that heard `Destroying`, say),
+/// until nothing waits and nothing arrived, ran or ended for 50 ms, within NSH's quit timeout
+/// (`QUIT_TIMEOUT`, 200 ms), 150 ms at most; work still running then is dropped when the engine
+/// stops. A `run` queued after that resolves `Err(EngineGone)` (a `post` is dropped unrun), and
+/// once the engine stopped both give `Err(EngineGone)`.
 #[derive(Clone)]
 pub struct EngineRunner {
     jobs: UnboundedSender<Job>,
     engine: ThreadId,
     /// How many jobs went through the queue.
-    queued: Arc<std::sync::atomic::AtomicU64>,
+    queued: Arc<AtomicU64>,
+    /// The surface's work, which the app's quit waits for.
+    work: Arc<Work>,
 }
 
 impl std::fmt::Debug for EngineRunner {
@@ -109,10 +227,11 @@ impl EngineRunner {
     /// (the app's start starts it).
     pub(crate) fn current() -> Option<Self> {
         DISPATCHER.with_borrow(|dispatcher| {
-            dispatcher.as_ref().map(|jobs| Self {
-                jobs: jobs.clone(),
+            dispatcher.as_ref().map(|dispatcher| Self {
+                jobs: dispatcher.jobs.clone(),
                 engine: std::thread::current().id(),
                 queued: Arc::default(),
+                work: Arc::clone(&dispatcher.work),
             })
         })
     }
@@ -138,9 +257,9 @@ impl EngineRunner {
             // Where NSH's runtime is entered (a task, a component) the work is made now and
             // spawned. Never through the queue.
             let work = make();
-            if start_task(async move {
+            if start_task(self.work.track(async move {
                 let _ = send.send(work.await);
-            })
+            }))
             .is_err()
             {
                 return Box::pin(futures::future::ready(Err(EngineGone)));
@@ -151,13 +270,14 @@ impl EngineRunner {
             // stop function, a finalizer) it is queued, as from another thread.
             let pending = Arc::new(Mutex::new(Some((make, send))));
             let taken = Arc::clone(&pending);
-            let started = start_task(async move {
+            let started = start_task(self.work.track(async move {
                 let pending = taken.lock().unwrap_or_else(PoisonError::into_inner).take();
                 if let Some((make, send)) = pending {
                     let _ = send.send(make().await);
                 }
-            });
+            }));
             if started.is_err() {
+                let tracked = Arc::clone(&self.work);
                 let job = move || {
                     let pending = pending
                         .lock()
@@ -165,9 +285,9 @@ impl EngineRunner {
                         .take();
                     if let Some((make, send)) = pending {
                         let work = make();
-                        let _ = start_task(async move {
+                        let _ = start_task(tracked.track(async move {
                             let _ = send.send(work.await);
-                        });
+                        }));
                     }
                 };
                 if self.queue(Box::new(job)).is_err() {
@@ -175,11 +295,12 @@ impl EngineRunner {
                 }
             }
         } else {
+            let tracked = Arc::clone(&self.work);
             let job = move || {
                 let work = make();
-                let _ = start_task(async move {
+                let _ = start_task(tracked.track(async move {
                     let _ = send.send(work.await);
-                });
+                }));
             };
             if self.queue(Box::new(job)).is_err() {
                 return Box::pin(futures::future::ready(Err(EngineGone)));
@@ -223,11 +344,16 @@ impl EngineRunner {
         }))
     }
 
-    /// Queues `job` for the engine.
+    /// Queues `job` for the engine, waiting (for the app's quit) until it ran.
     fn queue(&self, job: Job) -> Result<(), EngineGone> {
-        self.jobs.unbounded_send(job).map_err(|_| EngineGone)?;
-        self.queued
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let waiting = self.work.arrived();
+        self.jobs
+            .unbounded_send(Box::new(move || {
+                job();
+                drop(waiting);
+            }))
+            .map_err(|_| EngineGone)?;
+        self.queued.fetch_add(1, Ordering::Relaxed);
         Ok(())
     }
 
@@ -235,7 +361,7 @@ impl EngineRunner {
     /// for tests that check the engine thread's work skipped the queue.
     #[doc(hidden)]
     pub fn queued(&self) -> u64 {
-        self.queued.load(std::sync::atomic::Ordering::Relaxed)
+        self.queued.load(Ordering::Relaxed)
     }
 }
 
@@ -423,7 +549,8 @@ impl Notifier {
         Self {
             id,
             engine: std::thread::current().id(),
-            dispatcher: DISPATCHER.with_borrow(Clone::clone),
+            dispatcher: DISPATCHER
+                .with_borrow(|dispatcher| dispatcher.as_ref().map(|it| it.jobs.clone())),
         }
     }
 
