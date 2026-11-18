@@ -10,7 +10,7 @@ Values under keys in named buckets, behind the `KeyValueStore` contract, with JS
 | Crate | `rayx_services_storage` (`rayx::services::storage`) |
 | Feature | `storage` |
 | Rust | `add_storage()`, `add_in_memory_storage()` (`StorageAppBuilderExt`) |
-| TS | `addStorage()`, and the class `KeyValueStore` |
+| TS | `addStorage()`, `addInMemoryStorage()`, and the class `KeyValueStore` |
 | Requires | nothing |
 
 ```rust
@@ -18,7 +18,7 @@ use rayx_services_storage::StorageAppBuilderExt as _;
 
 let builder = RayXAppBuilder::new().add_storage(); // NSH's storage: persistent
 // or .add_in_memory_storage(): in memory, for the app's life
-// TS: new RayXAppBuilder().addStorage()
+// TS: new RayXAppBuilder().addStorage(), or .addInMemoryStorage()
 ```
 
 Each registers RayX's implementation as the app's `dyn KeyValueStore`, replacing any earlier registration of it:
@@ -26,7 +26,7 @@ Each registers RayX's implementation as the app's `dyn KeyValueStore`, replacing
 - `add_storage()` registers a store on NSH's storage, a startup service that loads what the device holds when the
   app starts (see [On NSH](#on-nsh)); its values persist.
 - `add_in_memory_storage()` registers an `InMemoryKeyValueStore` (not a startup service); its values live as long as
-  the app. TS has no counterpart.
+  the app; TS's `addInMemoryStorage()` registers the same.
 
 The TS side is there once the crate's set is registered: `#[rayx::native_module]` with the `storage` feature on, or
 `rayx_services_storage::register(registry)` by hand.

@@ -16,7 +16,7 @@ the feature `<name>`. The features marked default are the four services the NSH 
 | [Suspension](services/suspension.md) | The app's lifecycle, focus and visibility, the system's wakes, quitting | `suspension` (default) | `add_suspension()`; `addSuspension()` | | |
 | [Assets](services/assets.md) | The packages' files, from a manifest, as `asset:/` URLs | `assets` (default) | `add_assets(..)`; `addAssets(..)` | | `RayX:Services:Assets` |
 | [Fonts](services/fonts.md) | Fonts registered at run time, and aliases | `fonts` (default) | `add_fonts(..)`; `addFonts(..)` | assets | `RayX:Services:Fonts` |
-| [Storage](services/storage.md) | Values by bucket and key, persisted on NSH | `storage` | `add_storage()`, `add_in_memory_storage()`; `addStorage()` | | |
+| [Storage](services/storage.md) | Values by bucket and key, persisted on NSH | `storage` | `add_storage()`, `add_in_memory_storage()`; `addStorage()`, `addInMemoryStorage()` | | |
 | [Navigation](services/navigation.md) | Routes, regions with journals, one location for the app | `navigation` | `add_navigation(..)`; `addNavigation(..)` | | `RayX:Services:Navigation` |
 | [I18n](services/i18n.md) | MessageFormat 2 translations; numbers, dates and plurals for the user's locale | `i18n` | `add_i18n(..)`, `add_message_formatter()`; `addI18n(..)`, `addMessageFormatter()` | assets, platform | `RayX:Services:I18N` |
 | [Operations](services/operations.md) | Typed domain operations applied to targets, with inverses | `operations` | `add_operations()`; `addOperations()` | | |

@@ -7,7 +7,7 @@
 //!
 //! - Rust: `RayXAppBuilder::new().add_storage()` ([`StorageAppBuilderExt`]), then
 //!   `services.required_service::<dyn KeyValueStore>()`.
-//! - TS: `new RayXAppBuilder().addStorage()`, with the class [`KeyValueStore`] over whichever
+//! - TS: `new RayXAppBuilder().addStorage()` (or `addInMemoryStorage()`), with the class [`KeyValueStore`] over whichever
 //!   `dyn KeyValueStore` is registered (the contract's token).
 //! - The app's set: [`register`].
 
@@ -38,7 +38,7 @@ pub const STORAGE_CAPABILITIES: TsAlias = TsAlias {
 
 /// Adds the storage's TS side to an app's set: its class [`KeyValueStore`], the contract a TS
 /// implementation follows (the TS interface `KeyValueStoreContract`, [`KeyValueStoreContract`]
-/// in Rust) and `builder.addStorage()`.
+/// in Rust), `builder.addStorage()` and `builder.addInMemoryStorage()`.
 pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(STORAGE_CAPABILITIES)

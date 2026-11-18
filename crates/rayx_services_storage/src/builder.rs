@@ -75,4 +75,12 @@ impl StorageBuilder {
     pub fn add_storage(this: Instance<RayXAppBuilder>) -> Result<Instance<RayXAppBuilder>, String> {
         RayXAppBuilder::extend_with(this, StorageAppBuilderExt::add_storage)
     }
+
+    /// Registers a key-value store kept in memory for the app's life as the app's key-value
+    /// store, replacing any other: nothing persists.
+    pub fn add_in_memory_storage(
+        this: Instance<RayXAppBuilder>,
+    ) -> Result<Instance<RayXAppBuilder>, String> {
+        RayXAppBuilder::extend_with(this, StorageAppBuilderExt::add_in_memory_storage)
+    }
 }
