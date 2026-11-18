@@ -503,22 +503,53 @@ impl StartupRegistry {
         ))
     }
 
+    /// Adds the shared `service` registered as `T` (a `dyn Trait` it implements, say), keyed by
+    /// its [`StartupInitializable::startup_service_type`], else by `T`: what
+    /// [`ServiceProvider::add_startup_singleton_for`] adds. Any startup service registered as `T`
+    /// before is removed.
+    pub fn add_shared_as<T, I>(&mut self, service: Arc<I>) -> &mut Self
+    where
+        T: ?Sized + 'static,
+        I: StartupInitializable + ?Sized,
+    {
+        let registered_as = StartupServiceType::of::<T>();
+        self.remove_registered(&registered_as);
+        self.push(KeyedStartupService::new(
+            Arc::new(SharedStartupService { service }),
+            registered_as,
+        ))
+    }
+
     /// Adds the startup service `T`, resolved from the run's provider when startup runs and keyed
     /// by its [`StartupInitializable::startup_service_type`], else by `T`.
     pub fn add_resolved<T>(&mut self) -> &mut Self
     where
         T: StartupInitializable + ?Sized,
     {
-        let service_type = StartupServiceType::of::<T>();
+        self.add_resolved_with(StartupServiceType::of::<T>(), |services| {
+            services
+                .required_service::<T>()
+                .map(|service| -> StartupService { Arc::new(SharedStartupService { service }) })
+        })
+    }
+
+    /// Adds the startup service `resolve` gives from the run's provider when startup runs,
+    /// registered as `service_type`.
+    pub(crate) fn add_resolved_with(
+        &mut self,
+        service_type: StartupServiceType,
+        resolve: impl Fn(&ServiceProvider) -> Result<StartupService, super::ServiceResolutionError>
+        + Send
+        + Sync
+        + 'static,
+    ) -> &mut Self {
+        let key = service_type.clone();
         self.add_factory(
-            service_type.clone(),
+            service_type,
             move |context| {
-                let resolved = context
-                    .services()
-                    .required_service::<T>()
-                    .map(|service| -> StartupService { Arc::new(SharedStartupService { service }) })
-                    .map_err(|error| StartupInitializationFailure {
-                        service: service_type.clone(),
+                let resolved =
+                    resolve(context.services()).map_err(|error| StartupInitializationFailure {
+                        service: key.clone(),
                         message: error.to_string(),
                         timed_out: false,
                     });
@@ -579,6 +610,16 @@ impl StartupRegistry {
     /// The services added already made (not those a factory makes when startup runs).
     pub fn services(&self) -> Vec<StartupService> {
         self.services.iter().map(Self::erased).collect()
+    }
+
+    /// Removes every startup service registered as `service_type` (added already made, or by a
+    /// factory): what registering a service under that key does, so the last registration of a
+    /// key wins.
+    pub(crate) fn remove_registered(&mut self, service_type: &StartupServiceType) {
+        self.services
+            .retain(|service| service.registered_as != *service_type);
+        self.factories
+            .retain(|factory| factory.service_type != *service_type);
     }
 
     pub(crate) fn remove(&mut self, service_type: StartupServiceType) {

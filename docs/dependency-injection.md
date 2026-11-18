@@ -51,7 +51,9 @@ new RayXAppBuilder()
 - `add_singleton`, `add_scoped`, `add_transient` register a type; the `_as` forms (`add_singleton_as::<dyn Trait>(..)`)
   register it as a trait object.
 - `add_startup_singleton`, `add_startup_scoped`, `add_startup_transient` (and their `_as` forms) register a service
-  that initializes asynchronously before the app is ready.
+  that initializes asynchronously before the app is ready; `add_startup_singleton_for::<dyn Trait, Impl>(..)` (and its
+  factory, scoped and transient forms) registers an implementation of a trait, a contract say, as the trait and as a
+  startup service registered as it ([Startup](startup.md#implementing-a-trait)).
 - Service crates add their own builder extensions on the `AppBuilder` trait (`add_history()`,
   `add_navigation(..)`, …), so an app registers a whole feature in one call. Each registers its service as the app's
   `dyn Trait`, replacing any registered before; an app that wants its own implementation registers it instead

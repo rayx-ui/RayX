@@ -40,6 +40,45 @@ where
     }
 }
 
+/// `Self` (a `dyn Trait`) as the implementation `I` is seen through: what
+/// [`ServiceProvider::add_startup_singleton_for`] registers `I` under. A contract
+/// (`#[contract]`) implements it for every implementation; for a trait of your own, write
+/// `rayx_app::implemented_by!(MyTrait);` beside it.
+pub trait ImplementedBy<I> {
+    /// `service` as `Self`.
+    fn upcast(service: Arc<I>) -> Arc<Self>;
+}
+
+/// Implements [`ImplementedBy`] for `dyn Trait` and every implementation of `Trait` that is
+/// `'static`: `rayx_app::implemented_by!(MyTrait);`, beside the trait (a contract has it
+/// already). Then `add_startup_singleton_for::<dyn MyTrait, _>(..)` registers an implementation.
+#[macro_export]
+macro_rules! implemented_by {
+    ($($trait:ident)::+) => {
+        impl<__RayxImplementation> $crate::di::ImplementedBy<__RayxImplementation>
+            for dyn $($trait)::+
+        where
+            __RayxImplementation: $($trait)::+ + 'static,
+        {
+            fn upcast(
+                service: ::std::sync::Arc<__RayxImplementation>,
+            ) -> ::std::sync::Arc<Self> {
+                service
+            }
+        }
+    };
+}
+
+/// What a startup service of the `*_for` forms is resolved as and initialized through: one
+/// value, seen as `T` and as a startup service.
+struct StartupFor<T>
+where
+    T: ?Sized,
+{
+    service: Arc<T>,
+    startup: super::lifecycle::StartupService,
+}
+
 pub trait IntoSingletonService<T>: IntoServiceArc<T>
 where
     T: ?Sized + DiReady,
@@ -276,6 +315,17 @@ impl ServiceProvider {
     /// Whether anything is registered under `key`.
     pub(crate) fn contains_key(&self, key: &ServiceKey) -> bool {
         self.services.contains_key(key)
+    }
+
+    /// What registering a service under `T` does first: removes the startup services
+    /// registered as `T`, so the last registration of a key wins (a registration that is a
+    /// startup service adds its own after).
+    fn registering<T>(&mut self)
+    where
+        T: ?Sized + 'static,
+    {
+        self.startup
+            .remove_registered(&StartupServiceType::of::<T>());
     }
 
     pub fn try_add_service_factory<T>(
@@ -758,6 +808,123 @@ impl ServiceProvider {
         service
     }
 
+    /// [`Self::add_startup_singleton_for`], for chaining.
+    pub fn with_startup_singleton_for<T, I>(mut self, service: Arc<I>) -> Self
+    where
+        T: ?Sized + DiReady + ImplementedBy<I>,
+        I: StartupInitializable,
+    {
+        self.add_startup_singleton_for::<T, I>(service);
+        self
+    }
+
+    /// Registers `service`, an implementation `I` of `T` (a `dyn Trait`: a contract, or a trait
+    /// with [`implemented_by!`](crate::implemented_by)), as the singleton `T` and as a startup
+    /// service registered as `T`: resolved as `T`, initialized when startup runs, keyed by its
+    /// own [`StartupInitializable::startup_service_type`], else by `T`, so startup services
+    /// depending on `T` wait for it. What `add_startup_singleton_as::<dyn Trait>` cannot do (a
+    /// trait without `StartupInitializable` as a supertrait). Like every registration of `T`,
+    /// it replaces the startup services registered as `T` before, and a later registration of
+    /// `T` removes it.
+    pub fn add_startup_singleton_for<T, I>(&mut self, service: Arc<I>) -> Arc<I>
+    where
+        T: ?Sized + DiReady + ImplementedBy<I>,
+        I: StartupInitializable,
+    {
+        self.registering::<T>();
+        self.services.insert(T::upcast(Arc::clone(&service)));
+        self.startup.add_shared_as::<T, I>(Arc::clone(&service));
+        service
+    }
+
+    /// [`Self::add_startup_singleton_for`] for the implementation `factory` makes on first
+    /// resolve (or when startup runs, whichever is first).
+    pub fn add_startup_singleton_factory_for<T, I>(
+        &mut self,
+        factory: impl Fn(&ServiceProvider) -> Arc<I> + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: ?Sized + DiReady + ImplementedBy<I>,
+        I: StartupInitializable,
+    {
+        self.add_startup_for::<T, I>(ServiceLifetime::Singleton, factory)
+    }
+
+    /// [`Self::add_startup_singleton_factory_for`] for a scoped service: one implementation per
+    /// scope; startup initializes the root scope's.
+    pub fn add_startup_scoped_for<T, I>(
+        &mut self,
+        factory: impl Fn(&ServiceProvider) -> Arc<I> + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: ?Sized + DiReady + ImplementedBy<I>,
+        I: StartupInitializable,
+    {
+        self.add_startup_for::<T, I>(ServiceLifetime::Scoped, factory)
+    }
+
+    /// [`Self::add_startup_singleton_factory_for`] for a transient service: a new implementation
+    /// per resolve; startup initializes one it makes.
+    pub fn add_startup_transient_for<T, I>(
+        &mut self,
+        factory: impl Fn(&ServiceProvider) -> Arc<I> + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: ?Sized + DiReady + ImplementedBy<I>,
+        I: StartupInitializable,
+    {
+        self.add_startup_for::<T, I>(ServiceLifetime::Transient, factory)
+    }
+
+    /// The `*_for` factory forms: `T` resolves through one hidden registration that makes the
+    /// implementation once per `lifetime`, seen as `T` and as a startup service.
+    fn add_startup_for<T, I>(
+        &mut self,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&ServiceProvider) -> Arc<I> + Send + Sync + 'static,
+    ) -> &mut Self
+    where
+        T: ?Sized + DiReady + ImplementedBy<I>,
+        I: StartupInitializable,
+    {
+        self.registering::<T>();
+        let both = move |services: &ServiceProvider| {
+            let service = factory(services);
+            Arc::new(StartupFor::<T> {
+                service: T::upcast(Arc::clone(&service)),
+                startup: service,
+            })
+        };
+        let as_t = |services: &ServiceProvider| {
+            let both = services
+                .required_service::<StartupFor<T>>()
+                .unwrap_or_else(|error| panic!("{error}"));
+            Arc::clone(&both.service)
+        };
+        match lifetime {
+            ServiceLifetime::Singleton => {
+                self.services
+                    .insert_singleton_factory::<StartupFor<T>>(both);
+                self.services.insert_singleton_factory::<T>(as_t);
+            }
+            ServiceLifetime::Scoped => {
+                self.services.insert_scoped::<StartupFor<T>>(both);
+                self.services.insert_scoped::<T>(as_t);
+            }
+            ServiceLifetime::Transient => {
+                self.services.insert_transient::<StartupFor<T>>(both);
+                self.services.insert_transient::<T>(as_t);
+            }
+        }
+        self.startup
+            .add_resolved_with(StartupServiceType::of::<T>(), |services| {
+                services
+                    .required_service::<StartupFor<T>>()
+                    .map(|both| Arc::clone(&both.startup))
+            });
+        self
+    }
+
     pub fn with_startup_scoped<T>(
         mut self,
         factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,
@@ -894,6 +1061,20 @@ impl ServiceProvider {
         T: StartupInitializable + ?Sized,
     {
         self.startup.add_shared(service);
+        self
+    }
+
+    /// Adds `service` to the startup run only (no registration to resolve), registered as `T`
+    /// (a `dyn Trait` it stands for, say): keyed by its own
+    /// [`StartupInitializable::startup_service_type`], else by `T`, and removed, like every
+    /// startup service registered as `T`, when `T` is registered again. Any startup service
+    /// registered as `T` before is removed.
+    pub fn add_startup_service_for<T, I>(&mut self, service: Arc<I>) -> &mut Self
+    where
+        T: ?Sized + 'static,
+        I: StartupInitializable + ?Sized,
+    {
+        self.startup.add_shared_as::<T, I>(service);
         self
     }
 

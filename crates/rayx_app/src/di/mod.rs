@@ -23,7 +23,8 @@ pub use lifecycle::{
     StartupRegistry, StartupService, StartupServiceError, StartupServiceFuture, StartupServiceType,
 };
 pub use provider::{
-    IntoServiceArc, IntoSingletonService, ServiceProvider, WeakServiceProvider, default_provider,
+    ImplementedBy, IntoServiceArc, IntoSingletonService, ServiceProvider, WeakServiceProvider,
+    default_provider,
 };
 pub use registry::{ServiceLifetime, ServiceRegistry, ServiceResolutionError};
 pub use validation::{ServiceValidationError, ServiceValidationProblem};

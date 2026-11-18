@@ -469,12 +469,28 @@ pub(crate) fn expand_mode(
         }
     };
 
+    // `dyn Trait` as every implementation is seen through, for
+    // `add_startup_singleton_for::<dyn Trait, _>`.
+    let implemented_by = quote! {
+        impl<__RayxImplementation> #app::di::ImplementedBy<__RayxImplementation> for dyn #name
+        where
+            __RayxImplementation: #name + 'static,
+        {
+            fn upcast(
+                service: ::std::sync::Arc<__RayxImplementation>,
+            ) -> ::std::sync::Arc<Self> {
+                service
+            }
+        }
+    };
+
     if let Mode::Core = mode {
         // What a service crate expands the NSH side from: the trait as written.
         let descriptor = format_ident!("__rayx_contract_descriptor_{}", name);
         let ts_value = ts.as_ref().map(syn::LitStr::value).unwrap_or_default();
         return Ok(quote! {
             #public_trait
+            #implemented_by
 
             #[doc(hidden)]
             #[macro_export]
@@ -513,13 +529,14 @@ pub(crate) fn expand_mode(
             quote!(),
         ),
     };
-    let public_trait = match mode {
-        Mode::External { .. } => quote!(),
-        _ => public_trait,
+    let (public_trait, implemented_by) = match mode {
+        Mode::External { .. } => (quote!(), quote!()),
+        _ => (public_trait, implemented_by),
     };
 
     Ok(quote! {
         #public_trait
+        #implemented_by
         #marker_def
 
         #[doc(hidden)]

@@ -65,6 +65,31 @@ class Catalog implements StartupInitializable {
 builder.addStartupSingleton(Catalog, () => new Catalog());
 ```
 
+## Implementing a trait
+
+A contract (or any `dyn Trait`) is not `StartupInitializable`, so `add_startup_singleton_as::<dyn Trait>` cannot
+register an implementation of it that loads at the start. `add_startup_singleton_for::<dyn Trait, Impl>(Arc<Impl>)`
+does: it registers `Impl` as the app's `dyn Trait` and as a startup service registered as `dyn Trait`, keyed by its own
+`startup_service_type()`, else `dyn Trait`, so the services that wait for the trait wait for it:
+
+```rust
+struct KeychainStore { /* … */ }
+impl KeyValueStore for KeychainStore { /* … */ }
+impl AsyncInitializable for KeychainStore { /* opens the keychain */ }
+impl StartupInitializable for KeychainStore {}
+
+builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore::new()))
+```
+
+- `add_startup_singleton_factory_for::<dyn Trait, Impl>(|services| Arc::new(..))` makes it on first resolve (or when
+  startup runs); `add_startup_scoped_for` and `add_startup_transient_for` are its scoped and transient forms.
+- `add_startup_service_for::<dyn Trait, _>(Arc::new(..))` adds a startup service registered as the trait without
+  registering anything to resolve (`add_suspension()` follows NSH's app state this way beside its service).
+- Every contract can be registered this way (`#[contract]` implements `ImplementedBy` for it); a plain trait of the
+  app's needs `rayx::app::implemented_by!(MyTrait);` beside it.
+- An async factory form is not offered: the trait resolves synchronously, before startup has run, so its value must
+  exist by then; `add_startup_resolved_async` makes a startup service asynchronously, without a value to resolve.
+
 A startup service that is not a Rust type is keyed by a runtime key (`StartupServiceType::runtime(&key)`) and may be
 made asynchronously when startup runs: `add_startup_resolved_async(&key, |context| async { … }.boxed_local())`. It is
 ordered, initialized, timed and reported (by the key's display name) with every other startup service, and it may wait
