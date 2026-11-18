@@ -4,7 +4,7 @@ agentx:
   scope: decisions
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-15T18:45:00+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
     - decisions
   supersedes: []
@@ -13,7 +13,9 @@ agentx:
 # RayX memory: decisions index
 
 Repository decisions, the second tier of evidence after source. Path:
-`decisions/<domain>/<subdomain>/YYYY-MM-DD-<domain>-<subdomain>-<topic>.md`.
+`decisions/<domain>/<subdomain>/YYYY-MM-DD-<domain>-<subdomain>-<topic>.md`. A decision drafted
+from an open epic's design sits at its final path with `promoted_from: <epic-id>` and says so in
+its status line; AgentX promotes it when the epic closes.
 
 The CLI's standing decisions live in the repository docs, not here:
 [docs/cli/decisions.md](../../../docs/cli/decisions.md) and the decision log D1 to D15 in
@@ -22,4 +24,6 @@ The CLI's standing decisions live in the repository docs, not here:
 | Decision | Domain | Status |
 | --- | --- | --- |
 | [Memory taxonomy](governance/memory/2026-11-04-governance-memory-taxonomy.md) | governance/memory | current (2026-11-04) |
-| [One app builder API in Rust and TypeScript](app/tsx/2026-11-15-app-tsx-builder-parity.md) | app/tsx | current (2026-11-15) |
+| [One app builder API in Rust and TypeScript](app/tsx/2026-11-15-app-tsx-builder-parity.md) | app/tsx | current (2026-11-15); superseded by the next row when `service-crates` closes |
+| [One app builder extended by crates, contracts callable from any thread](app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md) | app/tsx | draft of `service-crates`, promoted when it closes (2026-11-17) |
+| [RayX's crates: core, NSH host, a crate per service, umbrella features](runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) | runtime/service-crates | draft of `service-crates`, promoted when it closes (2026-11-16) |
