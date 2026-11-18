@@ -21,9 +21,11 @@ which an app may replace with its own in Rust or TS.
 
 ## Current Technical Shape
 
-Twelve crates `crates/rayx_services_<name>`: `platform`, `suspension`, `assets`, `fonts` (the
+Thirteen crates `crates/rayx_services_<name>`: `platform`, `suspension`, `assets`, `fonts` (the
 four the host requires, the umbrella's default features), `storage`, `navigation`, `i18n`,
-`operations`, `history`, `selection`, `input_map`, `application_configuration`. Each holds:
+`operations`, `history`, `selection`, `input_map`, `application_configuration`, `theme` (since
+epic theme-roles: `ThemeService` on NSH, the system's light/dark and contexts on request;
+`rayx new` enables it). Each holds:
 
 - RayX's implementation (`service.rs` and its helpers) and its options;
 - the NSH side (`nsh_*.rs`: NSH storage, asset reader, font registrar, location, …) and the TS
