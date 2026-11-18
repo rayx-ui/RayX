@@ -117,6 +117,18 @@ it), and `crates/rayx_cli/tests/ci_workflow.rs` fails for a feature-gated group 
 `crates/rayx/tests/crate_layout.rs` checks the crates, their folders and the dependency rules
 above.
 
+Focused runs resolve features for the whole workspace, as `cargo test --workspace` does:
+`RUSTC_BOOTSTRAP=1 cargo wtest -p <crate> --test <feature>`, and `cargo wclippy` and `cargo wcheck`
+the same way (`.cargo/config.toml`). Plain `cargo test -p` builds NSH in another feature set for
+almost every crate, so moving between crates rebuilds NSH and everything above it. Set
+`RUSTC_BOOTSTRAP=1` on that one command only (PowerShell: `$env:RUSTC_BOOTSTRAP=1; cargo wtest …;
+$env:RUSTC_BOOTSTRAP=$null`), never in a shell profile: inside RayX, `.cargo/config.toml` gives
+rustc and build scripts `-1`, so the compiler stays stable 1.99, but another repository would
+compile with nightly features. An AgentX check runs the alias as its `argv` with
+`"environment": {"RUSTC_BOOTSTRAP": "1"}`. The list above stays plain `cargo`, as CI runs it, and
+so does the wasm32 check, which must not pick up the workspace's std features. Dev and test builds
+keep line tables only (`[profile.dev]`), and Windows links with `rust-lld`.
+
 Raw diagnostic output goes to the ignored `artifacts-temp/`, never into commits.
 
 ## The CLI

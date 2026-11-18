@@ -1,0 +1,27 @@
+# Cargo settings for building inside the RayX repository (apps and consumers have their own).
+
+# Windows links with the LLD that ships with the toolchain instead of MSVC's link.exe: relinking
+# rayx_app_nsh's test binaries after an edit takes about a quarter less time. Other targets keep
+# their defaults (rust-lld on x86_64 Linux, Apple's ld on macOS).
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"
+
+# rustc and build scripts always see RUSTC_BOOTSTRAP=-1, so the compiler behaves exactly as
+# stable 1.99 even when cargo itself runs with RUSTC_BOOTSTRAP=1 for the `w*` aliases below.
+# Build scripts such as proc-macro2's, anyhow's and thiserror's turn on unstable APIs when they
+# see RUSTC_BOOTSTRAP=1, and rebuild everything above them whenever its value changes.
+[env]
+RUSTC_BOOTSTRAP = { value = "-1", force = true }
+
+# The `w*` commands resolve features for the whole workspace, as `cargo test --workspace` and CI
+# do, whichever packages they select. Without them each `-p` selection builds NSH in its own
+# feature set (`rayx_app_nsh`'s `testing`, `default` on nsh-base and nsh-js, `inspect`), so moving
+# between crates rebuilds NSH and everything above it. Feature unification is unstable in cargo
+# 1.99: run them with RUSTC_BOOTSTRAP=1 for that one command, for example
+# `RUSTC_BOOTSTRAP=1 cargo wtest -p rayx_app_nsh --test nsh_layer`. Never set it in a shell
+# profile, because other repositories would then compile with nightly features. The wasm32 check
+# stays plain `cargo`: workspace features would add std features the wasm32 build must not need.
+[alias]
+wtest = ["test", "-Zfeature-unification", "--config", "resolver.feature-unification=\"workspace\""]
+wclippy = ["clippy", "-Zfeature-unification", "--config", "resolver.feature-unification=\"workspace\""]
+wcheck = ["check", "-Zfeature-unification", "--config", "resolver.feature-unification=\"workspace\""]
