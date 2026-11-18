@@ -30,7 +30,16 @@ class extensions, methods a crate adds to another crate's `#[class]`, #273, and 
 `afdeb025d`; `-7` reads JS properties and interface getters between JS turns and adds
 `runtime_entered()` and `start_task()`, #274).
 The CLI's built-in default nsh is the same tag (`crates/rayx_cli/src/project/pins.rs`, checked by
-`tests/nsh_pin_rayx.rs`), and so is the gallery's `.cargo/config.toml`; the three move together.
+`tests/nsh_pin_rayx.rs`), and so is the gallery's `.cargo/config.toml`; the three move together,
+and `rayx nshx use <tag>` moves them.
+
+While NSH and RayX change together, `rayx nshx use local` points the patch lines of `Cargo.toml`
+and the gallery's `.cargo/config.toml` at the fork's checkout beside RayX
+(`../../dXn/nsh/nsh/crates/<crate>` from RayX's root, relative, never absolute) and moves the
+`nsh-*` requirements to the checkout's version; the default pin stays the last tag. Since
+2026-11-19 `main` builds NSH that way, from the fork's checkout at `c9bf1fe9a` (NSH 0.6.0, after
+the upstream sync #276 and #277), so it builds only where that checkout sits beside RayX, and
+`tests/nsh_pin_rayx.rs` fails until `rayx nshx use <tag>` moves RayX back to a tag.
 
 ## Backlinks
 
