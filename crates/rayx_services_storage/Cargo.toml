@@ -17,6 +17,12 @@ rayx_app_nsh.workspace = true
 nsh-core.workspace = true
 base64.workspace = true
 futures = { workspace = true, features = ["std"] }
+getrandom.workspace = true
+
+# Entropy for the store's id in a browser: the page's Web Crypto. An NSH web build selects
+# getrandom's custom backend (NSH's), which takes precedence.
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+getrandom = { workspace = true, features = ["wasm_js"] }
 
 [dev-dependencies]
 rayx_app_nsh = { workspace = true, features = ["testing"] }

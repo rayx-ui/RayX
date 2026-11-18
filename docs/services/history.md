@@ -73,7 +73,8 @@ waits for: where it keeps each scope's journal (`HistoryJournalV2`), with `InMem
 with `Conflict`, a delete answers `false`), so a journal another history saved meanwhile is never overwritten or
 deleted. `InMemoryHistoryStore` makes the step under its own lock. `KeyValueHistoryStore` makes it under a lock of the
 scope in its key-value store, shared by every `KeyValueHistoryStore` in the process over that store, so it holds for
-the histories of every window, surface and app instance of one process that use one `dyn KeyValueStore`. Over separate
+the histories of every window, surface and app instance of one process that use one `dyn KeyValueStore`; RayX's NSH
+store (`add_storage()`) is one per NSH storage in the process, so the surfaces over one storage share it. Over separate
 key-value stores, and across processes, it does not hold: a `KeyValueStore` has no compare step (none of RayX's has
 one), so two of them writing one scope's journal into one storage can overwrite or delete each other's. Those
 histories need a store of the app's with a real compare-and-swap (a `HistoryStore`, or a TS `HistoryStoreContract`,

@@ -2,7 +2,8 @@
 //! [`rayx_app::services::storage::KeyValueStore`]. `add_storage()` keeps the app's values in
 //! NSH's storage (the device's: a file in the app's data directory, the browser's
 //! `localStorage`), persistent and reachable from any thread (its calls to NSH go through the
-//! surface's engine runner), written out as the app quits; `add_in_memory_storage()` keeps them
+//! surface's engine runner), written out as the app quits, one store per NSH storage in the
+//! process (the surfaces over one storage share it); `add_in_memory_storage()` keeps them
 //! in memory for the app's life ([`InMemoryKeyValueStore`]).
 //!
 //! - Rust: `RayXAppBuilder::new().add_storage()` ([`StorageAppBuilderExt`]), then

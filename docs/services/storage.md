@@ -92,6 +92,14 @@ initialize after; a call before that loads it through the surface's engine runne
 - as the app quits, the store writes what still waits: it hears the app's `dyn SuspensionService` (when there is
   one) publish `Destroying` and `Destroyed`, so what the app saves as it hears `Destroying` reaches the device.
 
+The store is one per NSH storage in the process. NSH shares one storage between the surfaces (windows, engines) it is
+given the same backend for, and the providers of all of them resolve the same `dyn KeyValueStore`: one mirror,
+written in order, so each surface reads what another wrote at once, and what locks on the store (history's journals)
+locks across them. A write that waits is written by any surface over the storage whose engine still runs, and each
+surface's app writes what waits as it quits. A surface finds its storage's store by an id the store keeps in it, at
+`rayx/.store` (outside every bucket); a surface over another storage (another backend, another data directory) has a
+store of its own.
+
 ## TSX
 
 `KeyValueStore`, resolved from the provider `start()` gives, wraps whichever `dyn KeyValueStore` is registered. Its

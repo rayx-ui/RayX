@@ -11,22 +11,24 @@ use rayx_app_nsh::EngineRunner;
 use rayx_app_nsh::ts::RayXAppBuilder;
 
 use crate::memory::InMemoryKeyValueStore;
-use crate::nsh_store::NshKeyValueStore;
+use crate::nsh_store::{NshKeyValueStore, StorageStartup};
 
 /// Registers RayX's key-value store on an app builder.
 pub trait StorageAppBuilderExt: AppBuilder {
     /// Registers RayX's store on NSH's storage as the app's `dyn KeyValueStore`, replacing any
     /// other: a startup service that loads what the device's storage holds on the engine thread
     /// when the app starts, then reads and writes from any thread, and writes what waits as the
-    /// app quits (heard through the app's `dyn SuspensionService`). Its values persist.
+    /// app quits (heard through the app's `dyn SuspensionService`). Its values persist. The
+    /// providers of every surface (window, engine) over one NSH storage in the process resolve
+    /// the same store, so they read each other's writes.
     fn add_storage(mut self) -> Self {
         let services = self.services_mut();
         services.replace_service_factory_as::<NshKeyValueStore>(|services| {
-            Arc::new(NshKeyValueStore::new(
+            NshKeyValueStore::resolve(
                 services
                     .service::<EngineRunner>()
                     .map(|runner| (*runner).clone()),
-            ))
+            )
         });
         // Replaced before the startup service is added: replacing `dyn KeyValueStore` drops the
         // startup services keyed by it.
@@ -35,17 +37,26 @@ pub trait StorageAppBuilderExt: AppBuilder {
                 .required_service::<NshKeyValueStore>()
                 .unwrap_or_else(|error| panic!("RayX's key-value store is registered: {error}"))
         });
+        services.replace_service_factory_as::<StorageStartup>(|services| {
+            Arc::new(StorageStartup::new(
+                services
+                    .required_service::<NshKeyValueStore>()
+                    .unwrap_or_else(|error| {
+                        panic!("RayX's key-value store is registered: {error}")
+                    }),
+            ))
+        });
         services.add_startup_resolved_async(
             StartupServiceType::of::<dyn KeyValueStore>(),
             |context| {
-                let store = context.services().required_service::<NshKeyValueStore>();
+                let startup = context.services().required_service::<StorageStartup>();
                 Box::pin(async move {
-                    let store = store.map_err(|error| StartupInitializationFailure {
+                    let startup = startup.map_err(|error| StartupInitializationFailure {
                         service: StartupServiceType::of::<dyn KeyValueStore>(),
                         message: error.to_string(),
                         timed_out: false,
                     })?;
-                    Ok(store as StartupService)
+                    Ok(startup as StartupService)
                 })
             },
         );

@@ -25,7 +25,9 @@ pub const HISTORY_BUCKET: &str = "rayx.history";
 /// A save or a delete checks the scope's stored revision and writes in one step, under a lock
 /// of the scope in the key-value store shared by every `KeyValueHistoryStore` in the process
 /// over that store: histories of separate windows, surfaces and app instances in one process
-/// over one `dyn KeyValueStore` never overwrite or delete a journal another wrote meanwhile.
+/// over one `dyn KeyValueStore` never overwrite or delete a journal another wrote meanwhile
+/// (RayX's NSH store, `add_storage()`, is one per NSH storage, so the surfaces over one storage
+/// share it).
 /// Over separate key-value stores, or across processes, the step is not atomic: a
 /// [`KeyValueStore`] has no compare step.
 #[derive(Clone)]
