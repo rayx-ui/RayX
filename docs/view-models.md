@@ -15,12 +15,13 @@ let vm = use_view_model::<TodoViewModel>()?; // resolved in the screen's scope, 
 The view model implements `ActivatableViewModel` and is registered like any other service, usually scoped so each
 screen gets its own. For a TSX screen, a Rust bridge takes the screen's scope (the `ServiceProvider` that
 `services.createScope()` makes) as an `Instance<ServiceProvider>` and resolves in it; the view model stays active until
-the scope is disposed:
+the scope is disposed (`TodoBridge`, in the fragment below, is that bridge, the app's class):
 
 ```rust
 let vm = scope.with_mut(|scope| scope.view_model::<TodoViewModel>())?;
 ```
 
+<!-- tsx: fragment -->
 ```tsx
 const scope = services.createScope();      // on the screen's mount
 const todos = TodoBridge.viewModel(scope); // the bridge above

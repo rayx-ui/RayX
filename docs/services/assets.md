@@ -136,8 +136,11 @@ read-only, and a session restart reads them again (no hot reload).
 - `urlForScale(path, scale)`: its variant's for a pixel ratio.
 
 ```tsx
-const assets = services.getRequiredService(AssetService);
-const logo = assets.url("images/logo.png"); // asset:/@my-app/images/logo.png
+// With the provider `start()` gives:
+function logoUrl(services: ServiceProvider) {
+  const assets = services.getRequiredService(AssetService);
+  return assets.url("images/logo.png"); // asset:/@my-app/images/logo.png
+}
 ```
 
 ## Replace it
@@ -162,13 +165,16 @@ logical path), the commands `async` methods, `clearCache()` a plain one. `loadBy
 another typed array or `ArrayBuffer`) or a `number[]`.
 
 ```tsx
-class MyAssets {
-  catalog = new ContractState(null);
+declare function readFile(path: string): Promise<Uint8Array>; // the app's own file access
+declare function readTextFile(path: string): Promise<string>;
+
+class MyAssets implements AssetServiceContract {
+  catalog = new ContractState<AssetCatalog | null>(null);
   isInitialized() { return this.catalog.value !== null; }
   async initialize() { await this.loadCatalog(); }
   async loadCatalog() { this.catalog.publish({ packages: ["app"], entries: { /* ... */ }, diagnostics: [] }); }
-  async loadBytes(path) { /* the file's bytes */ }
-  async loadText(path) { /* the file's text */ }
+  async loadBytes(path: string) { return readFile(path); }
+  async loadText(path: string) { return readTextFile(path); }
   clearCache() {}
 }
 

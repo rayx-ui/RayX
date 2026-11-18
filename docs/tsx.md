@@ -124,8 +124,10 @@ scoped services it resolved and deactivates the view models activated through it
 **Identity.** A TS singleton is one JS object per root, so `===` holds across every scope. A RayX service's class is a
 wrapper each provider makes around the Rust service: `===` holds for a singleton resolved twice through the same
 provider, but the root and a scope give two wrappers of the one Rust singleton. Compare Rust services by identity only
-within one provider; the wrappers behave the same, since they share the Rust service.
+within one provider; the wrappers behave the same, since they share the Rust service. A screen's scope (a fragment:
+`services` is the root, `EditorState` one of the app's scoped services):
 
+<!-- tsx: fragment -->
 ```tsx
 const scope = services.createScope(); // on a screen's mount
 const editor = scope.getRequiredService(EditorState);
@@ -158,12 +160,16 @@ listener (it also stops when the reactive owner of the call goes, or the object 
 | `ApplicationConfigurationService` | `dyn ApplicationConfigurationService` | `current()`, `layoutDirection()`, `reducedMotion()`, `onChange`; as a promise: `replaceOptions(settings)` ([Application configuration](services/application-configuration.md#tsx)) | `application_configuration` |
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const i18n = services.getRequiredService(I18nService);
-title.set(i18n.t("welcome", { name: "Ada" }));
-const stop = i18n.onChange(() => title.set(i18n.t("welcome", { name: "Ada" })));
+const title = signal("");
 
-await services.getRequiredService(KeyValueStore).setJson("settings", "theme", { mode: "dark" });
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function welcome(services: ServiceProvider) {
+  const i18n = services.getRequiredService(I18nService);
+  title.set(i18n.t("welcome", { name: "Ada" }));
+  const stop = i18n.onChange(() => title.set(i18n.t("welcome", { name: "Ada" })));
+
+  await services.getRequiredService(KeyValueStore).setJson("settings", "theme", { mode: "dark" });
+}
 ```
 
 ## Services written in TS
@@ -183,12 +189,17 @@ builder
 TSX:
 
 ```tsx
-const Greeter = new ServiceToken<Greeter>("Greeter");
+class Clock { now() { return Date.now(); } }
+class Page { constructor(readonly clock: Clock) {} }
+interface Greeter { greet(name: string): string; }
+class EnglishGreeter implements Greeter { greet(name: string) { return `Hello, ${name}!`; } }
+
+const GreeterToken = new ServiceToken<Greeter>("Greeter"); // the interface's token
 
 new RayXAppBuilder()
   .addSingleton(Clock, () => new Clock())
   .addScoped(Page, (services) => new Page(services.getRequiredService(Clock)))
-  .addSingletonAs(Greeter, () => new EnglishGreeter());
+  .addSingletonAs(GreeterToken, () => new EnglishGreeter());
 ```
 
 - Every Rust registration has its twin: `addSingleton`, `addScoped`, `addTransient`, their `As` forms, and the
@@ -234,7 +245,7 @@ import { ContractEvents, ContractState, RayXAppBuilder, weatherSourceToken, type
 
 class OpenMeteo implements WeatherSource {
   latest = new ContractState("unknown");
-  alerts = new ContractEvents();
+  alerts = new ContractEvents<string>();
   name = "Open-Meteo";
   async forecast(city: string) {
     this.latest.publish(`sunny in ${city}`);
@@ -301,10 +312,14 @@ Rust then resolves it as `dyn Trait`, RayX's other services use it, the host's r
 `getRequiredService(<Name>)` wraps it like RayX's:
 
 ```tsx
-import { ContractState, PlatformInfoService, RayXAppBuilder, type PlatformInfoServiceContract } from "my-app";
+import {
+  ContractState, PlatformInfoService, RayXAppBuilder, type PlatformInfoServiceContract, type PlatformSnapshot,
+} from "my-app";
+
+declare const snapshot: PlatformSnapshot; // the app's: the JSON of a PlatformSnapshot
 
 class MyPlatform implements PlatformInfoServiceContract {
-  platform = new ContractState(snapshot); // the JSON of a PlatformSnapshot
+  platform = new ContractState(snapshot);
   isInitialized() { return true; }
   async initialize() {}
 }
@@ -321,6 +336,12 @@ new RayXAppBuilder()
 Register it with a startup form (`isInitialized()` and `async initialize()`) when it must load before the services that
 use it; RayX's startup services that depend on the trait wait for it. Each service's page shows its contract under
 "Replace it".
+
+Type the class for NSH's strict `tsc`: a class implementing an interface takes no types from it, so its methods'
+parameters, its `ContractState<T>` and `ContractEvents<E>` and a method that only throws are typed with the set's
+types (`PlatformSnapshot`, `NavigationRequest`, `Promise<NavigationResult>`, …). The TSX examples in these docs
+type-check that way; a `declare` line in one stands for the app's own code, and an example that is only part of a
+file says so.
 
 ## Options
 
@@ -387,5 +408,7 @@ specifier. See [Components and theme](components.md).
 ```tsx
 import { Button } from "my-app";
 
-<Button text="Save changes" variant="primary" onPress={save} />
+declare function save(): void; // the app's own
+
+const saveButton = <Button text="Save changes" variant="primary" onPress={save} />;
 ```

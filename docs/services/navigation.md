@@ -170,12 +170,16 @@ every command of the region waits for that one call, those issued at once includ
 not); a command after a failed call tries again.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const navigation = services.getRequiredService(NavigationService);
-await navigation.navigate("/projects/12");
-const stop = navigation.onChange(({ region, from, to }) => render(to));
-const panel = navigation.region("panel");
-await panel.navigate("/settings");
+declare function render(route: NavigationRoute): void; // the app's own
+
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function openProject(services: ServiceProvider) {
+  const navigation = services.getRequiredService(NavigationService);
+  await navigation.navigate("/projects/12");
+  const stop = navigation.onChange(({ region, from, to }) => render(to));
+  const panel = navigation.region("panel");
+  await panel.navigate("/settings");
+}
 ```
 
 ## Replace it
@@ -198,26 +202,28 @@ In TS, a class implementing `NavigationServiceContract`, registered under `Navig
 the JSON of the Rust types (snake_case fields: `root_region`, `history_mode`).
 
 ```tsx
-// routeOf(uri): the app's JSON of a `Route` (uri, base_uri, path, segments, params, query, ...).
-class MyNavigation {
-  navigation = new ContractState({ root_region: "main", regions: {}, location: "/" });
-  events = new ContractEvents();
+// The app's own: the JSON of a `Route` (uri, base_uri, path, segments, params, query, ...).
+declare function routeOf(uri: string): NavigationRoute;
+
+class MyNavigation implements NavigationServiceContract {
+  navigation = new ContractState<NavigationState>({ root_region: "main", regions: {}, location: "/" });
+  events = new ContractEvents<NavigationEvent>();
   rootRegionName = "main";
   urlRegion = "main";
-  defaultHistoryMode = "Push";
-  async navigate(request) {
+  defaultHistoryMode = "Push" as const;
+  async navigate(request: NavigationRequest): Promise<NavigationResult> {
     this.navigation.publish({ ...this.navigation.value, location: request.args.uri });
     this.events.publish({ kind: "RouteChanged", region: request.region, from: null, to: routeOf(request.args.uri) });
     return { region: request.region, direction: "New", status: "Success", route: routeOf(request.args.uri) };
   }
-  async back(region) { /* ... */ }
-  async forward(region) { /* ... */ }
-  async refresh(region) { /* ... */ }
-  async goToEntry(region, index) { /* ... */ }
-  async ensureRegion(region) {}
-  async closeRegion(region) { return false; }
-  async removeRegion(region) { return false; }
-  async applyLocation(location) { return []; }
+  async back(region: string): Promise<NavigationResult> { throw new Error("no history"); }
+  async forward(region: string): Promise<NavigationResult> { throw new Error("no history"); }
+  async refresh(region: string): Promise<NavigationResult> { throw new Error("no route"); }
+  async goToEntry(region: string, index: number): Promise<NavigationResult> { throw new Error("no history"); }
+  async ensureRegion(region: string) {}
+  async closeRegion(region: string) { return false; }
+  async removeRegion(region: string) { return false; }
+  async applyLocation(location: string) { return []; }
 }
 
 new RayXAppBuilder()

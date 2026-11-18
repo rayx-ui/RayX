@@ -76,9 +76,11 @@ a Rust component:
 - `onChange`: every change of its pages, until the function it returns is called.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const panel = services.getRequiredService(NavigationService).region("panel");
-const pages = signal(panel.pages());
-const stop = panel.onChange(pages.set); // called with the pages after every change
-await panel.navigate("/settings");
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function openSettings(services: ServiceProvider) {
+  const panel = services.getRequiredService(NavigationService).region("panel");
+  const pages = signal(panel.pages());
+  const stop = panel.onChange(pages.set); // called with the pages after every change
+  await panel.navigate("/settings");
+}
 ```

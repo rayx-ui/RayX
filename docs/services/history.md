@@ -23,10 +23,11 @@ builder.add_operations().add_storage().add_persistent_history() // in the app's 
 builder.add_operations().add_history_with_store(my_store)       // any HistoryStore
 ```
 
+<!-- tsx: fragment -->
 ```tsx
 new RayXAppBuilder().addOperations().addHistory();
 new RayXAppBuilder().addOperations().addStorage().addPersistentHistory((options) => options.callTimeoutMs(5000));
-new RayXAppBuilder().addOperations().addHistoryWithStore(() => new MyStore()); // a store written in TS
+new RayXAppBuilder().addOperations().addHistoryWithStore(() => new MyStore()); // a store written in TS (below)
 ```
 
 Each registers RayX's implementation as the app's `dyn HistoryService`, replacing any earlier registration of it: a
@@ -194,11 +195,17 @@ history's journals are in NSH's storage through the app's `dyn KeyValueStore` (`
   function that stops it.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const history = services.getRequiredService(HistoryService);
-await history.bindTargetScope("doc", "editor");
-const stop = history.onChange(() => undoEnabled.set(history.canUndo("editor")));
-if (history.canUndo("editor")) await history.undo("editor");
+import { signal } from "nsh";
+
+const undoEnabled = signal(false);
+
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function bindEditor(services: ServiceProvider) {
+  const history = services.getRequiredService(HistoryService);
+  await history.bindTargetScope("doc", "editor");
+  const stop = history.onChange(() => undoEnabled.set(history.canUndo("editor")));
+  if (history.canUndo("editor")) await history.undo("editor");
+}
 ```
 
 ## Replace it
@@ -218,21 +225,21 @@ In TS, a class implementing `HistoryServiceContract`, registered under the class
 ([contracts](../tsx.md#contracts)):
 
 ```tsx
-class MyHistory {
-  history = new ContractState({ scopes: {}, unavailable_entry_count: 0, recent_failure_codes: [] });
-  events = new ContractEvents();
-  async bindTargetScope(targetId, scopeId) { /* ... */ }
-  async undo(scopeId) {
+class MyHistory implements HistoryServiceContract {
+  history = new ContractState<HistoryState>({ scopes: {}, unavailable_entry_count: 0, recent_failure_codes: [] });
+  events = new ContractEvents<HistoryEvent>();
+  async bindTargetScope(targetId: string, scopeId: string) { /* ... */ }
+  async undo(scopeId: string) {
     // ... then publish the new depths
     this.history.publish({ scopes: { [scopeId]: { undo_depth: 0, redo_depth: 1, revision: 2, entry_limit: null } },
       unavailable_entry_count: 0, recent_failure_codes: [] });
     this.events.publish({ UndoCompleted: scopeId });
     return true;
   }
-  async redo(scopeId) { /* ... */ return true; }
-  async clearScope(scopeId) { /* ... */ }
-  async setScopeEntryLimit(scopeId, limit) { /* ... */ }
-  async retainedRecords(scopeId) { return []; }
+  async redo(scopeId: string) { /* ... */ return true; }
+  async clearScope(scopeId: string) { /* ... */ }
+  async setScopeEntryLimit(scopeId: string, limit: number) { /* ... */ }
+  async retainedRecords(scopeId: string) { return []; }
 }
 
 new RayXAppBuilder().addSingletonAs(HistoryService, () => new MyHistory());

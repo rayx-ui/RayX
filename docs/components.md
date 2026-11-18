@@ -33,13 +33,17 @@ fn native(registry: &mut Registry) {
 }
 ```
 
-TSX imports them by the set's specifier; props are Figma's properties in camel case:
+TSX imports them by the set's specifier; props are Figma's properties in camel case (a fragment: `save`, `Icon` and
+`Badge` are the app's own):
 
+<!-- tsx: fragment -->
 ```tsx
 import { Button } from "my-app/native";
 
-<Button text="Save changes" variant="primary" onPress={save} />
-<Button text="Inbox" iconLeft={<Icon name="inbox" />} showSlotRight slotRight={<Badge count={3} />} />
+const saveButton = <Button text="Save changes" variant="primary" onPress={save} />;
+const inboxButton = (
+  <Button text="Inbox" iconLeft={<Icon name="inbox" />} showSlotRight slotRight={<Badge count={3} />} />
+);
 ```
 
 Rust views use the constructors; props are Figma's properties in snake case:

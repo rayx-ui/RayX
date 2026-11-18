@@ -20,6 +20,8 @@ RayXAppBuilder::new()
 ```
 
 ```tsx
+declare const OVERRIDES: string; // the app's own JSON text
+
 new RayXAppBuilder()
   .addAppSettings("my-app")
   .configureAppConfiguration((configuration) => {

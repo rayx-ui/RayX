@@ -42,6 +42,10 @@ RayXAppBuilder::new()
 TSX registers its own services, TS classes, in the same container ([TSX](tsx.md#services-written-in-ts)):
 
 ```tsx
+class ApiClient { constructor(readonly baseUrl: string) {} }
+class EditorState { constructor(readonly api: ApiClient) {} }
+class Draft { text = ""; }
+
 new RayXAppBuilder()
   .addSingleton(ApiClient, () => new ApiClient("https://api.example.com"))
   .addScoped(EditorState, (services) => new EditorState(services.getRequiredService(ApiClient)))
@@ -104,8 +108,10 @@ let scope = services.create_scope();                  // a child scope
 ```
 
 In a Rust component, `rayx_app_nsh::services()` returns the provider of the nearest screen scope (or the surface's root).
-In TSX, `await builder.start()` gives the surface's root:
+In TSX, `await builder.start()` gives the surface's root (a fragment: `services` is that root, `ApiClient` and `Cache`
+the app's classes):
 
+<!-- tsx: fragment -->
 ```tsx
 const api = services.getRequiredService(ApiClient); // the service, or an Error naming the token
 const maybe = services.getService(Cache);           // the service, or null
@@ -159,11 +165,12 @@ let source = services.required_service::<dyn WeatherSource>()?;
 let forecast = source.forecast("Rijeka".into()).await?;
 ```
 
+<!-- tsx: fragment -->
 ```tsx
 builder.addSingletonAs(weatherSourceToken(), () => new OpenMeteo());
 ```
 
-See [TSX](tsx.md#contracts).
+See [TSX](tsx.md#contracts), which has `OpenMeteo`.
 
 ## Lifetimes
 
@@ -185,10 +192,12 @@ let scope = use_screen_scope()?;
 ```
 
 ```tsx
-// TSX: a scope per screen, from mount to cleanup.
-const scope = services.createScope();
-// ...
-scope.dispose();
+// TSX: a scope per screen, from mount to cleanup, in the provider `start()` gives.
+function screen(services: ServiceProvider) {
+  const scope = services.createScope();
+  // ...
+  scope.dispose();
+}
 ```
 
 ## View models

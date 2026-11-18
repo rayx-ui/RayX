@@ -62,7 +62,7 @@ class Catalog implements StartupInitializable {
   initializationDependsOn() { return [I18nService]; }
 }
 
-builder.addStartupSingleton(Catalog, () => new Catalog());
+new RayXAppBuilder().addStartupSingleton(Catalog, () => new Catalog());
 ```
 
 ## Implementing a trait
@@ -189,7 +189,7 @@ The same in TS: `onReady(hook)` and `onReadyWhen(predicate, hook)`, whose hook g
 in the order they were added; one that throws or rejects fails `start()` with its message.
 
 ```tsx
-builder.onReady(async (context) => {
+new RayXAppBuilder().onReady(async (context) => {
   const store = context.services.getRequiredService(KeyValueStore);
   const language = await store.getJson("settings", "language");
   if (typeof language === "string") await context.services.getRequiredService(I18nService).setLanguage(language);

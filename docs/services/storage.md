@@ -112,10 +112,12 @@ values are text or JSON:
 Every method returns a promise.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const storage = services.getRequiredService(KeyValueStore);
-await storage.setJson("settings", "theme", { mode: "dark" });
-const theme = await storage.getJson("settings", "theme");
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function rememberTheme(services: ServiceProvider) {
+  const storage = services.getRequiredService(KeyValueStore);
+  await storage.setJson("settings", "theme", { mode: "dark" });
+  const theme = await storage.getJson("settings", "theme");
+}
 ```
 
 ## Replace it
@@ -139,14 +141,17 @@ commands `async` methods. Values cross as byte arrays: `get` answers a `number[]
 receives a `number[]`.
 
 ```tsx
-class MyStore {
+class MyStore implements KeyValueStoreContract {
   capabilities = { persistent: true, secure: false };
-  values = new Map();
-  async get(bucket, key) { return this.values.get(`${bucket}/${key}`) ?? null; }
-  async set(bucket, key, value) { this.values.set(`${bucket}/${key}`, value); }
-  async remove(bucket, key) { return this.values.delete(`${bucket}/${key}`); }
-  async keys(bucket) { /* the bucket's keys, sorted */ }
-  async clear(bucket) { /* removes the bucket's values */ }
+  values = new Map<string, number[]>();
+  async get(bucket: string, key: string) { return this.values.get(`${bucket}/${key}`) ?? null; }
+  async set(bucket: string, key: string, value: number[]) { this.values.set(`${bucket}/${key}`, value); }
+  async remove(bucket: string, key: string) { return this.values.delete(`${bucket}/${key}`); }
+  async keys(bucket: string) { // the bucket's keys, sorted
+    const prefix = `${bucket}/`;
+    return [...this.values.keys()].filter((k) => k.startsWith(prefix)).map((k) => k.slice(prefix.length)).sort();
+  }
+  async clear(bucket: string) { for (const key of await this.keys(bucket)) this.values.delete(`${bucket}/${key}`); }
 }
 
 new RayXAppBuilder()

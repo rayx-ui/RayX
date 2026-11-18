@@ -157,14 +157,16 @@ and a TS implementation of the service takes the handle it is given with `Operat
 applies records with `apply(record, origin)` (synchronous; it throws when the target refused or failed it).
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const operations = services.getRequiredService(OperationService);
-const stop = operations.onEvent((event) => {
-  if ("Committed" in event) console.log(event.Committed.target_id);
-});
-const id = await operations.begin();
-await operations.submitRecord(record, "LocalUser", id);
-await operations.commit(id);
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function submit(services: ServiceProvider, record: OperationRecord) {
+  const operations = services.getRequiredService(OperationService);
+  const stop = operations.onEvent((event) => {
+    if ("Committed" in event) console.log(event.Committed.target_id);
+  });
+  const id = await operations.begin();
+  await operations.submitRecord(record, "LocalUser", id);
+  await operations.commit(id);
+}
 ```
 
 Records, origins and receipts cross as their JSON (snake_case fields; a record's `payload` is the operation's JSON as
@@ -185,27 +187,35 @@ In TS, a class implementing `OperationServiceContract`, registered under the cla
 ([contracts](../tsx.md#contracts)):
 
 ```tsx
-class MyOperations {
-  operations = new ContractState({ targets: [], recent_transactions: [], recent_failure_codes: [] });
-  events = new ContractEvents();
+class MyOperations implements OperationServiceContract {
+  operations = new ContractState<OperationState>({ targets: [], recent_transactions: [], recent_failure_codes: [] });
+  events = new ContractEvents<OperationEvent>();
   instanceId = 77;
-  targets = new Map();
+  targets = new Map<string, OperationTarget>();
   next = 0;
-  async registerTarget(targetId, handle) {
+  async registerTarget(targetId: string, handle: OperationTargetHandle) {
     this.targets.set(targetId, OperationTarget.of(handle));
     this.operations.publish({ targets: [...this.targets.keys()].sort(), recent_transactions: [], recent_failure_codes: [] });
   }
-  async releaseTarget(targetId) { /* ... */ return this.targets.delete(targetId); }
+  async releaseTarget(targetId: string) { /* ... */ return this.targets.delete(targetId); }
   async begin() { return ++this.next; }
-  async commit(transactionId) { /* publish its receipts */ }
-  async abort(transactionId) { /* undo them */ }
-  async submitRecord(record, origin, transactionId) {
-    const result = this.targets.get(record.target_id).apply(record, origin);
-    const receipt = { transaction_id: transactionId ?? ++this.next, target_id: record.target_id, forward: record, origin, ...result };
+  async commit(transactionId: number) { /* publish its receipts */ }
+  async abort(transactionId: number) { /* undo them */ }
+  async submitRecord(record: OperationRecord, origin: OperationOrigin, transactionId: number | null) {
+    const target = this.targets.get(record.target_id);
+    if (!target) throw new Error(`no target ${record.target_id}`);
+    const result = target.apply(record, origin);
+    const receipt: OperationReceipt = {
+      transaction_id: transactionId ?? ++this.next, target_id: record.target_id, forward: record, origin, ...result,
+    };
     this.events.publish({ Committed: receipt });
     return receipt;
   }
-  async publishRemoteRecord(record, peerId, beforeRevision, afterRevision, affectedIds) { /* ... */ }
+  async publishRemoteRecord(
+    record: OperationRecord, peerId: string, beforeRevision: number, afterRevision: number, affectedIds: string[],
+  ): Promise<OperationReceipt> {
+    throw new Error("no peers"); // ... apply a peer's record
+  }
 }
 
 new RayXAppBuilder().addSingletonAs(OperationService, () => new MyOperations());

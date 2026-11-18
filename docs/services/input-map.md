@@ -127,14 +127,16 @@ see keystrokes and gestures ask it what they run.
 - `onChange((state) => ..)`: every change of the state, until the function it returns is called.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const inputMap = services.getRequiredService(InputMapService);
-const resolved = inputMap.resolve(["editor"], { kind: "keyboard", value: "cmd-s" });
-const user = inputMap.current().user;
-await inputMap.applyUserDocument(inputMap.revision(), {
-  ...user,
-  entries: [{ context: "editor", binding: { kind: "keyboard", value: "cmd-shift-s" }, action: "file::save" }],
-});
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function rebindSave(services: ServiceProvider) {
+  const inputMap = services.getRequiredService(InputMapService);
+  const resolved = inputMap.resolve(["editor"], { kind: "keyboard", value: "cmd-s" });
+  const user = inputMap.current().user ?? (await inputMap.load()); // the user's document
+  await inputMap.applyUserDocument(inputMap.revision(), {
+    ...user,
+    entries: [{ context: "editor", binding: { kind: "keyboard", value: "cmd-shift-s" }, action: "file::save" }],
+  });
+}
 ```
 
 ## Key sequences
@@ -166,18 +168,21 @@ In TS, a class implementing `InputMapServiceContract`, registered under `InputMa
 `ContractState`, the commands `async` methods. Values cross as the JSON of the Rust types (snake_case fields).
 
 ```tsx
-const document = (source, revision, entries) => ({ schema_version: 1, source, revision, entries });
+declare function readTheUsersBindings(): Promise<InputMapEntry[]>; // the app's own
 
-class MyInputMap {
-  inputMap = new ContractState({});
+const document = (source: InputMapDocument["source"], revision: number, entries: InputMapEntry[]): InputMapDocument =>
+  ({ schema_version: 1, source, revision, entries });
+
+class MyInputMap implements InputMapServiceContract {
+  inputMap = new ContractState<InputMapState>({});
   loaded = false;
   isInitialized() { return this.loaded; }
   async initialize() {
     this.inputMap.publish({ user: document("user", 0, await readTheUsersBindings()), revision: 0 });
     this.loaded = true;
   }
-  async load() { return this.inputMap.value.user; }
-  async applyUserDocument(expectedRevision, candidate) {
+  async load() { return this.inputMap.value.user ?? document("user", 0, []); }
+  async applyUserDocument(expectedRevision: number, candidate: InputMapDocument) {
     if (expectedRevision !== this.inputMap.value.revision) throw new Error("revision conflict");
     const user = { ...candidate, revision: expectedRevision + 1 };
     this.inputMap.publish({ ...this.inputMap.value, user, revision: user.revision });

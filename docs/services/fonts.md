@@ -128,8 +128,13 @@ too.
   glyph_fallback_families }`).
 
 ```tsx
-const fonts = services.getRequiredService(FontService);
-<Text style={{ fontFamily: fonts.family("body") }}>Hello</Text>
+import { Text } from "nsh";
+
+// With the provider `start()` gives:
+function greeting(services: ServiceProvider) {
+  const fonts = services.getRequiredService(FontService);
+  return <Text style={{ fontFamily: fonts.family("body") }}>Hello</Text>;
+}
 ```
 
 ## Replace it
@@ -154,13 +159,17 @@ In TS, a class implementing `FontServiceContract`, registered under `FontService
 a whole `FontState` (as JSON), `registerFont(data)` (`data` a `number[]`) and `registerFontAssets()` `async` methods.
 
 ```tsx
-class MyFonts {
-  fonts = new ContractState({ faces: [], aliases: [], default_alias: null, diagnostics: [] });
-  isInitialized() { return this.fonts.value.faces.length > 0; }
+declare function registerWithTheSystem(data: number[]): Promise<string>; // the app's own: answers the family
+
+class MyFonts implements FontServiceContract {
+  fonts = new ContractState<FontState>({ faces: [], aliases: [], default_alias: null, diagnostics: [] });
+  faces: { logical_path: string | null; family: string }[] = [];
+  isInitialized() { return this.faces.length > 0; }
   async initialize() { await this.registerFontAssets(); }
-  async registerFont(data) { /* register it; answer its family */ }
+  async registerFont(data: number[]) { return registerWithTheSystem(data); }
   async registerFontAssets() {
-    this.fonts.publish({ ...this.fonts.value, faces: [{ logical_path: "@app/fonts/Inter.woff2", family: "Inter" }] });
+    this.faces = [{ logical_path: "@app/fonts/Inter.woff2", family: "Inter" }];
+    this.fonts.publish({ ...this.fonts.value, faces: this.faces });
   }
 }
 

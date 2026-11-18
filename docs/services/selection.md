@@ -88,13 +88,17 @@ its summary through the service.
   once the service took them and reject with its error.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const selection = services.getRequiredService(SelectionService);
-await selection.activate(3, {
-  participant_count: 1, selected_character_count: 4, is_collapsed: false, is_selecting: false,
-});
-selection.activeArea(); // 3
-const stop = selection.onChange((state) => show(state.status));
+declare function show(status: SelectionStatus): void; // the app's own
+
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function select(services: ServiceProvider) {
+  const selection = services.getRequiredService(SelectionService);
+  await selection.activate(3, {
+    participant_count: 1, selected_character_count: 4, is_collapsed: false, is_selecting: false,
+  });
+  selection.activeArea(); // 3
+  const stop = selection.onChange((state) => show(state.status));
+}
 ```
 
 ## Replace it
@@ -110,18 +114,22 @@ In TS, a class implementing `SelectionServiceContract`, registered under `Select
 `ContractState`, the commands `async` methods. Values cross as the JSON of the Rust types (snake_case fields).
 
 ```tsx
-const empty = { participant_count: 0, selected_character_count: 0, is_collapsed: false, is_selecting: false };
-const state = (area, status) => ({
+const empty: SelectionStatus = {
+  participant_count: 0, selected_character_count: 0, is_collapsed: false, is_selecting: false,
+};
+const state = (area: SelectionAreaId | null, status: SelectionStatus): SelectionState => ({
   active_area: area, status, navigation_revision: 0, active_area_revision: 0, status_revision: 0,
 });
 
-class MySelection {
+class MySelection implements SelectionServiceContract {
   selection = new ContractState(state(null, empty));
-  async activate(activeArea, status) { this.selection.publish(state(activeArea, status)); }
-  async publishStatus(activeArea, status) {
+  async activate(activeArea: SelectionAreaId, status: SelectionStatus) {
+    this.selection.publish(state(activeArea, status));
+  }
+  async publishStatus(activeArea: SelectionAreaId, status: SelectionStatus) {
     if (this.selection.value.active_area === activeArea) this.selection.publish(state(activeArea, status));
   }
-  async deactivate(activeArea) {
+  async deactivate(activeArea: SelectionAreaId) {
     if (this.selection.value.active_area === activeArea) this.selection.publish(state(null, empty));
   }
   async clear() { this.selection.publish(state(null, empty)); }

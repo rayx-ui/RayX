@@ -104,9 +104,14 @@ registered:
   called (or the reactive owner of the call goes), or the object is disposed.
 
 ```tsx
-const platform = services.getRequiredService(PlatformInfoService);
-const device = platform.current();
-const stop = platform.onChange((snapshot) => relayout(snapshot)); // `stop()` ends it
+declare function relayout(snapshot: PlatformSnapshot): void; // the app's own
+
+// With the provider `start()` gives:
+function followPlatform(services: ServiceProvider) {
+  const platform = services.getRequiredService(PlatformInfoService);
+  const device = platform.current();
+  const stop = platform.onChange((snapshot) => relayout(snapshot)); // `stop()` ends it
+}
 ```
 
 ## Replace it
@@ -131,8 +136,10 @@ In TS, a class implementing `PlatformInfoServiceContract`, registered under `Pla
 `ContractState` holding a whole snapshot (the JSON of `PlatformSnapshot`).
 
 ```tsx
-class MyPlatform {
-  platform = new ContractState(snapshot); // a whole PlatformSnapshot, as JSON
+declare const snapshot: PlatformSnapshot; // the app's: a whole PlatformSnapshot, as JSON
+
+class MyPlatform implements PlatformInfoServiceContract {
+  platform = new ContractState(snapshot);
   isInitialized() { return this.platform.value.platform_name === "mine"; }
   async initialize() {
     this.platform.publish({ ...this.platform.value, platform_name: "mine", color_scheme: "Dark" });

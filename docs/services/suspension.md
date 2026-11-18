@@ -132,11 +132,20 @@ Each listener lasts until the function it returns is called (or the reactive own
 is disposed.
 
 ```tsx
-const suspension = services.getRequiredService(SuspensionService);
-suspension.onLifecycle((event) => {
-  if (event.kind === "Woke") reconnect();
-});
-const stopAsking = suspension.askBeforeQuit(() => (hasUnsavedWork() ? confirmQuit.set(true) : suspension.quit()));
+import { signal } from "nsh";
+
+declare function reconnect(): void; // the app's own
+declare function hasUnsavedWork(): boolean;
+const confirmQuit = signal(false); // shows the app's "Quit without saving?" prompt
+
+// With the provider `start()` gives:
+function followLifecycle(services: ServiceProvider) {
+  const suspension = services.getRequiredService(SuspensionService);
+  suspension.onLifecycle((event) => {
+    if (event.kind === "Woke") reconnect();
+  });
+  const stopAsking = suspension.askBeforeQuit(() => (hasUnsavedWork() ? confirmQuit.set(true) : suspension.quit()));
+}
 ```
 
 ## Replace it
@@ -162,19 +171,19 @@ In TS, a class implementing `SuspensionServiceContract`, registered under `Suspe
 methods.
 
 ```tsx
-class MySuspension {
-  suspension = new ContractState({
+class MySuspension implements SuspensionServiceContract {
+  suspension = new ContractState<SuspensionSnapshot>({
     lifecycle: "NotStarted", activation: "Unknown", visibility: "Unknown", updated_at_unix_millis: null,
     last_reason: null, window: null, wakes: 0, asks_before_quit: false,
   });
-  events = new ContractEvents();
+  events = new ContractEvents<SuspensionEvent>();
   isInitialized() { return this.suspension.value.lifecycle === "Running"; }
   async initialize() {
     this.suspension.publish({ ...this.suspension.value, lifecycle: "Running", visibility: "Foreground" });
     this.events.publish({ kind: "Started", reason: "HostStarted", timestamp_unix_millis: null, window: null });
   }
   async quit() { /* quit */ }
-  async askBeforeQuit(ask) { this.suspension.publish({ ...this.suspension.value, asks_before_quit: ask }); }
+  async askBeforeQuit(ask: boolean) { this.suspension.publish({ ...this.suspension.value, asks_before_quit: ask }); }
 }
 
 new RayXAppBuilder()

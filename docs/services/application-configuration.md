@@ -123,12 +123,16 @@ changes.
 - `onChange(listener)`: hears the settings after every change; it returns a function that stops it.
 
 ```tsx
-// Inside `start()`'s `.then(async (services) => { … })`:
-const settings = services.getRequiredService(ApplicationConfigurationService);
-settings.layoutDirection(); // "ltr" or "rtl"
-settings.reducedMotion();
-const stop = settings.onChange((current) => apply(current));
-await settings.replaceOptions({ ...settings.current(), layout: { direction: "rtl" } });
+declare function apply(settings: ApplicationConfiguration): void; // the app's own
+
+// With the provider `start()` gives, in its `.then(async (services) => { … })`:
+async function followSettings(services: ServiceProvider) {
+  const settings = services.getRequiredService(ApplicationConfigurationService);
+  settings.layoutDirection(); // "ltr" or "rtl"
+  settings.reducedMotion();
+  const stop = settings.onChange((current) => apply(current));
+  await settings.replaceOptions({ ...settings.current(), layout: { direction: "rtl" } });
+}
 ```
 
 ## Replace it
@@ -146,11 +150,13 @@ In TS, a class implementing `ApplicationConfigurationServiceContract`, registere
 `ApplicationConfigurationService` ([contracts](../tsx.md#contracts)):
 
 ```tsx
-class MyConfiguration {
-  configuration = new ContractState({ options: { name: "TS App", layout: { direction: "rtl" } }, revision: 1 });
-  async replaceOptions(options) {
+class MyConfiguration implements ApplicationConfigurationServiceContract {
+  configuration = new ContractState<ApplicationConfigurationSnapshot>({
+    options: { name: "TS App", layout: { direction: "rtl" } }, revision: 1,
+  });
+  async replaceOptions(options: ApplicationConfiguration) {
     const now = this.configuration.value;
-    this.configuration.publish({ ...now, options, revision: now.revision + 1 });
+    this.configuration.publish({ ...now, options, revision: (now.revision ?? 0) + 1 });
     return true;
   }
 }
