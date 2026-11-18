@@ -7,6 +7,154 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.12.0] - 2026-11-18
+
+### Build and CI
+- Run and lint the umbrella with every feature, so its feature-gated test groups run
+
+### Documentation
+- *(history)* Put the storage hint's doc comment on its constant
+- *(services)* Name the asset builder methods that take bundled files, and fix a redundant link
+- *(nsh)* Say the host requires the four services and contracts are callable from any thread
+- *(app)* Describe the core as it is, every contract and fake in it, with no old crate names
+
+### Features
+- *(storage)* Add TS's addInMemoryStorage()
+- *(navigation)* [**breaking**] Make the navigation classes' commands promises
+  - Migration: apps: await the navigation classes' commands (`await navigation.navigate(uri)`, `(await panel.goTo(0)).route`, `await panel.close()`) instead of reading their answers synchronously.
+- *(history)* Let TS apps set the history's options
+- *(history)* Keep the history in a store written in TS with addHistoryWithStore
+- *(services)* [**breaking**] Platform service crate
+  - Migration: apps: depend on `rayx_services_platform`, call `add_platform()` (`use rayx_services_platform::PlatformAppBuilderExt`), register its set with `rayx_services_platform::register(registry)` for TS, and read `platform_snapshot()` from it in place of `rayx_app_nsh::platform_snapshot`.
+- *(services)* [**breaking**] Suspension service crate
+  - Migration: apps: depend on `rayx_services_suspension`, call `add_suspension()` (`use rayx_services_suspension::SuspensionAppBuilderExt`) and register its set with `rayx_services_suspension::register(registry)` for TS; `NshSuspensionHost` and `with_suspension_host` are gone.
+- *(services)* [**breaking**] Asset service crate
+  - Migration: apps: depend on `rayx_services_assets`, call `add_assets(..)` and `add_asset_files(assets!())` from it (`use rayx_services_assets::AssetAppBuilderExt`) and register its set with `rayx_services_assets::register(registry)` for TS; `NshAssetReader`, `AssetReader` and `MemoryAssetReader` are no longer public (tests use `rayx_app::testing::FakeAssets`).
+- *(services)* [**breaking**] Font service crate
+  - Migration: apps: depend on `rayx_services_fonts`, call `add_fonts(..)` from it (`use rayx_services_fonts::FontAppBuilderExt`) with an asset service registered (`add_assets(..)`), and register its set with `rayx_services_fonts::register(registry)` for TS; `NshFontRegistrar` and `FontRegistrar` are no longer public.
+- *(cli)* [**breaking**] Make new apps register the four services the host requires and name their features
+  - Migration: apps: an app made by an earlier `rayx new` adds the features of the services it registers beyond the defaults to its `rayx` dependency (`features = ["storage", "operations", "history"]`) and registers the four the host requires, and operations before history, in its composition root: `add_platform()`, `add_suspension()`, `add_assets(..)`, `add_fonts(..)` and `add_operations()` in Rust, `addPlatform()`, `addSuspension()`, `addAssets()`, `addFonts()` and `addOperations()` in TSX, or registers its own implementations of those contracts.
+- *(nsh)* Register a TS implementation of a contract from a builder method
+- *(nsh)* Pin NSH to nshx-0.5.0-7
+  - Migration: apps: patch every NSH crate in [patch.crates-io] to `nshx-0.5.0-7` and move rayx and rayx_app to this release's tag.
+- *(rayx)* [**breaking**] Put each service crate behind a feature, the four the host requires by default
+  - Migration: apps: the umbrella's defaults are `platform`, `suspension`, `assets` and `fonts`; add the feature of every other service the app registers to its `rayx` dependency (`features = ["storage", "operations", "history", "i18n"]`, ...), in Rust and in TSX (an app's set holds only the enabled crates' TS classes and builder methods). `rayx::navigation`, `rayx::history`, `rayx::operations` and `rayx::selection` are `rayx::services::navigation`, `rayx::services::history`, `rayx::services::operations` and `rayx::services::selection`; every service crate is `rayx::services::<name>`. A `#[rayx::native_module]` body no longer needs to register the service crates' sets.
+- *(contracts)* [**breaking**] Contracts that publish, callable from any thread, and checked registrations
+  - Migration: apps: implement a `#[contract]`'s `async fn` in Rust as a method returning `BoxFuture<'_, Result<T, E>>` (`Box::pin(async move { … })`); match `ContractError::EngineGone` where you matched `WrongThread`; `RayXAppBuilder::build()`/`build_async()` return `AppBuildError` (`Services` or `Configuration`) in place of `ConfigurationError`.
+- *(app)* [**breaking**] Core service contracts, host hooks for service crates and the host's required services
+  - Migration: apps: register the platform, suspension, asset and font services the start now requires, with `add_platform()`, `add_suspension()`, `add_assets(..)` and `add_fonts(..)` from `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets` and `rayx_services_fonts` (in TS `addPlatform()`, `addSuspension()`, `addAssets(..)` and `addFonts(..)`, once each crate's set is registered), or your own implementations; remove `use_platform_sync()`, `add_nsh_services()` and `NshServicesAppBuilderExt`.
+  - Migration: apps: resolve `dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService` and `dyn FontService` (from `rayx_app::services`) in place of the concrete services, reading their state with `platform()`, `suspension()`, `catalog()` and `fonts()`.
+  - Migration: apps: register an `#[app_extension]` function with `registry.class_extension::<add_x>()` in place of `registry.module::<add_x>()`, and call it in TS as `builder.addX()` in place of `builder.apply(addX)`.
+- *(services)* [**breaking**] Storage service crate
+  - Migration: apps: depend on `rayx_services_storage`, call `add_storage()` or `add_in_memory_storage()` from it (`use rayx_services_storage::StorageAppBuilderExt`) and register its set with `rayx_services_storage::register(registry)` for TS; `NshKeyValueStore`, `PlatformKeyValueStore` and `with_key_value_store` are gone (register your own `dyn KeyValueStore` instead), and `InMemoryKeyValueStore` and `STORAGE_PREFIX` moved to `rayx_services_storage`.
+  - Migration: apps: register a key-value store where the app calls `add_input_map(..)` or `add_persistent_history()` (`addInputMap`, `addPersistentHistory` in TS): they no longer add one.
+  - Migration: apps: await the store's commands with owned buckets and keys (`store.get(bucket.into(), key.into()).await`) and the bucket's methods (`set_json`, `get_json`, `try_get_json`, `remove`, `keys`, `clear`), in place of the synchronous calls and the `_async` variants; in TS, await the `KeyValueStore` class's methods.
+- *(services)* [**breaking**] Navigation service crate
+  - Migration: apps: depend on `rayx_services_navigation` (or `rayx`), call `add_navigation(..)` from it (`use rayx_services_navigation::NavigationAppBuilderExt`), and register its set with `rayx_services_navigation::register(registry)` for TS's `addNavigation`, `NavigationService` and `NavigationRegion`; `with_navigation_service`, `with_navigation_location_synchronizer`, `NavigationLocationSynchronizer`, `NshLocationSynchronizer` and `NavigationSubscription` are gone (register your own `dyn NavigationService` to replace RayX's).
+  - Migration: apps: resolve `dyn NavigationService` (from `rayx_app::services::navigation`) in place of the concrete service: await its commands (`navigate_to(uri).await`, `back(region).await`, `ensure_region(name).await` in place of `get_or_create_region`), read `current()`, `journal(region)`, `region_names()` and `location()` without a `Result`, and listen with `on_route_changed`, `on_region_closed` and the others, which return a `ChangeSubscription`.
+  - Migration: apps: import `navigation_region`, `navigation_view`, `location_of_address`, `RouteDefinition`, `RouteMap` and `NavigationOptions` from `rayx_services_navigation` in place of `rayx_app_nsh` and `rayx_runtime::services::navigation`; `SelectionService::new` takes a `&dyn NavigationService`.
+- *(services)* [**breaking**] I18n service crate, split into I18nService and MessageFormatter
+  - Migration: apps: depend on `rayx_services_i18n`, call `add_i18n(..)` from it (`use rayx_services_i18n::I18nAppBuilderExt`) with platform and asset services registered (`add_platform()`, `add_assets(..)`), and register its set with `rayx_services_i18n::register(registry)` for TS (`builder.addI18n(..)`, `builder.addMessageFormatter()`, the `I18nService` class).
+  - Migration: apps: resolve `dyn I18nService` (state and commands) and `dyn MessageFormatter` (formatting) from `rayx_app::services::i18n` in place of the concrete `I18nService`; commands are async (`set_language(..).await`), `follow_platform_again(..)` is `follow_platform()`, `subscribe(..)` is `i18n().subscribe(..)` over `I18nState`, and `with_i18n_service`, `I18nChangedEvent`, `apply_platform` and `load_assets` are gone (register your own `dyn I18nService` and `add_message_formatter()`).
+  - Migration: apps: take `tr!`, `checked::tr!`, `translate`, `Args` and `args!` from `rayx_services_i18n` (or `rayx`'s prelude and `rayx::checked`) in place of `rayx_app_nsh`, and the TS classes `I18nService`, `I18nOptions`, `DateFormat` and `NumberFormat` from `rayx_services_i18n` in place of `rayx_app_nsh::ts`.
+- *(services)* [**breaking**] Operation service crate
+  - Migration: apps: depend on `rayx_services_operations` (or `rayx`), call `add_operations()` from it (`use rayx_services_operations::OperationsAppBuilderExt`) where the app calls `add_history()` or `add_persistent_history()` (`addOperations()` before `addHistory()` in TS), and register its set with `rayx_services_operations::register(registry)` for TS's `addOperations`, `OperationService` and `OperationTarget`; `with_operation_service`, `OperationSubscription` and `OperationService::new` are gone (register your own `dyn OperationService` to replace RayX's).
+  - Migration: apps: resolve `dyn OperationService` (from `rayx_app::services::operations`) in place of the concrete service, register handlers with `register_handler::<T, _>(id, handler)` and await its calls (`submit(..).await`, `release_target(id).await` with an owned id, `begin_transaction(mode).await`, `transaction.commit().await`); `subscribe(..)` returns a `ChangeSubscription`, and `diagnostics()` reads the published state.
+- *(services)* [**breaking**] History service crate
+  - Migration: apps: depend on `rayx_services_history` (or `rayx`), call `add_history()`, `add_history_with_store(..)` or `add_persistent_history()` from it (`use rayx_services_history::HistoryAppBuilderExt`) after an operation service (`add_operations()` from `rayx_services_operations`, or the app's own `dyn OperationService`), and register its set with `rayx_services_history::register(registry)` for TS's `addHistory`, `addPersistentHistory` and `HistoryService`; import `HistoryStore`, `InMemoryHistoryStore`, `KeyValueHistoryStore`, `HISTORY_BUCKET`, `HistoryJournalV2` and the limits from `rayx_services_history`.
+  - Migration: apps: resolve `dyn HistoryService` (from `rayx_app::services::history`) in place of the concrete service; await its commands with owned scope ids (`history.undo(scope.clone()).await`, `bind_target_scope(..).await`), read `can_undo`, `can_redo` and `stack_depths` without a `Result` (a persisted scope shows once it is bound or used), and listen with `subscribe(..)`, which returns a `ChangeSubscription`; `HistoryService::new`, `with_store`, `uses_operation_service`, `uses_history_store`, `HistorySubscription` and `clear_scope_async` are gone, and `HistoryError::Store` carries the store's message.
+- *(services)* [**breaking**] Selection service crate
+  - Migration: apps: depend on `rayx_services_selection` (or `rayx`), call `add_selection()` from it (`use rayx_services_selection::SelectionAppBuilderExt`) in place of `rayx_runtime`'s prelude, and register its set with `rayx_services_selection::register(registry)` for TS's `addSelection()` and `SelectionService`; `with_selection_service` and `SelectionService::new` are gone (register your own `dyn SelectionService` to replace RayX's).
+  - Migration: apps: resolve `dyn SelectionService` (from `rayx_app::services::selection`) in place of the concrete service, await its commands (`activate(area, status).await`, `publish_status`, `deactivate`, `clear`), and read `active_area()`, `status()` and the revisions as before; register a `dyn NavigationService` before building, since an app without one no longer builds.
+- *(services)* [**breaking**] Input map service crate
+  - Migration: apps: depend on `rayx_services_input_map`, call `add_input_map(..)` from it (`use rayx_services_input_map::InputMapAppBuilderExt`) with a key-value store registered, and register its set with `rayx_services_input_map::register(registry)` for TS (`builder.addInputMap(..)`, the `InputMapService` and `InputMapOptions` classes).
+  - Migration: apps: resolve `dyn InputMapService` from `rayx_app::services::input_map` in place of the concrete `InputMapService`; `load` and `apply_user_document` are async through the trait, `framework_document()` and `application_document()` return owned documents, `subscribe(..)` is `input_map().subscribe(..)` over `InputMapState`, and `InputMapService::new` and `with_input_map_service` are gone (register your own `dyn InputMapService`).
+  - Migration: apps: take `InputMapOptions`, `INPUT_MAP_OPTIONS_SECTION` and `INPUT_MAP_STORAGE_BUCKET` from `rayx_services_input_map`, and the document model (`InputMapDocument`, `InputMapEntry`, `InputBinding`, `normalize_key_sequence`, …), `ResolvedInputAction` and `InputMapApplyError` from `rayx_app::services::input_map`.
+- *(services)* [**breaking**] Application configuration service crate
+  - Migration: apps: depend on `rayx_services_application_configuration`, call `add_application_configuration(..)` from it (`use rayx_services_application_configuration::ApplicationConfigurationAppBuilderExt`) with a platform service registered (`add_platform()`), and register its set with `rayx_services_application_configuration::register(registry)` for TS (`builder.addApplicationConfiguration(..)`, the `ApplicationConfigurationService` and `ApplicationConfigurationOptions` classes).
+  - Migration: apps: resolve `dyn ApplicationConfigurationService` from `rayx_app::services::application_configuration` in place of the concrete `ApplicationConfigurationService`; `replace_options` is async, `subscribe(..)` is `configuration().subscribe(..)`, and `ApplicationConfigurationService::new` and `with_application_configuration_service` are gone (register your own `dyn ApplicationConfigurationService`).
+  - Migration: apps: take `ApplicationConfiguration` and its parts, `ApplicationConfigurationSnapshot`, `EffectiveMotion`, `ScrollBehavior` and `ApplicationConfigurationError` from `rayx_app::services::application_configuration`, and `APPLICATION_CONFIGURATION_PATH` from `rayx_services_application_configuration`.
+- *(app)* Fake the i18n service and the message formatter, every fake publishing alike
+- *(app)* Register an implementation of a trait as the trait and a startup service
+
+### Fixes
+- *(services)* Serialize the suspension service's changes of state
+- *(services)* Publish the suspension state only when the state changes
+- *(storage)* [**breaking**] Keep no copy of NSH's storage, and read and write it on the engine thread
+  - Migration: apps: a call of the NSH key-value store made off its surface's engine thread answers once the engine ran it, so await it instead of polling it once; a store of a surface whose engine is gone fails its calls.
+- *(platform)* Type the snapshot PlatformInfoService.onChange passes in TS
+- *(services)* Ask NSH whether its runtime is entered in the storage and navigation crates
+- *(navigation)* Make every TS region command wait for the region, retrying a failed make
+- *(navigation)* Reject a region's command when the region is disposed while it waits
+- *(i18n)* Publish the i18n service's latest state when it changes on several threads
+- *(i18n)* [**breaking**] Return promises from the I18nService class's commands
+  - Migration: apps: await setLanguage, followPlatform and setTimeZone (or handle the promise) where the next line relies on the change or on an error being thrown.
+- *(i18n)* Cover the i18n service's missing asset and platform service hints
+- *(history)* [**breaking**] Replay by transaction id, keep edits recorded meanwhile, and load and save through an async store
+  - Migration: apps: implement `HistoryStore`'s `load`, `save` and `delete_scope` returning `BoxFuture`s (`futures::future::ready(..).boxed()` for a store that answers at once; the `*_async` methods are gone), and await them where the store is called directly.
+- *(history)* Finish a command given up on, save over a stale stored revision, refuse a redo an edit raced
+- *(history)* Keep an entry another history undid out of the merged journal
+- *(history)* Report a failed replay once when its caller drops the answer unread
+- *(history)* Draw entry-id prefixes from real entropy, and document unbounded commits
+- *(history)* Delete a cleared scope's journal from the store
+- *(history)* [**breaking**] Delete a cleared scope's journal only at the revision the history expects
+  - Migration: apps: a HistoryStore implementation's delete_scope takes the expected revision and returns Result<bool, _> (delete only when the stored journal is at that revision, else answer false); a TS HistoryStoreContract's deleteScope(scope, expectedRevision) returns Promise<boolean> the same way.
+- *(history)* Hold a journal's check and write under one lock per key-value store and scope
+- *(storage)* Share one NSH store between the surfaces over one NSH storage
+- *(history)* Lock a journal per bucket and scope in the process, whatever store object
+- *(services)* [**breaking**] Declare the values TS classes give and take with their types
+  - Migration: apps: a TS implementation of NavigationServiceContract returns a NavigationResult whose direction, status and route type-check as NavigationDirection, RoutingStatus and NavigationRoute; replaceOptions takes an ApplicationConfiguration, not a value typed unknown.
+- *(cli)* Await the key-value store in a new mixed app's launch counter
+- *(operations)* Keep a command's arguments in the call queued for TS, not in the caller's future
+- *(nsh)* Queue the engine runner's work where JS runs Rust code outside a call
+- *(app)* [**breaking**] Declare a contract command's result as a promise in TS
+  - Migration: apps: a TS implementation of a contract command returns a promise (an async method) to type-check; a method returning the value at once still runs.
+- *(nsh)* Run the work queued for the engine as the app quits, before the engine stops
+- *(nsh)* Wait at quit for engine work already running, within the quit's limit
+- *(nsh)* Stop a cancellable engine run once its caller drops it, for history's call timers
+- *(i18n)* Follow every state the i18n service publishes in the message formatter
+- *(app)* Publish the fake input map's state outside its lock
+- *(app)* Make TS implementations of contracts before other startup factories run
+- *(operations)* [**breaking**] Carry a transaction by its id, entering it on the thread for a synchronous body only
+  - Migration: apps: submit into a transaction with `transaction.submit(..)` / `transaction.resubmit(..)`, or wrap the synchronous code that calls `operations.submit(..)` in `transaction.enter(|| ..)`; `current_transaction_id()` and `begin_transaction(Join | Reject)` see only a transaction entered that way.
+- *(operations)* Refuse a submission into a transaction that is not open
+- *(operations)* Release a target's handle that TS never took
+- *(app)* Make FakeI18n, FakeHistory and FakeInputMap behave as RayX's services do
+- *(nsh)* Take a typed array or an ArrayBuffer where a TS contract answers bytes
+- *(operations)* State that transaction ids are unique and increasing per service
+- *(history)* [**breaking**] Report unheard failures, rebase on another writer's journal, time out silent calls, keep the replay order
+  - Migration: apps: handle `HistoryError::TimedOut` where they match `HistoryError` exhaustively; set `HistoryOptions::call_timeout_ms` (or register a `HistoryTimer` outside NSH) to change the history's call timeout.
+- *(history)* [**breaking**] Keep each session's stacks its own, merge journals by entry id, never cut a commit short
+  - Migration: apps: give `HistoryEntry` values they construct an `id` (any string unique to the entry); entries deserialized without one get an empty id.
+- *(app)* [**breaking**] Let the last registration of a key win completely
+  - Migration: apps: an implementation that loads at start and was registered with add_startup_singleton(Arc::clone(&x)) plus add_singleton_as::<dyn T>(x) registers with add_startup_singleton_for::<dyn T, _>(x) instead; one that relied on replace_service_as::<dyn T> to drop a startup service registered as another type registers that one as dyn T (add_startup_service_for).
+- *(app)* [**breaking**] Tie a registration's requirements to the registration that declared them
+  - Migration: apps: declare a registration's require_for::<S, T> before registering S; one declared after S's registration moves to the next registration of S.
+- *(app)* Give a trait the startup role of an implementation naming its own key
+- *(app)* Find a published operation target in any order
+
+### Refactoring
+- *(app)* Group the NSH host's files by topic and by service
+- [**breaking**] Rename rayx_app to rayx_app_nsh and rayx_core to rayx_app
+  - Migration: apps: depend on `rayx_app` for `rayx_core` and on `rayx_app_nsh` for the old `rayx_app`; `rayx::core` is `rayx::app` and `rayx::app` is `rayx::app_nsh`.
+- [**breaking**] Remove rayx_runtime, every service being a crate of its own
+  - Migration: apps: depend on the service crates (or the `rayx` umbrella's features) in place of `rayx_runtime`, and import services from `rayx_app::services::<name>` and builder extensions from `rayx_services_<name>`.
+
+### Tests
+- *(services)* Check that RayX's platform service publishes only real changes
+- *(i18n)* Check the I18nService class's declaration in the i18n crate's set
+- *(history)* Answer every waiting save after the history's lock is poisoned
+- *(cli)* Expect the workspace job to free the runner's disk and build without debug info
+- *(services)* Resolve a registered service class whose service is missing
+- *(services)* Restore the coverage lost when the services moved to their crates
+- *(nsh)* Cover work queued off the engine thread as the app quits
+- *(rayx)* Replace RayX's implementations with an app's own, every consumer using them
+- *(services)* Implement each of the twelve service contracts in TS
+- *(rayx)* Undo and redo through RayX's own operation service, end to end
+- *(rayx)* Spell the old package names in parts so the docs check finds none
+- *(app)* Cover a startup dependency on a startup service's registration key
+- *(app)* Use every fake by its trait in a plain provider
+
 ## [0.11.1] - 2026-11-17
 
 ### Features
