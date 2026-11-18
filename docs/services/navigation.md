@@ -175,8 +175,11 @@ An app may register its own `dyn NavigationService` in place of `add_navigation(
 builder.add_singleton_as::<dyn NavigationService>(Arc::new(MyNavigation::new()) as Arc<dyn NavigationService>)
 ```
 
-One that must initialize at the start also registers itself as a startup service, as `add_navigation(..)` does:
-`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn NavigationService`.
+One that must initialize at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_navigation(..)` does: the trait and a startup service registered as it
+(`builder.add_startup_singleton_for::<dyn NavigationService, _>(Arc::new(MyNavigation::new()))`, `MyNavigation` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_navigation(..)`, the app's own replaces it completely: RayX's never starts.
 
 In TS, a class implementing `NavigationServiceContract`, registered under `NavigationService`: its state a
 `ContractState`, its events a `ContractEvents`, the constants fields, the commands `async` methods. Values cross as

@@ -121,9 +121,11 @@ it, and the class `KeyValueStore` wraps it.
 builder.add_singleton_as::<dyn KeyValueStore>(Arc::new(MyStore::new()) as Arc<dyn KeyValueStore>)
 ```
 
-One that must load at the start also registers itself as a startup service, as `add_storage()` does:
-`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn KeyValueStore`, which the
-services that use the store wait for.
+One that must load at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_storage()` does: the trait and a startup service registered as it, which the services that use the store wait for
+(`builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore::new()))`, `KeychainStore` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_storage()`, the app's own replaces it completely: RayX's never starts.
 
 In TS, a class implementing `KeyValueStoreContract`, registered under `KeyValueStore`: `capabilities` a field, the
 commands `async` methods. Values cross as byte arrays: `get` answers a `number[]` or `Uint8Array` (or `null`), `set`

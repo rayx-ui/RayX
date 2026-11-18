@@ -118,9 +118,16 @@ service's builder method. RayX's other services, the host's requirement and the 
 builder.add_singleton_as::<dyn KeyValueStore>(Arc::new(KeychainStore::new()) as Arc<dyn KeyValueStore>)
 ```
 
-One that must initialize at the start registers itself as a startup service too (`add_startup_singleton(..)`, its
-`StartupInitializable::startup_service_type()` naming the trait), as RayX's do, so the services that wait for the
-trait wait for it ([Startup](startup.md)).
+One that must initialize at the start registers with `add_startup_singleton_for::<dyn Trait, Impl>(Arc<Impl>)`
+instead, as RayX's do: the trait and a startup service registered as it, so the services that wait for the trait wait
+for it ([Startup](startup.md#implementing-a-trait)):
+
+```rust
+builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore::new()))
+```
+
+Registered before or after the service's builder method, the last registration wins completely: registering the trait
+removes the startup services registered as it before, so RayX's never starts once the app's own replaced it.
 
 In TS, a class implementing the contract's interface, registered under the service's class: published state as a
 `ContractState`, events as `ContractEvents`, constants as fields, commands as `async` methods

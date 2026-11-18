@@ -153,8 +153,11 @@ own `dyn KeyValueStore` instead ([storage](storage.md#replace-it)).
 builder.add_singleton_as::<dyn InputMapService>(Arc::new(MyInputMap::new()) as Arc<dyn InputMapService>)
 ```
 
-One that must load at the start also registers itself as a startup service, as `add_input_map(..)` does:
-`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn InputMapService`.
+One that must load at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_input_map(..)` does: the trait and a startup service registered as it
+(`builder.add_startup_singleton_for::<dyn InputMapService, _>(Arc::new(MyInputMap::new()))`, `MyInputMap` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_input_map(..)`, the app's own replaces it completely: RayX's never starts.
 
 In TS, a class implementing `InputMapServiceContract`, registered under `InputMapService`: its state a
 `ContractState`, the commands `async` methods. Values cross as the JSON of the Rust types (snake_case fields).

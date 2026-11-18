@@ -90,6 +90,16 @@ builder.add_startup_singleton_for::<dyn KeyValueStore, _>(Arc::new(KeychainStore
 - An async factory form is not offered: the trait resolves synchronously, before startup has run, so its value must
   exist by then; `add_startup_resolved_async` makes a startup service asynchronously, without a value to resolve.
 
+**The last registration of a key wins.** Registering a service under a key (`add_singleton_as`, `add_scoped_as`,
+`add_transient_as`, the factory and `replace_*` forms, a runtime key, a thread-bound service) removes the startup
+services registered as that key before; a registration that is a startup service (`add_startup_*`, the `_for` forms)
+replaces them with its own. So the app's own `dyn I18nService`, registered after `add_i18n(..)`, replaces RayX's
+completely: RayX's never loads its messages. Registered before it, `add_i18n(..)` replaces the app's. What
+`add_i18n(..)` declared it needs (`require_for`) stays declared: the asset and platform services are still checked for. A startup
+service is removed by the registration of what it was registered as, not of the key it names: one registered
+`add_startup_singleton(MyStore)` (registered as `MyStore`) and naming `dyn KeyValueStore` stays when `dyn KeyValueStore`
+is registered.
+
 A startup service that is not a Rust type is keyed by a runtime key (`StartupServiceType::runtime(&key)`) and may be
 made asynchronously when startup runs: `add_startup_resolved_async(&key, |context| async { … }.boxed_local())`. It is
 ordered, initialized, timed and reported (by the key's display name) with every other startup service, and it may wait

@@ -270,6 +270,42 @@ fn rayx_s_formatter_formats_the_app_s_own_i18n() {
     assert_eq!(formatter.format("hello", &ana), "Bok, Ana!");
 }
 
+#[test]
+fn the_app_s_own_i18n_registered_after_add_i18n_replaces_it_completely() {
+    let assets = own_assets();
+    let platform = FakePlatform::new(PlatformSnapshot::default());
+    let i18n = FakeI18n::in_language("en");
+    block_on(i18n.add_resource("en".into(), None, r#"{ "hello": "Hi, {$name}!" }"#.into()))
+        .unwrap();
+    let mut builder = RayXAppBuilder::new().add_i18n(|options| {
+        options.default_language("en");
+    });
+    let services = builder.services_mut();
+    services.add_singleton_as::<dyn AssetService>(Arc::clone(&assets) as Arc<dyn AssetService>);
+    services.add_singleton_as::<dyn PlatformInfoService>(
+        Arc::clone(&platform) as Arc<dyn PlatformInfoService>
+    );
+    services.add_singleton_as::<dyn I18nService>(Arc::clone(&i18n) as Arc<dyn I18nService>);
+    assert!(
+        !services.has_startup_role::<dyn I18nService>(),
+        "registering the app's own removes RayX's startup service"
+    );
+    let services = start(builder);
+
+    assert!(same(
+        &services.required_service::<dyn I18nService>().unwrap(),
+        &i18n
+    ));
+    assert!(
+        assets.loads().is_empty(),
+        "RayX's i18n never loads its messages: {:?}",
+        assets.loads()
+    );
+    let formatter = services.required_service::<dyn MessageFormatter>().unwrap();
+    let ana = Args::new().with("name", "Ana");
+    assert_eq!(formatter.format("hello", &ana), "Hi, Ana!");
+}
+
 /// The app's own services, one of each for the process.
 struct Own {
     platform: Arc<FakePlatform>,

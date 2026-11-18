@@ -150,9 +150,11 @@ it, and the class `AssetService` wraps it.
 builder.add_singleton_as::<dyn AssetService>(Arc::new(MyAssets::new()) as Arc<dyn AssetService>)
 ```
 
-One that loads its catalog at the start also registers itself as a startup service, as `add_assets(..)` does:
-`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn AssetService`, which
-RayX's fonts wait for.
+One that loads its catalog at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_assets(..)` does: the trait and a startup service registered as it, which RayX's fonts wait for
+(`builder.add_startup_singleton_for::<dyn AssetService, _>(Arc::new(MyAssets::new()))`, `MyAssets` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_assets(..)`, the app's own replaces it completely: RayX's never starts.
 
 In TS, a class implementing `AssetServiceContract`, registered under `AssetService`: `catalog` a `ContractState`
 (`null` until loaded, then the JSON of an `AssetCatalog`: `{ packages, entries, diagnostics }`, `entries` keyed by

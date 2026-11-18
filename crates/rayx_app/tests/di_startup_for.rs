@@ -260,6 +260,9 @@ fn di_startup_for_the_startup_only_form_is_registered_as_the_trait() {
     provider.add_startup_service_for::<dyn Greeter, _>(Arc::clone(&follower));
     assert!(provider.has_startup_role::<dyn Greeter>());
 
+    // A later registration of the trait removes it.
+    provider
+        .add_singleton_as::<dyn Greeter>(Arc::new(Loaded::new("own", &log)) as Arc<dyn Greeter>);
     run(&provider).expect("startup runs");
-    assert_eq!(follower.loads(), 1);
+    assert_eq!(follower.loads(), 0);
 }

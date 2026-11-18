@@ -18,13 +18,15 @@ pub trait SuspensionAppBuilderExt: AppBuilder {
     fn add_suspension(mut self) -> Self {
         let suspension = NshSuspension::new();
         let services = self.services_mut();
-        // Replaced first: replacing `dyn SuspensionService` drops the startup service keyed by
-        // it, which `Following` is.
+        // Registered first: registering `dyn SuspensionService` removes the startup services
+        // registered as it, which `Following`, added after, is; so does a later registration
+        // of it (the app's own).
         let service = Arc::clone(&suspension);
         services.replace_service_factory_as::<dyn SuspensionService>(move |_| {
             Arc::clone(&service) as Arc<dyn SuspensionService>
         });
-        services.add_startup_singleton(Following(suspension));
+        services
+            .add_startup_service_for::<dyn SuspensionService, _>(Arc::new(Following(suspension)));
         self
     }
 }

@@ -271,6 +271,7 @@ impl ServiceProvider {
         + Sync
         + 'static,
     ) -> &mut Self {
+        self.registering_key(&key);
         self.services
             .insert_keyed(key, ServiceLifetime::Singleton, factory);
         self
@@ -285,6 +286,7 @@ impl ServiceProvider {
         + Sync
         + 'static,
     ) -> &mut Self {
+        self.registering_key(&key);
         self.services
             .insert_keyed(key, ServiceLifetime::Scoped, factory);
         self
@@ -300,6 +302,7 @@ impl ServiceProvider {
         + Sync
         + 'static,
     ) -> &mut Self {
+        self.registering_key(&key);
         self.services
             .insert_keyed(key, ServiceLifetime::Transient, factory);
         self
@@ -328,6 +331,12 @@ impl ServiceProvider {
             .remove_registered(&StartupServiceType::of::<T>());
     }
 
+    /// [`Self::registering`] for the runtime key `key`.
+    fn registering_key(&mut self, key: &RuntimeKey) {
+        self.startup
+            .remove_registered(&StartupServiceType::runtime(key));
+    }
+
     pub fn try_add_service_factory<T>(
         &mut self,
         factory: impl Fn(&ServiceProvider) -> T + Send + Sync + 'static,
@@ -338,7 +347,7 @@ impl ServiceProvider {
         if self.services.contains::<T>() {
             return false;
         }
-        self.startup.remove(StartupServiceType::of::<T>());
+        self.registering::<T>();
         self.services
             .insert_singleton_factory::<T>(move |services| Arc::new(factory(services)));
         true
@@ -350,7 +359,7 @@ impl ServiceProvider {
     ) where
         T: DiReady,
     {
-        self.startup.remove(StartupServiceType::of::<T>());
+        self.registering::<T>();
         self.services
             .insert_singleton_factory::<T>(move |services| Arc::new(factory(services)));
     }
@@ -365,7 +374,7 @@ impl ServiceProvider {
         if self.services.contains::<T>() {
             return false;
         }
-        self.startup.remove(StartupServiceType::of::<T>());
+        self.registering::<T>();
         self.services.insert_singleton_factory::<T>(factory);
         true
     }
@@ -376,7 +385,7 @@ impl ServiceProvider {
     ) where
         T: DiReady + ?Sized,
     {
-        self.startup.remove(StartupServiceType::of::<T>());
+        self.registering::<T>();
         self.services.insert_singleton_factory::<T>(factory);
     }
 
@@ -388,7 +397,7 @@ impl ServiceProvider {
             return false;
         }
         let service = service.into_service_arc();
-        self.startup.remove(StartupServiceType::of::<T>());
+        self.registering::<T>();
         self.services.insert(service);
         true
     }
@@ -398,7 +407,7 @@ impl ServiceProvider {
         T: DiReady + ?Sized,
     {
         let service = service.into_service_arc();
-        self.startup.remove(StartupServiceType::of::<T>());
+        self.registering::<T>();
         self.services.insert(Arc::clone(&service));
         service
     }
@@ -413,6 +422,7 @@ impl ServiceProvider {
         if self.services.contains::<T>() {
             return false;
         }
+        self.registering::<T>();
         self.services
             .insert_singleton_factory::<T>(move |services| Arc::new(factory(services)));
         self.startup.add_resolved::<T>();
@@ -425,6 +435,7 @@ impl ServiceProvider {
     ) where
         T: StartupInitializable,
     {
+        self.registering::<T>();
         self.services
             .insert_singleton_factory::<T>(move |services| Arc::new(factory(services)));
         self.startup.add_resolved::<T>();
@@ -440,6 +451,7 @@ impl ServiceProvider {
         if self.services.contains::<T>() {
             return false;
         }
+        self.registering::<T>();
         self.services.insert_singleton_factory::<T>(factory);
         self.startup.add_resolved::<T>();
         true
@@ -451,6 +463,7 @@ impl ServiceProvider {
     ) where
         T: StartupInitializable + ?Sized,
     {
+        self.registering::<T>();
         self.services.insert_singleton_factory::<T>(factory);
         self.startup.add_resolved::<T>();
     }
@@ -462,6 +475,7 @@ impl ServiceProvider {
         if self.services.contains::<T>() {
             return false;
         }
+        self.registering::<T>();
         let service = service.into_service_arc();
         self.services.insert(service);
         self.startup.add_resolved::<T>();
@@ -473,6 +487,7 @@ impl ServiceProvider {
         T: StartupInitializable + ?Sized,
     {
         let service = service.into_service_arc();
+        self.registering::<T>();
         self.services.insert(Arc::clone(&service));
         self.startup.add_resolved::<T>();
         service
@@ -598,6 +613,7 @@ impl ServiceProvider {
     where
         T: 'static,
     {
+        self.registering::<T>();
         self.services.insert_thread_bound(
             ServiceKey::of::<T>(),
             Cow::Borrowed(type_name::<T>()),
@@ -619,6 +635,7 @@ impl ServiceProvider {
         + Sync
         + 'static,
     ) -> &mut Self {
+        self.registering_key(&key);
         let service = key.name_cow();
         self.services
             .insert_thread_bound(ServiceKey::Runtime(key), service, lifetime, factory);
@@ -636,6 +653,7 @@ impl ServiceProvider {
     where
         T: ?Sized + Send + Sync + 'static,
     {
+        self.registering::<T>();
         self.services.insert(service);
         self
     }
@@ -644,6 +662,7 @@ impl ServiceProvider {
     where
         T: ?Sized + Send + Sync + 'static,
     {
+        self.registering::<T>();
         self.services.insert(service);
         self
     }
@@ -660,6 +679,7 @@ impl ServiceProvider {
     where
         T: DiReady + ?Sized,
     {
+        self.registering::<T>();
         let service = service.into_service_arc();
         self.services.insert(Arc::clone(&service));
         service
@@ -677,6 +697,7 @@ impl ServiceProvider {
     where
         T: DiReady + ?Sized,
     {
+        self.registering::<T>();
         let service = service.into_service_arc();
         self.services.insert(Arc::clone(&service));
         service
@@ -700,6 +721,7 @@ impl ServiceProvider {
     where
         T: DiReady,
     {
+        self.registering::<T>();
         self.services
             .insert_scoped::<T>(move |services| Arc::new(factory(services)));
         self
@@ -723,6 +745,7 @@ impl ServiceProvider {
     where
         T: DiReady + ?Sized,
     {
+        self.registering::<T>();
         self.services.insert_scoped::<T>(factory);
         self
     }
@@ -745,6 +768,7 @@ impl ServiceProvider {
     where
         T: DiReady,
     {
+        self.registering::<T>();
         self.services
             .insert_transient::<T>(move |services| Arc::new(factory(services)));
         self
@@ -768,6 +792,7 @@ impl ServiceProvider {
     where
         T: DiReady + ?Sized,
     {
+        self.registering::<T>();
         self.services.insert_transient::<T>(factory);
         self
     }
@@ -784,6 +809,7 @@ impl ServiceProvider {
     where
         T: StartupInitializable + ?Sized,
     {
+        self.registering::<T>();
         let service = service.into_service_arc();
         self.services.insert(Arc::clone(&service));
         self.startup.add_shared(Arc::clone(&service));
@@ -802,6 +828,7 @@ impl ServiceProvider {
     where
         T: StartupInitializable + ?Sized,
     {
+        self.registering::<T>();
         let service = service.into_service_arc();
         self.services.insert(Arc::clone(&service));
         self.startup.add_shared(Arc::clone(&service));
@@ -943,6 +970,7 @@ impl ServiceProvider {
     where
         T: StartupInitializable,
     {
+        self.registering::<T>();
         self.services
             .insert_scoped::<T>(move |services| Arc::new(factory(services)));
         self.startup.add_resolved::<T>();
@@ -967,6 +995,7 @@ impl ServiceProvider {
     where
         T: StartupInitializable + ?Sized,
     {
+        self.registering::<T>();
         self.services.insert_scoped::<T>(factory);
         self.startup.add_resolved::<T>();
         self
@@ -990,6 +1019,7 @@ impl ServiceProvider {
     where
         T: StartupInitializable,
     {
+        self.registering::<T>();
         self.services
             .insert_transient::<T>(move |services| Arc::new(factory(services)));
         self.startup.add_resolved::<T>();
@@ -1014,6 +1044,7 @@ impl ServiceProvider {
     where
         T: StartupInitializable + ?Sized,
     {
+        self.registering::<T>();
         self.services.insert_transient::<T>(factory);
         self.startup.add_resolved::<T>();
         self

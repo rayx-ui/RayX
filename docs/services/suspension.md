@@ -151,8 +151,11 @@ builder.add_singleton_as::<dyn SuspensionService>(
 )
 ```
 
-One that must initialize at the start also registers itself as a startup service, as `add_suspension()` does:
-`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn SuspensionService`.
+One that must initialize at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_suspension()` does: the trait and a startup service registered as it
+(`builder.add_startup_singleton_for::<dyn SuspensionService, _>(Arc::new(MySuspension::new()))`, `MySuspension` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_suspension()`, the app's own replaces it completely: RayX's never starts.
 
 In TS, a class implementing `SuspensionServiceContract`, registered under `SuspensionService`: `suspension` a
 `ContractState` holding a whole snapshot, `events` a `ContractEvents`, `quit()` and `askBeforeQuit(ask)` `async`

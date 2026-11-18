@@ -140,8 +140,11 @@ asset service then, unless it reads one. The host starts with it, and the class 
 builder.add_singleton_as::<dyn FontService>(Arc::new(MyFonts::new()) as Arc<dyn FontService>)
 ```
 
-One that must initialize at the start also registers itself as a startup service, as `add_fonts(..)` does:
-`add_startup_singleton(..)`, its `StartupInitializable::startup_service_type()` naming `dyn FontService`.
+One that must initialize at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_fonts(..)` does: the trait and a startup service registered as it
+(`builder.add_startup_singleton_for::<dyn FontService, _>(Arc::new(MyFonts::new()))`, `MyFonts` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_fonts(..)`, the app's own replaces it completely: RayX's never starts.
 
 To keep RayX's fonts over the app's own files, register the app's own `dyn AssetService` instead ([assets](assets.md)):
 RayX's font service reads the font files through it.

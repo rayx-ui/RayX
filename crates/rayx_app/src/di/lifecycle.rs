@@ -622,7 +622,7 @@ impl StartupRegistry {
             .retain(|factory| factory.service_type != *service_type);
     }
 
-    pub(crate) fn remove(&mut self, service_type: StartupServiceType) {
+    fn remove(&mut self, service_type: StartupServiceType) {
         self.services.retain(|service| service.key != service_type);
         self.factories
             .retain(|factory| factory.service_type != service_type);

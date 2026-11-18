@@ -1,8 +1,6 @@
 //! `add_platform`: in Rust ([`PlatformAppBuilderExt`]) and in TS ([`PlatformBuilder`], a class
 //! extension of the host's `RayXAppBuilder`).
 
-use std::sync::Arc;
-
 use nsh_core::prelude::*;
 use rayx_app::AppBuilder;
 use rayx_app::services::platform::PlatformInfoService;
@@ -16,15 +14,10 @@ pub trait PlatformAppBuilderExt: AppBuilder {
     /// other: a startup service that publishes NSH's environment when the app starts and keeps
     /// it current from then on.
     fn add_platform(mut self) -> Self {
-        let platform = NshPlatform::new();
-        let services = self.services_mut();
-        // Replacing drops the startup service keyed `dyn PlatformInfoService` (an earlier one's),
-        // so the service's own startup registration, under that key, comes after.
-        let registered = Arc::clone(&platform);
-        services.replace_service_factory_as::<dyn PlatformInfoService>(move |_| {
-            Arc::clone(&registered) as Arc<dyn PlatformInfoService>
-        });
-        services.add_startup_singleton::<NshPlatform>(platform);
+        // Registered as `dyn PlatformInfoService` and a startup service registered as it: a
+        // later registration of `dyn PlatformInfoService` (the app's own) removes both.
+        self.services_mut()
+            .add_startup_singleton_for::<dyn PlatformInfoService, _>(NshPlatform::new());
         self
     }
 }

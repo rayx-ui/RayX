@@ -121,9 +121,11 @@ builder.add_singleton_as::<dyn PlatformInfoService>(
 )
 ```
 
-One that must initialize at the start also registers itself as a startup service, as `add_platform()` does:
-`add_startup_singleton(Arc::clone(&mine))`, its `StartupInitializable::startup_service_type()` naming
-`dyn PlatformInfoService` so the services that depend on that key wait for it.
+One that must initialize at the start registers itself with `add_startup_singleton_for` in place of `add_singleton_as`,
+as `add_platform()` does: the trait and a startup service registered as it, so the services that depend on that key wait for it
+(`builder.add_startup_singleton_for::<dyn PlatformInfoService, _>(Arc::new(MyPlatform::new()))`, `MyPlatform` implementing
+`AsyncInitializable` and `StartupInitializable`; [Startup](../startup.md#implementing-a-trait)). Registered
+after `add_platform()`, the app's own replaces it completely: RayX's never starts.
 
 In TS, a class implementing `PlatformInfoServiceContract`, registered under `PlatformInfoService`: `platform` a
 `ContractState` holding a whole snapshot (the JSON of `PlatformSnapshot`).
