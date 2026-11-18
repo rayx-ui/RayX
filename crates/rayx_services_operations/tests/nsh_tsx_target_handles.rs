@@ -1,7 +1,7 @@
 //! A target's handler that crossed to an operation service written in TS lives only as long as
 //! the call when TS does not take it: a `registerTarget` that throws before
-//! `OperationTarget.of(handle)` releases it with the call, and one TS took lives with TS's
-//! target.
+//! `OperationTarget.of(handle)` releases it with the call, one TS took lives with TS's target,
+//! and a registration whose future Rust dropped at once still reaches TS with its handle.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -68,6 +68,21 @@ impl HandleProbe {
         }
     }
 
+    /// Registers a handler as the target `target_id`, dropping the call's future at once.
+    pub(crate) fn register_and_forget(services: Instance<ServiceProvider>, target_id: String) {
+        let operations = services
+            .with(|services| {
+                services
+                    .services()
+                    .required_service::<dyn OperationService>()
+            })
+            .unwrap();
+        let target = Arc::new(Target);
+        CROSSED.lock().unwrap().push(Arc::downgrade(&target));
+        let id = OperationTargetId::new(target_id).unwrap();
+        drop(operations.register_handler::<Set, _>(id, target));
+    }
+
     /// Which handlers are alive, in order.
     pub(crate) fn alive() -> String {
         CROSSED
@@ -114,11 +129,15 @@ const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   try {
+    let mine;
     const services = await new RayXAppBuilder().addHostFakes()
-      .addSingletonAs(OperationService, () => new MyOperations())
+      .addSingletonAs(OperationService, () => (mine = new MyOperations()))
       .start();
     lines.push(await HandleProbe.register(services, "refused"));
     lines.push(await HandleProbe.register(services, "taken"));
+    HandleProbe.registerAndForget(services, "forgotten");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    lines.push([...mine.targets.keys()].join(","));
     lines.push(HandleProbe.alive());
   } catch (error) {
     lines.push(`threw ${error}`);
@@ -136,5 +155,8 @@ fn a_handle_ts_did_not_take_is_released_with_the_call() {
         set.module::<HandleProbe>();
     });
     let shown = testing::run(set, TSX);
-    assert_eq!(shown, "done refused|ok|gone,alive", "{shown}");
+    assert_eq!(
+        shown, "done refused|ok|taken,forgotten|gone,alive,alive",
+        "{shown}"
+    );
 }

@@ -191,24 +191,27 @@ pub(crate) fn expand_mode(
                         -> #boxed<'__rayx, #ret>
                     {
                         let __rayx_json = (#(#private::to_json(&#names),)*);
-                        // The arguments live until the call answers: what crossed as a handle
-                        // (an operation target's) and TS did not take is released then.
+                        // The arguments live in the call queued for the engine until TS answers
+                        // it (or the engine drops it), whatever the caller does with the future:
+                        // what crossed as a handle (an operation target's) and TS did not take is
+                        // released then.
                         let __rayx_arguments = (#(#names,)*);
                         let (#(#names,)*) = __rayx_json;
-                        let __rayx_answer = #private::call_json(
+                        #private::call_json(
                             ::core::clone::Clone::clone(&self.slot),
                             #member,
-                            move |__rayx_object: ::std::rc::Rc<#stand_in>| async move {
-                                <#stand_in as #iface>::#ident(&__rayx_object, #(#names),*)
-                                    .await
-                                    #to_json
+                            move |__rayx_object: ::std::rc::Rc<#stand_in>| {
+                                let __rayx_arguments = __rayx_arguments;
+                                async move {
+                                    let __rayx_answer =
+                                        <#stand_in as #iface>::#ident(&__rayx_object, #(#names),*)
+                                            .await
+                                            #to_json;
+                                    ::core::mem::drop(__rayx_arguments);
+                                    __rayx_answer
+                                }
                             },
-                        );
-                        ::std::boxed::Box::pin(async move {
-                            let __rayx_answer = __rayx_answer.await;
-                            ::core::mem::drop(__rayx_arguments);
-                            __rayx_answer
-                        })
+                        )
                     }
                 });
             }
