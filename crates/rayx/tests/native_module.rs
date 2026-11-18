@@ -1,9 +1,12 @@
-//! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds every RayX
-//! TS class, RayX's components and theme document and what its function's body adds, nothing
-//! else; an extension is a TS function that `builder.apply(..)` runs in chain order.
+//! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds RayX's TS
+//! classes, the set of every service crate the umbrella's features enable, RayX's components and
+//! theme document and what its function's body adds, nothing else; an extension is a TS function
+//! that `builder.apply(..)` runs in chain order.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+#[path = "support/enabled.rs"]
+mod enabled;
 #[path = "../../rayx_app_nsh/tests/headless/mod.rs"]
 mod headless;
 
@@ -99,6 +102,7 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     rayx::app_nsh::register(&mut rayx);
     // The harness's `builder.addHostFakes()`, which the body adds too.
     rayx.class_extension::<headless::HostFakes>();
+    enabled::register_service_sets(&mut rayx);
     rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     expected.extend(

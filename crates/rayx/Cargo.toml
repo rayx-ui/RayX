@@ -33,21 +33,10 @@ dxn_i18n.workspace = true
 dxn_intl.workspace = true
 
 [features]
-# Every service for now; `t16` narrows the defaults to the four the host requires.
-default = [
-    "application_configuration",
-    "assets",
-    "fonts",
-    "history",
-    "i18n",
-    "input_map",
-    "navigation",
-    "operations",
-    "platform",
-    "selection",
-    "storage",
-    "suspension",
-]
+# The four services the host requires; every other service is opt-in. A feature enables its
+# crate alone and implies no other feature: a service a registered one needs and the app did not
+# register is a startup error naming it.
+default = ["platform", "suspension", "assets", "fonts"]
 application_configuration = ["dep:rayx_services_application_configuration"]
 assets = ["dep:rayx_services_assets"]
 fonts = ["dep:rayx_services_fonts"]
@@ -76,6 +65,24 @@ serde_json.workspace = true
 # service feature on.
 [[test]]
 name = "service_replacement"
+required-features = [
+    "application_configuration",
+    "assets",
+    "fonts",
+    "history",
+    "i18n",
+    "input_map",
+    "navigation",
+    "operations",
+    "platform",
+    "selection",
+    "storage",
+    "suspension",
+]
+
+# Every one of the twelve service contracts implemented in TS: every service feature on.
+[[test]]
+name = "ts_service_contracts"
 required-features = [
     "application_configuration",
     "assets",

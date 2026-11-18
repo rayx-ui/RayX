@@ -112,8 +112,10 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// It is NSH's `#[native_module("my-app")]` on the function, whose body first registers every
-/// RayX TS class (`rayx::app_nsh::register`) and RayX's components with their theme document
+/// It is NSH's `#[native_module("my-app")]` on the function, whose body first calls the
+/// umbrella's registration (`rayx::__private::register`, compiled with the umbrella's features):
+/// RayX's TS classes (`rayx::app_nsh::register`), the set of each service crate the umbrella's
+/// features enable and RayX's components with their theme document
 /// (`rayx::components::register`), and nothing else; the crate gains `pub fn registry()`, as
 /// with NSH's attribute. Written in the crate's source, the attribute line is what NSH's CLI
 /// reads the set's specifier from. Used through the `rayx` umbrella, which it names. It takes

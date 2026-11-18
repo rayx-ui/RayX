@@ -1,11 +1,16 @@
-//! `#[rayx::native_module("spec")]` on an app crate's registry function: the set holds every RayX
-//! TS class and RayX's components with their theme document, then what the function's body adds
-//! (a component, a module, an app extension TS applies), and nothing else; its declarations
-//! declare them all, documented; and NSH's CLI reads the set's specifier from the attribute's line
-//! in the crate's source, as it does for NSH's own `#[native_module]`.
+//! `#[rayx::native_module("spec")]` on an app crate's registry function: the set holds RayX's TS
+//! classes, the set of every service crate the umbrella's features enable (and no other's) and
+//! RayX's components with their theme document, then what the function's body adds (a component,
+//! a module, an app extension TS applies), and nothing else; its declarations declare them all,
+//! documented; TS's `RayXAppBuilder` has the builder methods of the enabled crates only, in JS and
+//! in the declarations (with the default features `addFonts` and no `addI18n`, with every feature
+//! both); and NSH's CLI reads the set's specifier from the attribute's line in the crate's source,
+//! as it does for NSH's own `#[native_module]`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+#[path = "support/enabled.rs"]
+mod enabled;
 #[path = "../../rayx_app_nsh/tests/headless/mod.rs"]
 mod headless;
 
@@ -92,6 +97,7 @@ fn the_set_is_rayx_s_then_the_body_s_exports_and_nothing_else() {
     rayx::app_nsh::register(&mut rayx);
     // The harness's `builder.addHostFakes()`, which the body adds too.
     rayx.class_extension::<headless::HostFakes>();
+    enabled::register_service_sets(&mut rayx);
     rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     let own: BTreeSet<String> = exports(&set).difference(&expected).cloned().collect();
@@ -128,6 +134,62 @@ fn the_declarations_declare_rayx_s_and_the_body_s_exports_documented() {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }
     assert_eq!(set.undocumented(), Vec::<String>::new());
+}
+
+#[test]
+fn the_builder_declares_the_methods_of_the_enabled_crates_only() {
+    let ts = nsh_core::element::declarations(&registry(), &[]);
+    let declares = |method: &str| ts.contains(&format!("\n  {method}("));
+    let problems: Vec<String> = enabled::BUILDER_METHODS
+        .iter()
+        .filter(|(_, method, enabled)| declares(method) != *enabled)
+        .map(|(feature, method, enabled)| {
+            if *enabled {
+                format!("feature {feature} is on and `{method}` is not declared")
+            } else {
+                format!("feature {feature} is off and `{method}` is declared")
+            }
+        })
+        .collect();
+    assert!(problems.is_empty(), "{}\nin\n{ts}", problems.join("\n"));
+    // The criterion's two cases: the defaults have `addFonts` and no `addI18n`, every feature
+    // both.
+    assert_eq!(declares("addFonts"), cfg!(feature = "fonts"));
+    assert_eq!(declares("addI18n"), cfg!(feature = "i18n"));
+    assert_eq!(
+        ts.contains("export declare class I18nService"),
+        cfg!(feature = "i18n")
+    );
+}
+
+/// Shows, for each service's builder method, whether a TS builder has it.
+const BUILDER_METHODS_TSX: &str = r#"import { mount, signal, Text } from "nsh";
+import { RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(() => {
+  const builder = new RayXAppBuilder();
+  const methods = METHODS.map((method) => `${method}:${typeof builder[method] === "function"}`);
+  shown.set(`done ${methods.join("|")}`);
+}, 0);
+mount(() => <Text>{shown()}</Text>);
+"#;
+
+#[test]
+fn a_ts_builder_has_the_methods_of_the_enabled_crates_only() {
+    let methods: Vec<String> = enabled::BUILDER_METHODS
+        .iter()
+        .map(|(_, method, _)| format!("\"{method}\""))
+        .collect();
+    let tsx = BUILDER_METHODS_TSX.replace("METHODS", &format!("[{}]", methods.join(", ")));
+    let expected: Vec<String> = enabled::BUILDER_METHODS
+        .iter()
+        .map(|(_, method, enabled)| format!("{method}:{enabled}"))
+        .collect();
+    assert_eq!(
+        headless::run(registry(), &tsx),
+        format!("done {}", expected.join("|"))
+    );
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";

@@ -30,16 +30,27 @@ Or add RayX to an existing crate. Releases are git tags `vX.Y.Z`; nothing is pub
 
 ```toml
 [dependencies]
-rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z", features = ["storage", "operations", "history"] }
 ```
 
-An app builds its services with `RayXAppBuilder` and starts them, the same way in Rust and in TSX:
+Each service is a crate behind a `rayx` feature of its name (`rayx::services::<name>`); the defaults are the four the
+host requires, `platform`, `suspension`, `assets` and `fonts`, and the app lists the others it uses. An app builds its
+services with `RayXAppBuilder` and starts them, the same way in Rust and in TSX:
 
 ```rust
 use rayx::prelude::*;
 
-// In the root component.
-RayXAppBuilder::new().add_app_settings("my-app").add_storage().add_operations().add_history().start();
+// In the root component: the four the host requires, then the app's own choice.
+RayXAppBuilder::new()
+    .add_platform()
+    .add_suspension()
+    .add_assets(|_| {})
+    .add_fonts(|_| {})
+    .add_app_settings("my-app")
+    .add_storage()
+    .add_operations()
+    .add_history()
+    .start();
 ```
 
 ```tsx
@@ -47,6 +58,10 @@ RayXAppBuilder::new().add_app_settings("my-app").add_storage().add_operations().
 import { KeyValueStore, RayXAppBuilder } from "my-app";
 
 const services = await new RayXAppBuilder() // resolves once every startup service is ready
+  .addPlatform()
+  .addSuspension()
+  .addAssets()
+  .addFonts()
   .addAppSettings("my-app")
   .addStorage()
   .addOperations()
@@ -61,7 +76,7 @@ const store = services.getRequiredService(KeyValueStore);
 
 | Crate | What it is |
 | --- | --- |
-| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;` and `#[rayx::native_module]` |
+| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;`, `#[rayx::native_module]` and one feature per service crate (defaults `platform`, `suspension`, `assets`, `fonts`) |
 | `rayx_app` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
 | `rayx_services_<name>` | RayX's implementation of one service each (platform, suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map, application configuration), on NSH |
 | `rayx_app_nsh` | The NSH layer: the app's start, surfaces, screens, view-model binding, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |

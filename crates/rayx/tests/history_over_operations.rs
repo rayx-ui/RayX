@@ -218,8 +218,7 @@ fn each_app_s_operation_service_is_an_instance_of_its_own() {
 #[test]
 fn persistent_history_keeps_its_journal_in_rayx_s_storage() {
     use rayx::app::services::storage::KeyValueStore;
-    use rayx::history::{HISTORY_BUCKET, HistoryJournalV2};
-    use rayx_services_storage::StorageAppBuilderExt as _;
+    use rayx::services::history::{HISTORY_BUCKET, HistoryJournalV2};
 
     let app = App::start(
         RayXAppBuilder::new()

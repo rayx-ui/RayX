@@ -42,9 +42,8 @@ use rayx::app::testing::{
 };
 use rayx::app_nsh::ts::ServiceProvider as TsServiceProvider;
 use rayx::prelude::*;
-use rayx_services_application_configuration::ApplicationConfigurationAppBuilderExt as _;
-use rayx_services_fonts::testing::{FontRegistrar, add_fonts_with};
-use rayx_services_input_map::{INPUT_MAP_STORAGE_BUCKET, InputMapAppBuilderExt as _};
+use rayx::services::fonts::testing::{FontRegistrar, add_fonts_with};
+use rayx::services::input_map::INPUT_MAP_STORAGE_BUCKET;
 use serde::{Deserialize, Serialize};
 
 /// Whether `a` and `b` are the same object.
@@ -205,7 +204,7 @@ fn history_undoes_through_the_app_s_own_operations_into_its_own_store() {
     assert!(block_on(history.undo(scope.clone())).unwrap());
     assert_eq!(*value.0.lock().unwrap(), 0);
     assert!(history.can_redo(&scope));
-    let journals = block_on(store.keys(rayx::history::HISTORY_BUCKET.into())).unwrap();
+    let journals = block_on(store.keys(rayx::services::history::HISTORY_BUCKET.into())).unwrap();
     assert_eq!(journals, ["editor"]);
 }
 
@@ -363,9 +362,9 @@ impl Probe {
 /// `addHostFakes`, which no TSX here calls.
 fn set() -> Registry {
     headless::set(|set| {
-        rayx_services_platform::register(set);
-        rayx_services_storage::register(set);
-        rayx_services_i18n::register(set);
+        rayx::services::platform::register(set);
+        rayx::services::storage::register(set);
+        rayx::services::i18n::register(set);
         set.module::<Probe>().class_extension::<add_own_services>();
     })
 }

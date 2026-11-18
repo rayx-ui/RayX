@@ -49,18 +49,8 @@ const PACIFICO: &[u8] =
 
 #[rayx::native_module("test/app")]
 fn native(registry: &mut Registry) {
-    rayx_services_application_configuration::register(registry);
-    rayx_services_assets::register(registry);
-    rayx_services_fonts::register(registry);
-    rayx_services_history::register(registry);
-    rayx_services_i18n::register(registry);
-    rayx_services_input_map::register(registry);
-    rayx_services_navigation::register(registry);
-    rayx_services_operations::register(registry);
-    rayx_services_platform::register(registry);
-    rayx_services_selection::register(registry);
-    rayx_services_storage::register(registry);
-    rayx_services_suspension::register(registry);
+    // RayX's TS classes and every service crate's set come from the attribute, every feature
+    // being on.
     registry
         .module::<StorageProbe>()
         .module::<PlatformProbe>()
