@@ -158,7 +158,8 @@ promise; `close` of whether the region was open), `pages()` (its journal up to t
 
 The classes' commands are promises, over RayX's implementation and a TS one alike; their reads (`current()`,
 `pages()`) are synchronous. Over a TS implementation, which makes a region later, `region(name)` starts making it and
-the region's first command waits for it (and rejects with why it could not).
+every command of the region waits for that one call, those issued at once included (and rejects with why it could
+not); a command after a failed call tries again.
 
 ```tsx
 const navigation = services.getRequiredService(NavigationService);

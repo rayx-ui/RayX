@@ -1,9 +1,10 @@
 //! A navigation region for TSX ([`NavigationRegion`]), made with `navigationService.region(name)`.
 
-use std::cell::Cell;
+use std::cell::RefCell;
 use std::sync::Arc;
 
 use futures::FutureExt as _;
+use futures::future::{LocalBoxFuture, Shared};
 
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
@@ -24,27 +25,64 @@ pub struct NavigationRegion {
     navigation: Arc<dyn NavigationService>,
     name: String,
     listeners: Listeners,
-    /// The region was not made yet when this object was (a TS implementation answers later):
-    /// the first command makes it first, and rejects with why it could not.
-    unmade: Cell<bool>,
+    /// Whether the region is made: a TS implementation answers later, so every command waits
+    /// for the one call making it, and rejects with why it could not.
+    made: RefCell<Made>,
 }
 
-/// What a command of `this` runs on: the service and the region's name, the region made.
+/// The service's call making a region, shared by the commands waiting for it.
+type Making = Shared<LocalBoxFuture<'static, Result<(), String>>>;
+
+/// Whether a [`NavigationRegion`]'s region is made.
+enum Made {
+    Yes,
+    /// The call making it runs.
+    Making(Making),
+    /// Its last call failed: the next command makes it again.
+    No,
+}
+
+/// `navigation`'s call making the region `name`, started.
+fn making(navigation: &Arc<dyn NavigationService>, name: &str) -> Making {
+    let (navigation, name) = (Arc::clone(navigation), name.to_owned());
+    async move {
+        navigation
+            .ensure_region(name)
+            .await
+            .map_err(|error| error.to_string())
+    }
+    .boxed_local()
+    .shared()
+}
+
+/// What a command of `this` runs on: the service and the region's name, the region made (every
+/// command waits for the one call making it; after a failed one, the next command calls again).
 async fn region(
     this: &Instance<NavigationRegion>,
 ) -> Result<(Arc<dyn NavigationService>, String), String> {
-    let (navigation, name, unmade) = this.with(|this| {
-        (
-            Arc::clone(&this.navigation),
-            this.name.clone(),
-            this.unmade.replace(false),
-        )
+    let (navigation, name, waiting) = this.with(|this| {
+        let mut made = this.made.borrow_mut();
+        let waiting = match &*made {
+            Made::Yes => None,
+            Made::Making(call) => Some(call.clone()),
+            Made::No => {
+                let call = making(&this.navigation, &this.name);
+                *made = Made::Making(call.clone());
+                Some(call)
+            }
+        };
+        (Arc::clone(&this.navigation), this.name.clone(), waiting)
     });
-    if unmade {
-        navigation
-            .ensure_region(name.clone())
-            .await
-            .map_err(|error| error.to_string())?;
+    if let Some(call) = waiting {
+        let answer = call.clone().await;
+        this.with(|this| {
+            let mut made = this.made.borrow_mut();
+            // Only the answer of the current call counts (one failed, the next may run).
+            if matches!(&*made, Made::Making(current) if current.ptr_eq(&call)) {
+                *made = if answer.is_ok() { Made::Yes } else { Made::No };
+            }
+        });
+        answer?;
     }
     Ok((navigation, name))
 }
@@ -138,21 +176,22 @@ impl NavigationRegion {
 
 impl NavigationRegion {
     /// The region `name` of `navigation`, made when missing: at once by RayX's implementation
-    /// (its error is this call's); a TS one's call starts, and the region's first command waits
+    /// (its error is this call's); a TS one's call starts, kept, and the region's commands wait
     /// for it.
     pub(crate) fn of(navigation: Arc<dyn NavigationService>, name: String) -> Result<Self, String> {
-        let unmade = match navigation.ensure_region(name.clone()).now_or_never() {
+        let call = making(&navigation, &name);
+        let made = match call.clone().now_or_never() {
             Some(made) => {
-                made.map_err(|error| error.to_string())?;
-                false
+                made?;
+                Made::Yes
             }
-            None => true,
+            None => Made::Making(call),
         };
         Ok(NavigationRegion {
             navigation,
             name,
             listeners: Listeners::default(),
-            unmade: Cell::new(unmade),
+            made: RefCell::new(made),
         })
     }
 }

@@ -119,8 +119,8 @@ fn the_navigation_classes_commands_are_promises_over_a_ts_implementation() {
     assert_eq!(
         parts[15],
         "navigate main /projects/1 Push,back main,forward main,refresh main,ensure panel,\
-         ensure panel,navigate panel /a Replace,back panel,forward panel,refresh panel,\
-         goTo panel 0,close panel",
+         navigate panel /a Replace,back panel,forward panel,refresh panel,goTo panel 0,\
+         close panel",
         "{shown}"
     );
     assert_eq!(parts.len(), 16, "{shown}");
