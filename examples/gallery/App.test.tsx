@@ -2,6 +2,12 @@
 // so the Button and the theme are RayX's own.
 import { expect, open, test } from "nsh/test";
 
+test("starts RayX with the four services the host requires", async () => {
+  const app = await open("./App.tsx");
+  // The gallery's root is `rayx-started` once the start resolves, `rayx-failed` if it threw.
+  await app.waitFor("id:rayx-started");
+});
+
 test("the Button page shows the playground, the variants and the examples", async () => {
   const app = await open("./App.tsx");
   const texts = app.texts();

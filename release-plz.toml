@@ -23,27 +23,38 @@ semver_check = false
 # along in the next one.
 release_commits = "^(feat|fix|perf)"
 
-# One release unit: the crates inherit `[workspace.package] version`, `rayx_app` builds on
-# `rayx_core` and `rayx_runtime`, the layers re-export `rayx_app_macros`' derive, the `rayx`
+# One release unit: the crates inherit `[workspace.package] version`, `rayx_app_nsh` builds on
+# `rayx_app`, the service crates (`rayx_services_*`) build on both, the layers re-export `rayx_app_macros`' derive, the `rayx`
 # umbrella re-exports them all and `rayx-cli` scaffolds apps on the same tag, so they share one
 # version (the version group), one tag `vX.Y.Z`, one GitHub Release and one root CHANGELOG.md,
-# all owned by `rayx_app`.
+# all owned by `rayx_app`, the core.
 [[package]]
 name = "rayx_app"
 changelog_path = "./CHANGELOG.md"
 changelog_include = [
     "rayx",
-    "rayx_core",
-    "rayx_runtime",
+    "rayx_app_nsh",
     "rayx_app_macros",
     "rayx-cli",
     "rayx_components",
     "rayx_devtools_protocol",
+    "rayx_services_application_configuration",
+    "rayx_services_assets",
+    "rayx_services_fonts",
+    "rayx_services_history",
+    "rayx_services_i18n",
+    "rayx_services_input_map",
+    "rayx_services_navigation",
+    "rayx_services_operations",
+    "rayx_services_platform",
+    "rayx_services_selection",
+    "rayx_services_storage",
+    "rayx_services_suspension",
 ]
 version_group = "rayx"
 
 [[package]]
-name = "rayx_core"
+name = "rayx_app_macros"
 version_group = "rayx"
 # Released under `rayx_app`'s tag and changelog. It keeps the inherited `git_tag_name`: in
 # git-only mode that template is how it finds its previous version (`v*` tags).
@@ -52,9 +63,12 @@ git_release_enable = false
 changelog_update = false
 
 [[package]]
-name = "rayx_runtime"
+name = "rayx_app_nsh"
 version_group = "rayx"
-# Like `rayx_core`.
+# The NSH host, like `rayx_app_macros`. It was `rayx_app` up to `v0.11.0`, whose tag has no
+# `rayx_app_nsh`: this name, which matches no tag, makes its first release a new crate's
+# (docs/releasing.md). Remove it in the first commit after that release's tag.
+git_tag_name = "rayx_app_nsh-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -62,15 +76,7 @@ changelog_update = false
 [[package]]
 name = "rayx"
 version_group = "rayx"
-# The umbrella crate, like `rayx_core`.
-git_tag_enable = false
-git_release_enable = false
-changelog_update = false
-
-[[package]]
-name = "rayx_app_macros"
-version_group = "rayx"
-# Like `rayx_core`.
+# The umbrella crate, like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -78,7 +84,139 @@ changelog_update = false
 [[package]]
 name = "rayx_components"
 version_group = "rayx"
-# RayX's component library and theme, like `rayx_core`.
+# RayX's component library and theme, like `rayx_app_macros`.
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_application_configuration"
+version_group = "rayx"
+# RayX's application configuration, like `rayx_app_macros`. New since `v0.11.0`: this name, which
+# matches no tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first
+# commit after that release's tag.
+git_tag_name = "rayx_services_application_configuration-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_assets"
+version_group = "rayx"
+# RayX's asset service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_assets-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_fonts"
+version_group = "rayx"
+# RayX's font service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_fonts-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_history"
+version_group = "rayx"
+# RayX's history, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no tag,
+# makes its first release a new crate's (docs/releasing.md). Remove it in the first commit after
+# that release's tag.
+git_tag_name = "rayx_services_history-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_i18n"
+version_group = "rayx"
+# RayX's i18n service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_i18n-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_input_map"
+version_group = "rayx"
+# RayX's input map, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no tag,
+# makes its first release a new crate's (docs/releasing.md). Remove it in the first commit after
+# that release's tag.
+git_tag_name = "rayx_services_input_map-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_navigation"
+version_group = "rayx"
+# RayX's navigation service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches
+# no tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_navigation-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_operations"
+version_group = "rayx"
+# RayX's operation service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches
+# no tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_operations-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_platform"
+version_group = "rayx"
+# RayX's platform service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_platform-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_selection"
+version_group = "rayx"
+# RayX's selection service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches
+# no tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_selection-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_storage"
+version_group = "rayx"
+# RayX's storage service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_storage-v{{ version }}"
+git_tag_enable = false
+git_release_enable = false
+changelog_update = false
+
+[[package]]
+name = "rayx_services_suspension"
+version_group = "rayx"
+# RayX's suspension service, like `rayx_app_macros`. New since `v0.11.0`: this name, which matches no
+# tag, makes its first release a new crate's (docs/releasing.md). Remove it in the first commit
+# after that release's tag.
+git_tag_name = "rayx_services_suspension-v{{ version }}"
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false
@@ -95,7 +233,7 @@ release = false
 [[package]]
 name = "rayx-cli"
 version_group = "rayx"
-# The `rayx` command-line tool, like `rayx_core`; dist builds and publishes its binaries for the
+# The `rayx` command-line tool, like `rayx_app_macros`; dist builds and publishes its binaries for the
 # tag.
 git_tag_enable = false
 git_release_enable = false
@@ -155,7 +293,7 @@ commit_parsers = [
 [[package]]
 name = "rayx_devtools_protocol"
 version_group = "rayx"
-# The agent protocol of the dev tools, like `rayx_core`.
+# The agent protocol of the dev tools, like `rayx_app_macros`.
 git_tag_enable = false
 git_release_enable = false
 changelog_update = false

@@ -13,12 +13,16 @@ nsh's, on the API RayX documents in its `docs/tsx.md` and `docs/startup.md`:
 
 | Template | `src/lib.rs` | The app's start |
 | --- | --- | --- |
-| `mixed` | `#[rayx::native_module("<specifier>")]` on `fn native`: every RayX TS class, RayX's components and, in its body, RayX's dev tools (`DevTools`, `DevLayer`) | `App.tsx`: `new RayXAppBuilder().addStorage().addHistory().start()`, then a service from the `ServiceProvider` it resolves with |
-| `rust` | `#[rayx::native_module("<specifier>")]`: RayX's TS classes and components, and the root component `App` | `App`: `RayXAppBuilder::new().add_storage().add_history().start()`, then `app_state()` |
+| `mixed` | `#[rayx::native_module("<specifier>")]` on `fn native`: every RayX TS class, RayX's components and, in its body, RayX's dev tools (`DevTools`, `DevLayer`) | `App.tsx`: `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addStorage().addOperations().addHistory().start()`, then a service from the `ServiceProvider` it resolves with |
+| `rust` | `#[rayx::native_module("<specifier>")]`: RayX's TS classes and components, and the root component `App` | `App`: `RayXAppBuilder::new().add_platform().add_suspension().add_assets(..).add_fonts(..).add_storage().add_operations().add_history().start()`, then `app_state()` |
 
-Both mount RayX's dev tools' layer at the root (`<DevLayer />`, `dev_layer()`), which only a dev
-build carries, and test that the app reaches `Ready` (`App.test.tsx`). Beside them: `rayx` in
-`Cargo.toml` at this `rayx`'s tag, a README, and the pin ([below](#the-nsh-pin)).
+Both register the four services the host requires (platform, suspension, assets and fonts) before
+storage and history, with a comment saying so: each can be replaced by the app's own
+implementation of its contract, and history needs operations. Both mount RayX's dev tools' layer
+at the root (`<DevLayer />`, `dev_layer()`), which only a dev build carries, and test that the app
+reaches `Ready` (`App.test.tsx`). Beside them: `rayx` in `Cargo.toml` at this `rayx`'s tag with the
+features the builder uses beyond the defaults, `features = ["storage", "operations", "history"]`
+(the defaults are the four the host requires), a README, and the pin ([below](#the-nsh-pin)).
 
 ## Finding the project
 
@@ -38,9 +42,9 @@ The NSH an app is built with, read in the directory nsh runs in:
 
 | Where | What | Example |
 | --- | --- | --- |
-| `Cargo.lock` | the one `source` of every NSH package (NSH's own crates, not an app's `nsh-app-*`) | `git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-6#ddac2279bbf639589886651a5f676e57a8c5215b` |
+| `Cargo.lock` | the one `source` of every NSH package (NSH's own crates, not an app's `nsh-app-*`) | `git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85` |
 | `rayx.toml` beside `nsh.json` | the `[nsh]` table, for an app with no NSH crates | see below |
-| built in | the nsh this release of `rayx` was tested with | `nshx-0.5.0-6` at `ddac227` |
+| built in | the nsh this release of `rayx` was tested with | `nshx-0.5.0-7` at `d47d7fd` |
 
 A `Cargo.lock` source is one of:
 
@@ -63,8 +67,8 @@ next to `nsh.json`:
 ```toml
 [nsh]
 git = "https://github.com/dXnSix/nsh"
-tag = "nshx-0.5.0-6"
-commit = "ddac2279bbf639589886651a5f676e57a8c5215b"
+tag = "nshx-0.5.0-7"
+commit = "d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
 ```
 
 `tag` may be `branch` or `rev` instead, and an upstream release is `version = "0.2.0"` alone. The

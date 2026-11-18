@@ -1,0 +1,14 @@
+# A crate that depends on rayx_app (the core) alone and uses `#[derive(AppService)]`
+# (`tests/macro_paths.rs` writes it out as Cargo.toml with the core's path).
+[package]
+name = "macro-paths-core-only"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+rayx_app = { path = "@RAYX_APP@" }
+
+[workspace]
+
+@PATCH@

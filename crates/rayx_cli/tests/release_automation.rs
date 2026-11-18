@@ -100,6 +100,112 @@ fn release_plz_is_git_only_unpublished_and_leaves_the_github_release_to_dist() {
     }
 }
 
+/// The workspace's packages, by name, read from each member's manifest.
+fn workspace_packages() -> Vec<String> {
+    let workspace: toml::Table = read("Cargo.toml").parse().expect("Cargo.toml parses");
+    workspace["workspace"]["members"]
+        .as_array()
+        .expect("[workspace] members")
+        .iter()
+        .map(|member| {
+            let member = member.as_str().expect("a member is a path");
+            let manifest: toml::Table = read(&format!("{member}/Cargo.toml"))
+                .parse()
+                .expect("a member's Cargo.toml parses");
+            manifest["package"]["name"]
+                .as_str()
+                .expect("[package] name")
+                .to_owned()
+        })
+        .collect()
+}
+
+#[test]
+fn release_plz_names_every_package_as_it_is() {
+    let config = release_plz();
+    let packages = workspace_packages();
+    let entries: Vec<&toml::Table> = config["package"]
+        .as_array()
+        .expect("[[package]]")
+        .iter()
+        .map(|package| package.as_table().expect("a [[package]] table"))
+        .collect();
+    let names: Vec<&str> = entries
+        .iter()
+        .map(|package| package["name"].as_str().expect("name"))
+        .collect();
+    // The core owns the one tag and changelog.
+    let owner = entries
+        .iter()
+        .find(|package| package.contains_key("changelog_path"))
+        .expect("an owner of the changelog");
+    assert_eq!(owner["name"].as_str(), Some("rayx_app"));
+    let included: Vec<&str> = owner["changelog_include"]
+        .as_array()
+        .expect("changelog_include")
+        .iter()
+        .map(|name| name.as_str().expect("a package name"))
+        .collect();
+
+    let mut problems = Vec::new();
+    for package in &packages {
+        if !names.contains(&package.as_str()) {
+            problems.push(format!("{package} has no [[package]]"));
+        }
+        let released = package != "rayx_app" && package != "rayx-gallery";
+        if released && !included.contains(&package.as_str()) {
+            problems.push(format!("{package} is not in changelog_include"));
+        }
+    }
+    for name in names.iter().chain(&included) {
+        if !packages.iter().any(|package| package == name) {
+            problems.push(format!("{name} is not a workspace package"));
+        }
+    }
+    for entry in &entries {
+        let name = entry["name"].as_str().expect("name");
+        if name != "rayx_app" && name != "rayx-gallery" {
+            for key in ["git_tag_enable", "git_release_enable", "changelog_update"] {
+                if entry.get(key).and_then(toml::Value::as_bool) != Some(false) {
+                    problems.push(format!("{name}: {key} is not false"));
+                }
+            }
+        }
+    }
+    // A crate the previous `v*` tag does not have (renamed or new since) is released as a new
+    // crate: a package-level `git_tag_name` that matches no `v*` tag (docs/releasing.md).
+    for name in NEW_SINCE_THE_LAST_RELEASE {
+        let entry = entries
+            .iter()
+            .find(|package| package["name"].as_str() == Some(name))
+            .unwrap_or_else(|| panic!("release-plz.toml has no [[package]] {name}"));
+        match entry.get("git_tag_name").and_then(toml::Value::as_str) {
+            Some(tag) if !tag.starts_with('v') => {}
+            other => problems.push(format!(
+                "{name} is new since the last release, but its git_tag_name is {other:?}"
+            )),
+        }
+    }
+    assert!(problems.is_empty(), "{}", problems.join("\n"));
+}
+
+/// The packages the last release's tag does not have, under their names now.
+const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[
+    "rayx_app_nsh",
+    "rayx_services_application_configuration",
+    "rayx_services_assets",
+    "rayx_services_fonts",
+    "rayx_services_history",
+    "rayx_services_i18n",
+    "rayx_services_input_map",
+    "rayx_services_navigation",
+    "rayx_services_operations",
+    "rayx_services_platform",
+    "rayx_services_selection",
+    "rayx_services_storage",
+    "rayx_services_suspension",
+];
+
 #[test]
 fn changelog_groups_commit_types_and_drops_housekeeping() {
     let config = release_plz();

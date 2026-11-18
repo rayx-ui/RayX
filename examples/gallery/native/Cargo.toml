@@ -13,7 +13,8 @@ workspace = true
 
 [dependencies]
 nsh-core.workspace = true
-rayx.workspace = true
+# The services the gallery starts RayX with (`App.tsx`): the four the host requires.
+rayx = { workspace = true, features = ["platform", "suspension", "assets", "fonts"] }
 
 [dev-dependencies]
 nsh-core = { workspace = true, features = ["declarations"] }

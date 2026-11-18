@@ -1,6 +1,6 @@
 [package]
 name = "rayx_app_macros"
-description = "Procedural macros for rayx_app: the AppService derive, #[app_extension] and #[contract], and the umbrella's #[native_module]."
+description = "Procedural macros for rayx_app_nsh: the AppService derive, #[app_extension] and #[contract], and the umbrella's #[native_module]."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

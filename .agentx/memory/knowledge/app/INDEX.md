@@ -4,18 +4,20 @@ agentx:
   scope: knowledge/app
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
-    - rayx_app
+    - rayx_app_nsh
     - nsh
     - tsx
+    - contracts
     - rayx
   supersedes: []
   superseded_by: []
 ---
 # app
 
-`crates/rayx_app`, the NSH layer, and `crates/rayx`, the umbrella apps depend on.
+`crates/rayx_app_nsh`, the NSH host (`rayx_app` until the epic `service-crates`), and
+`crates/rayx`, the umbrella apps depend on.
 
 - [state.md](state.md): how it works now, with code and doc anchors
 - [knowledge.md](knowledge.md): durable facts

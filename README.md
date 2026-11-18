@@ -30,28 +30,46 @@ Or add RayX to an existing crate. Releases are git tags `vX.Y.Z`; nothing is pub
 
 ```toml
 [dependencies]
-rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z", features = ["storage", "operations", "history"] }
 ```
 
-An app builds its services with `RayXAppBuilder` and starts them, the same way in Rust and in TSX:
+Each service is a crate behind a `rayx` feature of its name (`rayx::services::<name>`); the defaults are the four the
+host requires, `platform`, `suspension`, `assets` and `fonts`, and the app lists the others it uses. An app builds its
+services with `RayXAppBuilder` and starts them, the same way in Rust and in TSX:
 
 ```rust
 use rayx::prelude::*;
 
-// In the root component.
-RayXAppBuilder::new().add_app_settings("my-app").add_storage().add_history().start();
+// In the root component: the four the host requires, then the app's own choice.
+RayXAppBuilder::new()
+    .add_platform()
+    .add_suspension()
+    .add_assets(|_| {})
+    .add_fonts(|_| {})
+    .add_app_settings("my-app")
+    .add_storage()
+    .add_operations()
+    .add_history()
+    .start();
 ```
 
 ```tsx
 // The crate's src/lib.rs: `#[rayx::native_module("my-app")] fn native(registry: &mut Registry) {}`
 import { KeyValueStore, RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder() // resolves once every startup service is ready
+new RayXAppBuilder()
+  .addPlatform()
+  .addSuspension()
+  .addAssets()
+  .addFonts()
   .addAppSettings("my-app")
   .addStorage()
+  .addOperations()
   .addHistory()
-  .start();
-const store = services.getRequiredService(KeyValueStore);
+  .start() // resolves once every startup service is ready
+  .then((services) => {
+    const store = services.getRequiredService(KeyValueStore);
+  });
 ```
 
 [Getting started](docs/getting-started.md) walks through it.
@@ -60,11 +78,13 @@ const store = services.getRequiredService(KeyValueStore);
 
 | Crate | What it is |
 | --- | --- |
-| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;` and `#[rayx::native_module]` |
-| `rayx_core` | Dependency injection, configuration, options and the app builder; no NSH, builds for wasm32 |
-| `rayx_runtime` | The app services; no NSH, builds for wasm32 |
-| `rayx_app` | The NSH layer: the app's start, surfaces, screens, view-model binding, navigation regions, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
-| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]` |
+| `rayx` | The umbrella an app depends on, with `use rayx::prelude::*;`, `#[rayx::native_module]` and one feature per service crate (defaults `platform`, `suspension`, `assets`, `fonts`) |
+| `rayx_app` | The core: dependency injection, configuration, options, the app builder, every service's contract (`rayx_app::services::<name>`) and a fake of each (`rayx_app::testing`); no NSH, builds for wasm32 |
+| `rayx_app_nsh` | The NSH host: the app's start (requiring the platform, suspension, asset and font services), surfaces, screens, view-model binding, and the TS side: TS's `RayXAppBuilder` and `ServiceProvider`, TS services, contracts |
+| `rayx_services_<name>` | RayX's implementation of one service each (platform, suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map, application configuration), on NSH, with its TS class |
+| `rayx_components` | The component library and its theme, for Rust and TSX |
+| `rayx_devtools_protocol` | The dev tools' agent protocol |
+| `rayx_app_macros` | `#[derive(AppService)]`, `#[app_extension]`, `#[contract]`, `contract_nsh!`, `#[native_module]` |
 | `rayx-cli` | The `rayx` command-line tool |
 
 ## Documentation
@@ -80,11 +100,13 @@ The [documentation index](docs/INDEX.md) lists every guide:
 - [Navigation](docs/navigation.md)
 - [TSX](docs/tsx.md)
 - [App services](docs/services.md)
+- [Components and theme](docs/components.md)
+- [Dev tools](docs/devtools.md)
 - [The `rayx` CLI](crates/rayx_cli/README.md)
 
 ## Status
 
-0.x, on NSH 0.3. A minor release (`0.5` → `0.6`) may break the API; [CHANGELOG.md](CHANGELOG.md) lists every release,
+0.x, on NSH 0.5 (the fork's `nshx-*` tags). A minor release (`0.5` → `0.6`) may break the API; [CHANGELOG.md](CHANGELOG.md) lists every release,
 with `Migration:` notes for each break.
 
 ## License

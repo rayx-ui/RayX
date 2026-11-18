@@ -1,6 +1,6 @@
 # Dependency injection
 
-`rayx_core` has a `ServiceProvider` with the API of .NET's `Microsoft.Extensions.DependencyInjection`: singleton,
+`rayx_app` has a `ServiceProvider` with the API of .NET's `Microsoft.Extensions.DependencyInjection`: singleton,
 scoped and transient services, child scopes, and services that initialize asynchronously at startup
 ([Startup](startup.md)).
 
@@ -29,6 +29,10 @@ Register services on the app builder, in the app's composition root:
 
 ```rust
 RayXAppBuilder::new()
+    .add_platform()
+    .add_suspension()
+    .add_assets(|_| {})
+    .add_fonts(|_| {})
     .add_singleton(ApiClient { base_url: "https://api.example.com".into() })
     .add_scoped(|services| EditorState::new(services.required_service::<ApiClient>().unwrap()))
     .add_transient(|_| Draft::default())
@@ -38,6 +42,10 @@ RayXAppBuilder::new()
 TSX registers its own services, TS classes, in the same container ([TSX](tsx.md#services-written-in-ts)):
 
 ```tsx
+class ApiClient { constructor(readonly baseUrl: string) {} }
+class EditorState { constructor(readonly api: ApiClient) {} }
+class Draft { text = ""; }
+
 new RayXAppBuilder()
   .addSingleton(ApiClient, () => new ApiClient("https://api.example.com"))
   .addScoped(EditorState, (services) => new EditorState(services.getRequiredService(ApiClient)))
@@ -47,9 +55,48 @@ new RayXAppBuilder()
 - `add_singleton`, `add_scoped`, `add_transient` register a type; the `_as` forms (`add_singleton_as::<dyn Trait>(..)`)
   register it as a trait object.
 - `add_startup_singleton`, `add_startup_scoped`, `add_startup_transient` (and their `_as` forms) register a service
-  that initializes asynchronously before the app is ready.
+  that initializes asynchronously before the app is ready; `add_startup_singleton_for::<dyn Trait, Impl>(..)` (and its
+  factory, scoped and transient forms) registers an implementation of a trait, a contract say, as the trait and as a
+  startup service registered as it ([Startup](startup.md#implementing-a-trait)).
+- The last registration of a key wins completely: registering a service under a key removes the startup services
+  registered as that key before (unless it registers its own), so the app's own `dyn Trait`, registered after a
+  service crate's `add_x`, keeps RayX's from starting.
 - Service crates add their own builder extensions on the `AppBuilder` trait (`add_history()`,
-  `add_navigation(..)`, …), so an app registers a whole feature in one call.
+  `add_navigation(..)`, …), so an app registers a whole feature in one call. Each registers its service as the app's
+  `dyn Trait`, replacing any registered before; an app that wants its own implementation registers it instead
+  ([App services](services.md#replacing-a-service)).
+
+## Required services and declared dependencies
+
+What an app needs, and what each registration needs, is declared rather than registered, and checked before anything
+is made:
+
+- `services.require::<dyn T>(hint)`: the app (or its host) needs `T`. RayX's NSH host requires
+  `dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService` and `dyn FontService` at the start
+  ([Startup](startup.md#how-the-app-starts)).
+- `services.require_for::<dyn S, dyn T>(hint)`: the registration of `S` resolves `T`. A service crate's builder
+  method declares this for every service its implementation resolves (`add_fonts` declares
+  `dyn FontService` on `dyn AssetService`), so the app's own `T`, registered before or after it, satisfies it as well
+  as RayX's. A registration's requirements belong to it: declared before registering `S`, they are the next
+  registration of `S`'s (the current one's when none follows), and a later registration of `S` that does not declare
+  them again drops them, so the app's own `dyn FontService` registered after `add_fonts` needs no asset service.
+  What the app or its host requires (`require`) stays.
+- `services.validate()`, which `RayXAppBuilder::build` and `build_async` run first: one `ServiceValidationError`
+  listing every problem (`ServiceValidationProblem`): `Missing` (the service, who needs it, the hint saying how to
+  register it) and `SingletonOnScoped` (a singleton that depends on a scoped service, directly or through transient
+  ones). On NSH the start fails with `AppError::Services` before any source loads or any factory runs.
+
+```text
+the app's services are not complete:
+- `dyn rayx_app::services::fonts::FontService` needs `dyn rayx_app::services::assets::AssetService`, which is not
+  registered: add_assets(..) (addAssets in TS) from rayx_services_assets, or register your own dyn AssetService
+```
+
+A service's own crate writes the hint; an app's own extension declares its dependencies the same way:
+
+```rust
+builder.services_mut().require_for::<WeatherService, dyn KeyValueStore>("add_storage() from rayx_services_storage");
+```
 
 ## Resolving
 
@@ -60,9 +107,11 @@ let maybe = services.service::<Cache<u32>>();         // Option<Arc<Cache<u32>>>
 let scope = services.create_scope();                  // a child scope
 ```
 
-In a Rust component, `rayx_app::services()` returns the provider of the nearest screen scope (or the surface's root).
-In TSX, `await builder.start()` gives the surface's root:
+In a Rust component, `rayx_app_nsh::services()` returns the provider of the nearest screen scope (or the surface's root).
+In TSX, `await builder.start()` gives the surface's root (a fragment: `services` is that root, `ApiClient` and `Cache`
+the app's classes):
 
+<!-- tsx: fragment -->
 ```tsx
 const api = services.getRequiredService(ApiClient); // the service, or an Error naming the token
 const maybe = services.getService(Cache);           // the service, or null
@@ -99,26 +148,29 @@ stays usable from every thread.
 A thread-bound value is never dropped on another thread: released elsewhere, it is dropped on its own thread at that
 thread's next thread-bound resolve, or by `release_orphaned_thread_bound_services()`.
 
-TS services are thread-bound to the engine thread: they are made and resolved there only. One is made in a call from
-JS (a TS `getService`); startup and contract services are made by `start()`. Rust resolving a TS service off the
-engine thread fails with `WrongThread`; resolving one that is not made yet, outside a call from JS, fails too.
+TS services are thread-bound to the engine thread: they are made and resolved there only. One is made where JS runs
+on the spot: in a call from JS (a TS `getService`), or on the engine thread between JS's turns (a Rust task or
+factory); startup and contract services are made by `start()`. Rust resolving a TS service off the engine thread
+fails with `WrongThread` (a contract's adapter reaches it through the engine instead).
 
 ## Contracts
 
 Rust uses a TS service only through a contract: a Rust trait marked `#[rayx::contract]`, which TS implements and Rust
-resolves as `Arc<dyn Trait>`, like any trait-object service. Its `async fn`s are awaited in JS's next turn, and a call
-off the engine thread fails with `ContractError::WrongThread`:
+resolves as `Arc<dyn Trait>`, like any trait-object service. Its `async fn`s are awaited in JS's next turn, from any
+thread (a call off the engine thread goes through the surface's queue, and fails with `ContractError::EngineGone` once
+the engine stopped):
 
 ```rust
 let source = services.required_service::<dyn WeatherSource>()?;
 let forecast = source.forecast("Rijeka".into()).await?;
 ```
 
+<!-- tsx: fragment -->
 ```tsx
 builder.addSingletonAs(weatherSourceToken(), () => new OpenMeteo());
 ```
 
-See [TSX](tsx.md#contracts).
+See [TSX](tsx.md#contracts), which has `OpenMeteo`.
 
 ## Lifetimes
 
@@ -130,7 +182,7 @@ See [TSX](tsx.md#contracts).
 
 ## Lifetimes on NSH
 
-NSH has no process-wide singletons: each window, test and hot restart is a surface of its own. So `rayx_app` keeps one
+NSH has no process-wide singletons: each window, test and hot restart is a surface of its own. So `rayx_app_nsh` keeps one
 root provider per surface, built from the builder the app starts there (`RayXAppBuilder::new()….start()` in a Rust
 root, `await builder.start()` in TSX).
 
@@ -140,16 +192,18 @@ let scope = use_screen_scope()?;
 ```
 
 ```tsx
-// TSX: a scope per screen, from mount to cleanup.
-const scope = services.createScope();
-// ...
-scope.dispose();
+// TSX: a scope per screen, from mount to cleanup, in the provider `start()` gives.
+function screen(services: ServiceProvider) {
+  const scope = services.createScope();
+  // ...
+  scope.dispose();
+}
 ```
 
 ## View models
 
 `use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
-component's cleanup. `ServiceProvider::view_model::<T>()` (`rayx_app::ts`) does the same, in a Rust bridge, for a TSX
+component's cleanup. `ServiceProvider::view_model::<T>()` (`rayx_app_nsh::ts`) does the same, in a Rust bridge, for a TSX
 screen until its scope is disposed.
 
 ```rust

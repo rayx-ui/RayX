@@ -49,25 +49,26 @@ pub(crate) fn expand(item: ItemFn, app: &TokenStream) -> syn::Result<TokenStream
         #[doc(hidden)]
         #[allow(non_snake_case)]
         mod #module {
-            // NSH's macros name `nsh_core` in scope when the app's crate takes NSH through RayX.
             #[allow(unused_imports)]
             use #nsh;
+            // The class extension names the class by its own name.
+            use #app::ts::RayXAppBuilder;
 
-            /// The TS function of an app extension (`#[app_extension]`).
+            /// The holder of the TS builder method `#[app_extension]` makes: register it in the
+            /// app's set with `registry.class_extension::<the_function>()`.
             #[allow(non_camel_case_types)]
-            #[#nsh::element::module]
             pub struct #ident {}
 
-            #[#nsh::element::module(flat)]
+            #[#nsh::element::class_extension(RayXAppBuilder)]
             impl #ident {
                 #(#docs)*
                 pub fn #ident(
-                    builder: #nsh::element::Instance<#app::ts::RayXAppBuilder>,
+                    this: #nsh::element::Instance<RayXAppBuilder>,
                 ) -> ::core::result::Result<
-                    #nsh::element::Instance<#app::ts::RayXAppBuilder>,
+                    #nsh::element::Instance<RayXAppBuilder>,
                     ::std::string::String,
                 > {
-                    #app::ts::RayXAppBuilder::extended(builder, super::#ident)
+                    RayXAppBuilder::extended(this, super::#ident)
                 }
             }
         }

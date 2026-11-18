@@ -4,9 +4,9 @@ agentx:
   scope: knowledge/runtime
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
-    - rayx_runtime
+    - rayx_services
     - services
   supersedes: []
   superseded_by: []
@@ -15,19 +15,44 @@ agentx:
 
 ## Purpose And Usage
 
-Route work on the app services.
+Route work on RayX's implementations of the services. A service is two parts: its contract in
+the core ([core](../core/state.md), `rayx_app::services::<name>`) and RayX's implementation here,
+which an app may replace with its own in Rust or TS.
 
 ## Current Technical Shape
 
-`crates/rayx_runtime/src/services`: storage, operations and history, navigation,
-selection, input maps, platform and suspension (lifecycle) state, application configuration,
-assets, fonts, i18n. What a service needs from the platform is a trait here that `rayx_app`
-implements. Depends on `rayx_core` alone; builds for `wasm32-unknown-unknown`.
+Twelve crates `crates/rayx_services_<name>`: `platform`, `suspension`, `assets`, `fonts` (the
+four the host requires, the umbrella's default features), `storage`, `navigation`, `i18n`,
+`operations`, `history`, `selection`, `input_map`, `application_configuration`. Each holds:
+
+- RayX's implementation (`service.rs` and its helpers) and its options;
+- the NSH side (`nsh_*.rs`: NSH storage, asset reader, font registrar, location, …) and the TS
+  side (`*_ts.rs`: the service's TS class named after the trait and its options class), with
+  `contract_nsh!` naming the contract's TS interface (`KeyValueStoreContract`);
+- `builder.rs`: the Rust extension `<Name>AppBuilderExt::add_<name>` and the TS builder method,
+  an NSH class extension of the host's TS `RayXAppBuilder` (`<Name>Builder`,
+  `#[class_extension(RayXAppBuilder)]`), acting on it through `RayXAppBuilder::extend_with` and
+  `ts::record`;
+- `register(registry)`: its TS classes, resolvers, contract and builder method, called by
+  `#[rayx::native_module]` when the umbrella's feature is on.
+
+A service that needs another resolves it by trait and declares it with `require_for` (fonts on
+`dyn AssetService`; i18n on assets and platform; history on operations, and storage when
+persistent; selection on navigation; input map on storage; application configuration on
+platform). i18n has two traits: the `I18nService` contract and the Rust-only, synchronous
+`MessageFormatter` (`add_message_formatter()` over any `dyn I18nService`), with `tr!` here.
+Platform and suspension keep themselves current from their initialization; suspension wires NSH's
+quitting. `HistoryStore` stays public in `rayx_services_history` as its extension point; other
+platform seams are private to their crate. Calls to NSH from other threads go through the host's
+`EngineRunner`.
 
 ## Backlinks
 
-Code and docs: [docs/services.md](../../../../docs/services.md) and one doc per service in
-[docs/services/](../../../../docs/services/); tests one group per service in
-`crates/rayx_runtime/tests/`.
+Code and docs: `crates/rayx_services_*/src/lib.rs`, `crates/rayx_services_*/src/builder.rs`,
+[docs/services.md](../../../../docs/services.md) and one doc per service in
+[docs/services/](../../../../docs/services/); tests one group per behavior in
+`crates/rayx_services_<name>/tests/`, cross-crate ones in `crates/rayx/tests/`
+(`service_replacement`, `ts_service_contracts`, `history_over_operations`, `crate_layout`).
 
-Memory: [core](../core/state.md), [app](../app/state.md).
+Memory: [core](../core/state.md), [app](../app/state.md),
+[crate structure decision](../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16).

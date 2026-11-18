@@ -16,9 +16,19 @@ fn native(registry: &mut Registry) {
 #[component]
 pub fn App() -> impl IntoElement {
     // The app's composition root: its configuration and the services every surface starts with
-    // (RayX's are listed in its `docs/services.md`). `start()` starts them in a task of its own;
-    // `app_state()` follows it.
-    RayXAppBuilder::new().add_storage().add_history().start();
+    // (RayX's are listed in its `docs/services.md`). The host requires the first four (platform
+    // state, suspension, assets and fonts), and each can be replaced by the app's own
+    // implementation of its contract; history needs operations. `start()` starts them in a task
+    // of its own; `app_state()` follows it.
+    RayXAppBuilder::new()
+        .add_platform()
+        .add_suspension()
+        .add_assets(|_| {})
+        .add_fonts(|_| {})
+        .add_storage()
+        .add_operations()
+        .add_history()
+        .start();
     view()
         .flex_1()
         .bg(move || theme().background)
@@ -26,9 +36,9 @@ pub fn App() -> impl IntoElement {
         .items_center()
         .justify_center()
         .child(
-            text(move || match rayx::app::app_state() {
-                rayx::app::AppState::Ready => "Ready".to_owned(),
-                rayx::app::AppState::Failed(message) => format!("Failed: {message}"),
+            text(move || match rayx::app_nsh::app_state() {
+                rayx::app_nsh::AppState::Ready => "Ready".to_owned(),
+                rayx::app_nsh::AppState::Failed(message) => format!("Failed: {message}"),
                 _ => "Starting".to_owned(),
             })
             .text_size(px(22.0)),

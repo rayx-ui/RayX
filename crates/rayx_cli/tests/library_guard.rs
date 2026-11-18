@@ -4,8 +4,8 @@
 //!
 //! The guard fails, listing `file:line: token` or the crate, when
 //! - `rayx-cli`'s dependency tree (`cargo tree -p rayx-cli`, every edge kind and target) holds a
-//!   RayX, gpux, GPUI or NSH crate (`rayx`, `rayx_core`, `rayx_runtime`, `rayx_app*`, `gpux*`,
-//!   `gpui*`, `nsh-*`);
+//!   RayX, gpux, GPUI or NSH crate (`rayx`, `rayx_core`, `rayx_runtime`, `rayx_app*`,
+//!   `rayx_services_*`, `gpux*`, `gpui*`, `nsh-*`);
 //! - non-test source under `src/` names `gpux`, `gpui` or `GameX`, or reads
 //!   `env!("CARGO_MANIFEST_DIR")`;
 //! - an allowlist entry matches nothing any more.
@@ -22,11 +22,13 @@ use std::process::Command;
 
 use common::Workspace;
 
-/// Crates the CLI must not depend on, by exact name.
+/// Crates the CLI must not depend on, by exact name: the umbrella, and the names RayX's crates had
+/// before (also RayX.Old's).
 const DENIED_CRATES: &[&str] = &["rayx", "rayx_core", "rayx_runtime"];
 
-/// Crate families the CLI must not depend on.
-const DENIED_CRATE_PREFIXES: &[&str] = &["rayx_app", "gpux", "gpui", "nsh_"];
+/// Crate families the CLI must not depend on: RayX's core and host (`rayx_app`, `rayx_app_nsh`,
+/// `rayx_app_macros`), its service crates, and the gpux, GPUI and NSH libraries.
+const DENIED_CRATE_PREFIXES: &[&str] = &["rayx_app", "rayx_services_", "gpux", "gpui", "nsh_"];
 
 /// Name families non-test source must not contain: the gpux and GPUI libraries and the apps built
 /// on NSH.
@@ -399,7 +401,9 @@ fn a_rayx_gpux_gpui_or_nsh_crate_in_the_tree_fails() {
         "rayx_core",
         "rayx_runtime",
         "rayx_app",
+        "rayx_app_nsh",
         "rayx-app-macros",
+        "rayx_services_storage",
         "gpux-fonts",
         "gpui",
         "nsh-core",

@@ -2,9 +2,20 @@
 resolver = "3"
 members = [
     "crates/rayx",
+    "crates/rayx_app_nsh",
     "crates/rayx_app",
-    "crates/rayx_core",
-    "crates/rayx_runtime",
+    "crates/rayx_services_application_configuration",
+    "crates/rayx_services_assets",
+    "crates/rayx_services_fonts",
+    "crates/rayx_services_history",
+    "crates/rayx_services_i18n",
+    "crates/rayx_services_input_map",
+    "crates/rayx_services_navigation",
+    "crates/rayx_services_operations",
+    "crates/rayx_services_platform",
+    "crates/rayx_services_selection",
+    "crates/rayx_services_storage",
+    "crates/rayx_services_suspension",
     "crates/rayx_app_macros",
     "crates/rayx_cli",
     "crates/rayx_components",
@@ -22,12 +33,23 @@ repository = "https://github.com/rayx-ui/RayX"
 
 [workspace.dependencies]
 rayx = { path = "crates/rayx" }
-rayx_core = { path = "crates/rayx_core" }
-rayx_runtime = { path = "crates/rayx_runtime" }
 rayx_app = { path = "crates/rayx_app" }
+rayx_app_nsh = { path = "crates/rayx_app_nsh" }
 rayx_app_macros = { path = "crates/rayx_app_macros" }
 rayx_components = { path = "crates/rayx_components" }
 rayx_devtools_protocol = { path = "crates/rayx_devtools_protocol" }
+rayx_services_application_configuration = { path = "crates/rayx_services_application_configuration" }
+rayx_services_assets = { path = "crates/rayx_services_assets" }
+rayx_services_fonts = { path = "crates/rayx_services_fonts" }
+rayx_services_history = { path = "crates/rayx_services_history" }
+rayx_services_i18n = { path = "crates/rayx_services_i18n" }
+rayx_services_input_map = { path = "crates/rayx_services_input_map" }
+rayx_services_navigation = { path = "crates/rayx_services_navigation" }
+rayx_services_operations = { path = "crates/rayx_services_operations" }
+rayx_services_platform = { path = "crates/rayx_services_platform" }
+rayx_services_selection = { path = "crates/rayx_services_selection" }
+rayx_services_storage = { path = "crates/rayx_services_storage" }
+rayx_services_suspension = { path = "crates/rayx_services_suspension" }
 nsh-core = "0.5.0"
 nsh-base = "0.5.0"
 nsh-engine = { version = "0.5.0", default-features = false }
@@ -40,6 +62,7 @@ dxn_i18n = { git = "https://github.com/dXnSix/dXn.I18n", tag = "v0.1.2" }
 dxn_i18n_macros = { git = "https://github.com/dXnSix/dXn.I18n", tag = "v0.1.2" }
 dxn_intl = { git = "https://github.com/dXnSix/dXn.Intl", tag = "v0.1.2" }
 futures = { version = "0.3.31", default-features = false }
+getrandom = { version = "0.4", default-features = false }
 proc-macro-crate = "3.4"
 proc-macro2 = "1.0"
 quote = "1.0"
@@ -68,10 +91,10 @@ expect_used = "deny"
 # NSH comes from an integration tag of the fork (github.com/dXnSix/nsh,
 # `nshx-*`); a consumer's own patch decides there.
 [patch.crates-io]
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-6" }
+nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }

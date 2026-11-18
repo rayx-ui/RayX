@@ -33,13 +33,17 @@ fn native(registry: &mut Registry) {
 }
 ```
 
-TSX imports them by the set's specifier; props are Figma's properties in camel case:
+TSX imports them by the set's specifier; props are Figma's properties in camel case (a fragment: `save`, `Icon` and
+`Badge` are the app's own):
 
+<!-- tsx: fragment -->
 ```tsx
 import { Button } from "my-app/native";
 
-<Button text="Save changes" variant="primary" onPress={save} />
-<Button text="Inbox" iconLeft={<Icon name="inbox" />} showSlotRight slotRight={<Badge count={3} />} />
+const saveButton = <Button text="Save changes" variant="primary" onPress={save} />;
+const inboxButton = (
+  <Button text="Inbox" iconLeft={<Icon name="inbox" />} showSlotRight slotRight={<Badge count={3} />} />
+);
 ```
 
 Rust views use the constructors; props are Figma's properties in snake case:
@@ -122,4 +126,4 @@ Never edit it by hand; `theme_keys!` makes the keys and the modifier enums from 
 
 [`examples/gallery`](../examples/gallery/README.md) is a mixed NSH app whose screens are TSX, so they reload as you save:
 every component's Figma properties in a playground, its variants and sizes, and the Figma page's examples, with the
-theme's modes in a toolbar. Run it with `cargo run -p rayx-cli -- app run -C examples/gallery`.
+theme's modes in a toolbar. Run it with `cargo run -p rayx-cli -- app -C examples/gallery`. run

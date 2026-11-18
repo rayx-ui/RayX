@@ -19,6 +19,9 @@ import { Choice, type } from "./ui";
 
 type Appearance = "system" | "light" | "dark";
 
+/** Where RayX's start is (`App.tsx`): starting, started, or why it failed. */
+export type RayXStart = "starting" | "started" | `RayX did not start: ${string}`;
+
 type Accent = ThemeModifiers["accent"];
 type Density = ThemeModifiers["density"];
 
@@ -59,7 +62,8 @@ function Sidebar() {
   );
 }
 
-function Toolbar() {
+function Toolbar(props: { rayx: RayXStart }) {
+  const failed = () => props.rayx !== "starting" && props.rayx !== "started";
   return (
     <View class="flex-row flex-wrap items-center gap-gap5 px-insets-inset7 py-insets-inset3 bg-surfaces-panel1 border-b border-surfaces-border-muted">
       <Choice
@@ -87,20 +91,27 @@ function Toolbar() {
         onChange={(d: Density) => setModifier("density", d)}
       />
       <Text class={`text-surfaces-text-subtle ${type.code}`}>{`${colorScheme()} · ${picked("accent")} · ${picked("density")}`}</Text>
+      <If when={failed()}>
+        <Text class={`text-surfaces-text-danger ${type.regular}`}>{props.rayx}</Text>
+      </If>
     </View>
   );
 }
 
-/** The gallery: the sidebar on wide windows, the toolbar and the page. */
-export function Gallery() {
+/**
+ * The gallery: the sidebar on wide windows, the toolbar and the page. Its root's test id follows
+ * RayX's start: `rayx-starting`, then `rayx-started` or `rayx-failed`.
+ */
+export function Gallery(props: { rayx: RayXStart }) {
   const wide = () => windowSize().width >= 760;
+  const settled = () => (props.rayx === "starting" ? "rayx-starting" : props.rayx === "started" ? "rayx-started" : "rayx-failed");
   return (
-    <View class="flex-1 flex-row bg-surfaces-app">
+    <View testID={settled()} class="flex-1 flex-row bg-surfaces-app">
       <If when={wide()}>
         <Sidebar />
       </If>
       <View class="flex-1">
-        <Toolbar />
+        <Toolbar rayx={props.rayx} />
         <Scroll class="flex-1">
           <ButtonPage />
         </Scroll>

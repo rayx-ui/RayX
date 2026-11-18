@@ -1,18 +1,23 @@
-//! `#[rayx::native_module("spec")]` on an app crate's registry function: the set holds every RayX
-//! TS class and RayX's components with their theme document, then what the function's body adds
-//! (a component, a module, an app extension TS applies), and nothing else; its declarations
-//! declare them all, documented; and NSH's CLI reads the set's specifier from the attribute's line
-//! in the crate's source, as it does for NSH's own `#[native_module]`.
+//! `#[rayx::native_module("spec")]` on an app crate's registry function: the set holds RayX's TS
+//! classes, the set of every service crate the umbrella's features enable (and no other's) and
+//! RayX's components with their theme document, then what the function's body adds (a component,
+//! a module, an app extension TS applies), and nothing else; its declarations declare them all,
+//! documented; TS's `RayXAppBuilder` has the builder methods of the enabled crates only, in JS and
+//! in the declarations (with the default features `addFonts` and no `addI18n`, with every feature
+//! both); and NSH's CLI reads the set's specifier from the attribute's line in the crate's source,
+//! as it does for NSH's own `#[native_module]`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-#[path = "../../rayx_app/tests/headless/mod.rs"]
+#[path = "support/enabled.rs"]
+mod enabled;
+#[path = "../../rayx_app_nsh/tests/headless/mod.rs"]
 mod headless;
 
 use std::collections::BTreeSet;
 
 use nsh_core::prelude::*;
-use rayx::app::ts::ServiceProvider;
+use rayx::app_nsh::ts::ServiceProvider;
 use rayx::prelude::*;
 
 /// The greeting an extension registers.
@@ -51,7 +56,9 @@ fn native(registry: &mut Registry) {
     registry
         .register::<Badge>()
         .module::<Greeter>()
-        .module::<add_greeting>();
+        .class_extension::<add_greeting>()
+        // The services the host requires, faked for the test's start.
+        .class_extension::<headless::HostFakes>();
 }
 
 /// What a set exports, by kind and name.
@@ -68,6 +75,12 @@ fn exports(set: &Registry) -> BTreeSet<String> {
             .map(|m| format!("module {}", m.name)),
     );
     names.extend(set.specs().iter().map(|c| format!("component {}", c.name)));
+    names.extend(set.class_extensions().iter().flat_map(|extension| {
+        extension
+            .members
+            .iter()
+            .map(|member| format!("method {}.{}", extension.class.name, member.name))
+    }));
     names.extend(
         set.interface_defs()
             .iter()
@@ -81,13 +94,16 @@ fn exports(set: &Registry) -> BTreeSet<String> {
 fn the_set_is_rayx_s_then_the_body_s_exports_and_nothing_else() {
     let set = registry();
     let mut rayx = Registry::ui_set("test/app");
-    rayx::app::register(&mut rayx);
+    rayx::app_nsh::register(&mut rayx);
+    // The harness's `builder.addHostFakes()`, which the body adds too.
+    rayx.class_extension::<headless::HostFakes>();
+    enabled::register_service_sets(&mut rayx);
     rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     let own: BTreeSet<String> = exports(&set).difference(&expected).cloned().collect();
     assert_eq!(own.len(), 3, "the body's three exports: {own:?}");
     assert!(own.contains("module Greeter"), "{own:?}");
-    assert!(own.contains("module add_greeting"), "{own:?}");
+    assert!(own.contains("method RayXAppBuilder.addGreeting"), "{own:?}");
     assert!(
         own.iter()
             .any(|name| name.starts_with("component ") && name.ends_with("Badge")),
@@ -113,19 +129,76 @@ fn the_declarations_declare_rayx_s_and_the_body_s_exports_documented() {
         "export declare class ServiceProvider",
         "export declare const Button:",
         "export declare const Badge:",
-        "/** Registers a greeting. */\nexport declare function addGreeting(builder: RayXAppBuilder): RayXAppBuilder;",
+        "  /** Registers a greeting. */\n  addGreeting(): RayXAppBuilder;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }
     assert_eq!(set.undocumented(), Vec::<String>::new());
 }
 
+#[test]
+fn the_builder_declares_the_methods_of_the_enabled_crates_only() {
+    let ts = nsh_core::element::declarations(&registry(), &[]);
+    let declares = |method: &str| ts.contains(&format!("\n  {method}("));
+    let problems: Vec<String> = enabled::BUILDER_METHODS
+        .iter()
+        .filter(|(_, method, enabled)| declares(method) != *enabled)
+        .map(|(feature, method, enabled)| {
+            if *enabled {
+                format!("feature {feature} is on and `{method}` is not declared")
+            } else {
+                format!("feature {feature} is off and `{method}` is declared")
+            }
+        })
+        .collect();
+    assert!(problems.is_empty(), "{}\nin\n{ts}", problems.join("\n"));
+    // The criterion's two cases: the defaults have `addFonts` and no `addI18n`, every feature
+    // both.
+    assert_eq!(declares("addFonts"), cfg!(feature = "fonts"));
+    assert_eq!(declares("addI18n"), cfg!(feature = "i18n"));
+    assert_eq!(
+        ts.contains("export declare class I18nService"),
+        cfg!(feature = "i18n")
+    );
+}
+
+/// Shows, for each service's builder method, whether a TS builder has it.
+const BUILDER_METHODS_TSX: &str = r#"import { mount, signal, Text } from "nsh";
+import { RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(() => {
+  const builder = new RayXAppBuilder();
+  const methods = METHODS.map((method) => `${method}:${typeof builder[method] === "function"}`);
+  shown.set(`done ${methods.join("|")}`);
+}, 0);
+mount(() => <Text>{shown()}</Text>);
+"#;
+
+#[test]
+fn a_ts_builder_has_the_methods_of_the_enabled_crates_only() {
+    let methods: Vec<String> = enabled::BUILDER_METHODS
+        .iter()
+        .map(|(_, method, _)| format!("\"{method}\""))
+        .collect();
+    let tsx = BUILDER_METHODS_TSX.replace("METHODS", &format!("[{}]", methods.join(", ")));
+    let expected: Vec<String> = enabled::BUILDER_METHODS
+        .iter()
+        .map(|(_, method, enabled)| format!("{method}:{enabled}"))
+        .collect();
+    assert_eq!(
+        headless::run(registry(), &tsx),
+        format!("done {}", expected.join("|"))
+    );
+}
+
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { addGreeting, Greeter, RayXAppBuilder } from "test/app";
+import { Greeter, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 new RayXAppBuilder()
-  .apply(addGreeting)
+  .addHostFakes()
+  .addGreeting()
   .start()
   .then(
     (services) => shown.set(`done ${Greeter.greeting(services)}`),
@@ -140,7 +213,7 @@ fn an_extension_the_body_exports_is_applied_from_ts() {
 }
 
 /// NSH's CLI's specifier scan of a crate's source, as `specifier_of` in
-/// `crates/nsh-cli/src/rust_app.rs` at `nshx-0.5.0-6` (`ddac2279b`) writes it: the first line that,
+/// `crates/nsh-cli/src/rust_app.rs` at `nshx-0.5.0-7` (`d47d7fd6d`) writes it: the first line that,
 /// trimmed, starts with `#[` and has `native_module` followed by `("…"`. NSH names the set's
 /// web gate after it (`nsh_ui_set_<specifier>`); without one it falls back to the crate's name,
 /// and the set's gate is dropped from the web runtime.

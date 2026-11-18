@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/core/configuration
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
     - configuration
     - options
@@ -13,4 +13,4 @@ agentx:
 ---
 # core/configuration: rules
 
-- Select one group while iterating: `cargo test -p rayx_core --test di_configuration` (or `di_options`).
+- Select one group while iterating: `cargo test -p rayx_app --test di_configuration` (or `di_options`).

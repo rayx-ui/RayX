@@ -1,0 +1,63 @@
+[package]
+name = "rayx_app_nsh"
+description = "RayX's dependency injection, options and app builder on NSH: a root provider per engine surface, a scope per screen and view models activated with their screen."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+base64.workspace = true
+futures = { workspace = true, features = ["std"] }
+serde.workspace = true
+serde_json.workspace = true
+rayx_app.workspace = true
+rayx_app_macros.workspace = true
+rayx_devtools_protocol.workspace = true
+nsh-core.workspace = true
+dxn_reactive.workspace = true
+# The `testing` harness.
+nsh-engine = { workspace = true, features = ["js"], optional = true }
+nsh-bundler = { workspace = true, optional = true }
+crossbeam-channel = { workspace = true, optional = true }
+
+[features]
+# `rayx_app_nsh::testing`: the headless app harness service crates' tests use.
+testing = [
+    "dep:nsh-engine",
+    "dep:nsh-bundler",
+    "dep:crossbeam-channel",
+    "nsh-core/declarations",
+]
+
+# The dev tools' agent dials its hub with the WebSocket client NSH compiles, on a thread of its
+# own (`src/devtools/link.rs`); only a dev build uses it.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", default-features = false, features = ["rt", "net", "time", "sync", "macros"] }
+tokio-tungstenite = { version = "0.28", default-features = false, features = ["connect"] }
+# A screenshot cropped to a node (`src/devtools/act.rs`).
+png = "0.17"
+
+[dev-dependencies]
+# The declarations' text (docs and TypeScript), which the TS test groups read.
+nsh-core = { workspace = true, features = ["declarations"] }
+nsh-base.workspace = true
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
+nsh-bundler.workspace = true
+nsh-js.workspace = true
+crossbeam-channel.workspace = true
+futures = { workspace = true, features = ["std", "executor"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tokio = { version = "1", default-features = false, features = ["sync"] }
+tungstenite = "0.28"
+
+# Through `rayx_app_nsh::testing`, as a service crate's tests do.
+[[test]]
+name = "nsh_service_crate_hooks"
+required-features = ["testing"]

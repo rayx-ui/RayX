@@ -1,0 +1,15 @@
+# A crate that depends on rayx_app_nsh (the NSH host) alone among RayX's crates and uses the
+# derive, `#[contract]` and `#[app_extension]` through it (`tests/macro_paths.rs` writes it out
+# as Cargo.toml with the host's path and the workspace's NSH patch).
+[package]
+name = "macro-paths-host-only"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+rayx_app_nsh = { path = "@RAYX_APP_NSH@" }
+
+[workspace]
+
+@PATCH@

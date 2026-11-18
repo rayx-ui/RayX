@@ -1,0 +1,20 @@
+# A crate that depends on rayx_app_nsh and asserts, when it compiles, whether rayx_app_nsh has the dev
+# tools (the test `tests/devtools_connect.rs` writes it out as Cargo.toml with rayx_app_nsh's path
+# and the workspace's NSH patch).
+[package]
+name = "devtools-switch"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[features]
+# NSH's hooks, as every platform's `dev` feature turns them on.
+hooks = ["nsh-core/inspect"]
+
+[dependencies]
+rayx_app_nsh = { path = "@RAYX_APP@" }
+nsh-core = "0.5.0"
+
+[workspace]
+
+@PATCH@

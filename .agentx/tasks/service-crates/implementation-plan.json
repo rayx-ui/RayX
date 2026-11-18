@@ -1,2349 +1,2684 @@
 {
- "schemaVersion": 7,
- "epicId": "service-crates",
- "revision": 1,
- "title": "RayX's services as replaceable crates: abstractions in rayx_app, implementations in rayx_services_*",
- "validationMode": "sprint",
- "repositories": [
-  {
-   "id": "rayx",
-   "path": ".",
-   "role": "execution"
-  },
-  {
-   "id": "root",
-   "path": "../RayX.Root",
-   "role": "execution"
-  }
- ],
- "boundaries": {
-  "repositoryIds": [
-   "rayx",
-   "root"
+  "schemaVersion": 7,
+  "epicId": "service-crates",
+  "revision": 10,
+  "title": "RayX's services as replaceable crates: abstractions in rayx_app, implementations in rayx_services_*",
+  "validationMode": "sprint",
+  "repositories": [
+    {
+      "id": "rayx",
+      "path": ".",
+      "role": "execution"
+    },
+    {
+      "id": "root",
+      "path": "../RayX.Root",
+      "role": "execution"
+    }
   ],
-  "forbiddenPaths": [
-   "rayx:rust-toolchain.toml",
-   "rayx:.github/workflows/release-plz.yml",
-   "rayx:.github/workflows/release.yml",
-   "rayx:crates/rayx_components/**",
-   "rayx:crates/rayx_devtools_protocol/**",
-   "root:.claude/skills/rayx-figma/**",
-   "root:.claude/skills/nsh/**",
-   "root:.claude/skills/nsh-design-guides/**"
+  "boundaries": {
+    "repositoryIds": [
+      "rayx",
+      "root"
+    ],
+    "forbiddenPaths": [
+      "rayx:rust-toolchain.toml",
+      "rayx:.github/workflows/release-plz.yml",
+      "rayx:.github/workflows/release.yml",
+      "rayx:crates/rayx_components/**",
+      "rayx:crates/rayx_devtools_protocol/**",
+      "root:.claude/skills/rayx-figma/**",
+      "root:.claude/skills/nsh/**",
+      "root:.claude/skills/nsh-design-guides/**"
+    ]
+  },
+  "checks": [
+    {
+      "id": "c-crate-layout",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CRATES-1"
+      ],
+      "descriptionMarkdown": "The crates' names, folders and NSH-free core, from `cargo metadata` (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--test",
+        "crate_layout"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/*/Cargo.toml",
+        "examples/gallery/native/Cargo.toml",
+        "crates/rayx/tests/crate_layout.rs"
+      ]
+    },
+    {
+      "id": "c-macro-paths",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CRATES-3"
+      ],
+      "descriptionMarkdown": "The macros' crate lookup through `rayx` (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--test",
+        "macro_paths"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**"
+      ]
+    },
+    {
+      "id": "c-workspace-build",
+      "repositoryId": "rayx",
+      "kind": "build",
+      "criterionIds": [
+        "CRATES-1"
+      ],
+      "descriptionMarkdown": "Every crate, test and example compiles against the new names. Whole-workspace on purpose: renaming two crates changes a path in every crate of the workspace, so compiling all of them is this change's focused proof (no test runs).",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--no-run"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/**",
+        "examples/**"
+      ]
+    },
+    {
+      "id": "c-core-wasm",
+      "repositoryId": "rayx",
+      "kind": "build",
+      "criterionIds": [
+        "CRATES-1",
+        "CRATES-2",
+        "CON-5"
+      ],
+      "descriptionMarkdown": "The core (and the devtools protocol) still build for `wasm32-unknown-unknown`.",
+      "argv": [
+        "cargo",
+        "check",
+        "-p",
+        "rayx_app",
+        "-p",
+        "rayx_devtools_protocol",
+        "--target",
+        "wasm32-unknown-unknown"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/**",
+        "crates/rayx_app_macros/**"
+      ]
+    },
+    {
+      "id": "c-release-wiring",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CRATES-4"
+      ],
+      "descriptionMarkdown": "release-plz's owner and packages, CI's wasm step and the CLI's library guard name the crates as they are.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-cli",
+        "--test",
+        "release_automation",
+        "--test",
+        "release_config",
+        "--test",
+        "ci_workflow",
+        "--test",
+        "library_guard"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "release-plz.toml",
+        ".github/workflows/**",
+        "crates/*/Cargo.toml",
+        "crates/rayx_cli/**"
+      ]
+    },
+    {
+      "id": "c-source-layout",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "LAYOUT-1"
+      ],
+      "descriptionMarkdown": "The host's source layout (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "source_layout"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/source_layout.rs"
+      ]
+    },
+    {
+      "id": "c-host-suite",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "LAYOUT-2"
+      ],
+      "descriptionMarkdown": "Every test group of `rayx_app_nsh`. Run whole because the change moves every source file of the crate: this is the owning package's suite, not a workspace run.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--tests"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_runtime/src/**",
+        "crates/rayx_app_nsh/**"
+      ]
+    },
+    {
+      "id": "c-host-docs",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "LAYOUT-2"
+      ],
+      "descriptionMarkdown": "No broken intra-doc link in the host after the move.",
+      "argv": [
+        "cargo",
+        "doc",
+        "-p",
+        "rayx_app_nsh",
+        "--no-deps"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_runtime/src/**",
+        "crates/rayx_app_nsh/src/**"
+      ],
+      "environment": {
+        "RUSTDOCFLAGS": "-D rustdoc::broken_intra_doc_links"
+      }
+    },
+    {
+      "id": "c-published-values",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-5"
+      ],
+      "descriptionMarkdown": "`StateCell` and `EventStream`: reads, publishes, order, re-entrancy, threads (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "published_values"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/published_values.rs"
+      ]
+    },
+    {
+      "id": "c-published-binding",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-8"
+      ],
+      "descriptionMarkdown": "Published values as NSH signals and listeners (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_published_binding"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_published_binding.rs"
+      ]
+    },
+    {
+      "id": "c-contract-macro",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-1"
+      ],
+      "descriptionMarkdown": "`#[contract]`'s shapes and refusals (the macro's unit tests).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_macros",
+        "contract::"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app_macros/**"
+      ]
+    },
+    {
+      "id": "c-contract-kinds",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-1",
+        "CON-2",
+        "CON-3",
+        "CON-4"
+      ],
+      "descriptionMarkdown": "Declarations, published state and events, and constants of a TS implementation (new group), with the existing contract group that exercises the same adapter.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_tsx_contract_kinds",
+        "--test",
+        "nsh_tsx_contracts"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
+        "crates/rayx_app_nsh/tests/nsh_tsx_contracts.rs"
+      ]
+    },
+    {
+      "id": "c-contracts-any-thread",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-6"
+      ],
+      "descriptionMarkdown": "Commands and posted members from other threads, on the engine thread, and after the engine stopped (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_tsx_contracts_any_thread"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs"
+      ]
+    },
+    {
+      "id": "c-engine-runner",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-7"
+      ],
+      "descriptionMarkdown": "The engine runner from any thread and after the engine is gone (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_engine_runner"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_engine_runner.rs"
+      ]
+    },
+    {
+      "id": "c-di-validation",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "VAL-1"
+      ],
+      "descriptionMarkdown": "Required traits, declared dependencies and lifetimes checked before startup (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "di_validation"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/di_validation.rs"
+      ]
+    },
+    {
+      "id": "c-contract-tokens",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CON-9"
+      ],
+      "descriptionMarkdown": "`#[contract(ts = …)]` and a RayX class as a contract's token (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_tsx_contract_tokens"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs"
+      ]
+    },
+    {
+      "id": "c-host-hooks",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-1"
+      ],
+      "descriptionMarkdown": "A crate's builder method as a class extension, its classes and resolvers from its set; the helpers and the test harness (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--features",
+        "testing",
+        "--test",
+        "nsh_service_crate_hooks"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs"
+      ]
+    },
+    {
+      "id": "c-app-extension-methods",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-10"
+      ],
+      "descriptionMarkdown": "`#[app_extension]` as a TS builder method (new group), with the host's group that used `apply(addX)`.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_app_extension_methods",
+        "--test",
+        "nsh_tsx_ready"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs",
+        "crates/rayx_app_nsh/tests/nsh_tsx_ready.rs"
+      ]
+    },
+    {
+      "id": "c-app-extension-umbrella",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-10"
+      ],
+      "descriptionMarkdown": "The umbrella's groups that call app extensions, now as builder methods.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--test",
+        "native_module",
+        "--test",
+        "native_module_attribute"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx/**"
+      ]
+    },
+    {
+      "id": "c-required-services",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "VAL-2"
+      ],
+      "descriptionMarkdown": "The host's four required services in Rust and TS; nothing pre-registered (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_required_services"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_required_services.rs"
+      ]
+    },
+    {
+      "id": "c-host-start",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "VAL-2"
+      ],
+      "descriptionMarkdown": "The host's existing start groups, whose builders now register the four required services.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_app_start",
+        "--test",
+        "nsh_tsx_start",
+        "--test",
+        "nsh_tsx_builder"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_app_nsh/tests/nsh_app_start.rs",
+        "crates/rayx_app_nsh/tests/nsh_tsx_start.rs",
+        "crates/rayx_app_nsh/tests/nsh_tsx_builder.rs"
+      ]
+    },
+    {
+      "id": "c-svc-mandatory",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-2"
+      ],
+      "descriptionMarkdown": "The platform, suspension, assets and fonts crates' groups (moved and new).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_platform",
+        "-p",
+        "rayx_services_suspension",
+        "-p",
+        "rayx_services_assets",
+        "-p",
+        "rayx_services_fonts",
+        "--tests"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_platform/**",
+        "crates/rayx_services_suspension/**",
+        "crates/rayx_services_assets/**",
+        "crates/rayx_services_fonts/**"
+      ]
+    },
+    {
+      "id": "c-svc-storage-navigation",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-3"
+      ],
+      "descriptionMarkdown": "The storage and navigation crates' groups.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_storage",
+        "-p",
+        "rayx_services_navigation",
+        "--tests"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_storage/**",
+        "crates/rayx_services_navigation/**"
+      ]
+    },
+    {
+      "id": "c-svc-i18n",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-4"
+      ],
+      "descriptionMarkdown": "The i18n crate's groups, with the formatter's new group.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_i18n",
+        "--tests"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_i18n/**"
+      ]
+    },
+    {
+      "id": "c-svc-ops-history-selection",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-5"
+      ],
+      "descriptionMarkdown": "The operations, history and selection crates' groups.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_operations",
+        "-p",
+        "rayx_services_history",
+        "-p",
+        "rayx_services_selection",
+        "--tests"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_operations/**",
+        "crates/rayx_services_history/**",
+        "crates/rayx_services_selection/**"
+      ]
+    },
+    {
+      "id": "c-svc-input-config",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-6"
+      ],
+      "descriptionMarkdown": "The input map and application configuration crates' groups.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_input_map",
+        "-p",
+        "rayx_services_application_configuration",
+        "--tests"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_input_map/**",
+        "crates/rayx_services_application_configuration/**"
+      ]
+    },
+    {
+      "id": "c-crate-rules",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "CRATES-2"
+      ],
+      "descriptionMarkdown": "The final crate set and the dependency rules, from `cargo metadata` (the `crate_layout` group with its final expectations).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--test",
+        "crate_layout"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/*/Cargo.toml",
+        "examples/gallery/native/Cargo.toml",
+        "crates/rayx/tests/crate_layout.rs"
+      ]
+    },
+    {
+      "id": "c-testing-fakes",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-7"
+      ],
+      "descriptionMarkdown": "A fake of every core abstraction, used without NSH (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "testing_fakes",
+        "--test",
+        "operations_transactions",
+        "--test",
+        "operations_contract"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/testing_fakes.rs",
+        "crates/rayx_app/tests/operations_transactions.rs",
+        "crates/rayx_app/tests/operations_contract.rs"
+      ]
+    },
+    {
+      "id": "c-service-replacement",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-8"
+      ],
+      "descriptionMarkdown": "An app's own Rust implementations used by every consumer (new group, every service feature on).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--all-features",
+        "--test",
+        "service_replacement"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_application_configuration/**",
+        "crates/rayx_services_assets/**",
+        "crates/rayx_services_fonts/**",
+        "crates/rayx_services_history/**",
+        "crates/rayx_services_i18n/**",
+        "crates/rayx_services_input_map/**",
+        "crates/rayx_services_navigation/**",
+        "crates/rayx_services_operations/**",
+        "crates/rayx_services_platform/**",
+        "crates/rayx_services_selection/**",
+        "crates/rayx_services_storage/**",
+        "crates/rayx_services_suspension/**",
+        "crates/rayx/Cargo.toml",
+        "crates/rayx/src/**",
+        "crates/rayx/tests/service_replacement.rs"
+      ]
+    },
+    {
+      "id": "c-ts-contracts",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-9"
+      ],
+      "descriptionMarkdown": "A TS implementation of each of the twelve contracts (new group, every service feature on).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--all-features",
+        "--test",
+        "ts_service_contracts",
+        "--test",
+        "history_over_operations"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_application_configuration/**",
+        "crates/rayx_services_assets/**",
+        "crates/rayx_services_fonts/**",
+        "crates/rayx_services_history/**",
+        "crates/rayx_services_i18n/**",
+        "crates/rayx_services_input_map/**",
+        "crates/rayx_services_navigation/**",
+        "crates/rayx_services_operations/**",
+        "crates/rayx_services_platform/**",
+        "crates/rayx_services_selection/**",
+        "crates/rayx_services_storage/**",
+        "crates/rayx_services_suspension/**",
+        "crates/rayx/Cargo.toml",
+        "crates/rayx/src/**",
+        "crates/rayx/tests/ts_service_contracts.rs",
+        "crates/rayx/tests/history_over_operations.rs"
+      ]
+    },
+    {
+      "id": "c-umbrella-features",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "UMB-1"
+      ],
+      "descriptionMarkdown": "The umbrella's features against `cargo metadata` (new group) and its existing groups under the default features (no `addI18n`).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--test",
+        "features",
+        "--test",
+        "native_module",
+        "--test",
+        "native_module_attribute",
+        "--test",
+        "umbrella",
+        "--test",
+        "derive"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_application_configuration/**",
+        "crates/rayx_services_assets/**",
+        "crates/rayx_services_fonts/**",
+        "crates/rayx_services_history/**",
+        "crates/rayx_services_i18n/**",
+        "crates/rayx_services_input_map/**",
+        "crates/rayx_services_navigation/**",
+        "crates/rayx_services_operations/**",
+        "crates/rayx_services_platform/**",
+        "crates/rayx_services_selection/**",
+        "crates/rayx_services_storage/**",
+        "crates/rayx_services_suspension/**",
+        "crates/rayx/**"
+      ]
+    },
+    {
+      "id": "c-umbrella-all-features",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "UMB-1"
+      ],
+      "descriptionMarkdown": "The umbrella's `native_module` groups with every service feature on (`addI18n` present).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--all-features",
+        "--test",
+        "native_module",
+        "--test",
+        "native_module_attribute"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_application_configuration/**",
+        "crates/rayx_services_assets/**",
+        "crates/rayx_services_fonts/**",
+        "crates/rayx_services_history/**",
+        "crates/rayx_services_i18n/**",
+        "crates/rayx_services_input_map/**",
+        "crates/rayx_services_navigation/**",
+        "crates/rayx_services_operations/**",
+        "crates/rayx_services_platform/**",
+        "crates/rayx_services_selection/**",
+        "crates/rayx_services_storage/**",
+        "crates/rayx_services_suspension/**",
+        "crates/rayx/**"
+      ]
+    },
+    {
+      "id": "c-new-app-services",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "UMB-2"
+      ],
+      "descriptionMarkdown": "`rayx new`'s services and features (new group), with the CLI groups that check the same files.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-cli",
+        "--test",
+        "new_app_services",
+        "--test",
+        "new_app_builder",
+        "--test",
+        "new_app",
+        "--test",
+        "readme_nsh",
+        "--test",
+        "readme_versions"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_cli/**",
+        "docs/cli/**"
+      ]
+    },
+    {
+      "id": "c-gallery",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "UMB-3"
+      ],
+      "descriptionMarkdown": "The gallery's crate on the new crates.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-gallery"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/support/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/fixtures/**",
+        "crates/rayx_services_application_configuration/**",
+        "crates/rayx_services_assets/**",
+        "crates/rayx_services_fonts/**",
+        "crates/rayx_services_history/**",
+        "crates/rayx_services_i18n/**",
+        "crates/rayx_services_input_map/**",
+        "crates/rayx_services_navigation/**",
+        "crates/rayx_services_operations/**",
+        "crates/rayx_services_platform/**",
+        "crates/rayx_services_selection/**",
+        "crates/rayx_services_storage/**",
+        "crates/rayx_services_suspension/**",
+        "crates/rayx/**",
+        "examples/gallery/**"
+      ]
+    },
+    {
+      "id": "c-no-old-names",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "DOC-1"
+      ],
+      "descriptionMarkdown": "No file names the old crates or APIs: `git grep` finds nothing (the wrapper exits 0 only when git grep finds no match).",
+      "argv": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['git','grep','--untracked','-n','-E']+sys.argv[1:]);sys.exit(0 if r.returncode==1 else 1)",
+        "rayx_core|rayx_runtime|add_nsh_services|NshServicesAppBuilderExt|use_platform_sync|keep_platform_current",
+        "--",
+        "docs",
+        "crates",
+        "examples",
+        "README.md",
+        "AGENTS.md",
+        ":!crates/rayx_cli/tests/library_guard.rs",
+        ":!docs/releasing.md"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "docs/**",
+        "crates/**",
+        "examples/**",
+        "README.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "c-no-old-names-root",
+      "repositoryId": "root",
+      "kind": "static",
+      "criterionIds": [
+        "DOC-2"
+      ],
+      "descriptionMarkdown": "No RayX.Root guide or skill names the old crates or APIs: `git grep` finds nothing (the wrapper exits 0 only when git grep finds no match).",
+      "argv": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['git','grep','--untracked','-n','-E']+sys.argv[1:]);sys.exit(0 if r.returncode==1 else 1)",
+        "rayx_core|rayx_runtime|add_nsh_services|NshServicesAppBuilderExt|use_platform_sync",
+        "--",
+        "AGENTS.md",
+        ".claude/skills"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        "AGENTS.md",
+        ".claude/skills/**"
+      ]
+    },
+    {
+      "id": "c-rayx-skill",
+      "repositoryId": "root",
+      "kind": "static",
+      "criterionIds": [
+        "DOC-2"
+      ],
+      "descriptionMarkdown": "The `rayx` skill's files exist and `SKILL.md` opens with `name: rayx` and a description.",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib,re,sys;d=pathlib.Path('.claude/skills/rayx');t=(d/'SKILL.md').read_text(encoding='utf-8');sys.exit(0 if re.match(r'---\\r?\\nname: rayx\\r?\\ndescription: \\S',t) and (d/'references/services.md').is_file() and (d/'references/contracts.md').is_file() else 1)"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      },
+      "inputs": [
+        ".claude/skills/rayx/**"
+      ]
+    },
+    {
+      "id": "f-fmt",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "CRATES-1",
+        "LAYOUT-2",
+        "CON-1",
+        "SVC-6",
+        "UMB-1"
+      ],
+      "descriptionMarkdown": "Formatting of the workspace.",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      }
+    },
+    {
+      "id": "f-clippy",
+      "repositoryId": "rayx",
+      "kind": "static",
+      "criterionIds": [
+        "CRATES-2",
+        "LAYOUT-2",
+        "CON-6",
+        "VAL-1",
+        "SVC-6",
+        "UMB-1"
+      ],
+      "descriptionMarkdown": "Clippy on the touched packages, every target, every feature, warnings denied.",
+      "argv": [
+        "cargo",
+        "clippy",
+        "-p",
+        "rayx",
+        "-p",
+        "rayx_app",
+        "-p",
+        "rayx_app_macros",
+        "-p",
+        "rayx_app_nsh",
+        "-p",
+        "rayx_services_application_configuration",
+        "-p",
+        "rayx_services_assets",
+        "-p",
+        "rayx_services_fonts",
+        "-p",
+        "rayx_services_history",
+        "-p",
+        "rayx_services_i18n",
+        "-p",
+        "rayx_services_input_map",
+        "-p",
+        "rayx_services_navigation",
+        "-p",
+        "rayx_services_operations",
+        "-p",
+        "rayx_services_platform",
+        "-p",
+        "rayx_services_selection",
+        "-p",
+        "rayx_services_storage",
+        "-p",
+        "rayx_services_suspension",
+        "-p",
+        "rayx-cli",
+        "-p",
+        "rayx-gallery",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0
+      }
+    },
+    {
+      "id": "c-plain-startup-dependency",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "VAL-3"
+      ],
+      "descriptionMarkdown": "Startup dependencies met by a plain registration (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "di_startup_plain_dependency"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/di_startup_plain_dependency.rs"
+      ]
+    },
+    {
+      "id": "c-contract-bytes",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-9"
+      ],
+      "descriptionMarkdown": "A TS contract answering bytes as a typed array or ArrayBuffer (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_assets",
+        "--test",
+        "nsh_tsx_contract_bytes"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_assets/**"
+      ]
+    },
+    {
+      "id": "c-gaps-core",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "Last registration wins, requirements follow registrations, startup for a trait (new groups).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app",
+        "--test",
+        "di_startup_for",
+        "--test",
+        "di_last_registration_wins",
+        "--test",
+        "di_requirements_follow_registrations"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app/tests/di_*.rs"
+      ]
+    },
+    {
+      "id": "c-gaps-host",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "A contract implementation registered as a startup service on NSH (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_app_nsh",
+        "--test",
+        "nsh_contract_startup_for"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_app_nsh/tests/nsh_contract_startup_for.rs"
+      ]
+    },
+    {
+      "id": "c-gaps-navigation",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "Navigation's TS commands as promises (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_navigation",
+        "--test",
+        "nsh_tsx_command_promises"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_navigation/**"
+      ]
+    },
+    {
+      "id": "c-gaps-storage",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "TS addInMemoryStorage (new group).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_storage",
+        "--test",
+        "nsh_tsx_in_memory"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_storage/**"
+      ]
+    },
+    {
+      "id": "c-gaps-history",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "A history store written in TS; clearing a scope deletes its journal (new groups).",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx_services_history",
+        "--test",
+        "nsh_tsx_store",
+        "--test",
+        "history_clear_deletes"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_history/**"
+      ]
+    },
+    {
+      "id": "c-gaps-umbrella",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "Replacing services end to end, every feature.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx",
+        "--all-features",
+        "--test",
+        "service_replacement"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/rayx_app/Cargo.toml",
+        "crates/rayx_app/src/**",
+        "crates/rayx_app_macros/src/**",
+        "crates/rayx_app_nsh/Cargo.toml",
+        "crates/rayx_app_nsh/src/**",
+        "crates/rayx_app_nsh/tests/headless/**",
+        "crates/rayx_services_*/**",
+        "crates/rayx/**"
+      ]
+    },
+    {
+      "id": "c-gaps-ci",
+      "repositoryId": "rayx",
+      "kind": "test",
+      "criterionIds": [
+        "SVC-11"
+      ],
+      "descriptionMarkdown": "CI runs the umbrella with every feature.",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rayx-cli",
+        "--test",
+        "ci_workflow"
+      ],
+      "cwd": ".",
+      "expected": {
+        "exitCode": 0,
+        "minimumTests": 1
+      },
+      "inputs": [
+        "Cargo.toml",
+        ".github/workflows/**",
+        "crates/*/Cargo.toml",
+        "crates/rayx_cli/**"
+      ]
+    }
+  ],
+  "finalCheckIds": [
+    "f-fmt",
+    "f-clippy"
+  ],
+  "sprints": [
+    {
+      "id": "s1-crate-names",
+      "title": "The crates' new names: rayx_app (core) and rayx_app_nsh (host)",
+      "dependsOn": [],
+      "memoryScopes": [
+        "core",
+        "releasing",
+        "cli"
+      ],
+      "checkIds": [
+        "c-crate-layout",
+        "c-macro-paths",
+        "c-workspace-build",
+        "c-core-wasm",
+        "c-release-wiring"
+      ],
+      "tasks": [
+        {
+          "id": "t01-crate-renames",
+          "title": "Rename rayx_app to rayx_app_nsh, then rayx_core to rayx_app",
+          "descriptionMarkdown": "Prerequisites (scope): `ts-app-builder` is closed (its `check --epic` and final review), since its checks name today's crates, and RayX pins `nshx-0.5.0-6`. Rename per d-crate-names: `git mv crates/rayx_app crates/rayx_app_nsh` (package, `extern crate self as rayx_app_nsh`), then `git mv crates/rayx_core crates/rayx_app` (package, `extern crate self as rayx_app`); the workspace's members and `[workspace.dependencies]`; every path in every crate, test, example, template and doc comment (`rayx_core::` → `rayx_app::`, the host's `rayx_app::` → `rayx_app_nsh::`); the macros' lookup in `rayx_app_macros/src/lib.rs`; the umbrella (`rayx::app` = core, `rayx::app_nsh` = host, `rayx::core` gone, prelude); `rayx new`'s templates' paths (`rayx::app::app_state()` → `rayx::app_nsh::app_state()`); `release-plz.toml` (owner `rayx_app`, `rayx_app_nsh` added to `changelog_include` with its `[[package]]`), `.github/workflows/ci.yml`'s wasm step and `ci_workflow.rs` (`-p rayx_app -p rayx_runtime -p rayx_devtools_protocol`), `library_guard.rs`, `release_automation.rs`/`release_config.rs` expectations; `AGENTS.md`'s crate list (names only; the full rewrite is `t19-docs`). New groups: `crates/rayx/tests/crate_layout.rs` (this stage: no `rayx_core`, folders match packages, `rayx_app` NSH-free, `rayx_app_nsh` on `rayx_app`; written so `t13` extends it to the final set) and `crates/rayx/tests/macro_paths.rs`. One `refactor!` commit with the `Migration: apps:` footer of d-crate-names.",
+          "criterionIds": [
+            "CRATES-1",
+            "CRATES-3",
+            "CRATES-4"
+          ],
+          "supportingCriterionIds": [
+            "CRATES-2"
+          ],
+          "designIds": [
+            "d-crate-names"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-crate-layout",
+            "c-macro-paths",
+            "c-workspace-build",
+            "c-core-wasm",
+            "c-release-wiring"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "Cargo.toml"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app_macros/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "release-plz.toml"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/tests/library_guard.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/tests/ci_workflow.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/tests/release_automation.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2-layout",
+      "title": "The NSH host organized by topic",
+      "dependsOn": [
+        "s1-crate-names"
+      ],
+      "memoryScopes": [
+        "app"
+      ],
+      "checkIds": [
+        "c-source-layout",
+        "c-host-suite",
+        "c-host-docs"
+      ],
+      "tasks": [
+        {
+          "id": "t02-layout",
+          "title": "Move the host's files into app/, di/, configuration/ and services/<name>/",
+          "descriptionMarkdown": "Move `rayx_app_nsh/src/` to d-layout's table with `git mv` where a file moves whole, splitting `ts/services.rs`, `ts/options.rs` and `platform.rs` by service and keeping each item's docs and tests; `ts/mod.rs` becomes `ts.rs`, re-exporting from the new homes so every public path stays; fix `crate::…` paths and intra-doc links; paths in tests that name source files follow. No behavior change: one `refactor(app): …` commit, no `Migration:` footer. New group `crates/rayx_app_nsh/tests/source_layout.rs`: walks `src/` against the expected tree and names each extra or missing file and folder (written so `t13` can change the expected `services/` to what remains after the split).",
+          "criterionIds": [
+            "LAYOUT-1",
+            "LAYOUT-2"
+          ],
+          "designIds": [
+            "d-layout"
+          ],
+          "dependsOn": [
+            "t01-crate-renames"
+          ],
+          "checkIds": [
+            "c-source-layout",
+            "c-host-suite",
+            "c-host-docs"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/mod.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/services.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/options.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/platform.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3-contracts",
+      "title": "Contracts: published values, constants, any-thread calls, class tokens; the core's checks",
+      "dependsOn": [
+        "s2-layout"
+      ],
+      "memoryScopes": [
+        "core",
+        "core/di",
+        "app"
+      ],
+      "checkIds": [
+        "c-published-values",
+        "c-published-binding",
+        "c-contract-macro",
+        "c-contract-kinds",
+        "c-contracts-any-thread",
+        "c-engine-runner",
+        "c-di-validation",
+        "c-contract-tokens",
+        "c-core-wasm"
+      ],
+      "tasks": [
+        {
+          "id": "t03-published-values",
+          "title": "StateCell and EventStream in the core, and their NSH binding",
+          "descriptionMarkdown": "Add `StateCell<T>` and `EventStream<E>` to `rayx_app` (next to `ChangeSubscription` in `change.rs`, or a module of their own), exported at the crate root and in its prelude, per d-published-values. In the host's `binding.rs`, a Rust component's signal over a `StateCell` and listener over an `EventStream`, following publishes from any thread on the engine thread (as dXn.Reactive values are today), released with the owner. New groups `crates/rayx_app/tests/published_values.rs` (initial value, publish and get across threads, subscription order, drop stops it, re-entrant read and publish, concurrent publishes, events reaching current subscribers only) and `crates/rayx_app_nsh/tests/nsh_published_binding.rs` (a headless component follows publishes from the engine thread and another thread; stops with its owner).",
+          "criterionIds": [
+            "CON-5",
+            "CON-8"
+          ],
+          "designIds": [
+            "d-published-values"
+          ],
+          "dependsOn": [
+            "t02-layout"
+          ],
+          "checkIds": [
+            "c-published-values",
+            "c-published-binding",
+            "c-core-wasm"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_core/src/change.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/binding.rs"
+            }
+          ]
+        },
+        {
+          "id": "t04-contract-kinds",
+          "title": "#[contract]'s shapes: #[state], #[events], #[constant], and TS's ContractState and ContractEvents",
+          "descriptionMarkdown": "Extend `rayx_app_macros/src/contract.rs` per d-contract-kinds: parse and check the five shapes (refusals list them), generate the trait (commands as `Send` boxed futures), the NSH interface members (state and events as getters of the host's classes, constants as getters) and the adapter: reads state, events and constants once when made, links `ContractState`/`ContractEvents` to its own cells and streams, converts on publish, fails making with a `ContractError` naming a missing constant. Add the `ContractState` and `ContractEvents` classes to the host (`di/contract_ts.rs`) and register them with RayX's TS classes. Command errors take `From<ContractError>` as well as `From<Exception>`. Unit tests in the macro for every shape and refusal; new group `crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs` (declarations text; state before and after publish, from the engine thread and another; subscriber notified once per publish; a bad value throws and keeps the old one; events in order to current subscribers; constants read once, later TS changes unseen, missing constant fails); update `nsh_tsx_contracts` to the new shapes. The `Send` futures' dispatch comes in `t05`; until then the adapter may keep its engine-thread path.",
+          "criterionIds": [
+            "CON-1",
+            "CON-2",
+            "CON-3",
+            "CON-4"
+          ],
+          "designIds": [
+            "d-contract-kinds"
+          ],
+          "dependsOn": [
+            "t03-published-values"
+          ],
+          "checkIds": [
+            "c-contract-macro",
+            "c-contract-kinds"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app_macros/src/contract.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/contract.rs"
+            }
+          ]
+        },
+        {
+          "id": "t05-any-thread",
+          "title": "Contracts callable from any thread, and the engine runner",
+          "descriptionMarkdown": "Per d-any-thread: give each surface a dispatch queue drained by an engine task (NSH wakes the engine from any thread), and the host's `EngineRunner` over it (registered in the surface's root provider). Make the contract adapter's commands and posted members dispatch through it from other threads and spawn directly on the engine thread, awaiting a `futures::channel::oneshot`; close the queue when the engine stops so calls resolve `Err(ContractError::EngineGone { … })`; remove `ContractError::WrongThread` and its uses. New groups `crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs` (a command and a posted member from a spawned thread reach the TS implementation; results and thrown errors come back; the engine-thread path skips the queue; a call after the engine stopped resolves `Err`) and `crates/rayx_app_nsh/tests/nsh_engine_runner.rs` (an engine-only NSH call made from another thread; the engine-thread path; after the engine is gone).",
+          "criterionIds": [
+            "CON-6",
+            "CON-7"
+          ],
+          "designIds": [
+            "d-any-thread"
+          ],
+          "dependsOn": [
+            "t04-contract-kinds"
+          ],
+          "checkIds": [
+            "c-contracts-any-thread",
+            "c-engine-runner",
+            "c-contract-kinds"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/contract.rs",
+              "symbol": "ContractSlot"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/surface.rs"
+            }
+          ]
+        },
+        {
+          "id": "t06-validation",
+          "title": "Required traits, declared dependencies and lifetimes checked before startup",
+          "descriptionMarkdown": "Per d-validation, in the core: `ServiceProvider::require::<dyn T>(hint)` and `require_for::<dyn S, dyn T>(hint)` recording requirements (with the requiring registration's lifetime); `RayXAppBuilder::build`/`build_async` check them before any factory, option validation or startup service, collecting every missing trait and every singleton-on-scoped dependency into one `ServiceValidationError` (Display: one line each, who needs what, the hint), and `AppError` gains its variant in the host. New group `crates/rayx_app/tests/di_validation.rs`: a missing required trait, a missing declared dependency, several at once in one error, singleton on scoped, nothing runs before the check fails (a factory and a startup service that record being called), and an app with everything registered building as before. The host's required four and the end of pre-registration come with the service crates (`t09`).",
+          "criterionIds": [
+            "VAL-1"
+          ],
+          "designIds": [
+            "d-validation"
+          ],
+          "dependsOn": [
+            "t02-layout"
+          ],
+          "checkIds": [
+            "c-di-validation",
+            "c-core-wasm"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_core/src/di/provider.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_core/src/services/app/rayx_app_builder.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/surface.rs",
+              "symbol": "AppError"
+            }
+          ]
+        },
+        {
+          "id": "t07-contract-tokens",
+          "title": "#[contract(ts = …)] and a RayX class as a contract's token",
+          "descriptionMarkdown": "Per d-contract-tokens: the macro's `ts = \"…\"` argument names the TS interface; a contract can be given a RayX TS class as its token, so the TS provider treats `addSingletonAs(Class, factory)` and every other registration form under that class as a TS implementation of the contract (registering the adapter as `dyn Trait`, the factory typed by the interface in the declarations), and `getRequiredService(Class)` wraps whichever `dyn Trait` is registered in the class. New group `crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs`, with a contract and a class defined in the test: the interface's name in the declarations; a TS implementation under the class reached from Rust as `dyn Trait` and from TS through the class (state read synchronously); a Rust implementation reached through the same class; a contract without a class keeping its token function.",
+          "criterionIds": [
+            "CON-9"
+          ],
+          "designIds": [
+            "d-contract-tokens"
+          ],
+          "dependsOn": [
+            "t04-contract-kinds"
+          ],
+          "checkIds": [
+            "c-contract-tokens"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/provider.rs",
+              "symbol": "RESOLVERS"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/contract.rs",
+              "symbol": "contract_token"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s4-service-crates",
+      "title": "The host's hooks, then the mandatory four, storage, navigation and i18n as crates",
+      "dependsOn": [
+        "s3-contracts"
+      ],
+      "memoryScopes": [
+        "runtime",
+        "app",
+        "core/di"
+      ],
+      "checkIds": [
+        "c-host-hooks",
+        "c-app-extension-methods",
+        "c-app-extension-umbrella",
+        "c-required-services",
+        "c-host-start",
+        "c-svc-mandatory",
+        "c-svc-storage-navigation",
+        "c-svc-i18n",
+        "c-release-wiring"
+      ],
+      "tasks": [
+        {
+          "id": "t08-host-hooks",
+          "title": "What service crates build on: builder methods as class extensions, app extensions too",
+          "descriptionMarkdown": "Prerequisite: RayX pins `nshx-0.5.0-6` (scope). Per d-service-crates, give service crates what they build on: public functions an extension method acts on `Instance<RayXAppBuilder>` with, as the builder's own methods do (a Rust registration step, a TS options step through the crate's options class, `AppError::BuilderStarted` once started: today's private `extended`, `add_ts_options` and options steps); a way for a crate's set to register its services' TS classes and resolvers, which the provider uses instead of `RESOLVERS`' fixed list; public helpers for service classes (`ServiceClass`, listeners, options records, `json`); `rayx_app_nsh::testing` behind a `testing` feature with the headless harness of `tests/support` and `tests/headless`. The host's builder keeps its service methods until each service's task moves its method into its crate as a class extension. New group `crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs` with a service-crate stand-in module in the test (a holder with `#[class_extension(RayXAppBuilder)]`, its own options class, service class and resolver, registered by a set of its own): its method in JS and in `.nsh/types` only with its set; with and without an options callback; a callback that throws; after `start()`; its class resolving through the provider; the harness running a TSX app. Then, per SVC-10, `#[app_extension]` (`rayx_app_macros/src/extension.rs`) generates a class extension of `RayXAppBuilder` in place of its flat TS function: `fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` is `builder.addWeather()` in TS, registered by the app's set in the form the macro gives (for example `registry.class_extension::<add_weather>()`, said in its rustdoc); update the groups and docs that call `apply(addX)` (`nsh_tsx_ready`, the umbrella's `native_module` and `native_module_attribute`, `docs/tsx.md`, `docs/services.md`), keeping `apply` for TS functions. New group `crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs` (the method in JS and the declarations with the function's docs; chained with RayX's methods; after `start()` it throws). Two commits: `feat(app): …` for the hooks, `feat(tsx)!: …` for app extensions as builder methods, with `Migration: apps: …`.",
+          "criterionIds": [
+            "SVC-1",
+            "SVC-10"
+          ],
+          "designIds": [
+            "d-service-crates"
+          ],
+          "dependsOn": [
+            "t07-contract-tokens"
+          ],
+          "checkIds": [
+            "c-host-hooks",
+            "c-app-extension-methods",
+            "c-app-extension-umbrella"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/provider.rs",
+              "symbol": "RESOLVERS"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/builder.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app_macros/src/extension.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/tests/nsh_tsx_ready.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx/tests/native_module.rs"
+            }
+          ]
+        },
+        {
+          "id": "t09-mandatory-services",
+          "title": "Platform, suspension, assets and fonts as crates; the host requires them; nothing pre-registered",
+          "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: platform, suspension, assets, fonts. Also: the NSH asset reader and font registrar become private to their crates and run their NSH calls through the `EngineRunner` (callable from any thread); platform and suspension keep themselves current from their initialization on (what `use_platform_sync`, `keep_platform_current` and the quit wiring did, in Rust and TSX apps alike), and those functions go; fonts resolves `dyn AssetService`; `add_nsh_services`, `NshServicesAppBuilderExt` and the builders' pre-registration go, and the host requires the four (d-validation) in Rust's and TS's start with hints per language. Update the host's start groups to register the four. New group `crates/rayx_app_nsh/tests/nsh_required_services.rs` (each one missing, all missing in one message, Rust and TS, both builders empty when new).",
+          "criterionIds": [
+            "SVC-2",
+            "VAL-2",
+            "VAL-3"
+          ],
+          "supportingCriterionIds": [
+            "CRATES-4"
+          ],
+          "designIds": [
+            "d-abstractions",
+            "d-service-crates",
+            "d-validation",
+            "d-plain-startup-dependency"
+          ],
+          "dependsOn": [
+            "t08-host-hooks"
+          ],
+          "checkIds": [
+            "c-svc-mandatory",
+            "c-required-services",
+            "c-host-start",
+            "c-release-wiring",
+            "c-plain-startup-dependency"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/platform/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/suspension/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/assets/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/fonts/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/platform.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/suspension.rs"
+            }
+          ]
+        },
+        {
+          "id": "t10-storage-navigation",
+          "title": "Storage and navigation as crates",
+          "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: storage (its NSH key-value store and the in-memory store, NSH storage calls through the `EngineRunner`, the flush before quitting heard through `dyn SuspensionService`'s events) and navigation (the location synchronizer, regions as NSH navigation stacks, TSX's `NavigationRegion`; the synchronizer seam private to the crate).",
+          "criterionIds": [
+            "SVC-3"
+          ],
+          "supportingCriterionIds": [
+            "CRATES-4"
+          ],
+          "designIds": [
+            "d-abstractions",
+            "d-service-crates"
+          ],
+          "dependsOn": [
+            "t09-mandatory-services"
+          ],
+          "checkIds": [
+            "c-svc-storage-navigation",
+            "c-release-wiring"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/storage/store.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/navigation/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/storage.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/location.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/region.rs"
+            }
+          ]
+        },
+        {
+          "id": "t11-i18n",
+          "title": "I18n as a crate, split into I18nService and MessageFormatter",
+          "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Service here: i18n, split per d-i18n-split: the `I18nService` contract and the Rust-only `MessageFormatter` trait in `rayx_app::services::i18n`; `rayx_services_i18n` with RayX's implementation of both (`add_i18n`, `add_message_formatter`), the formatter's per-language cache dropped on a new version, `tr!`, `checked::tr!` and NSH's locale following the chosen language; RayX's implementation resolves `dyn PlatformInfoService` and `dyn AssetService`. New group `crates/rayx_services_i18n/tests/formatter.rs`: today's formatting results through RayX's implementation; the formatter over a fake `I18nService` (from the test) following a published language change on the next call.",
+          "criterionIds": [
+            "SVC-4"
+          ],
+          "supportingCriterionIds": [
+            "CRATES-4"
+          ],
+          "designIds": [
+            "d-abstractions",
+            "d-i18n-split",
+            "d-service-crates"
+          ],
+          "dependsOn": [
+            "t09-mandatory-services"
+          ],
+          "checkIds": [
+            "c-svc-i18n",
+            "c-release-wiring"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/i18n/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/translate.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/i18n_locale.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/ts/i18n.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s5-service-crates-rest",
+      "title": "The other services as crates, rayx_runtime gone, replaceability from Rust and TS",
+      "dependsOn": [
+        "s4-service-crates"
+      ],
+      "memoryScopes": [
+        "runtime",
+        "app",
+        "core"
+      ],
+      "checkIds": [
+        "c-svc-ops-history-selection",
+        "c-svc-input-config",
+        "c-crate-rules",
+        "c-core-wasm",
+        "c-release-wiring",
+        "c-source-layout",
+        "c-testing-fakes",
+        "c-service-replacement",
+        "c-ts-contracts"
+      ],
+      "tasks": [
+        {
+          "id": "t12-operations-history-selection",
+          "title": "Operations, history and selection as crates",
+          "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: operations (a target's handler crosses as a class handle TS can call; transactions as commands on an id; generic `submit::<T>` and friends as helpers on `dyn OperationService`), history (resolves `dyn OperationService`, and `dyn KeyValueStore` for `add_persistent_history`; no longer reads operations' private `instance_id`, which becomes the contract's constant; `HistoryStore` stays public in its crate) and selection (resolves `dyn NavigationService`). `add_history` no longer adds operations, nor `add_persistent_history` storage: they declare them.",
+          "criterionIds": [
+            "SVC-5"
+          ],
+          "supportingCriterionIds": [
+            "CRATES-4"
+          ],
+          "designIds": [
+            "d-abstractions",
+            "d-service-crates"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-svc-ops-history-selection",
+            "c-release-wiring"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/operations/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/history/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/selection/service.rs"
+            }
+          ]
+        },
+        {
+          "id": "t13-input-map-configuration",
+          "title": "Input map and application configuration as crates; rayx_runtime removed; the final crate rules",
+          "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: input map (resolves `dyn KeyValueStore`; `add_input_map` no longer adds storage) and application configuration (resolves `dyn PlatformInfoService`; `add_application_configuration` no longer adds platform). Then remove `crates/rayx_runtime` (workspace member, dependency, re-exports, `release-plz.toml`, CI's wasm step and `ci_workflow.rs`), keeping the name in the CLI's library guard. Extend `crate_layout` to the final set and dependency rules (CRATES-2), and `source_layout` to the host's `services/` after the split (only what service crates build on).",
+          "criterionIds": [
+            "SVC-6",
+            "CRATES-2"
+          ],
+          "supportingCriterionIds": [
+            "CRATES-4",
+            "LAYOUT-1"
+          ],
+          "designIds": [
+            "d-abstractions",
+            "d-service-crates",
+            "d-crate-names"
+          ],
+          "dependsOn": [
+            "t12-operations-history-selection"
+          ],
+          "checkIds": [
+            "c-svc-input-config",
+            "c-crate-rules",
+            "c-core-wasm",
+            "c-release-wiring",
+            "c-source-layout"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/input_map/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/application_configuration/service.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/Cargo.toml"
+            }
+          ]
+        },
+        {
+          "id": "t14-fakes-and-replacement",
+          "title": "rayx_app::testing's fakes; replacing RayX's implementations from Rust",
+          "descriptionMarkdown": "Add `rayx_app::testing` with a fake per core trait and of `MessageFormatter` (d-abstractions' invariants; today's `InMemoryKeyValueStore`, `MemoryAssetReader` and the no-op hosts are where they come from), NSH-free. New groups `crates/rayx_app/tests/testing_fakes.rs` (each fake registered as `dyn Trait` in a plain `ServiceProvider`, resolved and used: state published, commands recorded or answered) and `crates/rayx/tests/service_replacement.rs` (every feature: an app's own `dyn AssetService` used by RayX's fonts and i18n, its own `dyn OperationService` by history, its own platform, suspension, assets and fonts satisfying the host's requirement, a service's TS class wrapping the app's implementation).",
+          "criterionIds": [
+            "SVC-7",
+            "SVC-8"
+          ],
+          "designIds": [
+            "d-abstractions"
+          ],
+          "dependsOn": [
+            "t13-input-map-configuration"
+          ],
+          "checkIds": [
+            "c-testing-fakes",
+            "c-service-replacement"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/storage/memory.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_runtime/src/services/assets/reader.rs",
+              "symbol": "MemoryAssetReader"
+            }
+          ]
+        },
+        {
+          "id": "t15-ts-implementations",
+          "title": "Each of the twelve contracts implemented in TS",
+          "descriptionMarkdown": "New group `crates/rayx/tests/ts_service_contracts.rs` (every feature), one test per contract: a TS class implementing `<Name>Contract`, registered with `addSingletonAs(<Name>, () => new …)` (a startup form where the service initializes), resolved by Rust as `dyn Trait` (published state read synchronously, a command called from the engine thread and from another thread) and by TS through `getRequiredService(<Name>)`; for the services others resolve (assets, operations, navigation, platform, storage, i18n), a RayX consumer working over the TS implementation; the host's requirement satisfied by TS implementations of the four. Fix what the tests find in the contracts, adapters or crates (repair, inside this epic's scope).",
+          "criterionIds": [
+            "SVC-9"
+          ],
+          "designIds": [
+            "d-abstractions",
+            "d-contract-kinds",
+            "d-contract-tokens",
+            "d-any-thread"
+          ],
+          "dependsOn": [
+            "t13-input-map-configuration"
+          ],
+          "checkIds": [
+            "c-ts-contracts",
+            "c-contract-bytes"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/tests/nsh_tsx_contracts.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s6-consumers",
+      "title": "The umbrella's features, rayx new and the gallery",
+      "dependsOn": [
+        "s5-service-crates-rest"
+      ],
+      "memoryScopes": [
+        "app",
+        "cli"
+      ],
+      "checkIds": [
+        "c-umbrella-features",
+        "c-umbrella-all-features",
+        "c-new-app-services",
+        "c-gallery"
+      ],
+      "tasks": [
+        {
+          "id": "t16-umbrella",
+          "title": "One feature per service crate in rayx; native_module registers the enabled sets",
+          "descriptionMarkdown": "Per d-umbrella: optional dependencies and features, defaults the four; `rayx::services::<name>`, prelude, `tr!`/`checked` with `i18n`; `#[rayx::native_module]` calling the umbrella's registration, which registers the host's classes and each enabled crate's set. New group `crates/rayx/tests/features.rs` (from `cargo metadata`: each feature enables exactly its crate, defaults are the four, no feature implies another); update `native_module`, `native_module_attribute`, `umbrella` and `derive` to the new paths and check the declarations: with the defaults `addFonts` and no `addI18n`, with every feature both.",
+          "criterionIds": [
+            "UMB-1"
+          ],
+          "designIds": [
+            "d-umbrella"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-umbrella-features",
+            "c-umbrella-all-features"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx/Cargo.toml"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app_macros/src/native_module.rs"
+            }
+          ]
+        },
+        {
+          "id": "t17-rayx-new",
+          "title": "rayx new registers the required four and names its features",
+          "descriptionMarkdown": "Per d-template: the `rayx` dependency's features, the Rust and TSX composition roots (`rust_lib.rs.in`, `mixed_App.tsx.in`, and their tests' templates), the comments, `README.md` and `docs/cli/projects.md`. New group `crates/rayx_cli/tests/new_app_services.rs` (the dependency line's features; both roots register the four before storage and history); update `new_app`, `new_app_builder` and the README groups.",
+          "criterionIds": [
+            "UMB-2"
+          ],
+          "designIds": [
+            "d-template"
+          ],
+          "dependsOn": [
+            "t16-umbrella"
+          ],
+          "checkIds": [
+            "c-new-app-services"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/src/new.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/src/new/rust_lib.rs.in"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/src/new/mixed_App.tsx.in"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_cli/tests/new_app_builder.rs"
+            }
+          ]
+        },
+        {
+          "id": "t18-gallery",
+          "title": "The gallery on the new crates",
+          "descriptionMarkdown": "The gallery's crate names the `rayx` features it uses and registers the four required services where it starts RayX; its declarations test (`gallery_tsx.rs`) and unit tests follow the new paths.",
+          "criterionIds": [
+            "UMB-3"
+          ],
+          "designIds": [
+            "d-umbrella"
+          ],
+          "dependsOn": [
+            "t16-umbrella"
+          ],
+          "checkIds": [
+            "c-gallery"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "examples/gallery/native/Cargo.toml"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "examples/gallery/native/src/lib.rs"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "examples/gallery/native/tests/gallery_tsx.rs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s7-docs",
+      "title": "Docs, RayX.Root's guide, the rayx skill and memory",
+      "dependsOn": [
+        "s6-consumers"
+      ],
+      "memoryScopes": [
+        "app",
+        "runtime",
+        "core",
+        "governance/memory",
+        "root:skills",
+        "root:workspace"
+      ],
+      "checkIds": [
+        "c-no-old-names",
+        "c-no-old-names-root",
+        "c-rayx-skill"
+      ],
+      "tasks": [
+        {
+          "id": "t19-docs",
+          "title": "RayX's docs, README and AGENTS.md",
+          "descriptionMarkdown": "Per d-docs-skill and DOC-1: `docs/architecture.md`, `docs/services.md` and every `docs/services/<name>.md`, `docs/tsx.md`, `docs/startup.md`, `docs/dependency-injection.md`, `docs/getting-started.md`, `docs/navigation.md`, `docs/view-models.md` where they name crates, `docs/INDEX.md`, the README and `AGENTS.md` (crates, dependency rules, validation commands with the new package names and the wasm step); code comments that name the old crates or APIs; `docs/releasing.md`'s current crates, CI steps and consumer lines (its release history keeps the names it had). `c-no-old-names` must find nothing.",
+          "criterionIds": [
+            "DOC-1"
+          ],
+          "designIds": [
+            "d-docs-skill"
+          ],
+          "dependsOn": [],
+          "checkIds": [
+            "c-no-old-names"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "docs/INDEX.md"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "docs/services.md"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "docs/architecture.md"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "docs/tsx.md"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": "AGENTS.md"
+            }
+          ]
+        },
+        {
+          "id": "t20-root",
+          "title": "RayX.Root: AGENTS.md, the rayx-components skill, and the new rayx skill",
+          "descriptionMarkdown": "Per d-docs-skill and DOC-2, in RayX.Root: `AGENTS.md`'s layout table and code section; the `rayx-components` skill's crate names; the new skill `.claude/skills/rayx/` (`SKILL.md`, `references/services.md`, `references/contracts.md`) in `rayx-components`' house style, every example checked against the code as it is after `s6`. Commit in RayX.Root (`docs(skills): …`).",
+          "criterionIds": [
+            "DOC-2"
+          ],
+          "designIds": [
+            "d-docs-skill"
+          ],
+          "dependsOn": [
+            "t19-docs"
+          ],
+          "checkIds": [
+            "c-no-old-names-root",
+            "c-rayx-skill"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "root",
+              "path": "AGENTS.md"
+            },
+            {
+              "repositoryId": "root",
+              "path": ".claude/skills/rayx-components/SKILL.md"
+            }
+          ]
+        },
+        {
+          "id": "t21-memory",
+          "title": "RayX's memory follows the crates",
+          "descriptionMarkdown": "Per DOC-3: RayX's knowledge domains (`runtime` now covers the service crates, `app` the host, `core` the core; rename a domain only through AgentX's memory workflow), their `state.md` backlinks and rules (`runtime/rules.md`: no NSH in the core, a service crate depends on no other), the indexes; draft the decisions this epic makes for promotion after it closes (the successor of the TS builder parity decision, the crate structure). Commit as `chore(agentx): …`.",
+          "criterionIds": [
+            "DOC-3"
+          ],
+          "designIds": [
+            "d-docs-skill"
+          ],
+          "dependsOn": [
+            "t19-docs"
+          ],
+          "checkIds": [],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": ".agentx/memory/knowledge/runtime/rules.md"
+            },
+            {
+              "repositoryId": "rayx",
+              "path": ".agentx/memory/knowledge/app/state.md"
+            }
+          ]
+        },
+        {
+          "id": "t22-service-gaps",
+          "title": "Close the service gaps documenting them found",
+          "descriptionMarkdown": "Corrective task from t19's findings (the owner's rule: no limitations where they can be made to work): CI runs the umbrella with every feature; navigation's TS commands return promises; the last registration of a key wins completely (startup entries and declared requirements); `add_startup_singleton_for`; TS `addInMemoryStorage()` and `addHistoryWithStore(..)`; clearing a history scope deletes its journal. Commits 3266c97..5bc7668.",
+          "criterionIds": [
+            "SVC-11"
+          ],
+          "supportingCriterionIds": [],
+          "designIds": [
+            "d-abstractions",
+            "d-service-crates",
+            "d-validation"
+          ],
+          "dependsOn": [
+            "t19-docs"
+          ],
+          "checkIds": [
+            "c-gaps-core",
+            "c-gaps-host",
+            "c-gaps-navigation",
+            "c-gaps-storage",
+            "c-gaps-history",
+            "c-gaps-umbrella",
+            "c-gaps-ci"
+          ],
+          "sourceRefs": [
+            {
+              "repositoryId": "rayx",
+              "path": "crates/rayx_app/src/di/provider.rs"
+            }
+          ]
+        }
+      ]
+    }
   ]
- },
- "checks": [
-  {
-   "id": "c-crate-layout",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CRATES-1"
-   ],
-   "descriptionMarkdown": "The crates' names, folders and NSH-free core, from `cargo metadata` (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--test",
-    "crate_layout"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/*/Cargo.toml",
-    "examples/gallery/native/Cargo.toml",
-    "crates/rayx/tests/crate_layout.rs"
-   ]
-  },
-  {
-   "id": "c-macro-paths",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CRATES-3"
-   ],
-   "descriptionMarkdown": "The macros' crate lookup through `rayx` (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--test",
-    "macro_paths"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**"
-   ]
-  },
-  {
-   "id": "c-workspace-build",
-   "repositoryId": "rayx",
-   "kind": "build",
-   "criterionIds": [
-    "CRATES-1"
-   ],
-   "descriptionMarkdown": "Every crate, test and example compiles against the new names. Whole-workspace on purpose: renaming two crates changes a path in every crate of the workspace, so compiling all of them is this change's focused proof (no test runs).",
-   "argv": [
-    "cargo",
-    "test",
-    "--workspace",
-    "--no-run"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/**",
-    "examples/**"
-   ]
-  },
-  {
-   "id": "c-core-wasm",
-   "repositoryId": "rayx",
-   "kind": "build",
-   "criterionIds": [
-    "CRATES-1",
-    "CRATES-2",
-    "CON-5"
-   ],
-   "descriptionMarkdown": "The core (and the devtools protocol) still build for `wasm32-unknown-unknown`.",
-   "argv": [
-    "cargo",
-    "check",
-    "-p",
-    "rayx_app",
-    "-p",
-    "rayx_devtools_protocol",
-    "--target",
-    "wasm32-unknown-unknown"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/**",
-    "crates/rayx_app_macros/**"
-   ]
-  },
-  {
-   "id": "c-release-wiring",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CRATES-4"
-   ],
-   "descriptionMarkdown": "release-plz's owner and packages, CI's wasm step and the CLI's library guard name the crates as they are.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx-cli",
-    "--test",
-    "release_automation",
-    "--test",
-    "release_config",
-    "--test",
-    "ci_workflow",
-    "--test",
-    "library_guard"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "release-plz.toml",
-    ".github/workflows/**",
-    "crates/*/Cargo.toml",
-    "crates/rayx_cli/**"
-   ]
-  },
-  {
-   "id": "c-source-layout",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "LAYOUT-1"
-   ],
-   "descriptionMarkdown": "The host's source layout (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "source_layout"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/source_layout.rs"
-   ]
-  },
-  {
-   "id": "c-host-suite",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "LAYOUT-2"
-   ],
-   "descriptionMarkdown": "Every test group of `rayx_app_nsh`. Run whole because the change moves every source file of the crate: this is the owning package's suite, not a workspace run.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--tests"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_runtime/src/**",
-    "crates/rayx_app_nsh/**"
-   ]
-  },
-  {
-   "id": "c-host-docs",
-   "repositoryId": "rayx",
-   "kind": "static",
-   "criterionIds": [
-    "LAYOUT-2"
-   ],
-   "descriptionMarkdown": "No broken intra-doc link in the host after the move.",
-   "argv": [
-    "cargo",
-    "doc",
-    "-p",
-    "rayx_app_nsh",
-    "--no-deps"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_runtime/src/**",
-    "crates/rayx_app_nsh/src/**"
-   ],
-   "environment": {
-    "RUSTDOCFLAGS": "-D rustdoc::broken_intra_doc_links"
-   }
-  },
-  {
-   "id": "c-published-values",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-5"
-   ],
-   "descriptionMarkdown": "`StateCell` and `EventStream`: reads, publishes, order, re-entrancy, threads (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app",
-    "--test",
-    "published_values"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app/tests/published_values.rs"
-   ]
-  },
-  {
-   "id": "c-published-binding",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-8"
-   ],
-   "descriptionMarkdown": "Published values as NSH signals and listeners (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_published_binding"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_published_binding.rs"
-   ]
-  },
-  {
-   "id": "c-contract-macro",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-1"
-   ],
-   "descriptionMarkdown": "`#[contract]`'s shapes and refusals (the macro's unit tests).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_macros",
-    "contract::"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app_macros/**"
-   ]
-  },
-  {
-   "id": "c-contract-kinds",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-1",
-    "CON-2",
-    "CON-3",
-    "CON-4"
-   ],
-   "descriptionMarkdown": "Declarations, published state and events, and constants of a TS implementation (new group), with the existing contract group that exercises the same adapter.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_tsx_contract_kinds",
-    "--test",
-    "nsh_tsx_contracts"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs",
-    "crates/rayx_app_nsh/tests/nsh_tsx_contracts.rs"
-   ]
-  },
-  {
-   "id": "c-contracts-any-thread",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-6"
-   ],
-   "descriptionMarkdown": "Commands and posted members from other threads, on the engine thread, and after the engine stopped (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_tsx_contracts_any_thread"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs"
-   ]
-  },
-  {
-   "id": "c-engine-runner",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-7"
-   ],
-   "descriptionMarkdown": "The engine runner from any thread and after the engine is gone (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_engine_runner"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_engine_runner.rs"
-   ]
-  },
-  {
-   "id": "c-di-validation",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "VAL-1"
-   ],
-   "descriptionMarkdown": "Required traits, declared dependencies and lifetimes checked before startup (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app",
-    "--test",
-    "di_validation"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app/tests/di_validation.rs"
-   ]
-  },
-  {
-   "id": "c-contract-tokens",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CON-9"
-   ],
-   "descriptionMarkdown": "`#[contract(ts = …)]` and a RayX class as a contract's token (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_tsx_contract_tokens"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs"
-   ]
-  },
-  {
-   "id": "c-host-hooks",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-1"
-   ],
-   "descriptionMarkdown": "A crate's builder method as a class extension, its classes and resolvers from its set; the helpers and the test harness (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--features",
-    "testing",
-    "--test",
-    "nsh_service_crate_hooks"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs"
-   ]
-  },
-  {
-   "id": "c-app-extension-methods",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-10"
-   ],
-   "descriptionMarkdown": "`#[app_extension]` as a TS builder method (new group), with the host's group that used `apply(addX)`.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_app_extension_methods",
-    "--test",
-    "nsh_tsx_ready"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs",
-    "crates/rayx_app_nsh/tests/nsh_tsx_ready.rs"
-   ]
-  },
-  {
-   "id": "c-app-extension-umbrella",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-10"
-   ],
-   "descriptionMarkdown": "The umbrella's groups that call app extensions, now as builder methods.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--test",
-    "native_module",
-    "--test",
-    "native_module_attribute"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx/**"
-   ]
-  },
-  {
-   "id": "c-required-services",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "VAL-2"
-   ],
-   "descriptionMarkdown": "The host's four required services in Rust and TS; nothing pre-registered (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_required_services"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_required_services.rs"
-   ]
-  },
-  {
-   "id": "c-host-start",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "VAL-2"
-   ],
-   "descriptionMarkdown": "The host's existing start groups, whose builders now register the four required services.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app_nsh",
-    "--test",
-    "nsh_app_start",
-    "--test",
-    "nsh_tsx_start",
-    "--test",
-    "nsh_tsx_builder"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_app_nsh/tests/nsh_app_start.rs",
-    "crates/rayx_app_nsh/tests/nsh_tsx_start.rs",
-    "crates/rayx_app_nsh/tests/nsh_tsx_builder.rs"
-   ]
-  },
-  {
-   "id": "c-svc-mandatory",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-2"
-   ],
-   "descriptionMarkdown": "The platform, suspension, assets and fonts crates' groups (moved and new).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_services_platform",
-    "-p",
-    "rayx_services_suspension",
-    "-p",
-    "rayx_services_assets",
-    "-p",
-    "rayx_services_fonts",
-    "--tests"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_platform/**",
-    "crates/rayx_services_suspension/**",
-    "crates/rayx_services_assets/**",
-    "crates/rayx_services_fonts/**"
-   ]
-  },
-  {
-   "id": "c-svc-storage-navigation",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-3"
-   ],
-   "descriptionMarkdown": "The storage and navigation crates' groups.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_services_storage",
-    "-p",
-    "rayx_services_navigation",
-    "--tests"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_storage/**",
-    "crates/rayx_services_navigation/**"
-   ]
-  },
-  {
-   "id": "c-svc-i18n",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-4"
-   ],
-   "descriptionMarkdown": "The i18n crate's groups, with the formatter's new group.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_services_i18n",
-    "--tests"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_i18n/**"
-   ]
-  },
-  {
-   "id": "c-svc-ops-history-selection",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-5"
-   ],
-   "descriptionMarkdown": "The operations, history and selection crates' groups.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_services_operations",
-    "-p",
-    "rayx_services_history",
-    "-p",
-    "rayx_services_selection",
-    "--tests"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_operations/**",
-    "crates/rayx_services_history/**",
-    "crates/rayx_services_selection/**"
-   ]
-  },
-  {
-   "id": "c-svc-input-config",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-6"
-   ],
-   "descriptionMarkdown": "The input map and application configuration crates' groups.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_services_input_map",
-    "-p",
-    "rayx_services_application_configuration",
-    "--tests"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_input_map/**",
-    "crates/rayx_services_application_configuration/**"
-   ]
-  },
-  {
-   "id": "c-crate-rules",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "CRATES-2"
-   ],
-   "descriptionMarkdown": "The final crate set and the dependency rules, from `cargo metadata` (the `crate_layout` group with its final expectations).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--test",
-    "crate_layout"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/*/Cargo.toml",
-    "examples/gallery/native/Cargo.toml",
-    "crates/rayx/tests/crate_layout.rs"
-   ]
-  },
-  {
-   "id": "c-testing-fakes",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-7"
-   ],
-   "descriptionMarkdown": "A fake of every core abstraction, used without NSH (new group).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx_app",
-    "--test",
-    "testing_fakes"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app/tests/testing_fakes.rs"
-   ]
-  },
-  {
-   "id": "c-service-replacement",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-8"
-   ],
-   "descriptionMarkdown": "An app's own Rust implementations used by every consumer (new group, every service feature on).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--all-features",
-    "--test",
-    "service_replacement"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_application_configuration/**",
-    "crates/rayx_services_assets/**",
-    "crates/rayx_services_fonts/**",
-    "crates/rayx_services_history/**",
-    "crates/rayx_services_i18n/**",
-    "crates/rayx_services_input_map/**",
-    "crates/rayx_services_navigation/**",
-    "crates/rayx_services_operations/**",
-    "crates/rayx_services_platform/**",
-    "crates/rayx_services_selection/**",
-    "crates/rayx_services_storage/**",
-    "crates/rayx_services_suspension/**",
-    "crates/rayx/Cargo.toml",
-    "crates/rayx/src/**",
-    "crates/rayx/tests/service_replacement.rs"
-   ]
-  },
-  {
-   "id": "c-ts-contracts",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "SVC-9"
-   ],
-   "descriptionMarkdown": "A TS implementation of each of the twelve contracts (new group, every service feature on).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--all-features",
-    "--test",
-    "ts_service_contracts"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_application_configuration/**",
-    "crates/rayx_services_assets/**",
-    "crates/rayx_services_fonts/**",
-    "crates/rayx_services_history/**",
-    "crates/rayx_services_i18n/**",
-    "crates/rayx_services_input_map/**",
-    "crates/rayx_services_navigation/**",
-    "crates/rayx_services_operations/**",
-    "crates/rayx_services_platform/**",
-    "crates/rayx_services_selection/**",
-    "crates/rayx_services_storage/**",
-    "crates/rayx_services_suspension/**",
-    "crates/rayx/Cargo.toml",
-    "crates/rayx/src/**",
-    "crates/rayx/tests/ts_service_contracts.rs"
-   ]
-  },
-  {
-   "id": "c-umbrella-features",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "UMB-1"
-   ],
-   "descriptionMarkdown": "The umbrella's features against `cargo metadata` (new group) and its existing groups under the default features (no `addI18n`).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--test",
-    "features",
-    "--test",
-    "native_module",
-    "--test",
-    "native_module_attribute",
-    "--test",
-    "umbrella",
-    "--test",
-    "derive"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_application_configuration/**",
-    "crates/rayx_services_assets/**",
-    "crates/rayx_services_fonts/**",
-    "crates/rayx_services_history/**",
-    "crates/rayx_services_i18n/**",
-    "crates/rayx_services_input_map/**",
-    "crates/rayx_services_navigation/**",
-    "crates/rayx_services_operations/**",
-    "crates/rayx_services_platform/**",
-    "crates/rayx_services_selection/**",
-    "crates/rayx_services_storage/**",
-    "crates/rayx_services_suspension/**",
-    "crates/rayx/**"
-   ]
-  },
-  {
-   "id": "c-umbrella-all-features",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "UMB-1"
-   ],
-   "descriptionMarkdown": "The umbrella's `native_module` groups with every service feature on (`addI18n` present).",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx",
-    "--all-features",
-    "--test",
-    "native_module",
-    "--test",
-    "native_module_attribute"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_application_configuration/**",
-    "crates/rayx_services_assets/**",
-    "crates/rayx_services_fonts/**",
-    "crates/rayx_services_history/**",
-    "crates/rayx_services_i18n/**",
-    "crates/rayx_services_input_map/**",
-    "crates/rayx_services_navigation/**",
-    "crates/rayx_services_operations/**",
-    "crates/rayx_services_platform/**",
-    "crates/rayx_services_selection/**",
-    "crates/rayx_services_storage/**",
-    "crates/rayx_services_suspension/**",
-    "crates/rayx/**"
-   ]
-  },
-  {
-   "id": "c-new-app-services",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "UMB-2"
-   ],
-   "descriptionMarkdown": "`rayx new`'s services and features (new group), with the CLI groups that check the same files.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx-cli",
-    "--test",
-    "new_app_services",
-    "--test",
-    "new_app_builder",
-    "--test",
-    "new_app",
-    "--test",
-    "readme_nsh",
-    "--test",
-    "readme_versions"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_cli/**",
-    "docs/cli/**"
-   ]
-  },
-  {
-   "id": "c-gallery",
-   "repositoryId": "rayx",
-   "kind": "test",
-   "criterionIds": [
-    "UMB-3"
-   ],
-   "descriptionMarkdown": "The gallery's crate on the new crates.",
-   "argv": [
-    "cargo",
-    "test",
-    "-p",
-    "rayx-gallery"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0,
-    "minimumTests": 1
-   },
-   "inputs": [
-    "Cargo.toml",
-    "Cargo.lock",
-    "crates/rayx_app/Cargo.toml",
-    "crates/rayx_app/src/**",
-    "crates/rayx_app_macros/src/**",
-    "crates/rayx_app_nsh/Cargo.toml",
-    "crates/rayx_app_nsh/src/**",
-    "crates/rayx_app_nsh/tests/support/**",
-    "crates/rayx_app_nsh/tests/headless/**",
-    "crates/rayx_app_nsh/tests/fixtures/**",
-    "crates/rayx_services_application_configuration/**",
-    "crates/rayx_services_assets/**",
-    "crates/rayx_services_fonts/**",
-    "crates/rayx_services_history/**",
-    "crates/rayx_services_i18n/**",
-    "crates/rayx_services_input_map/**",
-    "crates/rayx_services_navigation/**",
-    "crates/rayx_services_operations/**",
-    "crates/rayx_services_platform/**",
-    "crates/rayx_services_selection/**",
-    "crates/rayx_services_storage/**",
-    "crates/rayx_services_suspension/**",
-    "crates/rayx/**",
-    "examples/gallery/**"
-   ]
-  },
-  {
-   "id": "c-no-old-names",
-   "repositoryId": "rayx",
-   "kind": "static",
-   "criterionIds": [
-    "DOC-1"
-   ],
-   "descriptionMarkdown": "No file names the old crates or APIs: `git grep` exits 1 when it finds nothing (a match prints it and exits 0, failing the check).",
-   "argv": [
-    "git",
-    "grep",
-    "--untracked",
-    "-n",
-    "-E",
-    "rayx_core|rayx_runtime|add_nsh_services|NshServicesAppBuilderExt|use_platform_sync|keep_platform_current",
-    "--",
-    "docs",
-    "crates",
-    "examples",
-    "README.md",
-    "AGENTS.md",
-    ":!crates/rayx_cli/tests/library_guard.rs",
-    ":!docs/releasing.md"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 1
-   },
-   "inputs": [
-    "docs/**",
-    "crates/**",
-    "examples/**",
-    "README.md",
-    "AGENTS.md"
-   ]
-  },
-  {
-   "id": "c-no-old-names-root",
-   "repositoryId": "root",
-   "kind": "static",
-   "criterionIds": [
-    "DOC-2"
-   ],
-   "descriptionMarkdown": "No RayX.Root guide or skill names the old crates or APIs: `git grep` exits 1 when it finds nothing.",
-   "argv": [
-    "git",
-    "grep",
-    "--untracked",
-    "-n",
-    "-E",
-    "rayx_core|rayx_runtime|add_nsh_services|NshServicesAppBuilderExt|use_platform_sync",
-    "--",
-    "AGENTS.md",
-    ".claude/skills"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 1
-   },
-   "inputs": [
-    "AGENTS.md",
-    ".claude/skills/**"
-   ]
-  },
-  {
-   "id": "c-rayx-skill",
-   "repositoryId": "root",
-   "kind": "static",
-   "criterionIds": [
-    "DOC-2"
-   ],
-   "descriptionMarkdown": "The `rayx` skill's files exist and `SKILL.md` opens with `name: rayx` and a description.",
-   "argv": [
-    "python3",
-    "-c",
-    "import pathlib,re,sys;d=pathlib.Path('.claude/skills/rayx');t=(d/'SKILL.md').read_text(encoding='utf-8');sys.exit(0 if re.match(r'---\\r?\\nname: rayx\\r?\\ndescription: \\S',t) and (d/'references/services.md').is_file() and (d/'references/contracts.md').is_file() else 1)"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0
-   },
-   "inputs": [
-    ".claude/skills/rayx/**"
-   ]
-  },
-  {
-   "id": "f-fmt",
-   "repositoryId": "rayx",
-   "kind": "static",
-   "criterionIds": [
-    "CRATES-1",
-    "LAYOUT-2",
-    "CON-1",
-    "SVC-6",
-    "UMB-1"
-   ],
-   "descriptionMarkdown": "Formatting of the workspace.",
-   "argv": [
-    "cargo",
-    "fmt",
-    "--all",
-    "--check"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0
-   }
-  },
-  {
-   "id": "f-clippy",
-   "repositoryId": "rayx",
-   "kind": "static",
-   "criterionIds": [
-    "CRATES-2",
-    "LAYOUT-2",
-    "CON-6",
-    "VAL-1",
-    "SVC-6",
-    "UMB-1"
-   ],
-   "descriptionMarkdown": "Clippy on the touched packages, every target, every feature, warnings denied.",
-   "argv": [
-    "cargo",
-    "clippy",
-    "-p",
-    "rayx",
-    "-p",
-    "rayx_app",
-    "-p",
-    "rayx_app_macros",
-    "-p",
-    "rayx_app_nsh",
-    "-p",
-    "rayx_services_application_configuration",
-    "-p",
-    "rayx_services_assets",
-    "-p",
-    "rayx_services_fonts",
-    "-p",
-    "rayx_services_history",
-    "-p",
-    "rayx_services_i18n",
-    "-p",
-    "rayx_services_input_map",
-    "-p",
-    "rayx_services_navigation",
-    "-p",
-    "rayx_services_operations",
-    "-p",
-    "rayx_services_platform",
-    "-p",
-    "rayx_services_selection",
-    "-p",
-    "rayx_services_storage",
-    "-p",
-    "rayx_services_suspension",
-    "-p",
-    "rayx-cli",
-    "-p",
-    "rayx-gallery",
-    "--all-targets",
-    "--all-features",
-    "--",
-    "-D",
-    "warnings"
-   ],
-   "cwd": ".",
-   "expected": {
-    "exitCode": 0
-   }
-  }
- ],
- "finalCheckIds": [
-  "f-fmt",
-  "f-clippy"
- ],
- "sprints": [
-  {
-   "id": "s1-crate-names",
-   "title": "The crates' new names: rayx_app (core) and rayx_app_nsh (host)",
-   "dependsOn": [],
-   "memoryScopes": [
-    "core",
-    "releasing",
-    "cli"
-   ],
-   "checkIds": [
-    "c-crate-layout",
-    "c-macro-paths",
-    "c-workspace-build",
-    "c-core-wasm",
-    "c-release-wiring"
-   ],
-   "tasks": [
-    {
-     "id": "t01-crate-renames",
-     "title": "Rename rayx_app to rayx_app_nsh, then rayx_core to rayx_app",
-     "descriptionMarkdown": "Prerequisites (scope): `ts-app-builder` is closed (its `check --epic` and final review), since its checks name today's crates, and RayX pins `nshx-0.5.0-6`. Rename per d-crate-names: `git mv crates/rayx_app crates/rayx_app_nsh` (package, `extern crate self as rayx_app_nsh`), then `git mv crates/rayx_core crates/rayx_app` (package, `extern crate self as rayx_app`); the workspace's members and `[workspace.dependencies]`; every path in every crate, test, example, template and doc comment (`rayx_core::` → `rayx_app::`, the host's `rayx_app::` → `rayx_app_nsh::`); the macros' lookup in `rayx_app_macros/src/lib.rs`; the umbrella (`rayx::app` = core, `rayx::app_nsh` = host, `rayx::core` gone, prelude); `rayx new`'s templates' paths (`rayx::app::app_state()` → `rayx::app_nsh::app_state()`); `release-plz.toml` (owner `rayx_app`, `rayx_app_nsh` added to `changelog_include` with its `[[package]]`), `.github/workflows/ci.yml`'s wasm step and `ci_workflow.rs` (`-p rayx_app -p rayx_runtime -p rayx_devtools_protocol`), `library_guard.rs`, `release_automation.rs`/`release_config.rs` expectations; `AGENTS.md`'s crate list (names only; the full rewrite is `t19-docs`). New groups: `crates/rayx/tests/crate_layout.rs` (this stage: no `rayx_core`, folders match packages, `rayx_app` NSH-free, `rayx_app_nsh` on `rayx_app`; written so `t13` extends it to the final set) and `crates/rayx/tests/macro_paths.rs`. One `refactor!` commit with the `Migration: apps:` footer of d-crate-names.",
-     "criterionIds": [
-      "CRATES-1",
-      "CRATES-3",
-      "CRATES-4"
-     ],
-     "supportingCriterionIds": [
-      "CRATES-2"
-     ],
-     "designIds": [
-      "d-crate-names"
-     ],
-     "dependsOn": [],
-     "checkIds": [
-      "c-crate-layout",
-      "c-macro-paths",
-      "c-workspace-build",
-      "c-core-wasm",
-      "c-release-wiring"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "Cargo.toml"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app_macros/src/lib.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx/src/lib.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "release-plz.toml"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/tests/library_guard.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/tests/ci_workflow.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/tests/release_automation.rs"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "s2-layout",
-   "title": "The NSH host organized by topic",
-   "dependsOn": [
-    "s1-crate-names"
-   ],
-   "memoryScopes": [
-    "app"
-   ],
-   "checkIds": [
-    "c-source-layout",
-    "c-host-suite",
-    "c-host-docs"
-   ],
-   "tasks": [
-    {
-     "id": "t02-layout",
-     "title": "Move the host's files into app/, di/, configuration/ and services/<name>/",
-     "descriptionMarkdown": "Move `rayx_app_nsh/src/` to d-layout's table with `git mv` where a file moves whole, splitting `ts/services.rs`, `ts/options.rs` and `platform.rs` by service and keeping each item's docs and tests; `ts/mod.rs` becomes `ts.rs`, re-exporting from the new homes so every public path stays; fix `crate::…` paths and intra-doc links; paths in tests that name source files follow. No behavior change: one `refactor(app): …` commit, no `Migration:` footer. New group `crates/rayx_app_nsh/tests/source_layout.rs`: walks `src/` against the expected tree and names each extra or missing file and folder (written so `t13` can change the expected `services/` to what remains after the split).",
-     "criterionIds": [
-      "LAYOUT-1",
-      "LAYOUT-2"
-     ],
-     "designIds": [
-      "d-layout"
-     ],
-     "dependsOn": [
-      "t01-crate-renames"
-     ],
-     "checkIds": [
-      "c-source-layout",
-      "c-host-suite",
-      "c-host-docs"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/lib.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/mod.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/services.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/options.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/platform.rs"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "s3-contracts",
-   "title": "Contracts: published values, constants, any-thread calls, class tokens; the core's checks",
-   "dependsOn": [
-    "s2-layout"
-   ],
-   "memoryScopes": [
-    "core",
-    "core/di",
-    "app"
-   ],
-   "checkIds": [
-    "c-published-values",
-    "c-published-binding",
-    "c-contract-macro",
-    "c-contract-kinds",
-    "c-contracts-any-thread",
-    "c-engine-runner",
-    "c-di-validation",
-    "c-contract-tokens",
-    "c-core-wasm"
-   ],
-   "tasks": [
-    {
-     "id": "t03-published-values",
-     "title": "StateCell and EventStream in the core, and their NSH binding",
-     "descriptionMarkdown": "Add `StateCell<T>` and `EventStream<E>` to `rayx_app` (next to `ChangeSubscription` in `change.rs`, or a module of their own), exported at the crate root and in its prelude, per d-published-values. In the host's `binding.rs`, a Rust component's signal over a `StateCell` and listener over an `EventStream`, following publishes from any thread on the engine thread (as dXn.Reactive values are today), released with the owner. New groups `crates/rayx_app/tests/published_values.rs` (initial value, publish and get across threads, subscription order, drop stops it, re-entrant read and publish, concurrent publishes, events reaching current subscribers only) and `crates/rayx_app_nsh/tests/nsh_published_binding.rs` (a headless component follows publishes from the engine thread and another thread; stops with its owner).",
-     "criterionIds": [
-      "CON-5",
-      "CON-8"
-     ],
-     "designIds": [
-      "d-published-values"
-     ],
-     "dependsOn": [
-      "t02-layout"
-     ],
-     "checkIds": [
-      "c-published-values",
-      "c-published-binding",
-      "c-core-wasm"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_core/src/change.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/binding.rs"
-      }
-     ]
-    },
-    {
-     "id": "t04-contract-kinds",
-     "title": "#[contract]'s shapes: #[state], #[events], #[constant], and TS's ContractState and ContractEvents",
-     "descriptionMarkdown": "Extend `rayx_app_macros/src/contract.rs` per d-contract-kinds: parse and check the five shapes (refusals list them), generate the trait (commands as `Send` boxed futures), the NSH interface members (state and events as getters of the host's classes, constants as getters) and the adapter: reads state, events and constants once when made, links `ContractState`/`ContractEvents` to its own cells and streams, converts on publish, fails making with a `ContractError` naming a missing constant. Add the `ContractState` and `ContractEvents` classes to the host (`di/contract_ts.rs`) and register them with RayX's TS classes. Command errors take `From<ContractError>` as well as `From<Exception>`. Unit tests in the macro for every shape and refusal; new group `crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs` (declarations text; state before and after publish, from the engine thread and another; subscriber notified once per publish; a bad value throws and keeps the old one; events in order to current subscribers; constants read once, later TS changes unseen, missing constant fails); update `nsh_tsx_contracts` to the new shapes. The `Send` futures' dispatch comes in `t05`; until then the adapter may keep its engine-thread path.",
-     "criterionIds": [
-      "CON-1",
-      "CON-2",
-      "CON-3",
-      "CON-4"
-     ],
-     "designIds": [
-      "d-contract-kinds"
-     ],
-     "dependsOn": [
-      "t03-published-values"
-     ],
-     "checkIds": [
-      "c-contract-macro",
-      "c-contract-kinds"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app_macros/src/contract.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/contract.rs"
-      }
-     ]
-    },
-    {
-     "id": "t05-any-thread",
-     "title": "Contracts callable from any thread, and the engine runner",
-     "descriptionMarkdown": "Per d-any-thread: give each surface a dispatch queue drained by an engine task (NSH wakes the engine from any thread), and the host's `EngineRunner` over it (registered in the surface's root provider). Make the contract adapter's commands and posted members dispatch through it from other threads and spawn directly on the engine thread, awaiting a `futures::channel::oneshot`; close the queue when the engine stops so calls resolve `Err(ContractError::EngineGone { … })`; remove `ContractError::WrongThread` and its uses. New groups `crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs` (a command and a posted member from a spawned thread reach the TS implementation; results and thrown errors come back; the engine-thread path skips the queue; a call after the engine stopped resolves `Err`) and `crates/rayx_app_nsh/tests/nsh_engine_runner.rs` (an engine-only NSH call made from another thread; the engine-thread path; after the engine is gone).",
-     "criterionIds": [
-      "CON-6",
-      "CON-7"
-     ],
-     "designIds": [
-      "d-any-thread"
-     ],
-     "dependsOn": [
-      "t04-contract-kinds"
-     ],
-     "checkIds": [
-      "c-contracts-any-thread",
-      "c-engine-runner",
-      "c-contract-kinds"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/contract.rs",
-       "symbol": "ContractSlot"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/surface.rs"
-      }
-     ]
-    },
-    {
-     "id": "t06-validation",
-     "title": "Required traits, declared dependencies and lifetimes checked before startup",
-     "descriptionMarkdown": "Per d-validation, in the core: `ServiceProvider::require::<dyn T>(hint)` and `require_for::<dyn S, dyn T>(hint)` recording requirements (with the requiring registration's lifetime); `RayXAppBuilder::build`/`build_async` check them before any factory, option validation or startup service, collecting every missing trait and every singleton-on-scoped dependency into one `ServiceValidationError` (Display: one line each, who needs what, the hint), and `AppError` gains its variant in the host. New group `crates/rayx_app/tests/di_validation.rs`: a missing required trait, a missing declared dependency, several at once in one error, singleton on scoped, nothing runs before the check fails (a factory and a startup service that record being called), and an app with everything registered building as before. The host's required four and the end of pre-registration come with the service crates (`t09`).",
-     "criterionIds": [
-      "VAL-1"
-     ],
-     "designIds": [
-      "d-validation"
-     ],
-     "dependsOn": [
-      "t02-layout"
-     ],
-     "checkIds": [
-      "c-di-validation",
-      "c-core-wasm"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_core/src/di/provider.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_core/src/services/app/rayx_app_builder.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/surface.rs",
-       "symbol": "AppError"
-      }
-     ]
-    },
-    {
-     "id": "t07-contract-tokens",
-     "title": "#[contract(ts = …)] and a RayX class as a contract's token",
-     "descriptionMarkdown": "Per d-contract-tokens: the macro's `ts = \"…\"` argument names the TS interface; a contract can be given a RayX TS class as its token, so the TS provider treats `addSingletonAs(Class, factory)` and every other registration form under that class as a TS implementation of the contract (registering the adapter as `dyn Trait`, the factory typed by the interface in the declarations), and `getRequiredService(Class)` wraps whichever `dyn Trait` is registered in the class. New group `crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs`, with a contract and a class defined in the test: the interface's name in the declarations; a TS implementation under the class reached from Rust as `dyn Trait` and from TS through the class (state read synchronously); a Rust implementation reached through the same class; a contract without a class keeping its token function.",
-     "criterionIds": [
-      "CON-9"
-     ],
-     "designIds": [
-      "d-contract-tokens"
-     ],
-     "dependsOn": [
-      "t04-contract-kinds"
-     ],
-     "checkIds": [
-      "c-contract-tokens"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/provider.rs",
-       "symbol": "RESOLVERS"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/contract.rs",
-       "symbol": "contract_token"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "s4-service-crates",
-   "title": "The host's hooks, then the mandatory four, storage, navigation and i18n as crates",
-   "dependsOn": [
-    "s3-contracts"
-   ],
-   "memoryScopes": [
-    "runtime",
-    "app",
-    "core/di"
-   ],
-   "checkIds": [
-    "c-host-hooks",
-    "c-app-extension-methods",
-    "c-app-extension-umbrella",
-    "c-required-services",
-    "c-host-start",
-    "c-svc-mandatory",
-    "c-svc-storage-navigation",
-    "c-svc-i18n",
-    "c-release-wiring"
-   ],
-   "tasks": [
-    {
-     "id": "t08-host-hooks",
-     "title": "What service crates build on: builder methods as class extensions, app extensions too",
-     "descriptionMarkdown": "Prerequisite: RayX pins `nshx-0.5.0-6` (scope). Per d-service-crates, give service crates what they build on: public functions an extension method acts on `Instance<RayXAppBuilder>` with, as the builder's own methods do (a Rust registration step, a TS options step through the crate's options class, `AppError::BuilderStarted` once started: today's private `extended`, `add_ts_options` and options steps); a way for a crate's set to register its services' TS classes and resolvers, which the provider uses instead of `RESOLVERS`' fixed list; public helpers for service classes (`ServiceClass`, listeners, options records, `json`); `rayx_app_nsh::testing` behind a `testing` feature with the headless harness of `tests/support` and `tests/headless`. The host's builder keeps its service methods until each service's task moves its method into its crate as a class extension. New group `crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs` with a service-crate stand-in module in the test (a holder with `#[class_extension(RayXAppBuilder)]`, its own options class, service class and resolver, registered by a set of its own): its method in JS and in `.nsh/types` only with its set; with and without an options callback; a callback that throws; after `start()`; its class resolving through the provider; the harness running a TSX app. Then, per SVC-10, `#[app_extension]` (`rayx_app_macros/src/extension.rs`) generates a class extension of `RayXAppBuilder` in place of its flat TS function: `fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder` is `builder.addWeather()` in TS, registered by the app's set in the form the macro gives (for example `registry.class_extension::<add_weather>()`, said in its rustdoc); update the groups and docs that call `apply(addX)` (`nsh_tsx_ready`, the umbrella's `native_module` and `native_module_attribute`, `docs/tsx.md`, `docs/services.md`), keeping `apply` for TS functions. New group `crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs` (the method in JS and the declarations with the function's docs; chained with RayX's methods; after `start()` it throws). Two commits: `feat(app): …` for the hooks, `feat(tsx)!: …` for app extensions as builder methods, with `Migration: apps: …`.",
-     "criterionIds": [
-      "SVC-1",
-      "SVC-10"
-     ],
-     "designIds": [
-      "d-service-crates"
-     ],
-     "dependsOn": [
-      "t07-contract-tokens"
-     ],
-     "checkIds": [
-      "c-host-hooks",
-      "c-app-extension-methods",
-      "c-app-extension-umbrella"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/provider.rs",
-       "symbol": "RESOLVERS"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/builder.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app_macros/src/extension.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/tests/nsh_tsx_ready.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx/tests/native_module.rs"
-      }
-     ]
-    },
-    {
-     "id": "t09-mandatory-services",
-     "title": "Platform, suspension, assets and fonts as crates; the host requires them; nothing pre-registered",
-     "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: platform, suspension, assets, fonts. Also: the NSH asset reader and font registrar become private to their crates and run their NSH calls through the `EngineRunner` (callable from any thread); platform and suspension keep themselves current from their initialization on (what `use_platform_sync`, `keep_platform_current` and the quit wiring did, in Rust and TSX apps alike), and those functions go; fonts resolves `dyn AssetService`; `add_nsh_services`, `NshServicesAppBuilderExt` and the builders' pre-registration go, and the host requires the four (d-validation) in Rust's and TS's start with hints per language. Update the host's start groups to register the four. New group `crates/rayx_app_nsh/tests/nsh_required_services.rs` (each one missing, all missing in one message, Rust and TS, both builders empty when new).",
-     "criterionIds": [
-      "SVC-2",
-      "VAL-2"
-     ],
-     "supportingCriterionIds": [
-      "CRATES-4"
-     ],
-     "designIds": [
-      "d-abstractions",
-      "d-service-crates",
-      "d-validation"
-     ],
-     "dependsOn": [
-      "t08-host-hooks"
-     ],
-     "checkIds": [
-      "c-svc-mandatory",
-      "c-required-services",
-      "c-host-start",
-      "c-release-wiring"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/platform/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/suspension/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/assets/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/fonts/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/platform.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/suspension.rs"
-      }
-     ]
-    },
-    {
-     "id": "t10-storage-navigation",
-     "title": "Storage and navigation as crates",
-     "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: storage (its NSH key-value store and the in-memory store, NSH storage calls through the `EngineRunner`, the flush before quitting heard through `dyn SuspensionService`'s events) and navigation (the location synchronizer, regions as NSH navigation stacks, TSX's `NavigationRegion`; the synchronizer seam private to the crate).",
-     "criterionIds": [
-      "SVC-3"
-     ],
-     "supportingCriterionIds": [
-      "CRATES-4"
-     ],
-     "designIds": [
-      "d-abstractions",
-      "d-service-crates"
-     ],
-     "dependsOn": [
-      "t09-mandatory-services"
-     ],
-     "checkIds": [
-      "c-svc-storage-navigation",
-      "c-release-wiring"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/storage/store.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/navigation/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/storage.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/location.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/region.rs"
-      }
-     ]
-    },
-    {
-     "id": "t11-i18n",
-     "title": "I18n as a crate, split into I18nService and MessageFormatter",
-     "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Service here: i18n, split per d-i18n-split: the `I18nService` contract and the Rust-only `MessageFormatter` trait in `rayx_app::services::i18n`; `rayx_services_i18n` with RayX's implementation of both (`add_i18n`, `add_message_formatter`), the formatter's per-language cache dropped on a new version, `tr!`, `checked::tr!` and NSH's locale following the chosen language; RayX's implementation resolves `dyn PlatformInfoService` and `dyn AssetService`. New group `crates/rayx_services_i18n/tests/formatter.rs`: today's formatting results through RayX's implementation; the formatter over a fake `I18nService` (from the test) following a published language change on the next call.",
-     "criterionIds": [
-      "SVC-4"
-     ],
-     "supportingCriterionIds": [
-      "CRATES-4"
-     ],
-     "designIds": [
-      "d-abstractions",
-      "d-i18n-split",
-      "d-service-crates"
-     ],
-     "dependsOn": [
-      "t09-mandatory-services"
-     ],
-     "checkIds": [
-      "c-svc-i18n",
-      "c-release-wiring"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/i18n/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/translate.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/i18n_locale.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/src/ts/i18n.rs"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "s5-service-crates-rest",
-   "title": "The other services as crates, rayx_runtime gone, replaceability from Rust and TS",
-   "dependsOn": [
-    "s4-service-crates"
-   ],
-   "memoryScopes": [
-    "runtime",
-    "app",
-    "core"
-   ],
-   "checkIds": [
-    "c-svc-ops-history-selection",
-    "c-svc-input-config",
-    "c-crate-rules",
-    "c-core-wasm",
-    "c-release-wiring",
-    "c-source-layout",
-    "c-testing-fakes",
-    "c-service-replacement",
-    "c-ts-contracts"
-   ],
-   "tasks": [
-    {
-     "id": "t12-operations-history-selection",
-     "title": "Operations, history and selection as crates",
-     "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: operations (a target's handler crosses as a class handle TS can call; transactions as commands on an id; generic `submit::<T>` and friends as helpers on `dyn OperationService`), history (resolves `dyn OperationService`, and `dyn KeyValueStore` for `add_persistent_history`; no longer reads operations' private `instance_id`, which becomes the contract's constant; `HistoryStore` stays public in its crate) and selection (resolves `dyn NavigationService`). `add_history` no longer adds operations, nor `add_persistent_history` storage: they declare them.",
-     "criterionIds": [
-      "SVC-5"
-     ],
-     "supportingCriterionIds": [
-      "CRATES-4"
-     ],
-     "designIds": [
-      "d-abstractions",
-      "d-service-crates"
-     ],
-     "dependsOn": [],
-     "checkIds": [
-      "c-svc-ops-history-selection",
-      "c-release-wiring"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/operations/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/history/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/selection/service.rs"
-      }
-     ]
-    },
-    {
-     "id": "t13-input-map-configuration",
-     "title": "Input map and application configuration as crates; rayx_runtime removed; the final crate rules",
-     "descriptionMarkdown": "For each service: define its trait and data types in `rayx_app::services::<name>` (d-abstractions' row; settle the exact members, keeping every capability reachable); create `crates/rayx_services_<name>/` (workspace member, `release-plz.toml` entry, dependencies per d-service-crates) and move RayX's implementation into it as a private type implementing the trait, with its options and `<Name>AppBuilderExt::add_<name>` registering it as `dyn Trait` (and as a startup service under the trait's key when it initializes); move its NSH side and `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, make its TS class wrap `Arc<dyn Trait>`, give the contract its class as token (d-contract-tokens), move the service's TS method out of the host's `#[class] impl RayXAppBuilder` into the crate's `#[class_extension(RayXAppBuilder)] impl <Name>Builder` (same TS name, parameters, `#[ts]` and docs), registered by its set's `register(registry)` with its TS classes and resolvers; resolve other services by trait and declare them (`require_for`), removing any registration of another service; replace every consumer's use of the concrete type by `dyn Trait`; move its test groups under their names into `crates/rayx_services_<name>/tests/` (onto `rayx_app_nsh::testing` for NSH ones) and adapt them to the trait; remove what moved from `rayx_runtime` and the host. Commit per service crate (`feat(services)!: …` with `Migration: apps: …`). Services here: input map (resolves `dyn KeyValueStore`; `add_input_map` no longer adds storage) and application configuration (resolves `dyn PlatformInfoService`; `add_application_configuration` no longer adds platform). Then remove `crates/rayx_runtime` (workspace member, dependency, re-exports, `release-plz.toml`, CI's wasm step and `ci_workflow.rs`), keeping the name in the CLI's library guard. Extend `crate_layout` to the final set and dependency rules (CRATES-2), and `source_layout` to the host's `services/` after the split (only what service crates build on).",
-     "criterionIds": [
-      "SVC-6",
-      "CRATES-2"
-     ],
-     "supportingCriterionIds": [
-      "CRATES-4",
-      "LAYOUT-1"
-     ],
-     "designIds": [
-      "d-abstractions",
-      "d-service-crates",
-      "d-crate-names"
-     ],
-     "dependsOn": [
-      "t12-operations-history-selection"
-     ],
-     "checkIds": [
-      "c-svc-input-config",
-      "c-crate-rules",
-      "c-core-wasm",
-      "c-release-wiring",
-      "c-source-layout"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/input_map/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/application_configuration/service.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/Cargo.toml"
-      }
-     ]
-    },
-    {
-     "id": "t14-fakes-and-replacement",
-     "title": "rayx_app::testing's fakes; replacing RayX's implementations from Rust",
-     "descriptionMarkdown": "Add `rayx_app::testing` with a fake per core trait and of `MessageFormatter` (d-abstractions' invariants; today's `InMemoryKeyValueStore`, `MemoryAssetReader` and the no-op hosts are where they come from), NSH-free. New groups `crates/rayx_app/tests/testing_fakes.rs` (each fake registered as `dyn Trait` in a plain `ServiceProvider`, resolved and used: state published, commands recorded or answered) and `crates/rayx/tests/service_replacement.rs` (every feature: an app's own `dyn AssetService` used by RayX's fonts and i18n, its own `dyn OperationService` by history, its own platform, suspension, assets and fonts satisfying the host's requirement, a service's TS class wrapping the app's implementation).",
-     "criterionIds": [
-      "SVC-7",
-      "SVC-8"
-     ],
-     "designIds": [
-      "d-abstractions"
-     ],
-     "dependsOn": [
-      "t13-input-map-configuration"
-     ],
-     "checkIds": [
-      "c-testing-fakes",
-      "c-service-replacement"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/storage/memory.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_runtime/src/services/assets/reader.rs",
-       "symbol": "MemoryAssetReader"
-      }
-     ]
-    },
-    {
-     "id": "t15-ts-implementations",
-     "title": "Each of the twelve contracts implemented in TS",
-     "descriptionMarkdown": "New group `crates/rayx/tests/ts_service_contracts.rs` (every feature), one test per contract: a TS class implementing `<Name>Contract`, registered with `addSingletonAs(<Name>, () => new …)` (a startup form where the service initializes), resolved by Rust as `dyn Trait` (published state read synchronously, a command called from the engine thread and from another thread) and by TS through `getRequiredService(<Name>)`; for the services others resolve (assets, operations, navigation, platform, storage, i18n), a RayX consumer working over the TS implementation; the host's requirement satisfied by TS implementations of the four. Fix what the tests find in the contracts, adapters or crates (repair, inside this epic's scope).",
-     "criterionIds": [
-      "SVC-9"
-     ],
-     "designIds": [
-      "d-abstractions",
-      "d-contract-kinds",
-      "d-contract-tokens",
-      "d-any-thread"
-     ],
-     "dependsOn": [
-      "t13-input-map-configuration"
-     ],
-     "checkIds": [
-      "c-ts-contracts"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app/tests/nsh_tsx_contracts.rs"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "s6-consumers",
-   "title": "The umbrella's features, rayx new and the gallery",
-   "dependsOn": [
-    "s5-service-crates-rest"
-   ],
-   "memoryScopes": [
-    "app",
-    "cli"
-   ],
-   "checkIds": [
-    "c-umbrella-features",
-    "c-umbrella-all-features",
-    "c-new-app-services",
-    "c-gallery"
-   ],
-   "tasks": [
-    {
-     "id": "t16-umbrella",
-     "title": "One feature per service crate in rayx; native_module registers the enabled sets",
-     "descriptionMarkdown": "Per d-umbrella: optional dependencies and features, defaults the four; `rayx::services::<name>`, prelude, `tr!`/`checked` with `i18n`; `#[rayx::native_module]` calling the umbrella's registration, which registers the host's classes and each enabled crate's set. New group `crates/rayx/tests/features.rs` (from `cargo metadata`: each feature enables exactly its crate, defaults are the four, no feature implies another); update `native_module`, `native_module_attribute`, `umbrella` and `derive` to the new paths and check the declarations: with the defaults `addFonts` and no `addI18n`, with every feature both.",
-     "criterionIds": [
-      "UMB-1"
-     ],
-     "designIds": [
-      "d-umbrella"
-     ],
-     "dependsOn": [],
-     "checkIds": [
-      "c-umbrella-features",
-      "c-umbrella-all-features"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx/Cargo.toml"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx/src/lib.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_app_macros/src/native_module.rs"
-      }
-     ]
-    },
-    {
-     "id": "t17-rayx-new",
-     "title": "rayx new registers the required four and names its features",
-     "descriptionMarkdown": "Per d-template: the `rayx` dependency's features, the Rust and TSX composition roots (`rust_lib.rs.in`, `mixed_App.tsx.in`, and their tests' templates), the comments, `README.md` and `docs/cli/projects.md`. New group `crates/rayx_cli/tests/new_app_services.rs` (the dependency line's features; both roots register the four before storage and history); update `new_app`, `new_app_builder` and the README groups.",
-     "criterionIds": [
-      "UMB-2"
-     ],
-     "designIds": [
-      "d-template"
-     ],
-     "dependsOn": [
-      "t16-umbrella"
-     ],
-     "checkIds": [
-      "c-new-app-services"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/src/new.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/src/new/rust_lib.rs.in"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/src/new/mixed_App.tsx.in"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "crates/rayx_cli/tests/new_app_builder.rs"
-      }
-     ]
-    },
-    {
-     "id": "t18-gallery",
-     "title": "The gallery on the new crates",
-     "descriptionMarkdown": "The gallery's crate names the `rayx` features it uses and registers the four required services where it starts RayX; its declarations test (`gallery_tsx.rs`) and unit tests follow the new paths.",
-     "criterionIds": [
-      "UMB-3"
-     ],
-     "designIds": [
-      "d-umbrella"
-     ],
-     "dependsOn": [
-      "t16-umbrella"
-     ],
-     "checkIds": [
-      "c-gallery"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "examples/gallery/native/Cargo.toml"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "examples/gallery/native/src/lib.rs"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "examples/gallery/native/tests/gallery_tsx.rs"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "s7-docs",
-   "title": "Docs, RayX.Root's guide, the rayx skill and memory",
-   "dependsOn": [
-    "s6-consumers"
-   ],
-   "memoryScopes": [
-    "app",
-    "runtime",
-    "core",
-    "governance/memory",
-    "root:skills",
-    "root:workspace"
-   ],
-   "checkIds": [
-    "c-no-old-names",
-    "c-no-old-names-root",
-    "c-rayx-skill"
-   ],
-   "tasks": [
-    {
-     "id": "t19-docs",
-     "title": "RayX's docs, README and AGENTS.md",
-     "descriptionMarkdown": "Per d-docs-skill and DOC-1: `docs/architecture.md`, `docs/services.md` and every `docs/services/<name>.md`, `docs/tsx.md`, `docs/startup.md`, `docs/dependency-injection.md`, `docs/getting-started.md`, `docs/navigation.md`, `docs/view-models.md` where they name crates, `docs/INDEX.md`, the README and `AGENTS.md` (crates, dependency rules, validation commands with the new package names and the wasm step); code comments that name the old crates or APIs; `docs/releasing.md`'s current crates, CI steps and consumer lines (its release history keeps the names it had). `c-no-old-names` must find nothing.",
-     "criterionIds": [
-      "DOC-1"
-     ],
-     "designIds": [
-      "d-docs-skill"
-     ],
-     "dependsOn": [],
-     "checkIds": [
-      "c-no-old-names"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": "docs/INDEX.md"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "docs/services.md"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "docs/architecture.md"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "docs/tsx.md"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": "AGENTS.md"
-      }
-     ]
-    },
-    {
-     "id": "t20-root",
-     "title": "RayX.Root: AGENTS.md, the rayx-components skill, and the new rayx skill",
-     "descriptionMarkdown": "Per d-docs-skill and DOC-2, in RayX.Root: `AGENTS.md`'s layout table and code section; the `rayx-components` skill's crate names; the new skill `.claude/skills/rayx/` (`SKILL.md`, `references/services.md`, `references/contracts.md`) in `rayx-components`' house style, every example checked against the code as it is after `s6`. Commit in RayX.Root (`docs(skills): …`).",
-     "criterionIds": [
-      "DOC-2"
-     ],
-     "designIds": [
-      "d-docs-skill"
-     ],
-     "dependsOn": [
-      "t19-docs"
-     ],
-     "checkIds": [
-      "c-no-old-names-root",
-      "c-rayx-skill"
-     ],
-     "sourceRefs": [
-      {
-       "repositoryId": "root",
-       "path": "AGENTS.md"
-      },
-      {
-       "repositoryId": "root",
-       "path": ".claude/skills/rayx-components/SKILL.md"
-      }
-     ]
-    },
-    {
-     "id": "t21-memory",
-     "title": "RayX's memory follows the crates",
-     "descriptionMarkdown": "Per DOC-3: RayX's knowledge domains (`runtime` now covers the service crates, `app` the host, `core` the core; rename a domain only through AgentX's memory workflow), their `state.md` backlinks and rules (`runtime/rules.md`: no NSH in the core, a service crate depends on no other), the indexes; draft the decisions this epic makes for promotion after it closes (the successor of the TS builder parity decision, the crate structure). Commit as `chore(agentx): …`.",
-     "criterionIds": [
-      "DOC-3"
-     ],
-     "designIds": [
-      "d-docs-skill"
-     ],
-     "dependsOn": [
-      "t19-docs"
-     ],
-     "checkIds": [],
-     "sourceRefs": [
-      {
-       "repositoryId": "rayx",
-       "path": ".agentx/memory/knowledge/runtime/rules.md"
-      },
-      {
-       "repositoryId": "rayx",
-       "path": ".agentx/memory/knowledge/app/state.md"
-      }
-     ]
-    }
-   ]
-  }
- ]
 }

@@ -1,9 +1,14 @@
 // `nsh test` runs this file in a headless runner it builds with the crate: `App.tsx` builds and
-// starts the app with RayX's `RayXAppBuilder` before it uses a service.
+// starts the app with RayX's `RayXAppBuilder` before it uses a service. It shows `Ready` once
+// every service started, the four the host requires (platform, suspension, assets, fonts) with
+// the app's own; a missing one fails the start, naming it.
 import { expect, open, test } from "nsh/test";
 
 test("starts the app's services", async () => {
   const app = await open("./App.tsx");
   await app.waitFor("text:Ready");
   expect(app.texts()).toContain("Ready");
+  // The launch counter read and wrote the app's key-value store.
+  await app.waitFor("text:Launch 1");
+  expect(app.texts()).toContain("Launch 1");
 });

@@ -1,5 +1,5 @@
 //! `#[derive(AppService)]` in a crate that reaches RayX through the umbrella alone: the derive
-//! names the trait as `::rayx::core::di::AppService`.
+//! names the trait as `::rayx::app::di::AppService`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 

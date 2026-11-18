@@ -4,7 +4,7 @@ agentx:
   scope: decisions/governance/memory
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-04T19:30:18+01:00
+  updated: 2026-11-18T03:10:00+01:00
   topics:
     - taxonomy
     - agentx
@@ -13,7 +13,8 @@ agentx:
 ---
 # Decision: RayX's memory taxonomy
 
-**Date:** 2026-11-04. **Status:** current.
+**Date:** 2026-11-04. **Status:** current. The domains kept their names when the epic
+`service-crates` split the crates (see [Crates since 2026-11-17](#crates-since-2026-11-17)).
 
 ## Context
 
@@ -55,3 +56,12 @@ Domains follow the crates and the repository's own cross-cutting rules:
   with their own files and tests, not agent process.
 - Sharing RayX.Design's memory tree: the root keeps the two projects separate, each with its own
   rules and life.
+
+## Crates since 2026-11-17
+
+The epic `service-crates` renamed and split the crates; the domains follow them under the same
+names ([crate structure decision](../../runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md)):
+`core` covers `rayx_app` (the old `rayx_core`) and `rayx_app_macros`, `runtime` the service
+crates `rayx_services_*` (`rayx_runtime` is gone), and `app` the NSH host `rayx_app_nsh` (the old
+`rayx_app`) and the umbrella `rayx`. Renaming the domains would break every backlink for no
+retrieval gain; a service gets a `runtime` subdomain when it gathers memory of its own.

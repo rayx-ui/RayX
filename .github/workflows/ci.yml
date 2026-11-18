@@ -1,7 +1,7 @@
 name: RayX
 
 # Formatting, Clippy and the tests for the whole workspace, and the wasm32 build of the NSH-free
-# crates (the core and the services), on Ubuntu; and the `rayx` command-line tool (`rayx-cli`),
+# crates (the core, with every service's contract, and the dev tools' protocol), on Ubuntu; and the `rayx` command-line tool (`rayx-cli`),
 # which runs on every desktop, on Linux, macOS and Windows. Runs on every pull request
 # (release-plz's release pull requests included) and every push to `main`. The toolchain is
 # rust-toolchain.toml's.
@@ -17,7 +17,18 @@ jobs:
   rust:
     name: fmt, clippy, test, wasm32
     runs-on: ubuntu-24.04
+    # Every test binary links NSH, oxc and QuickJS; without debug info they fit the runner's disk.
+    env:
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
     steps:
+      # The workspace's test binaries outgrow the runner's free disk: drop the preinstalled
+      # toolchains RayX never uses (.NET, Android, GHC, CodeQL).
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          df -h /
+
       - uses: actions/checkout@v7
 
       # QuickJS, the JavaScript engine of the NSH layer's tests, is C; bindgen needs libclang.
@@ -37,7 +48,12 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
-      - run: cargo check -p rayx_core -p rayx_runtime -p rayx_devtools_protocol --target wasm32-unknown-unknown
+      # The umbrella's groups that need service features beyond the defaults declare
+      # `required-features` (`service_replacement`, `ts_service_contracts`, …), which the
+      # workspace run skips: they run, and are linted, with every feature on.
+      - run: cargo clippy -p rayx --all-features --all-targets -- -D warnings
+      - run: cargo test -p rayx --all-features
+      - run: cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown
 
   cli:
     name: rayx-cli on ${{ matrix.os }}

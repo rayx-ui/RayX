@@ -12,18 +12,94 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-rayx_core.workspace = true
-rayx_runtime.workspace = true
 rayx_app.workspace = true
+rayx_app_nsh.workspace = true
 rayx_components.workspace = true
 rayx_devtools_protocol.workspace = true
+# RayX's services, one feature each.
+rayx_services_application_configuration = { workspace = true, optional = true }
+rayx_services_assets = { workspace = true, optional = true }
+rayx_services_fonts = { workspace = true, optional = true }
+rayx_services_history = { workspace = true, optional = true }
+rayx_services_i18n = { workspace = true, optional = true }
+rayx_services_input_map = { workspace = true, optional = true }
+rayx_services_navigation = { workspace = true, optional = true }
+rayx_services_operations = { workspace = true, optional = true }
+rayx_services_platform = { workspace = true, optional = true }
+rayx_services_selection = { workspace = true, optional = true }
+rayx_services_storage = { workspace = true, optional = true }
+rayx_services_suspension = { workspace = true, optional = true }
 dxn_i18n.workspace = true
 dxn_intl.workspace = true
 
+[features]
+# The four services the host requires; every other service is opt-in. A feature enables its
+# crate alone and implies no other feature: a service a registered one needs and the app did not
+# register is a startup error naming it.
+default = ["platform", "suspension", "assets", "fonts"]
+application_configuration = ["dep:rayx_services_application_configuration"]
+assets = ["dep:rayx_services_assets"]
+fonts = ["dep:rayx_services_fonts"]
+history = ["dep:rayx_services_history"]
+i18n = ["dep:rayx_services_i18n"]
+input_map = ["dep:rayx_services_input_map"]
+navigation = ["dep:rayx_services_navigation"]
+operations = ["dep:rayx_services_operations"]
+platform = ["dep:rayx_services_platform"]
+selection = ["dep:rayx_services_selection"]
+storage = ["dep:rayx_services_storage"]
+suspension = ["dep:rayx_services_suspension"]
+
 [dev-dependencies]
-# A headless TSX app on NSH's engine (`tests/native_module.rs`, through `rayx_app`'s harness).
+# A headless TSX app on NSH's engine (`tests/native_module.rs`, through `rayx_app_nsh`'s harness).
 nsh-core = { workspace = true, features = ["declarations"] }
 nsh-engine = { workspace = true, features = ["js", "inspect"] }
 nsh-bundler.workspace = true
 nsh-js.workspace = true
 crossbeam-channel.workspace = true
+futures = { workspace = true, features = ["executor"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+
+# An app's own implementations used by RayX's services, its host and its TS classes: every
+# service feature on.
+[[test]]
+name = "service_replacement"
+required-features = [
+    "application_configuration",
+    "assets",
+    "fonts",
+    "history",
+    "i18n",
+    "input_map",
+    "navigation",
+    "operations",
+    "platform",
+    "selection",
+    "storage",
+    "suspension",
+]
+
+# Every one of the twelve service contracts implemented in TS: every service feature on.
+[[test]]
+name = "ts_service_contracts"
+required-features = [
+    "application_configuration",
+    "assets",
+    "fonts",
+    "history",
+    "i18n",
+    "input_map",
+    "navigation",
+    "operations",
+    "platform",
+    "selection",
+    "storage",
+    "suspension",
+]
+
+# RayX's history over RayX's operation service, end to end (and kept in RayX's storage with
+# the `storage` feature).
+[[test]]
+name = "history_over_operations"
+required-features = ["history", "operations"]

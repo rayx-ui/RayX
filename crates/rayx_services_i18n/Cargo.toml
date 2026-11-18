@@ -1,0 +1,35 @@
+[package]
+name = "rayx_services_i18n"
+description = "RayX's i18n service on NSH: the app's languages and MessageFormat 2 messages, formatted with numbers, dates and plurals for the user's locale, `tr!` in Rust components and the I18nService class in TSX."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+rayx_app.workspace = true
+rayx_app_nsh.workspace = true
+nsh-core.workspace = true
+dxn_i18n.workspace = true
+dxn_i18n_macros.workspace = true
+dxn_intl = { workspace = true, features = ["tz"] }
+futures = { workspace = true, features = ["std"] }
+serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+rayx_app_nsh = { workspace = true, features = ["testing"] }
+nsh-core = { workspace = true, features = ["declarations"] }
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
+crossbeam-channel.workspace = true
+futures = { workspace = true, features = ["std", "executor"] }
+serde_json.workspace = true
+
+# The messages `rayx_services_i18n::checked::tr!` checks this crate's tests against (an app keeps
+# its own in `assets/locales/`, the default).
+[package.metadata.dxn_i18n]
+messages = "tests/fixtures/locales"

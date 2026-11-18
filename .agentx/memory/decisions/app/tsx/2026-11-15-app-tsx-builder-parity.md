@@ -2,9 +2,9 @@
 agentx:
   kind: decision
   scope: decisions/app/tsx
-  status: current
+  status: superseded
   created: 2026-11-15T18:45:00+01:00
-  updated: 2026-11-16T23:00:00+01:00
+  updated: 2026-11-18T12:30:00+01:00
   topics:
     - tsx
     - app-builder
@@ -12,11 +12,15 @@ agentx:
     - startup
     - nsh
   supersedes: []
-  superseded_by: []
+  superseded_by:
+    - .agentx/memory/decisions/app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md
 ---
 # Decision: one app builder API in Rust and TypeScript
 
-**Date:** 2026-11-15, decided with the owner. **Status:** current; the epic `ts-app-builder`
+**Date:** 2026-11-15, decided with the owner. **Status:** superseded (2026-11-18) by the [decision on contracts callable from any thread and builder
+extensions](2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md), promoted from the epic
+`service-crates`: its engine-thread-only rule for contracts and its host-owned TS builder methods
+are replaced, the rest carries over. Before that it was current; the epic `ts-app-builder`
 (`.agentx/tasks/ts-app-builder/`) implemented it (2026-11-16): source no longer has the API it
 replaced (`set_app`, `AppServices.load()`, `X.of(app)`).
 

@@ -26,11 +26,20 @@ Depend on a tag, the same one for every RayX crate:
 
 ```toml
 [dependencies]
-rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }         # apps: everything, with a prelude
-rayx_core = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }    # service crates
-rayx_runtime = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # RayX's services
-rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # NSH bridge crates
+rayx = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z", features = ["i18n"] } # apps, with a prelude
+rayx_app = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" }     # crates of NSH-free services and contracts
+rayx_app_nsh = { git = "https://github.com/rayx-ui/RayX", tag = "vX.Y.Z" } # crates with an NSH side
 ```
+
+A crate that needs one of RayX's services without the umbrella depends on its crate from the same tag
+(`rayx_services_storage = { git = "…", tag = "vX.Y.Z" }`).
+
+`rayx` has one feature per service crate, named after the service (`application_configuration`, `assets`, `fonts`,
+`history`, `i18n`, `input_map`, `navigation`, `operations`, `platform`, `selection`, `storage`, `suspension`); each
+enables its crate alone, at `rayx::services::<name>`, with its builder extension in the prelude and its TS side in the
+app's set. The defaults are the four the host requires (`platform`, `suspension`, `assets`, `fonts`); list every other
+service the app registers. No feature implies another: an app on history lists `operations` too, and an app on i18n
+registers the platform and asset services it reads (the defaults).
 
 NSH comes from an integration tag `nshx-*` of the fork [dXnSix/nsh](https://github.com/dXnSix/nsh), through
 `[patch.crates-io]`. An app takes the same tag as the RayX release it depends on: copy the `[patch.crates-io]` table
@@ -40,8 +49,9 @@ from RayX's `Cargo.toml` at that tag.
 
 An app has one composition root: a `RayXAppBuilder` with its configuration and services, started once on each NSH
 surface, which builds its own root provider from it. A TSX app builds it in TS, with the same methods in camelCase; its
-Rust crate is its UI set: RayX's attribute on one function, with every RayX TS class and component. This is what
-`rayx new` writes for a TSX app:
+Rust crate is its UI set: RayX's attribute on one function, with RayX's TS classes and components and the TS side of
+every service its features enable. For the app below, `rayx`'s features are `["storage", "operations", "history",
+"i18n"]` beside the defaults:
 
 ```rust
 // src/lib.rs
@@ -55,15 +65,25 @@ fn native(registry: &mut Registry) {}
 // App.tsx
 import { I18nService, RayXAppBuilder } from "my-app";
 
-const services = await new RayXAppBuilder()
+new RayXAppBuilder()
+  .addPlatform()            // the four the host requires (the default features);
+  .addSuspension()          // each can be replaced by the app's own
+  .addAssets()
+  .addFonts()
   .addAppSettings("my-app") // assets/appsettings.json
   .addStorage()
+  .addOperations()
   .addHistory()
   .addI18n((options) => options.defaultLanguage("en"))
-  .start();                 // rejects if a startup service failed
-const i18n = services.getRequiredService(I18nService);
-const scope = services.createScope(); // one scope per screen
+  .start()                  // rejects if a startup service failed
+  .then((services) => {
+    const i18n = services.getRequiredService(I18nService);
+    const scope = services.createScope(); // one scope per screen
+  });
 ```
+
+`start()` is chained with `.then` (or awaited inside an `async` function), never awaited at a module's top level:
+`nsh run`'s development bundle is CommonJS, which has no top-level `await`.
 
 A Rust UI builds the same chain in its root component and starts it there:
 
@@ -73,14 +93,19 @@ use rayx::prelude::*;
 #[component]
 pub fn App() -> impl IntoElement {
     RayXAppBuilder::new()
+        .add_platform()
+        .add_suspension()
+        .add_assets(|_| {})
+        .add_fonts(|_| {})
         .add_app_settings("my-app")
         .add_storage()
+        .add_operations()
         .add_history()
         .add_i18n(|options| {
             options.default_language("en");
         })
         .start();
-    dynamic(|| match rayx::app::app_state() {
+    dynamic(|| match rayx::app_nsh::app_state() {
         AppState::Ready => home().into_element(),
         AppState::Failed(message) => error_screen(message).into_element(),
         _ => splash().into_element(),
@@ -99,6 +124,11 @@ and [Startup](startup.md).
 RayX is 0.x: a minor release (`0.5` → `0.6`) may break the API. Each breaking change has a `Migration:` note in
 [CHANGELOG.md](../CHANGELOG.md).
 
-- From `v0.4`: `rayx_app_di` is `rayx_core` now; rename the dependency and its paths.
-- From `nsh-app` `v0.3.0`: rename the dependencies (`nsh_app` to `rayx_app`, `nsh_app_di` to `rayx_core`) and their
-  paths, and move to `dxn_reactive` (formerly `rayx_reactive`), whose activators `rayx_app` re-exports.
+- From `v0.11`: RayX's services are crates of their own behind `rayx`'s features, the defaults being `platform`,
+  `suspension`, `assets` and `fonts`: add the features of every other service the app registers (`storage`,
+  `operations`, `history`, `i18n`, …), and use `rayx::services::<name>` for a service crate's items
+  (`rayx::navigation` is `rayx::services::navigation`, likewise `history`, `operations` and `selection`).
+- From `v0.11`: the core is `rayx_app` and the NSH layer `rayx_app_nsh` (the NSH layer was `rayx_app` before);
+  rename the dependencies and their paths (`rayx::core` is `rayx::app`, the old `rayx::app` is `rayx::app_nsh`).
+- The crates' earlier names, and the renames from `nsh-app` `v0.3.0`, are in [Releasing RayX](releasing.md) and the
+  `Migration:` notes of [CHANGELOG.md](../CHANGELOG.md).

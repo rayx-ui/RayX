@@ -1,0 +1,180 @@
+//! RayX's host on NSH, headless: the bundled `appsettings.json` as configuration (a missing
+//! file fails startup unless optional). The service crates' groups cover their services on NSH.
+
+#![allow(clippy::expect_used, clippy::unwrap_used)]
+
+use std::{
+    cell::RefCell,
+    sync::{
+        Arc, Mutex, MutexGuard,
+        atomic::{AtomicUsize, Ordering},
+    },
+    time::Duration,
+};
+
+use crossbeam_channel::{Receiver, Sender};
+use nsh_core::{ApproxTextEngine, MountBatch, MountItem, prelude::*};
+use nsh_engine::{App, Assets, EngineConfig, LocalEngine, MountSink};
+use rayx_app_nsh::{
+    AppSettingsAppBuilderExt, AppState, Configuration, RayXAppBuilder, ServiceProvider,
+    StartAppBuilderExt as _, app_services, app_state,
+};
+
+thread_local! {
+    /// The surface's root provider once the app is ready, for the test to read.
+    static ROOT: RefCell<Option<ServiceProvider>> = const { RefCell::new(None) };
+}
+
+struct ChannelSink(Sender<MountBatch>);
+
+impl MountSink for ChannelSink {
+    fn submit(&self, batch: MountBatch) {
+        let _ = self.0.send(batch);
+    }
+}
+
+/// The files of the app's crate `app`.
+struct AppAssets;
+
+impl Assets for AppAssets {
+    fn read(&self, uri: &str) -> Result<Vec<u8>, String> {
+        match uri {
+            "asset:/@app/appsettings.json" => Ok(br#"{
+                "RayX": {
+                    "Application": { "name": "Bundled", "tooltips": { "showDelayMs": 120 } }
+                }
+            }"#
+            .to_vec()),
+            _ => Err(format!("{uri} is not bundled")),
+        }
+    }
+}
+
+/// The tests share the app (one composition root per process): one at a time.
+fn serial() -> MutexGuard<'static, ()> {
+    static LOCK: Mutex<()> = Mutex::new(());
+    LOCK.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+/// Which settings the app adds besides its own.
+static SETTINGS: AtomicUsize = AtomicUsize::new(BUNDLED);
+const BUNDLED: usize = 0;
+const MISSING: usize = 1;
+const MISSING_OPTIONAL: usize = 2;
+
+fn build_app(builder: RayXAppBuilder) -> RayXAppBuilder {
+    let builder = match SETTINGS.load(Ordering::SeqCst) {
+        MISSING => builder.add_app_settings("missing"),
+        MISSING_OPTIONAL => {
+            builder.add_optional_app_settings("asset:/@app/appsettings.Development.json")
+        }
+        _ => builder,
+    };
+    builder.add_app_settings("app")
+}
+
+/// The configuration's value at `path` in `services`.
+fn setting(services: &ServiceProvider, path: &str) -> nsh_core::JsonValue {
+    services
+        .required_service::<Configuration>()
+        .unwrap()
+        .value(path)
+        .unwrap_or_default()
+}
+
+/// A Rust root: starts the app and shows the configured name once it is ready.
+#[component]
+fn Root() -> impl IntoElement {
+    build_app(::rayx_app::testing::add_host_fakes(RayXAppBuilder::new())).start();
+    dynamic(move || match app_state() {
+        AppState::Ready => {
+            let services = app_services().unwrap();
+            ROOT.with_borrow_mut(|root| *root = Some(services.clone()));
+            let name = setting(&services, "RayX:Application:name");
+            text(format!("ready {}", name.as_str().unwrap_or_default())).into_element()
+        }
+        AppState::Failed(message) => text(format!("failed: {message}")).into_element(),
+        _ => text("starting").into_element(),
+    })
+}
+
+fn pump_until(
+    engine: &mut LocalEngine<ApproxTextEngine>,
+    rx: &Receiver<MountBatch>,
+    prefix: &str,
+) -> Vec<String> {
+    let deadline = std::time::Instant::now() + Duration::from_secs(10);
+    let mut shown = Vec::new();
+    while std::time::Instant::now() < deadline {
+        engine.pump();
+        while let Ok(batch) = rx.recv_timeout(Duration::from_millis(5)) {
+            for item in &batch.items {
+                if let MountItem::Text { text, .. } = item {
+                    shown.push(text.text.clone());
+                }
+            }
+        }
+        if shown.iter().any(|text| text.starts_with(prefix)) {
+            break;
+        }
+    }
+    shown
+}
+
+fn start(settings: usize) -> (LocalEngine<ApproxTextEngine>, Receiver<MountBatch>) {
+    SETTINGS.store(settings, Ordering::SeqCst);
+    let (tx, rx) = crossbeam_channel::unbounded();
+    let engine = LocalEngine::start(
+        EngineConfig {
+            assets: Some(Arc::new(AppAssets) as Arc<dyn Assets>),
+            ..EngineConfig::new(App::Rust(nsh_core::element::Root::of::<Root>()))
+        },
+        ApproxTextEngine,
+        ChannelSink(tx),
+    )
+    .unwrap();
+    (engine, rx)
+}
+
+#[test]
+fn missing_settings_fail_startup_unless_optional() {
+    let _serial = serial();
+    let (mut engine, rx) = start(MISSING);
+    let shown = pump_until(&mut engine, &rx, "failed");
+    assert!(
+        shown
+            .iter()
+            .any(|text| text.starts_with("failed")
+                && text.contains("asset:/@missing/appsettings.json")),
+        "shown: {shown:?}"
+    );
+    drop(engine);
+    let (mut engine, rx) = start(MISSING_OPTIONAL);
+    let shown = pump_until(&mut engine, &rx, "ready Bundled");
+    assert!(
+        shown.iter().any(|text| text == "ready Bundled"),
+        "shown: {shown:?}"
+    );
+}
+
+#[test]
+fn the_bundled_settings_are_the_configuration() {
+    let _serial = serial();
+    let (mut engine, rx) = start(BUNDLED);
+    let shown = pump_until(&mut engine, &rx, "ready Bundled");
+    assert!(
+        shown.iter().any(|text| text == "ready Bundled"),
+        "shown: {shown:?}"
+    );
+
+    let services = ROOT
+        .with_borrow(|root| root.clone())
+        .expect("the app started");
+
+    // The bundled appsettings.json is the configuration.
+    assert_eq!(setting(&services, "RayX:Application:name"), "Bundled");
+    assert_eq!(
+        setting(&services, "RayX:Application:tooltips:showDelayMs"),
+        120
+    );
+}

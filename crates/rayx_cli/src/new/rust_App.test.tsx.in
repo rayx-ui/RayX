@@ -1,6 +1,7 @@
 // The Rust root tested from TypeScript: `nsh test` runs this file in a headless runner it builds
 // with the crate, and `open(".")` starts the root (`nsh.json` "root"), which starts the app's
-// services.
+// services. It shows `Ready` once every one started, the four the host requires (platform,
+// suspension, assets, fonts) with the app's own; a missing one fails the start, naming it.
 import { expect, open, test } from "nsh/test";
 
 test("starts the app's services", async () => {

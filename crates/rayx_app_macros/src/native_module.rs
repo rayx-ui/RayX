@@ -4,8 +4,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{FnArg, ItemFn, LitStr, Pat};
 
-/// NSH's `#[native_module(specifier)]` on `item`, whose body first registers every RayX TS class
-/// and RayX's components through `rayx` (the umbrella's path in the calling crate). `nsh_core`
+/// NSH's `#[native_module(specifier)]` on `item`, whose body first calls the umbrella's
+/// registration (`rayx::__private::register`, `rayx` being the umbrella's path in the calling
+/// crate): RayX's TS classes, the set of every service crate the umbrella's features enable and
+/// RayX's components. The registration is compiled in the umbrella, with its features. `nsh_core`
 /// is brought into scope when the crate has no `nsh-core` dependency of its own, since NSH's
 /// attribute then names it so.
 pub(crate) fn expand(
@@ -34,14 +36,13 @@ pub(crate) fn expand(
     };
     let body = &item.block;
     item.block = syn::parse_quote!({
-        #rayx::app::register(#registry);
-        #rayx::components::register(#registry);
+        #rayx::__private::register(#registry);
         #body
     });
     let nsh_core = if nsh_core_in_scope {
         quote! {
             #[allow(unused_imports)]
-            use #rayx::app::__private::nsh_core;
+            use #rayx::app_nsh::__private::nsh_core;
         }
     } else {
         quote!()
@@ -49,7 +50,7 @@ pub(crate) fn expand(
     Ok(quote! {
         #nsh_core
 
-        #[#rayx::app::__private::nsh_core::element::native_module(#specifier)]
+        #[#rayx::app_nsh::__private::nsh_core::element::native_module(#specifier)]
         #item
     })
 }

@@ -2,7 +2,8 @@
 //! `#[rayx::native_module("<specifier>")]` (whose line NSH's CLI reads the specifier from) and
 //! its `App.tsx` builds the app with
 //! `RayXAppBuilder` and starts it before it resolves a service; a `rust` app's root builds
-//! `RayXAppBuilder::new()…` and calls `.start()` before it follows `app_state()`; no file names
+//! `RayXAppBuilder::new()…` and calls `.start()` before it follows `app_state()` (which services
+//! the chains register is `new_app_services`); no file names
 //! the API it replaced (the Rust setter of the app, the TS entry and scope classes, the static
 //! `of` lookups).
 
@@ -189,12 +190,13 @@ fn a_rust_app_s_root_builds_the_chain_and_starts_it() {
     let lib = read(&app, "src/lib.rs");
     at(&lib, "#[rayx::native_module(\"hello/native\")]");
     let root = at(&lib, "pub fn App() -> impl IntoElement");
-    let started = at(
-        &lib,
-        "RayXAppBuilder::new().add_storage().add_history().start();",
+    let built = at(&lib, "RayXAppBuilder::new()");
+    let started = at(&lib, ".start();");
+    let followed = at(&lib, "rayx::app_nsh::app_state()");
+    assert!(
+        root < built && built < started && started < followed,
+        "{lib}"
     );
-    let followed = at(&lib, "rayx::app::app_state()");
-    assert!(root < started && started < followed, "{lib}");
     let readme = read(&app, "README.md");
     at(&readme, "builds the app with `RayXAppBuilder::new()`");
     assert!(
@@ -230,7 +232,7 @@ fn no_file_rayx_writes_names_the_old_api() {
 }
 
 /// NSH's CLI's specifier scan of a crate's source (`specifier_of` in `crates/nsh-cli/src/rust_app.rs`
-/// at `nshx-0.5.0-6`): the first line that, trimmed, starts with `#[` and has `native_module`
+/// at `nshx-0.5.0-7`): the first line that, trimmed, starts with `#[` and has `native_module`
 /// followed by `("…"`. The web runtime keeps a set's gate by it.
 fn nsh_specifier_of(code: &str) -> Option<String> {
     code.lines().find_map(|line| {

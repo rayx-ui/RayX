@@ -1,17 +1,20 @@
-//! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds every RayX
-//! TS class, RayX's components and theme document and what its function's body adds, nothing
-//! else; an extension is a TS function that `builder.apply(..)` runs in chain order.
+//! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds RayX's TS
+//! classes, the set of every service crate the umbrella's features enable, RayX's components and
+//! theme document and what its function's body adds, nothing else; an extension is a TS function
+//! that `builder.apply(..)` runs in chain order.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
-#[path = "../../rayx_app/tests/headless/mod.rs"]
+#[path = "support/enabled.rs"]
+mod enabled;
+#[path = "../../rayx_app_nsh/tests/headless/mod.rs"]
 mod headless;
 
 use std::collections::BTreeSet;
 
 use nsh_core::element::Registry;
 use nsh_core::prelude::*;
-use rayx::app::ts::ServiceProvider;
+use rayx::app_nsh::ts::ServiceProvider;
 use rayx::prelude::*;
 
 /// The forecast an extension registers.
@@ -56,9 +59,11 @@ impl Probe {
 fn native(registry: &mut Registry) {
     registry
         .module::<Probe>()
-        .module::<add_sunny>()
-        .module::<add_rainy>()
-        .contract::<dyn Clock>();
+        .class_extension::<add_sunny>()
+        .class_extension::<add_rainy>()
+        .contract::<dyn Clock>()
+        // The services the host requires, faked for the test's start.
+        .class_extension::<headless::HostFakes>();
 }
 
 /// What a set exports, by kind and name.
@@ -75,6 +80,12 @@ fn exports(set: &Registry) -> BTreeSet<String> {
             .map(|m| format!("module {}", m.name)),
     );
     names.extend(set.specs().iter().map(|c| format!("component {}", c.name)));
+    names.extend(set.class_extensions().iter().flat_map(|extension| {
+        extension
+            .members
+            .iter()
+            .map(|member| format!("method {}.{}", extension.class.name, member.name))
+    }));
     names.extend(
         set.interface_defs()
             .iter()
@@ -88,14 +99,17 @@ fn exports(set: &Registry) -> BTreeSet<String> {
 fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     let set = registry();
     let mut rayx = Registry::ui_set("test/app");
-    rayx::app::register(&mut rayx);
+    rayx::app_nsh::register(&mut rayx);
+    // The harness's `builder.addHostFakes()`, which the body adds too.
+    rayx.class_extension::<headless::HostFakes>();
+    enabled::register_service_sets(&mut rayx);
     rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     expected.extend(
         [
             "module Probe",
-            "module add_sunny",
-            "module add_rainy",
+            "method RayXAppBuilder.addSunny",
+            "method RayXAppBuilder.addRainy",
             "interface Clock",
             "module ClockToken",
         ]
@@ -114,9 +128,6 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
         "class StartupInitializationState",
         "class StartupInitializationContext",
         "class ReadyContext",
-        "class I18nService",
-        "class NavigationService",
-        "class KeyValueStore",
         "component rayx_components::button::Button",
         "type ServiceKey<T>",
     ] {
@@ -135,8 +146,8 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
 fn the_declarations_declare_the_extensions_and_apply() {
     let ts = nsh_core::element::declarations(&registry(), &[]);
     for declared in [
-        "/** Registers a sunny forecast. */\nexport declare function addSunny(builder: RayXAppBuilder): RayXAppBuilder;",
-        "export declare function addRainy(builder: RayXAppBuilder): RayXAppBuilder;",
+        "  /** Registers a sunny forecast. */\n  addSunny(): RayXAppBuilder;",
+        "  addRainy(): RayXAppBuilder;",
         "  apply(extension: (builder: RayXAppBuilder) => RayXAppBuilder): this;",
         "export declare function clockToken(): ServiceToken<Clock>;",
     ] {
@@ -158,21 +169,20 @@ fn an_extension_is_plain_rust_too() {
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
-import { addRainy, addSunny, I18nService, Probe, RayXAppBuilder } from "test/app";
+import { Probe, RayXAppBuilder } from "test/app";
 
 const shown = signal("waiting");
 setTimeout(async () => {
   const lines = [];
   const thrown = (f) => { try { f(); return "no throw"; } catch (e) { return e.message; } };
   try {
-    // Extensions run in chain order: the later registration wins.
-    const builder = new RayXAppBuilder().apply(addRainy).addStorage().apply(addSunny);
-    lines.push(String(builder.apply((b) => b.addI18n()) === builder));
+    // Extensions run in chain order, `apply`'d ones too: the later registration wins.
+    const builder = new RayXAppBuilder().addHostFakes().addRainy().defaultInitializationTimeout(1000).addSunny();
+    lines.push(String(builder.apply((b) => b.addRainy()) === builder));
     lines.push(thrown(() => builder.apply(() => { throw new Error("no weather"); })));
     const services = await builder.start();
     lines.push(Probe.forecast(services));
-    lines.push(String(services.getRequiredService(I18nService) instanceof I18nService));
-    lines.push(thrown(() => builder.apply(addRainy)).includes("started already") ? "started" : "open");
+    lines.push(thrown(() => builder.addRainy()).includes("started already") ? "started" : "open");
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -186,6 +196,6 @@ mount(() => <Text>{shown()}</Text>);
 fn an_extension_applied_from_ts_registers_its_service_in_chain_order() {
     assert_eq!(
         headless::run(registry(), TSX),
-        "done true|no weather|sunny|true|started"
+        "done true|no weather|rainy|started"
     );
 }

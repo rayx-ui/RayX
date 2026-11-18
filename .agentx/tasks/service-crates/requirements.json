@@ -1,222 +1,232 @@
 {
- "schemaVersion": 7,
- "epicId": "service-crates",
- "scopeMarkdown": "Restructure RayX's crates around replaceable services, as planned with the owner on 2026-11-16 and 2026-11-17 from their intent: the `rayx` umbrella; `rayx_app`, the core for building RayX apps, with true abstractions of the core services that anyone can implement and register; RayX's default implementation of each service in a crate of its own, so apps build and ship only what they use; NSH underneath the implementations.\n\nAfter this epic:\n\n- **`rayx_app`** (today's `rayx_core`, renamed) is the core: DI, configuration, options, the app builder, the published values (`StateCell`, `EventStream`), the checks of what an app registered, and in `rayx_app::services::<name>` one `#[contract]` trait per core service with the data types its members use, plus `rayx_app::testing`, a fake of every core abstraction. It has no NSH dependency and builds for `wasm32-unknown-unknown`.\n- **`rayx_app_nsh`** (today's `rayx_app`, renamed and organized by topic) is the NSH host: the provider per surface, screen scopes, view-model binding, the TS builder and provider, services written in TS, contracts' adapters, the engine runner, `appsettings.json`, the dev tools, and what service crates build on.\n- **`rayx_services_<name>`**, twelve crates out of today's `rayx_runtime` (which goes): RayX's default implementation of each service with its NSH side, its TS class, its options and its builder method in Rust (`.add_<name>(..)`, an extension trait) and in TS (`builder.add<Name>(..)`, a class extension of the host's `RayXAppBuilder`). A service crate depends on `rayx_app` and `rayx_app_nsh`, never on another service crate: what it needs from another service it resolves by trait.\n- **Every core abstraction can be implemented in Rust or TS** and replaces RayX's default for every consumer. Every member is a **command** (async and awaited, or posted), a **published value** (state read synchronously, or events) or a **constant** read once. **Contracts are callable from any thread** (owner, 2026-11-17).\n- **Nothing is pre-registered.** The host requires platform, suspension, assets and fonts and fails startup naming each missing one and how to register it; every registration's declared dependencies and their lifetimes are checked before startup.\n- **`rayx`** has one optional feature per service crate, defaults `platform`, `suspension`, `assets` and `fonts`; `rayx new`'s templates register those four explicitly.\n\nIn scope: every RayX crate but `rayx_components` and `rayx_devtools_protocol`, the gallery, RayX's docs, `AGENTS.md` and memory, RayX.Root's `AGENTS.md`, the `rayx-components` skill's crate names, and a new `rayx` skill in RayX.Root (`.claude/skills/rayx/`) with a services reference: every service with examples, and DO and DON'T lists (asked by the owner on 2026-11-15).\n\n**Prerequisites (outside this epic)**, both met before `init`:\n\n1. **`ts-app-builder` is closed** (its `check --epic` and final review; `status` closure `done`). Its checks name `rayx_core`, `rayx_runtime` and `rayx_app` as they are today, so it closes before `s1-crate-names` renames them.\n2. **RayX pins `nshx-0.5.0-6`** (`feat(nsh): Pin NSH to nshx-0.5.0-6` on RayX's `main`, before this epic): the fork's release with **class extensions** (dXnSix/nsh#273; nsh-root's ledger `fork-changes/class-extensions.md`), built for this epic because the owner wants TS to work as Rust does (2026-11-17). `#[class_extension(RayXAppBuilder)]` on an `impl` block of a holder type of a service crate (`pub struct I18nBuilder;`) makes its `pub fn`s, each taking `this: Instance<RayXAppBuilder>` first, instance methods of the host's `#[class] RayXAppBuilder`, with a `#[class]` method's parameters, results, `#[ts]` signatures and docs; `registry.class_extension::<I18nBuilder>()` registers it. The methods are on the class's prototype once a set the host serves registers the extension, however JS reaches the class; `.nsh/types` declares them with the class (an `interface` merged with it); a method named like a member of the class, or added twice, panics. So TS chains `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addI18n((o) => …)` as Rust chains `.add_platform()…add_i18n(..)`, although `RayXAppBuilder` lives in the host and the methods in crates that depend on it.\n\n**Carried out on macOS.** The epic is planned on Windows and implemented on the owner's Mac. RayX and RayX.Root are siblings there as here (the epic's `root` repository is `../RayX.Root`); `init` runs there once both prerequisites hold; the checks run only `cargo`, `git` and `python3`. NSH's source as RayX builds it is the tag `nshx-0.5.0-6` (Cargo's checkout under `~/.cargo/git/checkouts/`, or a clone of `dXnSix/nsh` at the tag); `.references/nsh-main/`, where present, predates class extensions (its `docs/dev/rust-classes.md` has no \"Class extensions\" section).\n\n**Assumptions made while planning** (the owner may change them before implementation starts):\n\n- A contract's TS interface is named `<Trait>Contract` (`KeyValueStoreContract`): the service's TS class keeps the service's name (`KeyValueStore`) and is the contract's token, and NSH refuses an interface and a class of one name.\n- Published values cover state and events: a `StateCell<T>` keeps the latest value, read synchronously; an `EventStream<E>` delivers each event to its subscribers and keeps none. Both are published by the implementation: together they are the \"state\" kind of the three the owner agreed.\n- A callback a consumer gives a service (an operation target's handler) crosses as a Rust object TS can call (a class handle), never as a closure.\n- The seams of today's implementations (`AssetReader`, `FontRegistrar`, `SuspensionHost`, `NavigationLocationSynchronizer`, `HistoryStore`) are not core abstractions: they become private to their service crate, except `HistoryStore`, which stays public in `rayx_services_history` as that implementation's extension point.\n- No registration adds another service any more (`add_fonts` no longer adds assets, `add_history` no longer adds operations, `add_input_map` no longer adds storage): dependencies are declared and checked.\n- `add_nsh_services`, `NshServicesAppBuilderExt` and `use_platform_sync` go: RayX's platform and suspension implementations keep themselves current from their initialization on, in Rust and TSX apps alike.\n- `MessageFormatter` is Rust-only (the i18n split the owner chose on 2026-11-17); every other core abstraction is a contract.\n- The posted contract member (`fn m(&self, ..)` returning nothing) stays, as a command nobody awaits.\n- An app crate's `#[rayx::app_extension]` becomes a TS builder method as well (`builder.addWeather()`), registered by the app's set as a class extension, in place of today's flat TS function and `builder.apply(addWeather)`: the owner wants an app builder that crates extend in TS as in Rust (2026-11-17), and app crates are crates. `apply(..)` stays for extensions written in TS.\n- `rayx_app` keeps owning the release tag and `CHANGELOG.md` in `release-plz.toml`: the name continues, now on the core.\n\nOut of scope: `rayx_components` and `rayx_devtools_protocol`; changes to NSH (the fork or upstream); pushing, tagging and releasing; checking the dependencies of services registered in TS beyond what the container checks today; a RayX theme service.",
- "constraintsMarkdown": "- `rayx_app` (the core) never depends on an NSH crate and keeps building with `cargo check -p rayx_app --target wasm32-unknown-unknown`.\n- No `rayx_services_*` crate depends on another, and none is a dependency of `rayx_app` or `rayx_app_nsh`.\n- Workspace lints deny `unsafe_code`; no `allow(unsafe_code)` outside tests.\n- Dependencies come from git tags only; the `[patch.crates-io]` NSH tag, the CLI's default pin (`project::pins`) and the gallery's `.cargo/config.toml` move together, and NSH stays at `nshx-0.5.0-6` through the epic.\n- When class extensions or another NSH API falls short, the epic stops on a blocker for the owner: the fix goes into the fork `dXnSix/nsh` under nsh-root's rules, never a workaround in RayX; `.references/nsh-main/` is read-only.\n- Conventional Commits; breaking commits carry `!` and `Migration: apps: …` footers naming no consumer app; `CHANGELOG.md` is never edited; no AI attribution.\n- Each new behavior gets its own test group (`crates/<crate>/tests/<feature>.rs`); a moved test group keeps its name in its new crate; docs change with the code.\n- Not touched: `crates/rayx_components/`, `crates/rayx_devtools_protocol/`, `rust-toolchain.toml`, the release workflows.",
- "requirements": [
-  {
-   "id": "R-CRATES",
-   "title": "The crates carry the names of what they are",
-   "descriptionMarkdown": "Today `rayx_core` is the core, `rayx_runtime` the services and `rayx_app` the NSH layer. The owner's names: `rayx_app` for the core and the abstractions, `rayx_app_nsh` for the NSH host, `rayx_services_<name>` for each implementation (2026-11-16).",
-   "criteria": [
+  "schemaVersion": 7,
+  "epicId": "service-crates",
+  "scopeMarkdown": "Restructure RayX's crates around replaceable services, as planned with the owner on 2026-11-16 and 2026-11-17 from their intent: the `rayx` umbrella; `rayx_app`, the core for building RayX apps, with true abstractions of the core services that anyone can implement and register; RayX's default implementation of each service in a crate of its own, so apps build and ship only what they use; NSH underneath the implementations.\n\nAfter this epic:\n\n- **`rayx_app`** (today's `rayx_core`, renamed) is the core: DI, configuration, options, the app builder, the published values (`StateCell`, `EventStream`), the checks of what an app registered, and in `rayx_app::services::<name>` one `#[contract]` trait per core service with the data types its members use, plus `rayx_app::testing`, a fake of every core abstraction. It has no NSH dependency and builds for `wasm32-unknown-unknown`.\n- **`rayx_app_nsh`** (today's `rayx_app`, renamed and organized by topic) is the NSH host: the provider per surface, screen scopes, view-model binding, the TS builder and provider, services written in TS, contracts' adapters, the engine runner, `appsettings.json`, the dev tools, and what service crates build on.\n- **`rayx_services_<name>`**, twelve crates out of today's `rayx_runtime` (which goes): RayX's default implementation of each service with its NSH side, its TS class, its options and its builder method in Rust (`.add_<name>(..)`, an extension trait) and in TS (`builder.add<Name>(..)`, a class extension of the host's `RayXAppBuilder`). A service crate depends on `rayx_app` and `rayx_app_nsh`, never on another service crate: what it needs from another service it resolves by trait.\n- **Every core abstraction can be implemented in Rust or TS** and replaces RayX's default for every consumer. Every member is a **command** (async and awaited, or posted), a **published value** (state read synchronously, or events) or a **constant** read once. **Contracts are callable from any thread** (owner, 2026-11-17).\n- **Nothing is pre-registered.** The host requires platform, suspension, assets and fonts and fails startup naming each missing one and how to register it; every registration's declared dependencies and their lifetimes are checked before startup.\n- **`rayx`** has one optional feature per service crate, defaults `platform`, `suspension`, `assets` and `fonts`; `rayx new`'s templates register those four explicitly.\n\nIn scope: every RayX crate but `rayx_components` and `rayx_devtools_protocol`, the gallery, RayX's docs, `AGENTS.md` and memory, RayX.Root's `AGENTS.md`, the `rayx-components` skill's crate names, and a new `rayx` skill in RayX.Root (`.claude/skills/rayx/`) with a services reference: every service with examples, and DO and DON'T lists (asked by the owner on 2026-11-15).\n\n**Prerequisites (outside this epic)**, both met before `init`:\n\n1. **`ts-app-builder` is closed** (its `check --epic` and final review; `status` closure `done`). Its checks name `rayx_core`, `rayx_runtime` and `rayx_app` as they are today, so it closes before `s1-crate-names` renames them.\n2. **RayX pins `nshx-0.5.0-6`** (`feat(nsh): Pin NSH to nshx-0.5.0-6` on RayX's `main`, before this epic): the fork's release with **class extensions** (dXnSix/nsh#273; nsh-root's ledger `fork-changes/class-extensions.md`), built for this epic because the owner wants TS to work as Rust does (2026-11-17). `#[class_extension(RayXAppBuilder)]` on an `impl` block of a holder type of a service crate (`pub struct I18nBuilder;`) makes its `pub fn`s, each taking `this: Instance<RayXAppBuilder>` first, instance methods of the host's `#[class] RayXAppBuilder`, with a `#[class]` method's parameters, results, `#[ts]` signatures and docs; `registry.class_extension::<I18nBuilder>()` registers it. The methods are on the class's prototype once a set the host serves registers the extension, however JS reaches the class; `.nsh/types` declares them with the class (an `interface` merged with it); a method named like a member of the class, or added twice, panics. So TS chains `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts().addI18n((o) => …)` as Rust chains `.add_platform()…add_i18n(..)`, although `RayXAppBuilder` lives in the host and the methods in crates that depend on it.\n\n**Carried out on macOS.** The epic is planned on Windows and implemented on the owner's Mac. RayX and RayX.Root are siblings there as here (the epic's `root` repository is `../RayX.Root`); `init` runs there once both prerequisites hold; the checks run only `cargo`, `git` and `python3`. NSH's source as RayX builds it is the tag `nshx-0.5.0-6` (Cargo's checkout under `~/.cargo/git/checkouts/`, or a clone of `dXnSix/nsh` at the tag); `.references/nsh-main/`, where present, predates class extensions (its `docs/dev/rust-classes.md` has no \"Class extensions\" section).\n\n**Assumptions made while planning** (the owner may change them before implementation starts):\n\n- A contract's TS interface is named `<Trait>Contract` (`KeyValueStoreContract`): the service's TS class keeps the service's name (`KeyValueStore`) and is the contract's token, and NSH refuses an interface and a class of one name.\n- Published values cover state and events: a `StateCell<T>` keeps the latest value, read synchronously; an `EventStream<E>` delivers each event to its subscribers and keeps none. Both are published by the implementation: together they are the \"state\" kind of the three the owner agreed.\n- A callback a consumer gives a service (an operation target's handler) crosses as a Rust object TS can call (a class handle), never as a closure.\n- The seams of today's implementations (`AssetReader`, `FontRegistrar`, `SuspensionHost`, `NavigationLocationSynchronizer`, `HistoryStore`) are not core abstractions: they become private to their service crate, except `HistoryStore`, which stays public in `rayx_services_history` as that implementation's extension point.\n- No registration adds another service any more (`add_fonts` no longer adds assets, `add_history` no longer adds operations, `add_input_map` no longer adds storage): dependencies are declared and checked.\n- `add_nsh_services`, `NshServicesAppBuilderExt` and `use_platform_sync` go: RayX's platform and suspension implementations keep themselves current from their initialization on, in Rust and TSX apps alike.\n- `MessageFormatter` is Rust-only (the i18n split the owner chose on 2026-11-17); every other core abstraction is a contract.\n- The posted contract member (`fn m(&self, ..)` returning nothing) stays, as a command nobody awaits.\n- An app crate's `#[rayx::app_extension]` becomes a TS builder method as well (`builder.addWeather()`), registered by the app's set as a class extension, in place of today's flat TS function and `builder.apply(addWeather)`: the owner wants an app builder that crates extend in TS as in Rust (2026-11-17), and app crates are crates. `apply(..)` stays for extensions written in TS.\n- `rayx_app` keeps owning the release tag and `CHANGELOG.md` in `release-plz.toml`: the name continues, now on the core.\n\nOut of scope: `rayx_components` and `rayx_devtools_protocol`; changes to NSH (the fork or upstream); pushing, tagging and releasing; checking the dependencies of services registered in TS beyond what the container checks today; a RayX theme service.",
+  "constraintsMarkdown": "- `rayx_app` (the core) never depends on an NSH crate and keeps building with `cargo check -p rayx_app --target wasm32-unknown-unknown`.\n- No `rayx_services_*` crate depends on another, and none is a dependency of `rayx_app` or `rayx_app_nsh`.\n- Workspace lints deny `unsafe_code`; no `allow(unsafe_code)` outside tests.\n- Dependencies come from git tags only; the `[patch.crates-io]` NSH tag, the CLI's default pin (`project::pins`) and the gallery's `.cargo/config.toml` move together, and NSH stays at `nshx-0.5.0-6` through s2 and at `nshx-0.5.0-7` from s3 on (the owner moved it on 2026-11-17, answering \"Fix in the NSH fork first\" to s3's findings S3-F2 and S3-F4: dXnSix/nsh#274 reads JS properties and interface getters between JS turns and adds `runtime_entered()` and `start_task()`).\n- When class extensions or another NSH API falls short, the epic stops on a blocker for the owner: the fix goes into the fork `dXnSix/nsh` under nsh-root's rules, never a workaround in RayX; `.references/nsh-main/` is read-only.\n- Conventional Commits; breaking commits carry `!` and `Migration: apps: …` footers naming no consumer app; `CHANGELOG.md` is never edited; no AI attribution.\n- Each new behavior gets its own test group (`crates/<crate>/tests/<feature>.rs`); a moved test group keeps its name in its new crate; docs change with the code.\n- Not touched: `crates/rayx_components/`, `crates/rayx_devtools_protocol/`, `rust-toolchain.toml`, the release workflows.",
+  "requirements": [
     {
-     "id": "CRATES-1",
-     "verification": "automated",
-     "descriptionMarkdown": "The renames: `crates/rayx_app` becomes `crates/rayx_app_nsh` (package `rayx_app_nsh`), then `crates/rayx_core` becomes `crates/rayx_app` (package `rayx_app`). No package named `rayx_core` remains, every package lives in `crates/<package>/` (the CLI in `crates/rayx_cli`, the gallery in `examples/gallery/native`), `rayx_app` depends on no NSH crate and `rayx_app_nsh` depends on `rayx_app`. Every crate, test, example and template compiles against the new names; the umbrella exposes the core as `rayx::app` and the host as `rayx::app_nsh` (`rayx::core` goes); `cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown` passes. Test group `crates/rayx/tests/crate_layout.rs` reads `cargo metadata --no-deps --format-version 1` and fails naming each package or dependency that differs."
+      "id": "R-CRATES",
+      "title": "The crates carry the names of what they are",
+      "descriptionMarkdown": "Today `rayx_core` is the core, `rayx_runtime` the services and `rayx_app` the NSH layer. The owner's names: `rayx_app` for the core and the abstractions, `rayx_app_nsh` for the NSH host, `rayx_services_<name>` for each implementation (2026-11-16).",
+      "criteria": [
+        {
+          "id": "CRATES-1",
+          "verification": "automated",
+          "descriptionMarkdown": "The renames: `crates/rayx_app` becomes `crates/rayx_app_nsh` (package `rayx_app_nsh`), then `crates/rayx_core` becomes `crates/rayx_app` (package `rayx_app`). No package named `rayx_core` remains, every package lives in `crates/<package>/` (the CLI in `crates/rayx_cli`, the gallery in `examples/gallery/native`), `rayx_app` depends on no NSH crate and `rayx_app_nsh` depends on `rayx_app`. Every crate, test, example and template compiles against the new names; the umbrella exposes the core as `rayx::app` and the host as `rayx::app_nsh` (`rayx::core` goes); `cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown` passes. Test group `crates/rayx/tests/crate_layout.rs` reads `cargo metadata --no-deps --format-version 1` and fails naming each package or dependency that differs."
+        },
+        {
+          "id": "CRATES-2",
+          "verification": "automated",
+          "descriptionMarkdown": "The final crate set and its dependency rules, in the same group `crate_layout`: the packages are exactly `rayx`, `rayx_app`, `rayx_app_macros`, `rayx_app_nsh`, the twelve `rayx_services_{application_configuration,assets,fonts,history,i18n,input_map,navigation,operations,platform,selection,storage,suspension}`, `rayx_components`, `rayx_devtools_protocol`, `rayx-cli` and `rayx-gallery` (no `rayx_runtime`); `rayx_app` depends on no NSH crate and on no other RayX crate but `rayx_app_macros`; `rayx_app_nsh` depends on no `rayx_services_*`; every `rayx_services_*` depends on `rayx_app` and on no other `rayx_services_*`; `rayx` depends on every service crate, each optional. The wasm check of `CRATES-1` still passes."
+        },
+        {
+          "id": "CRATES-3",
+          "verification": "automated",
+          "descriptionMarkdown": "The macros find the crates under their new names: `#[derive(AppService)]` compiles in a crate that depends on `rayx` alone, on `rayx_app` alone (the core's own tests) or on `rayx_app_nsh` alone; `#[rayx::contract]`, `#[rayx::app_extension]` and `#[rayx::native_module]` compile through `rayx`, and `#[contract]` and `#[app_extension]` through `rayx_app_nsh`. Test group `crates/rayx/tests/macro_paths.rs`."
+        },
+        {
+          "id": "CRATES-4",
+          "verification": "automated",
+          "descriptionMarkdown": "Release and CI name the crates as they are: `release-plz.toml` keeps one version group and one tag owned by `rayx_app` (tag and `CHANGELOG.md`), its `changelog_include` and `[[package]]` entries list every other released package (`rayx_app_nsh` from `s1`, each `rayx_services_*` when its crate is made, none for `rayx_core` or `rayx_runtime` once they are gone); CI's wasm step checks `rayx_app` (and `rayx_runtime` while it exists) and `rayx_devtools_protocol`; the CLI's library guard denies `rayx`, every `rayx_app*` and `rayx_services_*` crate, and keeps `rayx_core` and `rayx_runtime` (also RayX.Old's names). The CLI's groups `release_automation`, `release_config`, `ci_workflow` and `library_guard` pass with these expectations."
+        }
+      ]
     },
     {
-     "id": "CRATES-2",
-     "verification": "automated",
-     "descriptionMarkdown": "The final crate set and its dependency rules, in the same group `crate_layout`: the packages are exactly `rayx`, `rayx_app`, `rayx_app_macros`, `rayx_app_nsh`, the twelve `rayx_services_{application_configuration,assets,fonts,history,i18n,input_map,navigation,operations,platform,selection,storage,suspension}`, `rayx_components`, `rayx_devtools_protocol`, `rayx-cli` and `rayx-gallery` (no `rayx_runtime`); `rayx_app` depends on no NSH crate and on no other RayX crate but `rayx_app_macros`; `rayx_app_nsh` depends on no `rayx_services_*`; every `rayx_services_*` depends on `rayx_app` and on no other `rayx_services_*`; `rayx` depends on every service crate, each optional. The wasm check of `CRATES-1` still passes."
+      "id": "R-LAYOUT",
+      "title": "The NSH host's files are organized by topic",
+      "descriptionMarkdown": "The owner approved the layout of `d-layout` on 2026-11-17: today every file of the NSH layer sits loose in `src/` or `src/ts/`.",
+      "criteria": [
+        {
+          "id": "LAYOUT-1",
+          "verification": "automated",
+          "descriptionMarkdown": "`crates/rayx_app_nsh/src/` has the layout of `d-layout`: at its root only `lib.rs`, `ts.rs` and `binding.rs` and the folders `app/`, `di/`, `configuration/`, `devtools/` and `services/`; `services/` holds `mod.rs`, `listeners_ts.rs` and one folder per service with an NSH side (`application_configuration`, `assets`, `fonts`, `i18n`, `input_map`, `navigation`, `platform`, `storage`, `suspension`) with the files of the design's table; no `src/ts/` folder remains and every file that came from it ends in `_ts.rs`. Test group `crates/rayx_app_nsh/tests/source_layout.rs` walks `src/` and fails naming each file or folder that differs. (Once `s5` moves the service folders into their crates, the group expects `services/` to hold only what service crates build on.)"
+        },
+        {
+          "id": "LAYOUT-2",
+          "verification": "automated",
+          "descriptionMarkdown": "Moving the files changes no behavior and no public path: `rayx_app_nsh::ts::*`, every crate-root re-export, `tr!` and `checked::tr!` resolve as before; every existing test group of the crate passes with no change but paths that name source files; `cargo doc -p rayx_app_nsh --no-deps` reports no broken intra-doc link."
+        }
+      ]
     },
     {
-     "id": "CRATES-3",
-     "verification": "automated",
-     "descriptionMarkdown": "The macros find the crates under their new names: `#[derive(AppService)]` compiles in a crate that depends on `rayx` alone, on `rayx_app` alone (the core's own tests) or on `rayx_app_nsh` alone; `#[rayx::contract]`, `#[rayx::app_extension]` and `#[rayx::native_module]` compile through `rayx`, and `#[contract]` and `#[app_extension]` through `rayx_app_nsh`. Test group `crates/rayx/tests/macro_paths.rs`."
+      "id": "R-CONTRACTS",
+      "title": "Contracts: three kinds of members, callable from any thread",
+      "descriptionMarkdown": "Today a contract's member is `async fn -> Result` (a `!Send` future, failing with `ContractError::WrongThread` off the engine thread) or a posted `fn` returning nothing. The owner agreed on 2026-11-17 that every member of every abstraction is a command, published state or a constant, and decided that contracts MUST be callable from any thread.",
+      "criteria": [
+        {
+          "id": "CON-1",
+          "verification": "automated",
+          "descriptionMarkdown": "`#[contract]` accepts exactly these member shapes: a command `async fn m(&self, ..) -> Result<T, E>` (Rust gets a `Send` future); a posted command `fn m(&self, ..)` returning nothing; published state `#[state] fn m(&self) -> &StateCell<T>`; published events `#[events] fn m(&self) -> &EventStream<E>`; a constant `#[constant] fn m(&self) -> T`. Any other member is a compile error that lists these shapes. The TS declaration of the contract's interface gives a command `m(..): Promise<T>`, a posted one `m(..): void`, state `readonly m: ContractState<T>`, events `readonly m: ContractEvents<E>` and a constant `readonly m: T`. The macro's unit tests (`contract::`) and test group `crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs` (the declarations) cover each shape and each refusal; the existing group `nsh_tsx_contracts` passes on the new shapes."
+        },
+        {
+          "id": "CON-2",
+          "verification": "automated",
+          "descriptionMarkdown": "Published state from TS: a TS implementation gives each state member a `new ContractState(initial)` and calls `.publish(value)`. Rust's `state().get()` returns the initial value before any publish and the latest one after, on the engine thread and on other threads; each publish notifies Rust subscribers once, in order, with the new value; a value that does not convert to `T` throws in TS and keeps the previous value. Test group `nsh_tsx_contract_kinds`."
+        },
+        {
+          "id": "CON-3",
+          "verification": "automated",
+          "descriptionMarkdown": "Published events from TS: a TS implementation gives each events member a `new ContractEvents()` and calls `.publish(event)`. Each Rust subscriber hears every event published after it subscribed, once and in order, on any thread; an event that does not convert to `E` throws in TS and reaches no subscriber; nothing is kept for later subscribers. Test group `nsh_tsx_contract_kinds`."
+        },
+        {
+          "id": "CON-4",
+          "verification": "automated",
+          "descriptionMarkdown": "Constants: each constant is read once, when the adapter is made (a singleton's on the engine thread during `start()`; a scoped or transient one's when it is resolved on the engine thread; one resolved on another thread reads them on its first read there, through the engine, waiting for it, outside the container's locks), and Rust gets that value from then on, from any thread, while the TS object's later changes are not seen. A missing constant, or one that does not convert, fails making the adapter with a `ContractError` naming the contract and the member: a singleton's fails `start()`; a scoped or transient one's is reported when the adapter links and kept, so every read of its state, events or constants panics with it, naming the contract and the member, without reading JS again. Test group `nsh_tsx_contract_kinds`."
+        },
+        {
+          "id": "CON-5",
+          "verification": "automated",
+          "descriptionMarkdown": "`rayx_app::StateCell<T>` and `rayx_app::EventStream<E>` (`T`, `E`: `Send + Sync + 'static`), NSH-free: `StateCell::new(initial)`, `get()` returning `Arc<T>` from any thread, `publish(value)` replacing it and notifying every subscriber in subscription order with the new value, `subscribe(..)` returning a `ChangeSubscription` that stops on drop; `EventStream::publish(event)` reaching every current subscriber once and keeping nothing. A subscriber may read the cell or publish again from its callback without deadlocking; publishes from several threads leave the last one readable and notify each once. Test group `crates/rayx_app/tests/published_values.rs`; the wasm check passes."
+        },
+        {
+          "id": "CON-6",
+          "verification": "automated",
+          "descriptionMarkdown": "Calls from any thread: every command and posted member of a contract implemented in TS works from a thread other than the engine thread, reaching the TS implementation and resolving with its result or the error it threw; on the engine thread the call runs without going through the cross-thread queue. A call queued when the surface's engine stops resolves `Err` (a `ContractError` saying the engine is gone) instead of hanging, and `ContractError::WrongThread` no longer exists. Test group `crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs`."
+        },
+        {
+          "id": "CON-7",
+          "verification": "automated",
+          "descriptionMarkdown": "The engine runner, for Rust implementations that use NSH's engine-thread APIs (fetch of `asset:/` files, `register_font`, NSH's storage, `quit`): a `Send + Sync + Clone` handle per surface, resolvable from the surface's provider, whose `run(..)` takes a function making an engine-thread future and returns a `Send` future of its result, from any thread; on the engine thread it runs without the queue; once the engine is gone it resolves `Err`. Test group `crates/rayx_app_nsh/tests/nsh_engine_runner.rs`."
+        },
+        {
+          "id": "CON-8",
+          "verification": "automated",
+          "descriptionMarkdown": "Published values in NSH components: `rayx_app_nsh`'s binding gives a Rust component an NSH signal over a `StateCell<T>` (and a listener over an `EventStream<E>`) that follows every publish, from any thread, on the engine thread, and stops with the component's owner. Test group `crates/rayx_app_nsh/tests/nsh_published_binding.rs`."
+        },
+        {
+          "id": "CON-9",
+          "verification": "automated",
+          "descriptionMarkdown": "Contracts named by a RayX class: `#[contract(ts = \"…\")]` names the TS interface (`KeyValueStoreContract`), and a contract can take a RayX TS class as its token. Then `addSingletonAs(Class, () => new Impl())` (and every other lifetime, startup and `As` form) registers a TS implementation for the contract, typed by the TS interface; `getRequiredService(Class)` gives the class over whichever implementation is registered, Rust or TS, and Rust resolves the same one as `dyn Trait`. A contract without a class keeps its generated token function. Test group `crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs`."
+        }
+      ]
     },
     {
-     "id": "CRATES-4",
-     "verification": "automated",
-     "descriptionMarkdown": "Release and CI name the crates as they are: `release-plz.toml` keeps one version group and one tag owned by `rayx_app` (tag and `CHANGELOG.md`), its `changelog_include` and `[[package]]` entries list every other released package (`rayx_app_nsh` from `s1`, each `rayx_services_*` when its crate is made, none for `rayx_core` or `rayx_runtime` once they are gone); CI's wasm step checks `rayx_app` (and `rayx_runtime` while it exists) and `rayx_devtools_protocol`; the CLI's library guard denies `rayx`, every `rayx_app*` and `rayx_services_*` crate, and keeps `rayx_core` and `rayx_runtime` (also RayX.Old's names). The CLI's groups `release_automation`, `release_config`, `ci_workflow` and `library_guard` pass with these expectations."
+      "id": "R-VALIDATION",
+      "title": "Nothing is pre-registered, and what an app lacks fails startup clearly",
+      "descriptionMarkdown": "Today every surface's builder starts with NSH's services (`add_nsh_services`), registrations add the services they use, and a missing dependency panics in a factory. The owner's intent: the mandatory services are never pre-registered, and a missing one fails with a clear message naming what to register (2026-11-16).",
+      "criteria": [
+        {
+          "id": "VAL-1",
+          "verification": "automated",
+          "descriptionMarkdown": "The core checks what is registered before anything is made: a registration declares the traits it depends on (with a hint saying how to register each), and an app may require traits of its own. `build()` and `build_async()` fail before any factory or startup service runs when a declared or required trait is missing, with one error listing every missing trait, who needs it and its hint, one per line; a singleton declaring a dependency on a scoped service fails the same way, naming both. An app with everything registered builds as before. Test group `crates/rayx_app/tests/di_validation.rs`."
+        },
+        {
+          "id": "VAL-2",
+          "verification": "automated",
+          "descriptionMarkdown": "The host requires platform, suspension, assets and fonts: a Rust app (`.start()`, `.start_async()`) or a TSX app (`await builder.start()`) whose builder lacks any of `dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService`, `dyn FontService` fails startup (`app_state()` is `Failed`; the promise rejects) with one message listing each missing one with how to register it in that language (`.add_platform()` in Rust, `builder.addPlatform()` in TS, from `rayx_services_platform`) or registering one's own. `RayXAppBuilder::new()` and TS's `new RayXAppBuilder()` register nothing; `add_nsh_services` and `NshServicesAppBuilderExt` are gone. Test group `crates/rayx_app_nsh/tests/nsh_required_services.rs`; the existing start groups pass with builders that register the four."
+        },
+        {
+          "id": "VAL-3",
+          "verification": "automated",
+          "descriptionMarkdown": "A startup dependency on a key that no startup service is keyed by is met when a service registered under that key is no startup service (an app's own implementation of a trait, a test's fake); a dependency on a key nothing is registered under, or on the registration key of a startup service that reports a startup key of its own, still fails startup. `StartupRegistry::initialization_layers()` documents that it sees startup services only. Test group `crates/rayx_app/tests/di_startup_plain_dependency.rs`."
+        }
+      ]
+    },
+    {
+      "id": "R-SERVICES",
+      "title": "Each core service: an abstraction in rayx_app, RayX's implementation in its own crate",
+      "descriptionMarkdown": "Each of the twelve core services (application configuration, assets, fonts, history, i18n, input map, navigation, operations, platform, selection, storage, suspension) meets, in its task:\n\n1. **Its abstraction** is a `#[contract]` trait named after the service in `rayx_app::services::<name>` (the design's table), with the data types its members use (state snapshots, events, requests, results, errors) and no implementation, options or builder extension. Every member is one of the contract shapes; every capability of today's service stays reachable, as a member or as a Rust helper on `dyn Trait` (`load_json::<T>`, `submit::<T: DomainOperation>`, `bucket(..)`).\n2. **Its crate** `rayx_services_<name>` holds RayX's implementation as a private type, registered by `add_<name>(..)` as `dyn Trait` (and, when it initializes at startup, as a startup service under the trait's key), with its options. `with_<name>_service(concrete)` goes: an app registers its own `dyn Trait` instead.\n3. **Its NSH side and TS side** live in the crate: its NSH implementation files and its `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, its TS class over `Arc<dyn Trait>` (which therefore works over any implementation, Rust or TS), its options classes, and its TS builder method `add<Name>`: the host's `#[class] impl RayXAppBuilder` loses it, and the crate adds it back with `#[class_extension(RayXAppBuilder)]` on a holder of its own (`<Name>Builder`), registered by the crate's set, so TS calls `builder.add<Name>(..)` with today's name and signature.\n4. **Its dependencies** are other services' traits, resolved from the provider and declared to the builder (`VAL-1`); it never names another service's implementation type and never registers another service.\n5. **Its tests** are today's groups for it, moved under their names: `crates/rayx_runtime/tests/<name>*.rs` and `crates/rayx_app_nsh/tests/nsh_<name>*.rs` into `crates/rayx_services_<name>/tests/`, passing there, plus a new group for any behavior the move changes.",
+      "criteria": [
+        {
+          "id": "SVC-1",
+          "verification": "automated",
+          "descriptionMarkdown": "What service crates build on, in `rayx_app_nsh`, over NSH's class extensions (`nshx-0.5.0-6`): a crate adds its TS builder method to the host's `RayXAppBuilder` with `#[class_extension(RayXAppBuilder)]` on a holder of its own, registered by its set, and the method acts as the builder's own methods do, through public functions of the host: it adds the crate's Rust registration, runs an optional options callback on the crate's options class at once, returns the builder to chain, and throws when the callback throws or the builder has started. The method exists, in JS and in `.nsh/types`, only when the crate's set is registered. A crate's set registers its services' TS classes and their resolvers, which the provider uses for `getService` and `getRequiredService` (no hard-coded list); the helpers service classes use (listeners, options records, `ServiceClass`) are public for service crates; `rayx_app_nsh::testing` (feature `testing`) gives service crates the headless app harness the host's tests use. Test group `crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs`, with a service-crate stand-in in the test (its method only with its set, in JS and in the declarations; with and without options; a throwing callback; after `start()`; its class resolving through the provider; the harness running a TSX app)."
+        },
+        {
+          "id": "SVC-2",
+          "verification": "automated",
+          "descriptionMarkdown": "Platform, suspension, assets and fonts meet the per-service acceptance above (`rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`). Their NSH implementations keep themselves current (platform state, the app's lifecycle and quitting) from their initialization on, in Rust and TSX apps alike, without `use_platform_sync`; NSH-backed asset reading and font registration work when called from another thread. `cargo test` of the four crates passes."
+        },
+        {
+          "id": "SVC-3",
+          "verification": "automated",
+          "descriptionMarkdown": "Storage and navigation meet the per-service acceptance (`rayx_services_storage`, `rayx_services_navigation`): storage's NSH key-value store and its in-memory store, navigation's location synchronizer, regions as NSH navigation stacks and `NavigationRegion` for TSX, all over `dyn KeyValueStore` / `dyn NavigationService`. `cargo test` of the two crates passes."
+        },
+        {
+          "id": "SVC-4",
+          "verification": "automated",
+          "descriptionMarkdown": "I18n meets the per-service acceptance, split in two (`d-i18n-split`): the contract `I18nService` publishes the language, chosen language, locale, direction, available languages, time zone and messages; `MessageFormatter`, Rust-only, formats from whatever `I18nService` is registered. With RayX's implementation, `tr!`, `checked::tr!` and the TS class's `t`, `formatNumber` and `formatDate` give today's results; with any implementation a published language change is used by the next format call. `rayx_services_i18n` registers both (`add_i18n`) or the formatter alone (`add_message_formatter`). Test group `crates/rayx_services_i18n/tests/formatter.rs` and the moved i18n groups pass."
+        },
+        {
+          "id": "SVC-5",
+          "verification": "automated",
+          "descriptionMarkdown": "Operations, history and selection meet the per-service acceptance (`rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`): an operation target's handler crosses as a class handle TS can call; history resolves `dyn OperationService` (and `dyn KeyValueStore` when persistent) and no longer reads operations' private instance id; selection resolves `dyn NavigationService`. `cargo test` of the three crates passes."
+        },
+        {
+          "id": "SVC-6",
+          "verification": "automated",
+          "descriptionMarkdown": "Input map and application configuration meet the per-service acceptance (`rayx_services_input_map`, `rayx_services_application_configuration`), and `crates/rayx_runtime` is gone: no workspace member, path, re-export, test or CI step names it (the CLI's library guard keeps the name denied). `cargo test` of the two crates passes."
+        },
+        {
+          "id": "SVC-7",
+          "verification": "automated",
+          "descriptionMarkdown": "`rayx_app::testing` has a fake of each of the twelve core abstractions (and of `MessageFormatter`): NSH-free, its state published through the trait's cells, its commands recorded or answered from what a test set; registering a fake as `dyn Trait` in a plain `ServiceProvider` lets a test resolve and use it with `cargo test`, without NSH. Test group `crates/rayx_app/tests/testing_fakes.rs`."
+        },
+        {
+          "id": "SVC-8",
+          "verification": "automated",
+          "descriptionMarkdown": "Replaceable from Rust: an app that registers its own Rust implementation of a core trait instead of RayX's gets it used by every consumer: other services (fonts and i18n over an app's own `dyn AssetService`, history over its own `dyn OperationService`), the host's requirement (`VAL-2` is satisfied by it) and the service's TS class. Test group `crates/rayx/tests/service_replacement.rs`, with every service feature on."
+        },
+        {
+          "id": "SVC-9",
+          "verification": "automated",
+          "descriptionMarkdown": "Implementable from TS, every one of them: for each of the twelve contracts, a TS class implementing `<Name>Contract`, registered with `addSingletonAs(<Name>, () => new …)`, is what Rust resolves as `dyn Trait` and what TS's `getRequiredService(<Name>)` wraps: Rust reads its published state synchronously and calls one of its commands from the engine thread and from another thread, and RayX's own consumers of the trait (another service, the host's requirement) work over it. Test group `crates/rayx/tests/ts_service_contracts.rs`, with every service feature on."
+        },
+        {
+          "id": "SVC-10",
+          "verification": "automated",
+          "descriptionMarkdown": "An app crate's builder extension is a TS builder method too: `#[app_extension] fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder`, registered by the app's set, gives every TS `RayXAppBuilder` the method `addWeather()` (in JS and in the declarations, with the function's docs), which runs the Rust function on the builder and returns the builder, and throws once the builder started, chaining with RayX's own methods (`new RayXAppBuilder().addStorage().addWeather().start()`). The flat TS function `addWeather` goes; `apply(..)` stays for TS functions of the builder; the macro's refusals stay compile errors. Test group `crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs`; the groups that used `apply(addX)` (`nsh_tsx_ready`, the umbrella's `native_module` and `native_module_attribute`) pass on the methods."
+        },
+        {
+          "id": "SVC-11",
+          "verification": "automated",
+          "descriptionMarkdown": "The gaps found while documenting the services are closed, so nothing a service offers is limited without need: CI runs and lints the umbrella with every feature (its feature-gated groups run); navigation's TS commands return promises and work over a TS implementation; the last registration of a key wins completely (startup entries and the requirements a registration declared go with it); `add_startup_singleton_for::<dyn Trait, Impl>` registers an app's own implementation of a contract as a startup service; TS has `addInMemoryStorage()` and `addHistoryWithStore(..)` (a history store written in TS, contract `HistoryJournalStore`); clearing a history scope deletes its journal from the store. Groups `di_startup_for`, `di_last_registration_wins`, `di_requirements_follow_registrations` (rayx_app), `nsh_contract_startup_for` (rayx_app_nsh), `nsh_tsx_command_promises` (navigation), `nsh_tsx_in_memory` (storage), `nsh_tsx_store`, `history_clear_deletes` (history), `service_replacement` (rayx, every feature), `ci_workflow` (rayx-cli)."
+        }
+      ]
+    },
+    {
+      "id": "R-UMBRELLA",
+      "title": "Apps take RayX through one crate and register what they use",
+      "descriptionMarkdown": "The owner's defaults (2026-11-16): the mandatory four are the umbrella's default features, and the template registers them explicitly with the app builder.",
+      "criteria": [
+        {
+          "id": "UMB-1",
+          "verification": "automated",
+          "descriptionMarkdown": "`rayx` has one optional feature per service crate (`application_configuration`, `assets`, `fonts`, `history`, `i18n`, `input_map`, `navigation`, `operations`, `platform`, `selection`, `storage`, `suspension`), each enabling exactly its crate, defaults `platform`, `suspension`, `assets`, `fonts`; an enabled crate is `rayx::services::<name>` and its builder extension is in `rayx::prelude`; `tr!` comes with `i18n`. `#[rayx::native_module]` registers the TS classes and builder methods of the enabled crates only: with the defaults a TSX app's `RayXAppBuilder` has `addFonts` and no `addI18n`, in JS and in its declarations; with every feature it has both. Test group `crates/rayx/tests/features.rs` (features against `cargo metadata`), and the umbrella's `native_module` groups under default features and under every feature."
+        },
+        {
+          "id": "UMB-2",
+          "verification": "automated",
+          "descriptionMarkdown": "`rayx new`'s RayX templates (`mixed`, `rust`): the app's `rayx` dependency lists the features its builder uses beyond the defaults (`storage`, `operations`, `history`), and its composition root registers `add_platform()`, `add_suspension()`, `add_assets(..)` and `add_fonts(..)` explicitly (TSX: `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts()`) before storage and history, with a comment saying the host requires the four and each can be replaced by the app's own. The README and `docs/cli/projects.md` say the same. Test group `crates/rayx_cli/tests/new_app_services.rs`; the CLI's `new_app`, `new_app_builder`, `readme_nsh` and `readme_versions` groups pass."
+        },
+        {
+          "id": "UMB-3",
+          "verification": "automated",
+          "descriptionMarkdown": "The gallery builds on the new crates with the features it uses and registers the four required services; its crate's tests pass."
+        }
+      ]
+    },
+    {
+      "id": "R-DOCS",
+      "title": "Docs, guides, the rayx skill and memory describe the new crates",
+      "descriptionMarkdown": "The owner asked on 2026-11-15 for a `rayx` skill in RayX.Root with a services reference, examples and DO and DON'T lists, once the services are crates.",
+      "criteria": [
+        {
+          "id": "DOC-1",
+          "verification": "automated",
+          "descriptionMarkdown": "RayX's docs describe what is: `docs/architecture.md` (the crates and their dependency rules), `docs/services.md` and each `docs/services/<name>.md` (its trait and members by kind, its crate, its feature, its builder method in Rust and TS, what it resolves, how to replace it in Rust and TS), `docs/tsx.md` (contracts: shapes, published values, constants, any-thread calls and their costs, `<Name>Contract`, implementing a core service in TS, app extensions as builder methods), `docs/startup.md` and `docs/dependency-injection.md` (required services, declared dependencies, the checks), `docs/getting-started.md` (features), the README and `AGENTS.md`. No file under `docs`, `crates`, `examples`, `README.md` or `AGENTS.md` names `rayx_core`, `rayx_runtime`, `add_nsh_services`, `NshServicesAppBuilderExt`, `use_platform_sync` or `keep_platform_current`, except the CLI's library guard and the release history in `docs/releasing.md` (whose current crates, CI steps and consumer lines are updated): `git grep` finds nothing."
+        },
+        {
+          "id": "DOC-2",
+          "verification": "manual",
+          "descriptionMarkdown": "RayX.Root: `AGENTS.md` lists the crates as they are; the `rayx-components` skill names them right; the new skill `.claude/skills/rayx/` (`SKILL.md` with `name: rayx` and a description saying when to use it: building RayX apps in Rust or TSX, choosing, registering and replacing services, writing contracts) has `references/services.md`: every service with its trait, crate, feature, Rust and TS builder method and members by kind, with examples of registering RayX's implementation, replacing it in Rust and in TS, and calling it from another thread, and DO and DON'T lists; and `references/contracts.md`: writing a contract (shapes, published values, constants, tokens, costs). The reviewer reads the skill against the code. No RayX.Root guide or skill names the old crates or APIs (`git grep`)."
+        },
+        {
+          "id": "DOC-3",
+          "verification": "manual",
+          "descriptionMarkdown": "RayX's memory follows the crates: the knowledge domains name the new crates and paths (the `runtime` domain covers the service crates, `app` the host, `core` the core), their `state.md` backlinks point at existing paths, the indexes are current, and the epic's decisions are ready for promotion (the successor of the TS builder parity decision with any-thread contracts and builder methods from service crates, and the crate structure). The reviewer checks the files."
+        }
+      ]
     }
-   ]
-  },
-  {
-   "id": "R-LAYOUT",
-   "title": "The NSH host's files are organized by topic",
-   "descriptionMarkdown": "The owner approved the layout of `d-layout` on 2026-11-17: today every file of the NSH layer sits loose in `src/` or `src/ts/`.",
-   "criteria": [
-    {
-     "id": "LAYOUT-1",
-     "verification": "automated",
-     "descriptionMarkdown": "`crates/rayx_app_nsh/src/` has the layout of `d-layout`: at its root only `lib.rs`, `ts.rs` and `binding.rs` and the folders `app/`, `di/`, `configuration/`, `devtools/` and `services/`; `services/` holds `mod.rs`, `listeners_ts.rs` and one folder per service with an NSH side (`application_configuration`, `assets`, `fonts`, `i18n`, `input_map`, `navigation`, `platform`, `storage`, `suspension`) with the files of the design's table; no `src/ts/` folder remains and every file that came from it ends in `_ts.rs`. Test group `crates/rayx_app_nsh/tests/source_layout.rs` walks `src/` and fails naming each file or folder that differs. (Once `s5` moves the service folders into their crates, the group expects `services/` to hold only what service crates build on.)"
-    },
-    {
-     "id": "LAYOUT-2",
-     "verification": "automated",
-     "descriptionMarkdown": "Moving the files changes no behavior and no public path: `rayx_app_nsh::ts::*`, every crate-root re-export, `tr!` and `checked::tr!` resolve as before; every existing test group of the crate passes with no change but paths that name source files; `cargo doc -p rayx_app_nsh --no-deps` reports no broken intra-doc link."
-    }
-   ]
-  },
-  {
-   "id": "R-CONTRACTS",
-   "title": "Contracts: three kinds of members, callable from any thread",
-   "descriptionMarkdown": "Today a contract's member is `async fn -> Result` (a `!Send` future, failing with `ContractError::WrongThread` off the engine thread) or a posted `fn` returning nothing. The owner agreed on 2026-11-17 that every member of every abstraction is a command, published state or a constant, and decided that contracts MUST be callable from any thread.",
-   "criteria": [
-    {
-     "id": "CON-1",
-     "verification": "automated",
-     "descriptionMarkdown": "`#[contract]` accepts exactly these member shapes: a command `async fn m(&self, ..) -> Result<T, E>` (Rust gets a `Send` future); a posted command `fn m(&self, ..)` returning nothing; published state `#[state] fn m(&self) -> &StateCell<T>`; published events `#[events] fn m(&self) -> &EventStream<E>`; a constant `#[constant] fn m(&self) -> T`. Any other member is a compile error that lists these shapes. The TS declaration of the contract's interface gives a command `m(..): Promise<T>`, a posted one `m(..): void`, state `readonly m: ContractState<T>`, events `readonly m: ContractEvents<E>` and a constant `readonly m: T`. The macro's unit tests (`contract::`) and test group `crates/rayx_app_nsh/tests/nsh_tsx_contract_kinds.rs` (the declarations) cover each shape and each refusal; the existing group `nsh_tsx_contracts` passes on the new shapes."
-    },
-    {
-     "id": "CON-2",
-     "verification": "automated",
-     "descriptionMarkdown": "Published state from TS: a TS implementation gives each state member a `new ContractState(initial)` and calls `.publish(value)`. Rust's `state().get()` returns the initial value before any publish and the latest one after, on the engine thread and on other threads; each publish notifies Rust subscribers once, in order, with the new value; a value that does not convert to `T` throws in TS and keeps the previous value. Test group `nsh_tsx_contract_kinds`."
-    },
-    {
-     "id": "CON-3",
-     "verification": "automated",
-     "descriptionMarkdown": "Published events from TS: a TS implementation gives each events member a `new ContractEvents()` and calls `.publish(event)`. Each Rust subscriber hears every event published after it subscribed, once and in order, on any thread; an event that does not convert to `E` throws in TS and reaches no subscriber; nothing is kept for later subscribers. Test group `nsh_tsx_contract_kinds`."
-    },
-    {
-     "id": "CON-4",
-     "verification": "automated",
-     "descriptionMarkdown": "Constants: each constant is read once, when the adapter is made (on the engine thread, during `start()`), and Rust gets that value from then on, from any thread, while the TS object's later changes are not seen; a missing constant, or one that does not convert, fails making the adapter with a `ContractError` naming the contract and the member. Test group `nsh_tsx_contract_kinds`."
-    },
-    {
-     "id": "CON-5",
-     "verification": "automated",
-     "descriptionMarkdown": "`rayx_app::StateCell<T>` and `rayx_app::EventStream<E>` (`T`, `E`: `Send + Sync + 'static`), NSH-free: `StateCell::new(initial)`, `get()` returning `Arc<T>` from any thread, `publish(value)` replacing it and notifying every subscriber in subscription order with the new value, `subscribe(..)` returning a `ChangeSubscription` that stops on drop; `EventStream::publish(event)` reaching every current subscriber once and keeping nothing. A subscriber may read the cell or publish again from its callback without deadlocking; publishes from several threads leave the last one readable and notify each once. Test group `crates/rayx_app/tests/published_values.rs`; the wasm check passes."
-    },
-    {
-     "id": "CON-6",
-     "verification": "automated",
-     "descriptionMarkdown": "Calls from any thread: every command and posted member of a contract implemented in TS works from a thread other than the engine thread, reaching the TS implementation and resolving with its result or the error it threw; on the engine thread the call runs without going through the cross-thread queue. A call queued when the surface's engine stops resolves `Err` (a `ContractError` saying the engine is gone) instead of hanging, and `ContractError::WrongThread` no longer exists. Test group `crates/rayx_app_nsh/tests/nsh_tsx_contracts_any_thread.rs`."
-    },
-    {
-     "id": "CON-7",
-     "verification": "automated",
-     "descriptionMarkdown": "The engine runner, for Rust implementations that use NSH's engine-thread APIs (fetch of `asset:/` files, `register_font`, NSH's storage, `quit`): a `Send + Sync + Clone` handle per surface, resolvable from the surface's provider, whose `run(..)` takes a function making an engine-thread future and returns a `Send` future of its result, from any thread; on the engine thread it runs without the queue; once the engine is gone it resolves `Err`. Test group `crates/rayx_app_nsh/tests/nsh_engine_runner.rs`."
-    },
-    {
-     "id": "CON-8",
-     "verification": "automated",
-     "descriptionMarkdown": "Published values in NSH components: `rayx_app_nsh`'s binding gives a Rust component an NSH signal over a `StateCell<T>` (and a listener over an `EventStream<E>`) that follows every publish, from any thread, on the engine thread, and stops with the component's owner. Test group `crates/rayx_app_nsh/tests/nsh_published_binding.rs`."
-    },
-    {
-     "id": "CON-9",
-     "verification": "automated",
-     "descriptionMarkdown": "Contracts named by a RayX class: `#[contract(ts = \"…\")]` names the TS interface (`KeyValueStoreContract`), and a contract can take a RayX TS class as its token. Then `addSingletonAs(Class, () => new Impl())` (and every other lifetime, startup and `As` form) registers a TS implementation for the contract, typed by the TS interface; `getRequiredService(Class)` gives the class over whichever implementation is registered, Rust or TS, and Rust resolves the same one as `dyn Trait`. A contract without a class keeps its generated token function. Test group `crates/rayx_app_nsh/tests/nsh_tsx_contract_tokens.rs`."
-    }
-   ]
-  },
-  {
-   "id": "R-VALIDATION",
-   "title": "Nothing is pre-registered, and what an app lacks fails startup clearly",
-   "descriptionMarkdown": "Today every surface's builder starts with NSH's services (`add_nsh_services`), registrations add the services they use, and a missing dependency panics in a factory. The owner's intent: the mandatory services are never pre-registered, and a missing one fails with a clear message naming what to register (2026-11-16).",
-   "criteria": [
-    {
-     "id": "VAL-1",
-     "verification": "automated",
-     "descriptionMarkdown": "The core checks what is registered before anything is made: a registration declares the traits it depends on (with a hint saying how to register each), and an app may require traits of its own. `build()` and `build_async()` fail before any factory or startup service runs when a declared or required trait is missing, with one error listing every missing trait, who needs it and its hint, one per line; a singleton declaring a dependency on a scoped service fails the same way, naming both. An app with everything registered builds as before. Test group `crates/rayx_app/tests/di_validation.rs`."
-    },
-    {
-     "id": "VAL-2",
-     "verification": "automated",
-     "descriptionMarkdown": "The host requires platform, suspension, assets and fonts: a Rust app (`.start()`, `.start_async()`) or a TSX app (`await builder.start()`) whose builder lacks any of `dyn PlatformInfoService`, `dyn SuspensionService`, `dyn AssetService`, `dyn FontService` fails startup (`app_state()` is `Failed`; the promise rejects) with one message listing each missing one with how to register it in that language (`.add_platform()` in Rust, `builder.addPlatform()` in TS, from `rayx_services_platform`) or registering one's own. `RayXAppBuilder::new()` and TS's `new RayXAppBuilder()` register nothing; `add_nsh_services` and `NshServicesAppBuilderExt` are gone. Test group `crates/rayx_app_nsh/tests/nsh_required_services.rs`; the existing start groups pass with builders that register the four."
-    }
-   ]
-  },
-  {
-   "id": "R-SERVICES",
-   "title": "Each core service: an abstraction in rayx_app, RayX's implementation in its own crate",
-   "descriptionMarkdown": "Each of the twelve core services (application configuration, assets, fonts, history, i18n, input map, navigation, operations, platform, selection, storage, suspension) meets, in its task:\n\n1. **Its abstraction** is a `#[contract]` trait named after the service in `rayx_app::services::<name>` (the design's table), with the data types its members use (state snapshots, events, requests, results, errors) and no implementation, options or builder extension. Every member is one of the contract shapes; every capability of today's service stays reachable, as a member or as a Rust helper on `dyn Trait` (`load_json::<T>`, `submit::<T: DomainOperation>`, `bucket(..)`).\n2. **Its crate** `rayx_services_<name>` holds RayX's implementation as a private type, registered by `add_<name>(..)` as `dyn Trait` (and, when it initializes at startup, as a startup service under the trait's key), with its options. `with_<name>_service(concrete)` goes: an app registers its own `dyn Trait` instead.\n3. **Its NSH side and TS side** live in the crate: its NSH implementation files and its `*_ts.rs` files from `rayx_app_nsh/src/services/<name>/`, its TS class over `Arc<dyn Trait>` (which therefore works over any implementation, Rust or TS), its options classes, and its TS builder method `add<Name>`: the host's `#[class] impl RayXAppBuilder` loses it, and the crate adds it back with `#[class_extension(RayXAppBuilder)]` on a holder of its own (`<Name>Builder`), registered by the crate's set, so TS calls `builder.add<Name>(..)` with today's name and signature.\n4. **Its dependencies** are other services' traits, resolved from the provider and declared to the builder (`VAL-1`); it never names another service's implementation type and never registers another service.\n5. **Its tests** are today's groups for it, moved under their names: `crates/rayx_runtime/tests/<name>*.rs` and `crates/rayx_app_nsh/tests/nsh_<name>*.rs` into `crates/rayx_services_<name>/tests/`, passing there, plus a new group for any behavior the move changes.",
-   "criteria": [
-    {
-     "id": "SVC-1",
-     "verification": "automated",
-     "descriptionMarkdown": "What service crates build on, in `rayx_app_nsh`, over NSH's class extensions (`nshx-0.5.0-6`): a crate adds its TS builder method to the host's `RayXAppBuilder` with `#[class_extension(RayXAppBuilder)]` on a holder of its own, registered by its set, and the method acts as the builder's own methods do, through public functions of the host: it adds the crate's Rust registration, runs an optional options callback on the crate's options class at once, returns the builder to chain, and throws when the callback throws or the builder has started. The method exists, in JS and in `.nsh/types`, only when the crate's set is registered. A crate's set registers its services' TS classes and their resolvers, which the provider uses for `getService` and `getRequiredService` (no hard-coded list); the helpers service classes use (listeners, options records, `ServiceClass`) are public for service crates; `rayx_app_nsh::testing` (feature `testing`) gives service crates the headless app harness the host's tests use. Test group `crates/rayx_app_nsh/tests/nsh_service_crate_hooks.rs`, with a service-crate stand-in in the test (its method only with its set, in JS and in the declarations; with and without options; a throwing callback; after `start()`; its class resolving through the provider; the harness running a TSX app)."
-    },
-    {
-     "id": "SVC-2",
-     "verification": "automated",
-     "descriptionMarkdown": "Platform, suspension, assets and fonts meet the per-service acceptance above (`rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`). Their NSH implementations keep themselves current (platform state, the app's lifecycle and quitting) from their initialization on, in Rust and TSX apps alike, without `use_platform_sync`; NSH-backed asset reading and font registration work when called from another thread. `cargo test` of the four crates passes."
-    },
-    {
-     "id": "SVC-3",
-     "verification": "automated",
-     "descriptionMarkdown": "Storage and navigation meet the per-service acceptance (`rayx_services_storage`, `rayx_services_navigation`): storage's NSH key-value store and its in-memory store, navigation's location synchronizer, regions as NSH navigation stacks and `NavigationRegion` for TSX, all over `dyn KeyValueStore` / `dyn NavigationService`. `cargo test` of the two crates passes."
-    },
-    {
-     "id": "SVC-4",
-     "verification": "automated",
-     "descriptionMarkdown": "I18n meets the per-service acceptance, split in two (`d-i18n-split`): the contract `I18nService` publishes the language, chosen language, locale, direction, available languages, time zone and messages; `MessageFormatter`, Rust-only, formats from whatever `I18nService` is registered. With RayX's implementation, `tr!`, `checked::tr!` and the TS class's `t`, `formatNumber` and `formatDate` give today's results; with any implementation a published language change is used by the next format call. `rayx_services_i18n` registers both (`add_i18n`) or the formatter alone (`add_message_formatter`). Test group `crates/rayx_services_i18n/tests/formatter.rs` and the moved i18n groups pass."
-    },
-    {
-     "id": "SVC-5",
-     "verification": "automated",
-     "descriptionMarkdown": "Operations, history and selection meet the per-service acceptance (`rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`): an operation target's handler crosses as a class handle TS can call; history resolves `dyn OperationService` (and `dyn KeyValueStore` when persistent) and no longer reads operations' private instance id; selection resolves `dyn NavigationService`. `cargo test` of the three crates passes."
-    },
-    {
-     "id": "SVC-6",
-     "verification": "automated",
-     "descriptionMarkdown": "Input map and application configuration meet the per-service acceptance (`rayx_services_input_map`, `rayx_services_application_configuration`), and `crates/rayx_runtime` is gone: no workspace member, path, re-export, test or CI step names it (the CLI's library guard keeps the name denied). `cargo test` of the two crates passes."
-    },
-    {
-     "id": "SVC-7",
-     "verification": "automated",
-     "descriptionMarkdown": "`rayx_app::testing` has a fake of each of the twelve core abstractions (and of `MessageFormatter`): NSH-free, its state published through the trait's cells, its commands recorded or answered from what a test set; registering a fake as `dyn Trait` in a plain `ServiceProvider` lets a test resolve and use it with `cargo test`, without NSH. Test group `crates/rayx_app/tests/testing_fakes.rs`."
-    },
-    {
-     "id": "SVC-8",
-     "verification": "automated",
-     "descriptionMarkdown": "Replaceable from Rust: an app that registers its own Rust implementation of a core trait instead of RayX's gets it used by every consumer: other services (fonts and i18n over an app's own `dyn AssetService`, history over its own `dyn OperationService`), the host's requirement (`VAL-2` is satisfied by it) and the service's TS class. Test group `crates/rayx/tests/service_replacement.rs`, with every service feature on."
-    },
-    {
-     "id": "SVC-9",
-     "verification": "automated",
-     "descriptionMarkdown": "Implementable from TS, every one of them: for each of the twelve contracts, a TS class implementing `<Name>Contract`, registered with `addSingletonAs(<Name>, () => new …)`, is what Rust resolves as `dyn Trait` and what TS's `getRequiredService(<Name>)` wraps: Rust reads its published state synchronously and calls one of its commands from the engine thread and from another thread, and RayX's own consumers of the trait (another service, the host's requirement) work over it. Test group `crates/rayx/tests/ts_service_contracts.rs`, with every service feature on."
-    },
-    {
-     "id": "SVC-10",
-     "verification": "automated",
-     "descriptionMarkdown": "An app crate's builder extension is a TS builder method too: `#[app_extension] fn add_weather(builder: RayXAppBuilder) -> RayXAppBuilder`, registered by the app's set, gives every TS `RayXAppBuilder` the method `addWeather()` (in JS and in the declarations, with the function's docs), which runs the Rust function on the builder and returns the builder, and throws once the builder started, chaining with RayX's own methods (`new RayXAppBuilder().addStorage().addWeather().start()`). The flat TS function `addWeather` goes; `apply(..)` stays for TS functions of the builder; the macro's refusals stay compile errors. Test group `crates/rayx_app_nsh/tests/nsh_app_extension_methods.rs`; the groups that used `apply(addX)` (`nsh_tsx_ready`, the umbrella's `native_module` and `native_module_attribute`) pass on the methods."
-    }
-   ]
-  },
-  {
-   "id": "R-UMBRELLA",
-   "title": "Apps take RayX through one crate and register what they use",
-   "descriptionMarkdown": "The owner's defaults (2026-11-16): the mandatory four are the umbrella's default features, and the template registers them explicitly with the app builder.",
-   "criteria": [
-    {
-     "id": "UMB-1",
-     "verification": "automated",
-     "descriptionMarkdown": "`rayx` has one optional feature per service crate (`application_configuration`, `assets`, `fonts`, `history`, `i18n`, `input_map`, `navigation`, `operations`, `platform`, `selection`, `storage`, `suspension`), each enabling exactly its crate, defaults `platform`, `suspension`, `assets`, `fonts`; an enabled crate is `rayx::services::<name>` and its builder extension is in `rayx::prelude`; `tr!` comes with `i18n`. `#[rayx::native_module]` registers the TS classes and builder methods of the enabled crates only: with the defaults a TSX app's `RayXAppBuilder` has `addFonts` and no `addI18n`, in JS and in its declarations; with every feature it has both. Test group `crates/rayx/tests/features.rs` (features against `cargo metadata`), and the umbrella's `native_module` groups under default features and under every feature."
-    },
-    {
-     "id": "UMB-2",
-     "verification": "automated",
-     "descriptionMarkdown": "`rayx new`'s RayX templates (`mixed`, `rust`): the app's `rayx` dependency lists the features its builder uses beyond the defaults (`storage`, `operations`, `history`), and its composition root registers `add_platform()`, `add_suspension()`, `add_assets(..)` and `add_fonts(..)` explicitly (TSX: `new RayXAppBuilder().addPlatform().addSuspension().addAssets().addFonts()`) before storage and history, with a comment saying the host requires the four and each can be replaced by the app's own. The README and `docs/cli/projects.md` say the same. Test group `crates/rayx_cli/tests/new_app_services.rs`; the CLI's `new_app`, `new_app_builder`, `readme_nsh` and `readme_versions` groups pass."
-    },
-    {
-     "id": "UMB-3",
-     "verification": "automated",
-     "descriptionMarkdown": "The gallery builds on the new crates with the features it uses and registers the four required services; its crate's tests pass."
-    }
-   ]
-  },
-  {
-   "id": "R-DOCS",
-   "title": "Docs, guides, the rayx skill and memory describe the new crates",
-   "descriptionMarkdown": "The owner asked on 2026-11-15 for a `rayx` skill in RayX.Root with a services reference, examples and DO and DON'T lists, once the services are crates.",
-   "criteria": [
-    {
-     "id": "DOC-1",
-     "verification": "automated",
-     "descriptionMarkdown": "RayX's docs describe what is: `docs/architecture.md` (the crates and their dependency rules), `docs/services.md` and each `docs/services/<name>.md` (its trait and members by kind, its crate, its feature, its builder method in Rust and TS, what it resolves, how to replace it in Rust and TS), `docs/tsx.md` (contracts: shapes, published values, constants, any-thread calls and their costs, `<Name>Contract`, implementing a core service in TS, app extensions as builder methods), `docs/startup.md` and `docs/dependency-injection.md` (required services, declared dependencies, the checks), `docs/getting-started.md` (features), the README and `AGENTS.md`. No file under `docs`, `crates`, `examples`, `README.md` or `AGENTS.md` names `rayx_core`, `rayx_runtime`, `add_nsh_services`, `NshServicesAppBuilderExt`, `use_platform_sync` or `keep_platform_current`, except the CLI's library guard and the release history in `docs/releasing.md` (whose current crates, CI steps and consumer lines are updated): `git grep` finds nothing."
-    },
-    {
-     "id": "DOC-2",
-     "verification": "manual",
-     "descriptionMarkdown": "RayX.Root: `AGENTS.md` lists the crates as they are; the `rayx-components` skill names them right; the new skill `.claude/skills/rayx/` (`SKILL.md` with `name: rayx` and a description saying when to use it: building RayX apps in Rust or TSX, choosing, registering and replacing services, writing contracts) has `references/services.md`: every service with its trait, crate, feature, Rust and TS builder method and members by kind, with examples of registering RayX's implementation, replacing it in Rust and in TS, and calling it from another thread, and DO and DON'T lists; and `references/contracts.md`: writing a contract (shapes, published values, constants, tokens, costs). The reviewer reads the skill against the code. No RayX.Root guide or skill names the old crates or APIs (`git grep`)."
-    },
-    {
-     "id": "DOC-3",
-     "verification": "manual",
-     "descriptionMarkdown": "RayX's memory follows the crates: the knowledge domains name the new crates and paths (the `runtime` domain covers the service crates, `app` the host, `core` the core), their `state.md` backlinks point at existing paths, the indexes are current, and the epic's decisions are ready for promotion (the successor of the TS builder parity decision with any-thread contracts and builder methods from service crates, and the crate structure). The reviewer checks the files."
-    }
-   ]
-  }
- ]
+  ]
 }
