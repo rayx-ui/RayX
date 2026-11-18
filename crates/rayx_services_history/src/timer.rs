@@ -61,7 +61,7 @@ impl HistoryTimer {
     pub fn engine(runner: rayx_app_nsh::EngineRunner) -> Self {
         Self::new(move |duration| {
             runner
-                .run(move || nsh_core::prelude::timer(duration))
+                .run_cancellable(move || nsh_core::prelude::timer(duration))
                 .then(|ran| async move {
                     if ran.is_err() {
                         futures::future::pending::<()>().await;

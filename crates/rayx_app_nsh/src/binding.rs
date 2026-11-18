@@ -166,6 +166,31 @@ pub(crate) fn dispatcher() -> Option<UnboundedSender<Job>> {
     DISPATCHER.with_borrow(|dispatcher| dispatcher.as_ref().map(|it| it.jobs.clone()))
 }
 
+/// Runs `work` and sends what it gives to whoever awaits the [`EngineRunner::run`] call; when
+/// `cancellable`, stops running it once that caller is gone (it dropped the call's future), so
+/// work nobody waits for (a timer racing an answered call) ends instead of running on, and the
+/// app's quit does not wait for it.
+async fn answer<T>(
+    mut send: futures::channel::oneshot::Sender<T>,
+    work: impl std::future::Future<Output = T>,
+    cancellable: bool,
+) {
+    let mut work = std::pin::pin!(work);
+    let output = std::future::poll_fn(|context| {
+        if let std::task::Poll::Ready(output) = work.as_mut().poll(context) {
+            return std::task::Poll::Ready(Some(output));
+        }
+        if cancellable && send.poll_canceled(context).is_ready() {
+            return std::task::Poll::Ready(None);
+        }
+        std::task::Poll::Pending
+    })
+    .await;
+    if let Some(output) = output {
+        let _ = send.send(output);
+    }
+}
+
 /// The surface's engine went: what a call through an [`EngineRunner`] gives once the engine
 /// stopped (with the call queued or not).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -236,10 +261,40 @@ impl EngineRunner {
     }
 
     /// Runs `make` on the engine thread and the future it makes as an engine task; resolves
-    /// with its result, from any thread, or `Err(EngineGone)` once the engine stopped.
+    /// with its result, from any thread, or `Err(EngineGone)` once the engine stopped. The work
+    /// runs to its end even when the caller drops the returned future (a command fired and
+    /// forgotten still happens); [`run_cancellable`](Self::run_cancellable) stops it instead.
     pub fn run<F, Fut, T>(
         &self,
         make: F,
+    ) -> futures::future::BoxFuture<'static, Result<T, EngineGone>>
+    where
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = T> + 'static,
+        T: Send + 'static,
+    {
+        self.start(make, false)
+    }
+
+    /// [`run`](Self::run), stopping the work once the caller drops the returned future: for
+    /// work nobody needs once its caller is gone (a timer racing a call, say), which then
+    /// neither runs on nor holds the app's quit.
+    pub fn run_cancellable<F, Fut, T>(
+        &self,
+        make: F,
+    ) -> futures::future::BoxFuture<'static, Result<T, EngineGone>>
+    where
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = T> + 'static,
+        T: Send + 'static,
+    {
+        self.start(make, true)
+    }
+
+    fn start<F, Fut, T>(
+        &self,
+        make: F,
+        cancellable: bool,
     ) -> futures::future::BoxFuture<'static, Result<T, EngineGone>>
     where
         F: FnOnce() -> Fut + Send + 'static,
@@ -251,11 +306,7 @@ impl EngineRunner {
             // Where NSH's runtime is entered (a task, a component) the work is made now and
             // spawned. Never through the queue.
             let work = make();
-            if start_task(self.work.track(async move {
-                let _ = send.send(work.await);
-            }))
-            .is_err()
-            {
+            if start_task(self.work.track(answer(send, work, cancellable))).is_err() {
                 return Box::pin(futures::future::ready(Err(EngineGone)));
             }
         } else if self.is_engine_thread() {
@@ -267,7 +318,7 @@ impl EngineRunner {
             let started = start_task(self.work.track(async move {
                 let pending = taken.lock().unwrap_or_else(PoisonError::into_inner).take();
                 if let Some((make, send)) = pending {
-                    let _ = send.send(make().await);
+                    answer(send, make(), cancellable).await;
                 }
             }));
             if started.is_err() {
@@ -279,9 +330,7 @@ impl EngineRunner {
                         .take();
                     if let Some((make, send)) = pending {
                         let work = make();
-                        let _ = start_task(tracked.track(async move {
-                            let _ = send.send(work.await);
-                        }));
+                        let _ = start_task(tracked.track(answer(send, work, cancellable)));
                     }
                 };
                 if self.queue(Box::new(job)).is_err() {
@@ -292,9 +341,7 @@ impl EngineRunner {
             let tracked = Arc::clone(&self.work);
             let job = move || {
                 let work = make();
-                let _ = start_task(tracked.track(async move {
-                    let _ = send.send(work.await);
-                }));
+                let _ = start_task(tracked.track(answer(send, work, cancellable)));
             };
             if self.queue(Box::new(job)).is_err() {
                 return Box::pin(futures::future::ready(Err(EngineGone)));
