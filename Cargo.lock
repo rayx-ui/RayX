@@ -1324,8 +1324,8 @@ dependencies = [
 
 [[package]]
 name = "dxn_reactive"
-version = "1.1.0"
-source = "git+https://github.com/dXnSix/dXn.Reactive?tag=v1.1.0#616fae5a8c622cbf304f619b3ce8f4cc126041d0"
+version = "1.1.1"
+source = "git+https://github.com/dXnSix/dXn.Reactive?tag=v1.1.1#107a6bf8441917a1a95b7594dc66f6d43c309d45"
 dependencies = [
  "futures",
  "rxrust",
