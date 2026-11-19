@@ -65,7 +65,7 @@ function Playground() {
             />
             <Note>{`Pressed ${presses()} ${presses() === 1 ? "time" : "times"}`}</Note>
           </Stage>
-          <Text class={`text-surfaces-text-muted ${type.code}`}>{code()}</Text>
+          <Text class={`text-surface-text-muted ${type.code}`}>{code()}</Text>
         </View>
         <View class="gap-gap2 min-w-[320px] flex-1">
           <Choice aligned label="text" options={labels} value={text()} onChange={(v) => text.set(v)} />
@@ -155,7 +155,7 @@ function Examples() {
           <Button text="Settings" variant="ghost" outlined iconLeft={<Glyph name="settings" />} />
         </Example>
         <Example title="An action inside a form" description="link reads like a link but starts an action; use a Link to go to another page.">
-          <Text class={`text-surfaces-text-muted ${type.regular}`}>Forgot your password?</Text>
+          <Text class={`text-surface-text-muted ${type.regular}`}>Forgot your password?</Text>
           <Button text="Send a reset link" variant="link" />
         </Example>
         <Example title="Confirming success" description="success confirms a positive outcome.">
@@ -163,7 +163,7 @@ function Examples() {
         </Example>
         <Example title="An unavailable action" description="disabled while the action cannot run; say why next to it.">
           <Button text="Submit" variant="primary" disabled iconLeft={<Glyph name="send" />} />
-          <Text class={`text-surfaces-text-muted ${type.regular}`}>Fill in every required field first.</Text>
+          <Text class={`text-surface-text-muted ${type.regular}`}>Fill in every required field first.</Text>
         </Example>
       </View>
     </Section>

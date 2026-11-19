@@ -2,7 +2,7 @@
 // so the Button and the theme are RayX's own.
 import { expect, open, test } from "nsh/test";
 
-test("starts RayX with the four services the host requires", async () => {
+test("starts RayX with the four services the host requires and the theme service", async () => {
   const app = await open("./App.tsx");
   // The gallery's root is `rayx-started` once the start resolves, `rayx-failed` if it threw.
   await app.waitFor("id:rayx-started");
@@ -28,10 +28,25 @@ test("the playground's controls set the Figma properties", async () => {
   expect(app.texts()).toContain("Pressed 1 time");
 });
 
-test("the toolbar switches the theme's modes", async () => {
+test("the toolbar switches the theme's modes through the theme service", async () => {
   const app = await open("./App.tsx");
+  // The pickers come from the theme service's snapshot, once RayX started.
+  await app.waitFor("id:accent-sky");
   await app.press("id:accent-sky");
   await app.press("id:density-touch");
-  await app.press("id:appearance-dark");
-  expect(app.texts()).toContain("dark · sky · touch");
+  await app.press("id:colormode-Dark");
+  await app.waitFor("text:rayx · dark · sky · touch · windows");
+});
+
+test("the toolbar switches the theme document and keeps the color mode", async () => {
+  const app = await open("./App.tsx");
+  await app.waitFor("id:theme-sample");
+  await app.press("id:colormode-Dark");
+  await app.press("id:theme-sample");
+  // The sample theme's own modifier, `brand`, in place of RayX's.
+  await app.waitFor("id:brand-ember");
+  await app.press("id:brand-ember");
+  await app.waitFor("text:sample · dark · ember");
+  await app.press("id:theme-rayx");
+  await app.waitFor("text:rayx · dark · cyan · desktop · windows");
 });

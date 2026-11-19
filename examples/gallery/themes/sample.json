@@ -1,0 +1,941 @@
+{
+  "name": "sample",
+  "tokens": {
+    "palette-sand-0": {
+      "kind": "color",
+      "value": "#fdfcfa"
+    },
+    "palette-sand-1": {
+      "kind": "color",
+      "value": "#f7f4ee"
+    },
+    "palette-sand-2": {
+      "kind": "color",
+      "value": "#efe9df"
+    },
+    "palette-sand-3": {
+      "kind": "color",
+      "value": "#e4dccd"
+    },
+    "palette-sand-4": {
+      "kind": "color",
+      "value": "#d2c7b4"
+    },
+    "palette-sand-5": {
+      "kind": "color",
+      "value": "#b6a993"
+    },
+    "palette-sand-6": {
+      "kind": "color",
+      "value": "#8f836f"
+    },
+    "palette-sand-7": {
+      "kind": "color",
+      "value": "#6c6253"
+    },
+    "palette-sand-8": {
+      "kind": "color",
+      "value": "#4d453a"
+    },
+    "palette-sand-9": {
+      "kind": "color",
+      "value": "#353029"
+    },
+    "palette-sand-10": {
+      "kind": "color",
+      "value": "#26221d"
+    },
+    "palette-sand-11": {
+      "kind": "color",
+      "value": "#1b1814"
+    },
+    "palette-sand-12": {
+      "kind": "color",
+      "value": "#12100d"
+    },
+    "palette-moss-1": {
+      "kind": "color",
+      "value": "#eef7ee"
+    },
+    "palette-moss-2": {
+      "kind": "color",
+      "value": "#d4ecd3"
+    },
+    "palette-moss-3": {
+      "kind": "color",
+      "value": "#a9d8a7"
+    },
+    "palette-moss-4": {
+      "kind": "color",
+      "value": "#78bf76"
+    },
+    "palette-moss-5": {
+      "kind": "color",
+      "value": "#4fa34d"
+    },
+    "palette-moss-6": {
+      "kind": "color",
+      "value": "#357f34"
+    },
+    "palette-moss-7": {
+      "kind": "color",
+      "value": "#276227"
+    },
+    "palette-moss-8": {
+      "kind": "color",
+      "value": "#1d4a1d"
+    },
+    "palette-ember-1": {
+      "kind": "color",
+      "value": "#fdf0e8"
+    },
+    "palette-ember-2": {
+      "kind": "color",
+      "value": "#fad8c3"
+    },
+    "palette-ember-3": {
+      "kind": "color",
+      "value": "#f4b08a"
+    },
+    "palette-ember-4": {
+      "kind": "color",
+      "value": "#eb8551"
+    },
+    "palette-ember-5": {
+      "kind": "color",
+      "value": "#d9642c"
+    },
+    "palette-ember-6": {
+      "kind": "color",
+      "value": "#b04b1c"
+    },
+    "palette-ember-7": {
+      "kind": "color",
+      "value": "#873814"
+    },
+    "palette-ember-8": {
+      "kind": "color",
+      "value": "#62290f"
+    },
+    "palette-red-1": {
+      "kind": "color",
+      "value": "#fdeeee"
+    },
+    "palette-red-2": {
+      "kind": "color",
+      "value": "#f9d0d0"
+    },
+    "palette-red-3": {
+      "kind": "color",
+      "value": "#f0a3a3"
+    },
+    "palette-red-4": {
+      "kind": "color",
+      "value": "#e26f6f"
+    },
+    "palette-red-5": {
+      "kind": "color",
+      "value": "#cc4343"
+    },
+    "palette-red-6": {
+      "kind": "color",
+      "value": "#a52f2f"
+    },
+    "palette-red-7": {
+      "kind": "color",
+      "value": "#7e2323"
+    },
+    "palette-red-8": {
+      "kind": "color",
+      "value": "#5a1a1a"
+    },
+    "palette-green-1": {
+      "kind": "color",
+      "value": "#ecf7f1"
+    },
+    "palette-green-2": {
+      "kind": "color",
+      "value": "#cdebdb"
+    },
+    "palette-green-3": {
+      "kind": "color",
+      "value": "#9dd6b7"
+    },
+    "palette-green-4": {
+      "kind": "color",
+      "value": "#62bb8c"
+    },
+    "palette-green-5": {
+      "kind": "color",
+      "value": "#36996a"
+    },
+    "palette-green-6": {
+      "kind": "color",
+      "value": "#277753"
+    },
+    "palette-green-7": {
+      "kind": "color",
+      "value": "#1d5a3f"
+    },
+    "palette-green-8": {
+      "kind": "color",
+      "value": "#15412e"
+    },
+    "palette-white": {
+      "kind": "color",
+      "value": "#ffffff"
+    },
+    "palette-clear": {
+      "kind": "color",
+      "value": "#00000000"
+    },
+    "palette-space-0": {
+      "kind": "number",
+      "value": 0
+    },
+    "palette-space-1": {
+      "kind": "number",
+      "value": 1
+    },
+    "palette-space-2": {
+      "kind": "number",
+      "value": 2
+    },
+    "palette-space-4": {
+      "kind": "number",
+      "value": 4
+    },
+    "palette-space-6": {
+      "kind": "number",
+      "value": 6
+    },
+    "palette-space-8": {
+      "kind": "number",
+      "value": 8
+    },
+    "palette-space-10": {
+      "kind": "number",
+      "value": 10
+    },
+    "palette-space-12": {
+      "kind": "number",
+      "value": 12
+    },
+    "palette-space-14": {
+      "kind": "number",
+      "value": 14
+    },
+    "palette-space-16": {
+      "kind": "number",
+      "value": 16
+    },
+    "palette-space-18": {
+      "kind": "number",
+      "value": 18
+    },
+    "palette-space-20": {
+      "kind": "number",
+      "value": 20
+    },
+    "palette-space-24": {
+      "kind": "number",
+      "value": 24
+    },
+    "palette-space-28": {
+      "kind": "number",
+      "value": 28
+    },
+    "palette-space-32": {
+      "kind": "number",
+      "value": 32
+    },
+    "palette-space-36": {
+      "kind": "number",
+      "value": 36
+    },
+    "palette-space-40": {
+      "kind": "number",
+      "value": 40
+    },
+    "palette-space-44": {
+      "kind": "number",
+      "value": 44
+    },
+    "palette-space-48": {
+      "kind": "number",
+      "value": 48
+    },
+    "palette-space-56": {
+      "kind": "number",
+      "value": 56
+    },
+    "palette-type-size-11": {
+      "kind": "number",
+      "value": 11
+    },
+    "palette-type-size-12": {
+      "kind": "number",
+      "value": 12
+    },
+    "palette-type-size-13": {
+      "kind": "number",
+      "value": 13
+    },
+    "palette-type-size-14": {
+      "kind": "number",
+      "value": 14
+    },
+    "palette-type-size-16": {
+      "kind": "number",
+      "value": 16
+    },
+    "palette-type-size-20": {
+      "kind": "number",
+      "value": 20
+    },
+    "palette-type-size-26": {
+      "kind": "number",
+      "value": 26
+    },
+    "palette-type-leading-14": {
+      "kind": "number",
+      "value": 14
+    },
+    "palette-type-leading-16": {
+      "kind": "number",
+      "value": 16
+    },
+    "palette-type-leading-18": {
+      "kind": "number",
+      "value": 18
+    },
+    "palette-type-leading-20": {
+      "kind": "number",
+      "value": 20
+    },
+    "palette-type-leading-24": {
+      "kind": "number",
+      "value": 24
+    },
+    "palette-type-leading-32": {
+      "kind": "number",
+      "value": 32
+    },
+    "palette-type-weight-regular": {
+      "kind": "number",
+      "value": 400
+    },
+    "palette-type-weight-semibold": {
+      "kind": "number",
+      "value": 600
+    },
+    "palette-type-weight-bold": {
+      "kind": "number",
+      "value": 700
+    },
+    "palette-type-tracking-tight": {
+      "kind": "number",
+      "value": -0.4
+    },
+    "palette-type-tracking-none": {
+      "kind": "number",
+      "value": 0
+    },
+    "palette-font-sans": {
+      "kind": "font",
+      "value": "Inter, system-ui, sans-serif"
+    },
+    "palette-font-mono": {
+      "kind": "font",
+      "value": "JetBrains Mono, ui-monospace, monospace"
+    },
+    "palette-corner-4": {
+      "kind": "number",
+      "value": 4
+    },
+    "palette-corner-6": {
+      "kind": "number",
+      "value": 6
+    },
+    "palette-corner-10": {
+      "kind": "number",
+      "value": 10
+    },
+    "palette-corner-pill": {
+      "kind": "number",
+      "value": 9999
+    },
+    "ui-canvas": {
+      "kind": "color",
+      "value": "{palette-sand-1}",
+      "doc": "The window's background."
+    },
+    "ui-panel": {
+      "kind": "color",
+      "value": "{palette-sand-0}",
+      "doc": "Panels and toolbars on the canvas."
+    },
+    "ui-panel-selected": {
+      "kind": "color",
+      "value": "{palette-sand-3}",
+      "doc": "A selected row on a panel."
+    },
+    "ui-ink": {
+      "kind": "color",
+      "value": "{palette-sand-11}",
+      "doc": "Text on the canvas and panels."
+    },
+    "ui-ink-muted": {
+      "kind": "color",
+      "value": "{palette-sand-7}",
+      "doc": "Secondary text."
+    },
+    "ui-ink-faint": {
+      "kind": "color",
+      "value": "{palette-sand-6}",
+      "doc": "Tertiary text: captions, labels."
+    },
+    "ui-ink-danger": {
+      "kind": "color",
+      "value": "{palette-red-5}",
+      "doc": "Text that reports a failure."
+    },
+    "ui-edge": {
+      "kind": "color",
+      "value": "{palette-sand-4}",
+      "doc": "Borders of controls."
+    },
+    "ui-edge-soft": {
+      "kind": "color",
+      "value": "{palette-sand-3}",
+      "doc": "Borders between panels."
+    },
+    "ui-link": {
+      "kind": "color",
+      "value": "{palette-moss-6}",
+      "doc": "Links."
+    },
+    "ui-link-hover": {
+      "kind": "color",
+      "value": "{palette-moss-7}",
+      "doc": "Links under the pointer."
+    },
+    "act-neutral-fill": {
+      "kind": "color",
+      "value": "{palette-sand-2}",
+      "doc": "The neutral action's fill."
+    },
+    "act-neutral-fill-hover": {
+      "kind": "color",
+      "value": "{palette-sand-3}",
+      "doc": "The neutral action's fill under the pointer."
+    },
+    "act-neutral-fill-press": {
+      "kind": "color",
+      "value": "{palette-sand-4}",
+      "doc": "The neutral action's fill while pressed."
+    },
+    "act-neutral-ink": {
+      "kind": "color",
+      "value": "{palette-sand-11}",
+      "doc": "Text and icons on the neutral action's fill."
+    },
+    "act-brand-fill": {
+      "kind": "color",
+      "value": "{palette-moss-5}",
+      "doc": "The brand action's fill."
+    },
+    "act-brand-fill-hover": {
+      "kind": "color",
+      "value": "{palette-moss-6}",
+      "doc": "The brand action's fill under the pointer."
+    },
+    "act-brand-fill-press": {
+      "kind": "color",
+      "value": "{palette-moss-7}",
+      "doc": "The brand action's fill while pressed."
+    },
+    "act-brand-ink": {
+      "kind": "color",
+      "value": "{palette-white}",
+      "doc": "Text and icons on the brand action's fill."
+    },
+    "act-danger-fill": {
+      "kind": "color",
+      "value": "{palette-red-5}",
+      "doc": "The danger action's fill."
+    },
+    "act-danger-fill-hover": {
+      "kind": "color",
+      "value": "{palette-red-6}",
+      "doc": "The danger action's fill under the pointer."
+    },
+    "act-danger-fill-press": {
+      "kind": "color",
+      "value": "{palette-red-7}",
+      "doc": "The danger action's fill while pressed."
+    },
+    "act-danger-ink": {
+      "kind": "color",
+      "value": "{palette-white}",
+      "doc": "Text and icons on the danger action's fill."
+    },
+    "act-success-fill": {
+      "kind": "color",
+      "value": "{palette-green-5}",
+      "doc": "The success action's fill."
+    },
+    "act-success-fill-hover": {
+      "kind": "color",
+      "value": "{palette-green-6}",
+      "doc": "The success action's fill under the pointer."
+    },
+    "act-success-fill-press": {
+      "kind": "color",
+      "value": "{palette-green-7}",
+      "doc": "The success action's fill while pressed."
+    },
+    "act-success-ink": {
+      "kind": "color",
+      "value": "{palette-white}",
+      "doc": "Text and icons on the success action's fill."
+    },
+    "inert-fill": {
+      "kind": "color",
+      "value": "{palette-sand-2}",
+      "doc": "A control that cannot be used: its fill."
+    },
+    "inert-ink": {
+      "kind": "color",
+      "value": "{palette-sand-5}",
+      "doc": "A control that cannot be used: its text."
+    },
+    "inert-edge": {
+      "kind": "color",
+      "value": "{palette-sand-3}",
+      "doc": "A control that cannot be used: its border."
+    },
+    "focus-ring": {
+      "kind": "color",
+      "value": "{palette-moss-4}",
+      "doc": "The keyboard focus ring."
+    },
+    "focus-ring-danger": {
+      "kind": "color",
+      "value": "{palette-red-4}",
+      "doc": "The focus ring of a danger action."
+    },
+    "focus-ring-success": {
+      "kind": "color",
+      "value": "{palette-green-4}",
+      "doc": "The focus ring of a success action."
+    },
+    "layout-gap-1": {
+      "kind": "number",
+      "value": "{palette-space-4}",
+      "doc": "Layout gap step 1."
+    },
+    "layout-gap-2": {
+      "kind": "number",
+      "value": "{palette-space-6}",
+      "doc": "Layout gap step 2."
+    },
+    "layout-gap-3": {
+      "kind": "number",
+      "value": "{palette-space-8}",
+      "doc": "Layout gap step 3."
+    },
+    "layout-gap-4": {
+      "kind": "number",
+      "value": "{palette-space-12}",
+      "doc": "Layout gap step 4."
+    },
+    "layout-gap-5": {
+      "kind": "number",
+      "value": "{palette-space-16}",
+      "doc": "Layout gap step 5."
+    },
+    "layout-gap-6": {
+      "kind": "number",
+      "value": "{palette-space-24}",
+      "doc": "Layout gap step 6."
+    },
+    "layout-inset-3": {
+      "kind": "number",
+      "value": "{palette-space-8}",
+      "doc": "Layout inset step 3."
+    },
+    "layout-inset-4": {
+      "kind": "number",
+      "value": "{palette-space-12}",
+      "doc": "Layout inset step 4."
+    },
+    "layout-inset-5": {
+      "kind": "number",
+      "value": "{palette-space-16}",
+      "doc": "Layout inset step 5."
+    },
+    "layout-inset-6": {
+      "kind": "number",
+      "value": "{palette-space-24}",
+      "doc": "Layout inset step 6."
+    },
+    "layout-inset-7": {
+      "kind": "number",
+      "value": "{palette-space-32}",
+      "doc": "Layout inset step 7."
+    },
+    "control-small-height": {
+      "kind": "number",
+      "value": "{palette-space-28}",
+      "doc": "A small control's height."
+    },
+    "control-small-inset": {
+      "kind": "number",
+      "value": "{palette-space-10}",
+      "doc": "A small control's side padding."
+    },
+    "control-small-icon": {
+      "kind": "number",
+      "value": "{palette-space-14}",
+      "doc": "A small control's icon size."
+    },
+    "control-small-gap": {
+      "kind": "number",
+      "value": "{palette-space-4}",
+      "doc": "Space inside a small control."
+    },
+    "control-small-corner": {
+      "kind": "number",
+      "value": "{palette-corner-4}",
+      "doc": "A small control's corner radius."
+    },
+    "control-default-height": {
+      "kind": "number",
+      "value": "{palette-space-36}",
+      "doc": "A default control's height."
+    },
+    "control-default-inset": {
+      "kind": "number",
+      "value": "{palette-space-14}",
+      "doc": "A default control's side padding."
+    },
+    "control-default-icon": {
+      "kind": "number",
+      "value": "{palette-space-16}",
+      "doc": "A default control's icon size."
+    },
+    "control-default-gap": {
+      "kind": "number",
+      "value": "{palette-space-6}",
+      "doc": "Space inside a default control."
+    },
+    "control-default-corner": {
+      "kind": "number",
+      "value": "{palette-corner-6}",
+      "doc": "A default control's corner radius."
+    },
+    "control-large-height": {
+      "kind": "number",
+      "value": "{palette-space-44}",
+      "doc": "A large control's height."
+    },
+    "control-large-inset": {
+      "kind": "number",
+      "value": "{palette-space-18}",
+      "doc": "A large control's side padding."
+    },
+    "control-large-icon": {
+      "kind": "number",
+      "value": "{palette-space-20}",
+      "doc": "A large control's icon size."
+    },
+    "control-large-gap": {
+      "kind": "number",
+      "value": "{palette-space-8}",
+      "doc": "Space inside a large control."
+    },
+    "control-large-corner": {
+      "kind": "number",
+      "value": "{palette-corner-10}",
+      "doc": "A large control's corner radius."
+    },
+    "bar-small-gap": {
+      "kind": "number",
+      "value": "{palette-space-4}",
+      "doc": "Space between small controls in a bar."
+    },
+    "row-height": {
+      "kind": "number",
+      "value": "{palette-space-32}",
+      "doc": "A list row's height."
+    },
+    "row-inset": {
+      "kind": "number",
+      "value": "{palette-space-12}",
+      "doc": "A list row's side padding."
+    },
+    "badge-height": {
+      "kind": "number",
+      "value": "{palette-space-16}",
+      "doc": "A count badge's height."
+    },
+    "badge-inset": {
+      "kind": "number",
+      "value": "{palette-space-4}",
+      "doc": "A count badge's side padding."
+    },
+    "panel-corner": {
+      "kind": "number",
+      "value": "{palette-corner-10}",
+      "doc": "A panel's corner radius."
+    },
+    "pill-corner": {
+      "kind": "number",
+      "value": "{palette-corner-pill}",
+      "doc": "A fully rounded corner."
+    },
+    "stroke-outline": {
+      "kind": "number",
+      "value": "{palette-space-1}",
+      "doc": "The width of a control's outline."
+    },
+    "stroke-focus": {
+      "kind": "number",
+      "value": "{palette-space-2}",
+      "doc": "The width of the focus ring."
+    },
+    "type-page-title": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-26}",
+        "fontWeight": "{palette-type-weight-bold}",
+        "lineHeight": "{palette-type-leading-32}",
+        "letterSpacing": "{palette-type-tracking-tight}"
+      },
+      "doc": "A page's title."
+    },
+    "type-section-title": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-16}",
+        "fontWeight": "{palette-type-weight-semibold}",
+        "lineHeight": "{palette-type-leading-24}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "A section's title."
+    },
+    "type-body": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-14}",
+        "fontWeight": "{palette-type-weight-regular}",
+        "lineHeight": "{palette-type-leading-20}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "Running text."
+    },
+    "type-label": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-13}",
+        "fontWeight": "{palette-type-weight-regular}",
+        "lineHeight": "{palette-type-leading-18}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "Labels beside components."
+    },
+    "type-label-small": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-12}",
+        "fontWeight": "{palette-type-weight-regular}",
+        "lineHeight": "{palette-type-leading-16}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "The labels of small controls."
+    },
+    "type-code": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-mono}",
+        "fontSize": "{palette-type-size-13}",
+        "fontWeight": "{palette-type-weight-regular}",
+        "lineHeight": "{palette-type-leading-18}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "Code."
+    },
+    "type-action-small": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-12}",
+        "fontWeight": "{palette-type-weight-semibold}",
+        "lineHeight": "{palette-type-leading-16}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "A small control's label."
+    },
+    "type-action": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-13}",
+        "fontWeight": "{palette-type-weight-semibold}",
+        "lineHeight": "{palette-type-leading-18}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "A control's label."
+    },
+    "type-action-large": {
+      "kind": "typography",
+      "value": {
+        "fontFamily": "{palette-font-sans}",
+        "fontSize": "{palette-type-size-16}",
+        "fontWeight": "{palette-type-weight-semibold}",
+        "lineHeight": "{palette-type-leading-20}",
+        "letterSpacing": "{palette-type-tracking-none}"
+      },
+      "doc": "A large control's label."
+    },
+    "type-family": {
+      "kind": "font",
+      "value": "{palette-font-sans}",
+      "doc": "The interface's font family."
+    }
+  },
+  "modifiers": {
+    "colorMode": {
+      "default": "light",
+      "contexts": {
+        "light": {},
+        "dark": {
+          "ui-canvas": "{palette-sand-12}",
+          "ui-panel": "{palette-sand-11}",
+          "ui-panel-selected": "{palette-sand-9}",
+          "ui-ink": "{palette-sand-1}",
+          "ui-ink-muted": "{palette-sand-5}",
+          "ui-ink-faint": "{palette-sand-6}",
+          "ui-ink-danger": "{palette-red-3}",
+          "ui-edge": "{palette-sand-8}",
+          "ui-edge-soft": "{palette-sand-9}",
+          "ui-link": "{palette-moss-3}",
+          "ui-link-hover": "{palette-moss-2}",
+          "act-neutral-fill": "{palette-sand-10}",
+          "act-neutral-fill-hover": "{palette-sand-9}",
+          "act-neutral-fill-press": "{palette-sand-8}",
+          "act-neutral-ink": "{palette-sand-1}",
+          "inert-fill": "{palette-sand-10}",
+          "inert-ink": "{palette-sand-7}",
+          "inert-edge": "{palette-sand-9}"
+        }
+      }
+    },
+    "brand": {
+      "default": "moss",
+      "contexts": {
+        "moss": {},
+        "ember": {
+          "act-brand-fill": "{palette-ember-5}",
+          "act-brand-fill-hover": "{palette-ember-6}",
+          "act-brand-fill-press": "{palette-ember-7}",
+          "ui-link": "{palette-ember-6}",
+          "ui-link-hover": "{palette-ember-7}",
+          "focus-ring": "{palette-ember-4}"
+        }
+      }
+    }
+  },
+  "resolutionOrder": [
+    "colorMode",
+    "brand"
+  ],
+  "roles": {
+    "surface-app": "ui-canvas",
+    "surface-panel1": "ui-panel",
+    "surface-text": "ui-ink",
+    "surface-text-muted": "ui-ink-muted",
+    "surface-text-subtle": "ui-ink-faint",
+    "surface-text-danger": "ui-ink-danger",
+    "surface-border": "ui-edge",
+    "surface-border-muted": "ui-edge-soft",
+    "surface-link": "ui-link",
+    "surface-link-hover": "ui-link-hover",
+    "intent-neutral-bg-selected": "ui-panel-selected",
+    "intent-neutral-bg": "act-neutral-fill",
+    "intent-neutral-bg-hover": "act-neutral-fill-hover",
+    "intent-neutral-bg-active": "act-neutral-fill-press",
+    "intent-neutral-text": "act-neutral-ink",
+    "intent-primary-bg": "act-brand-fill",
+    "intent-primary-bg-hover": "act-brand-fill-hover",
+    "intent-primary-bg-active": "act-brand-fill-press",
+    "intent-primary-text": "act-brand-ink",
+    "intent-danger-bg": "act-danger-fill",
+    "intent-danger-bg-hover": "act-danger-fill-hover",
+    "intent-danger-bg-active": "act-danger-fill-press",
+    "intent-danger-text": "act-danger-ink",
+    "intent-success-bg": "act-success-fill",
+    "intent-success-bg-hover": "act-success-fill-hover",
+    "intent-success-bg-active": "act-success-fill-press",
+    "intent-success-text": "act-success-ink",
+    "interaction-disabled-bg": "inert-fill",
+    "interaction-disabled-fg": "inert-ink",
+    "interaction-disabled-border": "inert-edge",
+    "interaction-focus-ring": "focus-ring",
+    "interaction-focus-ring-danger": "focus-ring-danger",
+    "interaction-focus-ring-success": "focus-ring-success",
+    "spacing-gap1": "layout-gap-1",
+    "spacing-gap2": "layout-gap-2",
+    "spacing-gap3": "layout-gap-3",
+    "spacing-gap4": "layout-gap-4",
+    "spacing-gap5": "layout-gap-5",
+    "spacing-gap6": "layout-gap-6",
+    "spacing-inset3": "layout-inset-3",
+    "spacing-inset4": "layout-inset-4",
+    "spacing-inset5": "layout-inset-5",
+    "spacing-inset6": "layout-inset-6",
+    "spacing-inset7": "layout-inset-7",
+    "spacing-small-lvl5-height": "control-small-height",
+    "spacing-small-lvl5-inset": "control-small-inset",
+    "spacing-small-lvl5-adornment-size": "control-small-icon",
+    "spacing-small-content": "control-small-gap",
+    "radius-small": "control-small-corner",
+    "spacing-default-lvl5-height": "control-default-height",
+    "spacing-default-lvl5-inset": "control-default-inset",
+    "spacing-default-lvl5-adornment-size": "control-default-icon",
+    "spacing-default-content": "control-default-gap",
+    "radius-default": "control-default-corner",
+    "spacing-large-lvl5-height": "control-large-height",
+    "spacing-large-lvl5-inset": "control-large-inset",
+    "spacing-large-lvl5-adornment-size": "control-large-icon",
+    "spacing-large-content": "control-large-gap",
+    "radius-large": "control-large-corner",
+    "spacing-small-items": "bar-small-gap",
+    "spacing-default-lvl6-height": "row-height",
+    "spacing-default-lvl6-inset": "row-inset",
+    "spacing-default-lvl2-height": "badge-height",
+    "spacing-small-lvl2-inset": "badge-inset",
+    "radius-4": "panel-corner",
+    "radius-full": "pill-corner",
+    "border-width-outline": "stroke-outline",
+    "border-width-focus-ring": "stroke-focus",
+    "text-h3": "type-page-title",
+    "text-h5": "type-section-title",
+    "text-body2": "type-body",
+    "text-default-regular": "type-label",
+    "text-small-regular": "type-label-small",
+    "text-default-code": "type-code",
+    "text-small-title1-bold": "type-action-small",
+    "text-default-title1-bold": "type-action",
+    "text-large-title1-bold": "type-action-large",
+    "background": "ui-canvas",
+    "foreground": "ui-ink",
+    "font-sans": "type-family"
+  }
+}
