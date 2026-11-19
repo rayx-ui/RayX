@@ -22,7 +22,7 @@ use nsh_theme::{Severity, code};
 use support::Running;
 
 /// The core's and nsh-base's roles RayX's theme maps, and the DTCG path of the token each maps
-/// onto (`theme.colors.roles` becomes `theme.colors.intents` in s5).
+/// onto.
 const NSH_ROLES: [(&str, &str); 33] = [
     ("background", "theme.colors.surfaces.app"),
     ("foreground", "theme.colors.surfaces.text"),
@@ -41,19 +41,19 @@ const NSH_ROLES: [(&str, &str); 33] = [
     ("success", "theme.colors.surfaces.textSuccess"),
     ("warning", "theme.colors.surfaces.textWarning"),
     ("info", "theme.colors.surfaces.textInfo"),
-    ("primary", "theme.colors.roles.primary.bg"),
-    ("sidebar-primary", "theme.colors.roles.primary.bg"),
-    ("primary-foreground", "theme.colors.roles.primary.text"),
+    ("primary", "theme.colors.intents.primary.bg"),
+    ("sidebar-primary", "theme.colors.intents.primary.bg"),
+    ("primary-foreground", "theme.colors.intents.primary.text"),
     (
         "sidebar-primary-foreground",
-        "theme.colors.roles.primary.text",
+        "theme.colors.intents.primary.text",
     ),
-    ("secondary", "theme.colors.roles.neutral.bg"),
-    ("secondary-foreground", "theme.colors.roles.neutral.text"),
-    ("muted", "theme.colors.roles.neutral.bgStrong"),
-    ("accent", "theme.colors.roles.neutral.bgHover"),
-    ("sidebar-accent", "theme.colors.roles.neutral.bgHover"),
-    ("destructive", "theme.colors.roles.danger.bg"),
+    ("secondary", "theme.colors.intents.neutral.bg"),
+    ("secondary-foreground", "theme.colors.intents.neutral.text"),
+    ("muted", "theme.colors.intents.neutral.bgStrong"),
+    ("accent", "theme.colors.intents.neutral.bgHover"),
+    ("sidebar-accent", "theme.colors.intents.neutral.bgHover"),
+    ("destructive", "theme.colors.intents.danger.bg"),
     ("ring", "theme.colors.interaction.focusRing"),
     ("sidebar-ring", "theme.colors.interaction.focusRing"),
     ("selection", "theme.colors.interaction.textSelectionBg"),
@@ -191,11 +191,11 @@ fn nsh_reads_it_with_no_diagnostic() {
     // Tokens are named by their DTCG paths in kebab case.
     let primary = document
         .tokens
-        .get("theme-colors-roles-primary-bg")
+        .get("theme-colors-intents-primary-bg")
         .expect("token");
     assert_eq!(
         primary.path.as_deref(),
-        Some("theme.colors.roles.primary.bg")
+        Some("theme.colors.intents.primary.bg")
     );
 }
 

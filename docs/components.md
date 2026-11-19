@@ -118,7 +118,7 @@ use nsh_core::element::{Patch, PatchValues, update_tokens};
 update_tokens(
     Patch::new()
         .value("platform-density-size-default-borders-radius", 10.0_f32) // every mode
-        .role("interaction-focus-ring", "theme-colors-roles-primary-bg"), // follows the modes
+        .role("interaction-focus-ring", "theme-colors-intents-primary-bg"), // follows the modes
 );
 ```
 

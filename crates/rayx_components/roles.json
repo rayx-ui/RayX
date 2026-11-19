@@ -98,13 +98,13 @@
   {
     "name": "surface-text-danger",
     "type": "color",
-    "doc": "Danger text and icons drawn directly on a surface: destructive menu items, field error messages, negative values. At least WCAG AA (5.9:1 Light, 8:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a danger fill uses `roles/danger/text`. The same in every accent.",
+    "doc": "Danger text and icons drawn directly on a surface: destructive menu items, field error messages, negative values. At least WCAG AA (5.9:1 Light, 8:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a danger fill uses `intents/danger/text`. The same in every accent.",
     "required": false
   },
   {
     "name": "surface-text-success",
     "type": "color",
-    "doc": "Success text and icons drawn directly on a surface: positive values, success messages, valid-field hints. At least WCAG AA (4.6:1 Light, 10:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a success fill uses `roles/success/text`. The same in every accent.",
+    "doc": "Success text and icons drawn directly on a surface: positive values, success messages, valid-field hints. At least WCAG AA (4.6:1 Light, 10:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a success fill uses `intents/success/text`. The same in every accent.",
     "required": false
   },
   {
@@ -116,13 +116,13 @@
   {
     "name": "surface-text-info",
     "type": "color",
-    "doc": "Informational text and icons drawn directly on a surface: outlined info tags, notes, hints that carry information. At least WCAG AA (6.2:1 Light, 8.4:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on an info fill uses `roles/alerts/info/text`. The same in every accent.",
+    "doc": "Informational text and icons drawn directly on a surface: outlined info tags, notes, hints that carry information. At least WCAG AA (6.2:1 Light, 8.4:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on an info fill uses `intents/alerts/info/text`. The same in every accent.",
     "required": false
   },
   {
     "name": "surface-text-warning",
     "type": "color",
-    "doc": "Warning text and icons drawn directly on a surface: outlined warning tags, cautions, values near a limit. At least WCAG AA (4.6:1 Light, 10.5:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a warning fill uses `roles/alerts/warning/text`. The same in every accent.",
+    "doc": "Warning text and icons drawn directly on a surface: outlined warning tags, cautions, values near a limit. At least WCAG AA (4.6:1 Light, 10.5:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a warning fill uses `intents/alerts/warning/text`. The same in every accent.",
     "required": false
   },
   {

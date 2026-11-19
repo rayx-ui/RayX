@@ -241,7 +241,7 @@ fn the_required_roles_are_buttons() {
 fn the_patterns_refuse_names_outside_the_table() {
     for name in [
         "primary",
-        "theme-colors-roles-primary-bg",
+        "theme-colors-intents-primary-bg",
         "spacing-default-lvl8-height",
         "radius-medium",
         "intent-primary",

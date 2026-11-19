@@ -380,7 +380,7 @@ fn Live() -> impl IntoElement {
         )
         .child(button().text("Patch").on_press(|| {
             update_tokens(Patch::new().value(
-                "theme-colors-roles-primary-bg",
+                "theme-colors-intents-primary-bg",
                 Hsla::from(nsh_core::color::rgba(0x123456ff)),
             ));
         }))

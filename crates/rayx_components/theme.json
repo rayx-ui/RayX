@@ -1994,55 +1994,55 @@
       "kind": "color",
       "value": "#00000008",
       "path": "primitives.colors.sets.roles.neutral.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Translucent black (light) / white (dark), so it composites onto whichever surface it sits on. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through the `theme/colors/roles/neutral/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Translucent black (light) / white (dark), so it composites onto whichever surface it sits on. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through the `theme/colors/intents/neutral/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-bg-translucent": {
       "kind": "color",
       "value": "#00000008",
       "path": "primitives.colors.sets.roles.neutral.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-bg-hover": {
       "kind": "color",
       "value": "#0000000d",
       "path": "primitives.colors.sets.roles.neutral.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-bg-selected": {
       "kind": "color",
       "value": "#0000001a",
       "path": "primitives.colors.sets.roles.neutral.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-bg-selected-hover": {
       "kind": "color",
       "value": "#0000001a",
       "path": "primitives.colors.sets.roles.neutral.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;neutral&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-text": {
       "kind": "color",
       "value": "#171717",
       "path": "primitives.colors.sets.roles.neutral.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-text-muted": {
       "kind": "color",
       "value": "#737373",
       "path": "primitives.colors.sets.roles.neutral.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-accent": {
       "kind": "color",
       "value": "#3d3d3d",
       "path": "primitives.colors.sets.roles.neutral.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-neutral-bg-strong": {
       "kind": "color",
       "value": "#0000002b",
       "path": "primitives.colors.sets.roles.neutral.bgStrong",
-      "doc": "Light/Dark source for `theme/colors/roles/neutral/bgStrong`. Translucent black in Light and translucent white in Dark."
+      "doc": "Light/Dark source for `theme/colors/intents/neutral/bgStrong`. Translucent black in Light and translucent white in Dark."
     },
     "primitives-colors-sets-roles-neutral-text-subtle": {
       "kind": "color",
@@ -2054,55 +2054,55 @@
       "kind": "color",
       "value": "#00000014",
       "path": "primitives.colors.sets.roles.neutral.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;neutral&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-bg": {
       "kind": "color",
       "value": "#0052c1",
       "path": "primitives.colors.sets.roles.blue.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-bg-translucent": {
       "kind": "color",
       "value": "#006af824",
       "path": "primitives.colors.sets.roles.blue.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-bg-hover": {
       "kind": "color",
       "value": "#0052c1e6",
       "path": "primitives.colors.sets.roles.blue.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-bg-selected": {
       "kind": "color",
       "value": "#0043a2",
       "path": "primitives.colors.sets.roles.blue.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-bg-selected-hover": {
       "kind": "color",
       "value": "#0043a2e6",
       "path": "primitives.colors.sets.roles.blue.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;blue&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-text": {
       "kind": "color",
       "value": "#ffffff",
       "path": "primitives.colors.sets.roles.blue.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-text-muted": {
       "kind": "color",
       "value": "#d3e1f7",
       "path": "primitives.colors.sets.roles.blue.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-accent": {
       "kind": "color",
       "value": "#b4d1ff",
       "path": "primitives.colors.sets.roles.blue.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-blue-text-subtle": {
       "kind": "color",
@@ -2114,55 +2114,55 @@
       "kind": "color",
       "value": "#0052c1cc",
       "path": "primitives.colors.sets.roles.blue.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;blue&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-bg": {
       "kind": "color",
       "value": "#075e8e",
       "path": "primitives.colors.sets.roles.sky.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-bg-translucent": {
       "kind": "color",
       "value": "#0094f71f",
       "path": "primitives.colors.sets.roles.sky.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-bg-hover": {
       "kind": "color",
       "value": "#075e8ee6",
       "path": "primitives.colors.sets.roles.sky.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-bg-selected": {
       "kind": "color",
       "value": "#085079",
       "path": "primitives.colors.sets.roles.sky.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-bg-selected-hover": {
       "kind": "color",
       "value": "#085079e6",
       "path": "primitives.colors.sets.roles.sky.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;sky&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-text": {
       "kind": "color",
       "value": "#ffffff",
       "path": "primitives.colors.sets.roles.sky.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-text-muted": {
       "kind": "color",
       "value": "#cde3f5",
       "path": "primitives.colors.sets.roles.sky.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-accent": {
       "kind": "color",
       "value": "#a6d6fb",
       "path": "primitives.colors.sets.roles.sky.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-sky-text-subtle": {
       "kind": "color",
@@ -2174,55 +2174,55 @@
       "kind": "color",
       "value": "#075e8ecc",
       "path": "primitives.colors.sets.roles.sky.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;sky&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-bg": {
       "kind": "color",
       "value": "#007796",
       "path": "primitives.colors.sets.roles.cyan.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-bg-translucent": {
       "kind": "color",
       "value": "#00e4fa30",
       "path": "primitives.colors.sets.roles.cyan.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-bg-hover": {
       "kind": "color",
       "value": "#007796e6",
       "path": "primitives.colors.sets.roles.cyan.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-bg-selected": {
       "kind": "color",
       "value": "#006079",
       "path": "primitives.colors.sets.roles.cyan.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-bg-selected-hover": {
       "kind": "color",
       "value": "#006079e6",
       "path": "primitives.colors.sets.roles.cyan.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;cyan&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-text": {
       "kind": "color",
       "value": "#ffffff",
       "path": "primitives.colors.sets.roles.cyan.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-text-muted": {
       "kind": "color",
       "value": "#dcf4fe",
       "path": "primitives.colors.sets.roles.cyan.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-accent": {
       "kind": "color",
       "value": "#96ddf8",
       "path": "primitives.colors.sets.roles.cyan.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-cyan-text-subtle": {
       "kind": "color",
@@ -2234,55 +2234,55 @@
       "kind": "color",
       "value": "#007796cc",
       "path": "primitives.colors.sets.roles.cyan.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;cyan&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-bg": {
       "kind": "color",
       "value": "#e7000b",
       "path": "primitives.colors.sets.roles.red.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-bg-translucent": {
       "kind": "color",
       "value": "#f600001d",
       "path": "primitives.colors.sets.roles.red.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-bg-hover": {
       "kind": "color",
       "value": "#e7000be6",
       "path": "primitives.colors.sets.roles.red.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-bg-selected": {
       "kind": "color",
       "value": "#99000c",
       "path": "primitives.colors.sets.roles.red.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-bg-selected-hover": {
       "kind": "color",
       "value": "#99000ce6",
       "path": "primitives.colors.sets.roles.red.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;red&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-text": {
       "kind": "color",
       "value": "#ffffff",
       "path": "primitives.colors.sets.roles.red.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-text-muted": {
       "kind": "color",
       "value": "#f8d8d4",
       "path": "primitives.colors.sets.roles.red.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-accent": {
       "kind": "color",
       "value": "#ffc3bb",
       "path": "primitives.colors.sets.roles.red.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-red-text-subtle": {
       "kind": "color",
@@ -2294,55 +2294,55 @@
       "kind": "color",
       "value": "#e7000bcc",
       "path": "primitives.colors.sets.roles.red.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;red&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-bg": {
       "kind": "color",
       "value": "#00662c",
       "path": "primitives.colors.sets.roles.green.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-bg-translucent": {
       "kind": "color",
       "value": "#00e95023",
       "path": "primitives.colors.sets.roles.green.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-bg-hover": {
       "kind": "color",
       "value": "#00662ce6",
       "path": "primitives.colors.sets.roles.green.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-bg-selected": {
       "kind": "color",
       "value": "#005524",
       "path": "primitives.colors.sets.roles.green.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-bg-selected-hover": {
       "kind": "color",
       "value": "#005524e6",
       "path": "primitives.colors.sets.roles.green.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;green&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-text": {
       "kind": "color",
       "value": "#ffffff",
       "path": "primitives.colors.sets.roles.green.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-text-muted": {
       "kind": "color",
       "value": "#d4e2d7",
       "path": "primitives.colors.sets.roles.green.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-accent": {
       "kind": "color",
       "value": "#8ce09f",
       "path": "primitives.colors.sets.roles.green.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-green-text-subtle": {
       "kind": "color",
@@ -2354,55 +2354,55 @@
       "kind": "color",
       "value": "#00662ccc",
       "path": "primitives.colors.sets.roles.green.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;green&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-bg": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-blue-700}",
       "path": "primitives.colors.sets.roles.alerts.info.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-bg-translucent": {
       "kind": "color",
       "value": "#006af824",
       "path": "primitives.colors.sets.roles.alerts.info.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-bg-hover": {
       "kind": "color",
       "value": "#1d4ed8e6",
       "path": "primitives.colors.sets.roles.alerts.info.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-blue-800}",
       "path": "primitives.colors.sets.roles.alerts.info.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-bg-selected-hover": {
       "kind": "color",
       "value": "#1e40afe6",
       "path": "primitives.colors.sets.roles.alerts.info.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/info&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-text": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-blue-50}",
       "path": "primitives.colors.sets.roles.alerts.info.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-blue-200}",
       "path": "primitives.colors.sets.roles.alerts.info.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-accent": {
       "kind": "color",
       "value": "#a9d0fe",
       "path": "primitives.colors.sets.roles.alerts.info.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-info-text-subtle": {
       "kind": "color",
@@ -2414,55 +2414,55 @@
       "kind": "color",
       "value": "#1d4ed8cc",
       "path": "primitives.colors.sets.roles.alerts.info.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/info&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-bg": {
       "kind": "color",
       "value": "#ad4a0a",
       "path": "primitives.colors.sets.roles.alerts.warning.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-bg-translucent": {
       "kind": "color",
       "value": "#ff92002a",
       "path": "primitives.colors.sets.roles.alerts.warning.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-bg-hover": {
       "kind": "color",
       "value": "#ad4a0ae6",
       "path": "primitives.colors.sets.roles.alerts.warning.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-orange-800}",
       "path": "primitives.colors.sets.roles.alerts.warning.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-bg-selected-hover": {
       "kind": "color",
       "value": "#9a3412e6",
       "path": "primitives.colors.sets.roles.alerts.warning.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/warning&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-text": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-orange-50}",
       "path": "primitives.colors.sets.roles.alerts.warning.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-text-muted": {
       "kind": "color",
       "value": "#ffe4c4",
       "path": "primitives.colors.sets.roles.alerts.warning.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-accent": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-orange-300}",
       "path": "primitives.colors.sets.roles.alerts.warning.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-warning-text-subtle": {
       "kind": "color",
@@ -2474,55 +2474,55 @@
       "kind": "color",
       "value": "#ad4a0acc",
       "path": "primitives.colors.sets.roles.alerts.warning.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/warning&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-bg": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-red-800}",
       "path": "primitives.colors.sets.roles.alerts.error.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-bg-translucent": {
       "kind": "color",
       "value": "#f600001d",
       "path": "primitives.colors.sets.roles.alerts.error.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-bg-hover": {
       "kind": "color",
       "value": "#991b1be6",
       "path": "primitives.colors.sets.roles.alerts.error.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-red-900}",
       "path": "primitives.colors.sets.roles.alerts.error.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-bg-selected-hover": {
       "kind": "color",
       "value": "#7f1d1de6",
       "path": "primitives.colors.sets.roles.alerts.error.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/error&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-text": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-red-50}",
       "path": "primitives.colors.sets.roles.alerts.error.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-red-200}",
       "path": "primitives.colors.sets.roles.alerts.error.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-accent": {
       "kind": "color",
       "value": "#fdb8b8",
       "path": "primitives.colors.sets.roles.alerts.error.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-error-text-subtle": {
       "kind": "color",
@@ -2534,55 +2534,55 @@
       "kind": "color",
       "value": "#991b1bcc",
       "path": "primitives.colors.sets.roles.alerts.error.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/error&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-bg": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-green-800}",
       "path": "primitives.colors.sets.roles.alerts.success.bg",
-      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
+      "doc": "Resting background of the element (button, tab, chip, alert, and similar). Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bg` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-bg-translucent": {
       "kind": "color",
       "value": "#00e95023",
       "path": "primitives.colors.sets.roles.alerts.success.bgTranslucent",
-      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
+      "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgTranslucent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-bg-hover": {
       "kind": "color",
       "value": "#166534e6",
       "path": "primitives.colors.sets.roles.alerts.success.bgHover",
-      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-green-900}",
       "path": "primitives.colors.sets.roles.alerts.success.bgSelected",
-      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
+      "doc": "Background of the element when selected or toggled on. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelected` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-bg-selected-hover": {
       "kind": "color",
       "value": "#14532de6",
       "path": "primitives.colors.sets.roles.alerts.success.bgSelectedHover",
-      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
+      "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Part of the &amp;quot;alerts/success&amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;lt;role&amp;gt;/bgSelectedHover` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-text": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-green-50}",
       "path": "primitives.colors.sets.roles.alerts.success.text",
-      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
+      "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/text` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-green-200}",
       "path": "primitives.colors.sets.roles.alerts.success.textMuted",
-      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
+      "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/textMuted` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-accent": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-green-300}",
       "path": "primitives.colors.sets.roles.alerts.success.accent",
-      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
+      "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/accent` alias, never bind it directly."
     },
     "primitives-colors-sets-roles-alerts-success-text-subtle": {
       "kind": "color",
@@ -2594,7 +2594,7 @@
       "kind": "color",
       "value": "#166534cc",
       "path": "primitives.colors.sets.roles.alerts.success.bgActive",
-      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/roles/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
+      "doc": "Background of the element while it is pressed (the press in progress). Part of the &amp;amp;quot;alerts/success&amp;amp;quot; role set (hidden primitive); reach it through a `theme/colors/intents/&amp;amp;lt;role&amp;amp;gt;/bgHover` alias, never bind it directly."
     },
     "primitives-colors-interaction-text-selection-fg": {
       "kind": "color",
@@ -2780,13 +2780,13 @@
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-red-700}",
       "path": "theme.colors.surfaces.textDanger",
-      "doc": "Danger text and icons drawn directly on a surface: destructive menu items, field error messages, negative values. At least WCAG AA (5.9:1 Light, 8:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a danger fill uses `roles/danger/text`. The same in every accent."
+      "doc": "Danger text and icons drawn directly on a surface: destructive menu items, field error messages, negative values. At least WCAG AA (5.9:1 Light, 8:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a danger fill uses `intents/danger/text`. The same in every accent."
     },
     "theme-colors-surfaces-text-success": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-green-700}",
       "path": "theme.colors.surfaces.textSuccess",
-      "doc": "Success text and icons drawn directly on a surface: positive values, success messages, valid-field hints. At least WCAG AA (4.6:1 Light, 10:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a success fill uses `roles/success/text`. The same in every accent."
+      "doc": "Success text and icons drawn directly on a surface: positive values, success messages, valid-field hints. At least WCAG AA (4.6:1 Light, 10:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a success fill uses `intents/success/text`. The same in every accent."
     },
     "theme-colors-surfaces-scrim": {
       "kind": "color",
@@ -2798,13 +2798,13 @@
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-blue-700}",
       "path": "theme.colors.surfaces.textInfo",
-      "doc": "Informational text and icons drawn directly on a surface: outlined info tags, notes, hints that carry information. At least WCAG AA (6.2:1 Light, 8.4:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on an info fill uses `roles/alerts/info/text`. The same in every accent."
+      "doc": "Informational text and icons drawn directly on a surface: outlined info tags, notes, hints that carry information. At least WCAG AA (6.2:1 Light, 8.4:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on an info fill uses `intents/alerts/info/text`. The same in every accent."
     },
     "theme-colors-surfaces-text-warning": {
       "kind": "color",
       "value": "{primitives-colors-palettes-solid-amber-700}",
       "path": "theme.colors.surfaces.textWarning",
-      "doc": "Warning text and icons drawn directly on a surface: outlined warning tags, cautions, values near a limit. At least WCAG AA (4.6:1 Light, 10.5:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a warning fill uses `roles/alerts/warning/text`. The same in every accent."
+      "doc": "Warning text and icons drawn directly on a surface: outlined warning tags, cautions, values near a limit. At least WCAG AA (4.6:1 Light, 10.5:1 Dark) against `surfaces/app`, `surfaces/panel1`, `surfaces/panel2` and `surfaces/overlay`. Text on a warning fill uses `intents/alerts/warning/text`. The same in every accent."
     },
     "theme-colors-surfaces-on-media": {
       "kind": "color",
@@ -2812,490 +2812,490 @@
       "path": "theme.colors.surfaces.onMedia",
       "doc": "Text and icons drawn over pictures and video, such as the Video control bar on `surfaces/scrim`: white in both color modes, because the media below stays the same in Light and Dark. The same in every accent."
     },
-    "theme-colors-roles-neutral-bg": {
+    "theme-colors-intents-neutral-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg}",
-      "path": "theme.colors.roles.neutral.bg",
+      "path": "theme.colors.intents.neutral.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-bg-strong": {
+    "theme-colors-intents-neutral-bg-strong": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg-strong}",
-      "path": "theme.colors.roles.neutral.bgStrong",
+      "path": "theme.colors.intents.neutral.bgStrong",
       "doc": "Strongest neutral background, laid over the element's own surface: tracks (switch, slider, group box), indicators (carousel, stepper), skeletons and placeholders, avatars and tags. Next step after bgSelected."
     },
-    "theme-colors-roles-neutral-bg-translucent": {
+    "theme-colors-intents-neutral-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg-translucent}",
-      "path": "theme.colors.roles.neutral.bgTranslucent",
+      "path": "theme.colors.intents.neutral.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-bg-hover": {
+    "theme-colors-intents-neutral-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg-hover}",
-      "path": "theme.colors.roles.neutral.bgHover",
+      "path": "theme.colors.intents.neutral.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-bg-selected": {
+    "theme-colors-intents-neutral-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg-selected}",
-      "path": "theme.colors.roles.neutral.bgSelected",
+      "path": "theme.colors.intents.neutral.bgSelected",
       "doc": "Background of the element when selected or toggled on. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-bg-selected-hover": {
+    "theme-colors-intents-neutral-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
-      "path": "theme.colors.roles.neutral.bgSelectedHover",
+      "path": "theme.colors.intents.neutral.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-text": {
+    "theme-colors-intents-neutral-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-text}",
-      "path": "theme.colors.roles.neutral.text",
+      "path": "theme.colors.intents.neutral.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-text-muted": {
+    "theme-colors-intents-neutral-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-text-muted}",
-      "path": "theme.colors.roles.neutral.textMuted",
+      "path": "theme.colors.intents.neutral.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-text-subtle": {
+    "theme-colors-intents-neutral-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-text-subtle}",
-      "path": "theme.colors.roles.neutral.textSubtle",
+      "path": "theme.colors.intents.neutral.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-accent": {
+    "theme-colors-intents-neutral-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-accent}",
-      "path": "theme.colors.roles.neutral.accent",
+      "path": "theme.colors.intents.neutral.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-neutral-bg-active": {
+    "theme-colors-intents-neutral-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-neutral-bg-active}",
-      "path": "theme.colors.roles.neutral.bgActive",
+      "path": "theme.colors.intents.neutral.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-bg": {
+    "theme-colors-intents-primary-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-bg}",
-      "path": "theme.colors.roles.primary.bg",
+      "path": "theme.colors.intents.primary.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-bg-translucent": {
+    "theme-colors-intents-primary-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-bg-translucent}",
-      "path": "theme.colors.roles.primary.bgTranslucent",
+      "path": "theme.colors.intents.primary.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-bg-hover": {
+    "theme-colors-intents-primary-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-bg-hover}",
-      "path": "theme.colors.roles.primary.bgHover",
+      "path": "theme.colors.intents.primary.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-bg-selected": {
+    "theme-colors-intents-primary-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-bg-selected}",
-      "path": "theme.colors.roles.primary.bgSelected",
+      "path": "theme.colors.intents.primary.bgSelected",
       "doc": "Background of the element when selected or toggled on. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-bg-selected-hover": {
+    "theme-colors-intents-primary-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-bg-selected-hover}",
-      "path": "theme.colors.roles.primary.bgSelectedHover",
+      "path": "theme.colors.intents.primary.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-text": {
+    "theme-colors-intents-primary-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-text}",
-      "path": "theme.colors.roles.primary.text",
+      "path": "theme.colors.intents.primary.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-text-muted": {
+    "theme-colors-intents-primary-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-text-muted}",
-      "path": "theme.colors.roles.primary.textMuted",
+      "path": "theme.colors.intents.primary.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-text-subtle": {
+    "theme-colors-intents-primary-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-text-subtle}",
-      "path": "theme.colors.roles.primary.textSubtle",
+      "path": "theme.colors.intents.primary.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-accent": {
+    "theme-colors-intents-primary-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-accent}",
-      "path": "theme.colors.roles.primary.accent",
+      "path": "theme.colors.intents.primary.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-primary-bg-active": {
+    "theme-colors-intents-primary-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-cyan-bg-active}",
-      "path": "theme.colors.roles.primary.bgActive",
+      "path": "theme.colors.intents.primary.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-bg": {
+    "theme-colors-intents-danger-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-bg}",
-      "path": "theme.colors.roles.danger.bg",
+      "path": "theme.colors.intents.danger.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-bg-translucent": {
+    "theme-colors-intents-danger-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-bg-translucent}",
-      "path": "theme.colors.roles.danger.bgTranslucent",
+      "path": "theme.colors.intents.danger.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-bg-hover": {
+    "theme-colors-intents-danger-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-bg-hover}",
-      "path": "theme.colors.roles.danger.bgHover",
+      "path": "theme.colors.intents.danger.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-bg-selected": {
+    "theme-colors-intents-danger-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-bg-selected}",
-      "path": "theme.colors.roles.danger.bgSelected",
+      "path": "theme.colors.intents.danger.bgSelected",
       "doc": "Background of the element when selected or toggled on. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-bg-selected-hover": {
+    "theme-colors-intents-danger-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-bg-selected-hover}",
-      "path": "theme.colors.roles.danger.bgSelectedHover",
+      "path": "theme.colors.intents.danger.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-text": {
+    "theme-colors-intents-danger-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-text}",
-      "path": "theme.colors.roles.danger.text",
+      "path": "theme.colors.intents.danger.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-text-muted": {
+    "theme-colors-intents-danger-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-text-muted}",
-      "path": "theme.colors.roles.danger.textMuted",
+      "path": "theme.colors.intents.danger.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-text-subtle": {
+    "theme-colors-intents-danger-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-text-subtle}",
-      "path": "theme.colors.roles.danger.textSubtle",
+      "path": "theme.colors.intents.danger.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-accent": {
+    "theme-colors-intents-danger-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-accent}",
-      "path": "theme.colors.roles.danger.accent",
+      "path": "theme.colors.intents.danger.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-danger-bg-active": {
+    "theme-colors-intents-danger-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-red-bg-active}",
-      "path": "theme.colors.roles.danger.bgActive",
+      "path": "theme.colors.intents.danger.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-bg": {
+    "theme-colors-intents-success-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-bg}",
-      "path": "theme.colors.roles.success.bg",
+      "path": "theme.colors.intents.success.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-bg-translucent": {
+    "theme-colors-intents-success-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-bg-translucent}",
-      "path": "theme.colors.roles.success.bgTranslucent",
+      "path": "theme.colors.intents.success.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-bg-hover": {
+    "theme-colors-intents-success-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-bg-hover}",
-      "path": "theme.colors.roles.success.bgHover",
+      "path": "theme.colors.intents.success.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-bg-selected": {
+    "theme-colors-intents-success-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-bg-selected}",
-      "path": "theme.colors.roles.success.bgSelected",
+      "path": "theme.colors.intents.success.bgSelected",
       "doc": "Background of the element when selected or toggled on. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-bg-selected-hover": {
+    "theme-colors-intents-success-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-bg-selected-hover}",
-      "path": "theme.colors.roles.success.bgSelectedHover",
+      "path": "theme.colors.intents.success.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-text": {
+    "theme-colors-intents-success-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-text}",
-      "path": "theme.colors.roles.success.text",
+      "path": "theme.colors.intents.success.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-text-muted": {
+    "theme-colors-intents-success-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-text-muted}",
-      "path": "theme.colors.roles.success.textMuted",
+      "path": "theme.colors.intents.success.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-text-subtle": {
+    "theme-colors-intents-success-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-text-subtle}",
-      "path": "theme.colors.roles.success.textSubtle",
+      "path": "theme.colors.intents.success.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-accent": {
+    "theme-colors-intents-success-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-accent}",
-      "path": "theme.colors.roles.success.accent",
+      "path": "theme.colors.intents.success.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-success-bg-active": {
+    "theme-colors-intents-success-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-green-bg-active}",
-      "path": "theme.colors.roles.success.bgActive",
+      "path": "theme.colors.intents.success.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-bg": {
+    "theme-colors-intents-alerts-info-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-bg}",
-      "path": "theme.colors.roles.alerts.info.bg",
+      "path": "theme.colors.intents.alerts.info.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-bg-hover": {
+    "theme-colors-intents-alerts-info-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
-      "path": "theme.colors.roles.alerts.info.bgHover",
+      "path": "theme.colors.intents.alerts.info.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-bg-translucent": {
+    "theme-colors-intents-alerts-info-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
-      "path": "theme.colors.roles.alerts.info.bgTranslucent",
+      "path": "theme.colors.intents.alerts.info.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-bg-selected": {
+    "theme-colors-intents-alerts-info-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
-      "path": "theme.colors.roles.alerts.info.bgSelected",
+      "path": "theme.colors.intents.alerts.info.bgSelected",
       "doc": "Background of the element when selected or toggled on. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-bg-selected-hover": {
+    "theme-colors-intents-alerts-info-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
-      "path": "theme.colors.roles.alerts.info.bgSelectedHover",
+      "path": "theme.colors.intents.alerts.info.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-text": {
+    "theme-colors-intents-alerts-info-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-text}",
-      "path": "theme.colors.roles.alerts.info.text",
+      "path": "theme.colors.intents.alerts.info.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-text-muted": {
+    "theme-colors-intents-alerts-info-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-text-muted}",
-      "path": "theme.colors.roles.alerts.info.textMuted",
+      "path": "theme.colors.intents.alerts.info.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-text-subtle": {
+    "theme-colors-intents-alerts-info-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
-      "path": "theme.colors.roles.alerts.info.textSubtle",
+      "path": "theme.colors.intents.alerts.info.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-accent": {
+    "theme-colors-intents-alerts-info-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-accent}",
-      "path": "theme.colors.roles.alerts.info.accent",
+      "path": "theme.colors.intents.alerts.info.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-info-bg-active": {
+    "theme-colors-intents-alerts-info-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-info-bg-active}",
-      "path": "theme.colors.roles.alerts.info.bgActive",
+      "path": "theme.colors.intents.alerts.info.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-bg": {
+    "theme-colors-intents-alerts-warning-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-bg}",
-      "path": "theme.colors.roles.alerts.warning.bg",
+      "path": "theme.colors.intents.alerts.warning.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-bg-translucent": {
+    "theme-colors-intents-alerts-warning-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
-      "path": "theme.colors.roles.alerts.warning.bgTranslucent",
+      "path": "theme.colors.intents.alerts.warning.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-bg-hover": {
+    "theme-colors-intents-alerts-warning-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
-      "path": "theme.colors.roles.alerts.warning.bgHover",
+      "path": "theme.colors.intents.alerts.warning.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-bg-selected": {
+    "theme-colors-intents-alerts-warning-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
-      "path": "theme.colors.roles.alerts.warning.bgSelected",
+      "path": "theme.colors.intents.alerts.warning.bgSelected",
       "doc": "Background of the element when selected or toggled on. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-bg-selected-hover": {
+    "theme-colors-intents-alerts-warning-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
-      "path": "theme.colors.roles.alerts.warning.bgSelectedHover",
+      "path": "theme.colors.intents.alerts.warning.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-text": {
+    "theme-colors-intents-alerts-warning-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-text}",
-      "path": "theme.colors.roles.alerts.warning.text",
+      "path": "theme.colors.intents.alerts.warning.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-text-muted": {
+    "theme-colors-intents-alerts-warning-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
-      "path": "theme.colors.roles.alerts.warning.textMuted",
+      "path": "theme.colors.intents.alerts.warning.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-text-subtle": {
+    "theme-colors-intents-alerts-warning-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
-      "path": "theme.colors.roles.alerts.warning.textSubtle",
+      "path": "theme.colors.intents.alerts.warning.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-accent": {
+    "theme-colors-intents-alerts-warning-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-accent}",
-      "path": "theme.colors.roles.alerts.warning.accent",
+      "path": "theme.colors.intents.alerts.warning.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-warning-bg-active": {
+    "theme-colors-intents-alerts-warning-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
-      "path": "theme.colors.roles.alerts.warning.bgActive",
+      "path": "theme.colors.intents.alerts.warning.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-bg": {
+    "theme-colors-intents-alerts-error-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-bg}",
-      "path": "theme.colors.roles.alerts.error.bg",
+      "path": "theme.colors.intents.alerts.error.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-bg-hover": {
+    "theme-colors-intents-alerts-error-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
-      "path": "theme.colors.roles.alerts.error.bgHover",
+      "path": "theme.colors.intents.alerts.error.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-bg-translucent": {
+    "theme-colors-intents-alerts-error-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
-      "path": "theme.colors.roles.alerts.error.bgTranslucent",
+      "path": "theme.colors.intents.alerts.error.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-bg-selected": {
+    "theme-colors-intents-alerts-error-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
-      "path": "theme.colors.roles.alerts.error.bgSelected",
+      "path": "theme.colors.intents.alerts.error.bgSelected",
       "doc": "Background of the element when selected or toggled on. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-bg-selected-hover": {
+    "theme-colors-intents-alerts-error-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
-      "path": "theme.colors.roles.alerts.error.bgSelectedHover",
+      "path": "theme.colors.intents.alerts.error.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-text": {
+    "theme-colors-intents-alerts-error-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-text}",
-      "path": "theme.colors.roles.alerts.error.text",
+      "path": "theme.colors.intents.alerts.error.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-text-muted": {
+    "theme-colors-intents-alerts-error-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-text-muted}",
-      "path": "theme.colors.roles.alerts.error.textMuted",
+      "path": "theme.colors.intents.alerts.error.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-text-subtle": {
+    "theme-colors-intents-alerts-error-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
-      "path": "theme.colors.roles.alerts.error.textSubtle",
+      "path": "theme.colors.intents.alerts.error.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-accent": {
+    "theme-colors-intents-alerts-error-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-accent}",
-      "path": "theme.colors.roles.alerts.error.accent",
+      "path": "theme.colors.intents.alerts.error.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-error-bg-active": {
+    "theme-colors-intents-alerts-error-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-error-bg-active}",
-      "path": "theme.colors.roles.alerts.error.bgActive",
+      "path": "theme.colors.intents.alerts.error.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-bg": {
+    "theme-colors-intents-alerts-success-bg": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-bg}",
-      "path": "theme.colors.roles.alerts.success.bg",
+      "path": "theme.colors.intents.alerts.success.bg",
       "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-bg-translucent": {
+    "theme-colors-intents-alerts-success-bg-translucent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
-      "path": "theme.colors.roles.alerts.success.bgTranslucent",
+      "path": "theme.colors.intents.alerts.success.bgTranslucent",
       "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-bg-hover": {
+    "theme-colors-intents-alerts-success-bg-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
-      "path": "theme.colors.roles.alerts.success.bgHover",
+      "path": "theme.colors.intents.alerts.success.bgHover",
       "doc": "Background of the element while the pointer hovers over it. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-bg-selected": {
+    "theme-colors-intents-alerts-success-bg-selected": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
-      "path": "theme.colors.roles.alerts.success.bgSelected",
+      "path": "theme.colors.intents.alerts.success.bgSelected",
       "doc": "Background of the element when selected or toggled on. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-bg-selected-hover": {
+    "theme-colors-intents-alerts-success-bg-selected-hover": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
-      "path": "theme.colors.roles.alerts.success.bgSelectedHover",
+      "path": "theme.colors.intents.alerts.success.bgSelectedHover",
       "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-text": {
+    "theme-colors-intents-alerts-success-text": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-text}",
-      "path": "theme.colors.roles.alerts.success.text",
+      "path": "theme.colors.intents.alerts.success.text",
       "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-text-muted": {
+    "theme-colors-intents-alerts-success-text-muted": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-text-muted}",
-      "path": "theme.colors.roles.alerts.success.textMuted",
+      "path": "theme.colors.intents.alerts.success.textMuted",
       "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-text-subtle": {
+    "theme-colors-intents-alerts-success-text-subtle": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
-      "path": "theme.colors.roles.alerts.success.textSubtle",
+      "path": "theme.colors.intents.alerts.success.textSubtle",
       "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-accent": {
+    "theme-colors-intents-alerts-success-accent": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-accent}",
-      "path": "theme.colors.roles.alerts.success.accent",
+      "path": "theme.colors.intents.alerts.success.accent",
       "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
-    "theme-colors-roles-alerts-success-bg-active": {
+    "theme-colors-intents-alerts-success-bg-active": {
       "kind": "color",
       "value": "{primitives-colors-sets-roles-alerts-success-bg-active}",
-      "path": "theme.colors.roles.alerts.success.bgActive",
+      "path": "theme.colors.intents.alerts.success.bgActive",
       "doc": "Background of the element while it is pressed (the press in progress). Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects."
     },
     "theme-colors-interaction-disabled-bg": {
@@ -8714,87 +8714,87 @@
           "theme-colors-surfaces-text-info": "{primitives-colors-palettes-solid-blue-700}",
           "theme-colors-surfaces-text-warning": "{primitives-colors-palettes-solid-amber-700}",
           "theme-colors-surfaces-on-media": "{primitives-colors-surfaces-on-media}",
-          "theme-colors-roles-neutral-bg": "{primitives-colors-sets-roles-neutral-bg}",
-          "theme-colors-roles-neutral-bg-strong": "{primitives-colors-sets-roles-neutral-bg-strong}",
-          "theme-colors-roles-neutral-bg-translucent": "{primitives-colors-sets-roles-neutral-bg-translucent}",
-          "theme-colors-roles-neutral-bg-hover": "{primitives-colors-sets-roles-neutral-bg-hover}",
-          "theme-colors-roles-neutral-bg-selected": "{primitives-colors-sets-roles-neutral-bg-selected}",
-          "theme-colors-roles-neutral-bg-selected-hover": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
-          "theme-colors-roles-neutral-text": "{primitives-colors-sets-roles-neutral-text}",
-          "theme-colors-roles-neutral-text-muted": "{primitives-colors-sets-roles-neutral-text-muted}",
-          "theme-colors-roles-neutral-text-subtle": "{primitives-colors-sets-roles-neutral-text-subtle}",
-          "theme-colors-roles-neutral-accent": "{primitives-colors-sets-roles-neutral-accent}",
-          "theme-colors-roles-neutral-bg-active": "{primitives-colors-sets-roles-neutral-bg-active}",
-          "theme-colors-roles-primary-bg": "{primitives-colors-sets-roles-cyan-bg}",
-          "theme-colors-roles-primary-bg-translucent": "{primitives-colors-sets-roles-cyan-bg-translucent}",
-          "theme-colors-roles-primary-bg-hover": "{primitives-colors-sets-roles-cyan-bg-hover}",
-          "theme-colors-roles-primary-bg-selected": "{primitives-colors-sets-roles-cyan-bg-selected}",
-          "theme-colors-roles-primary-bg-selected-hover": "{primitives-colors-sets-roles-cyan-bg-selected-hover}",
-          "theme-colors-roles-primary-text": "{primitives-colors-sets-roles-cyan-text}",
-          "theme-colors-roles-primary-text-muted": "{primitives-colors-sets-roles-cyan-text-muted}",
-          "theme-colors-roles-primary-text-subtle": "{primitives-colors-sets-roles-cyan-text-subtle}",
-          "theme-colors-roles-primary-accent": "{primitives-colors-sets-roles-cyan-accent}",
-          "theme-colors-roles-primary-bg-active": "{primitives-colors-sets-roles-cyan-bg-active}",
-          "theme-colors-roles-danger-bg": "{primitives-colors-sets-roles-red-bg}",
-          "theme-colors-roles-danger-bg-translucent": "{primitives-colors-sets-roles-red-bg-translucent}",
-          "theme-colors-roles-danger-bg-hover": "{primitives-colors-sets-roles-red-bg-hover}",
-          "theme-colors-roles-danger-bg-selected": "{primitives-colors-sets-roles-red-bg-selected}",
-          "theme-colors-roles-danger-bg-selected-hover": "{primitives-colors-sets-roles-red-bg-selected-hover}",
-          "theme-colors-roles-danger-text": "{primitives-colors-sets-roles-red-text}",
-          "theme-colors-roles-danger-text-muted": "{primitives-colors-sets-roles-red-text-muted}",
-          "theme-colors-roles-danger-text-subtle": "{primitives-colors-sets-roles-red-text-subtle}",
-          "theme-colors-roles-danger-accent": "{primitives-colors-sets-roles-red-accent}",
-          "theme-colors-roles-danger-bg-active": "{primitives-colors-sets-roles-red-bg-active}",
-          "theme-colors-roles-success-bg": "{primitives-colors-sets-roles-green-bg}",
-          "theme-colors-roles-success-bg-translucent": "{primitives-colors-sets-roles-green-bg-translucent}",
-          "theme-colors-roles-success-bg-hover": "{primitives-colors-sets-roles-green-bg-hover}",
-          "theme-colors-roles-success-bg-selected": "{primitives-colors-sets-roles-green-bg-selected}",
-          "theme-colors-roles-success-bg-selected-hover": "{primitives-colors-sets-roles-green-bg-selected-hover}",
-          "theme-colors-roles-success-text": "{primitives-colors-sets-roles-green-text}",
-          "theme-colors-roles-success-text-muted": "{primitives-colors-sets-roles-green-text-muted}",
-          "theme-colors-roles-success-text-subtle": "{primitives-colors-sets-roles-green-text-subtle}",
-          "theme-colors-roles-success-accent": "{primitives-colors-sets-roles-green-accent}",
-          "theme-colors-roles-success-bg-active": "{primitives-colors-sets-roles-green-bg-active}",
-          "theme-colors-roles-alerts-info-bg": "{primitives-colors-sets-roles-alerts-info-bg}",
-          "theme-colors-roles-alerts-info-bg-hover": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
-          "theme-colors-roles-alerts-info-bg-translucent": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
-          "theme-colors-roles-alerts-info-bg-selected": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
-          "theme-colors-roles-alerts-info-bg-selected-hover": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
-          "theme-colors-roles-alerts-info-text": "{primitives-colors-sets-roles-alerts-info-text}",
-          "theme-colors-roles-alerts-info-text-muted": "{primitives-colors-sets-roles-alerts-info-text-muted}",
-          "theme-colors-roles-alerts-info-text-subtle": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
-          "theme-colors-roles-alerts-info-accent": "{primitives-colors-sets-roles-alerts-info-accent}",
-          "theme-colors-roles-alerts-info-bg-active": "{primitives-colors-sets-roles-alerts-info-bg-active}",
-          "theme-colors-roles-alerts-warning-bg": "{primitives-colors-sets-roles-alerts-warning-bg}",
-          "theme-colors-roles-alerts-warning-bg-translucent": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
-          "theme-colors-roles-alerts-warning-bg-hover": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
-          "theme-colors-roles-alerts-warning-bg-selected": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
-          "theme-colors-roles-alerts-warning-bg-selected-hover": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
-          "theme-colors-roles-alerts-warning-text": "{primitives-colors-sets-roles-alerts-warning-text}",
-          "theme-colors-roles-alerts-warning-text-muted": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
-          "theme-colors-roles-alerts-warning-text-subtle": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
-          "theme-colors-roles-alerts-warning-accent": "{primitives-colors-sets-roles-alerts-warning-accent}",
-          "theme-colors-roles-alerts-warning-bg-active": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
-          "theme-colors-roles-alerts-error-bg": "{primitives-colors-sets-roles-alerts-error-bg}",
-          "theme-colors-roles-alerts-error-bg-hover": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
-          "theme-colors-roles-alerts-error-bg-translucent": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
-          "theme-colors-roles-alerts-error-bg-selected": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
-          "theme-colors-roles-alerts-error-bg-selected-hover": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
-          "theme-colors-roles-alerts-error-text": "{primitives-colors-sets-roles-alerts-error-text}",
-          "theme-colors-roles-alerts-error-text-muted": "{primitives-colors-sets-roles-alerts-error-text-muted}",
-          "theme-colors-roles-alerts-error-text-subtle": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
-          "theme-colors-roles-alerts-error-accent": "{primitives-colors-sets-roles-alerts-error-accent}",
-          "theme-colors-roles-alerts-error-bg-active": "{primitives-colors-sets-roles-alerts-error-bg-active}",
-          "theme-colors-roles-alerts-success-bg": "{primitives-colors-sets-roles-alerts-success-bg}",
-          "theme-colors-roles-alerts-success-bg-translucent": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
-          "theme-colors-roles-alerts-success-bg-hover": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
-          "theme-colors-roles-alerts-success-bg-selected": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
-          "theme-colors-roles-alerts-success-bg-selected-hover": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
-          "theme-colors-roles-alerts-success-text": "{primitives-colors-sets-roles-alerts-success-text}",
-          "theme-colors-roles-alerts-success-text-muted": "{primitives-colors-sets-roles-alerts-success-text-muted}",
-          "theme-colors-roles-alerts-success-text-subtle": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
-          "theme-colors-roles-alerts-success-accent": "{primitives-colors-sets-roles-alerts-success-accent}",
-          "theme-colors-roles-alerts-success-bg-active": "{primitives-colors-sets-roles-alerts-success-bg-active}",
+          "theme-colors-intents-neutral-bg": "{primitives-colors-sets-roles-neutral-bg}",
+          "theme-colors-intents-neutral-bg-strong": "{primitives-colors-sets-roles-neutral-bg-strong}",
+          "theme-colors-intents-neutral-bg-translucent": "{primitives-colors-sets-roles-neutral-bg-translucent}",
+          "theme-colors-intents-neutral-bg-hover": "{primitives-colors-sets-roles-neutral-bg-hover}",
+          "theme-colors-intents-neutral-bg-selected": "{primitives-colors-sets-roles-neutral-bg-selected}",
+          "theme-colors-intents-neutral-bg-selected-hover": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
+          "theme-colors-intents-neutral-text": "{primitives-colors-sets-roles-neutral-text}",
+          "theme-colors-intents-neutral-text-muted": "{primitives-colors-sets-roles-neutral-text-muted}",
+          "theme-colors-intents-neutral-text-subtle": "{primitives-colors-sets-roles-neutral-text-subtle}",
+          "theme-colors-intents-neutral-accent": "{primitives-colors-sets-roles-neutral-accent}",
+          "theme-colors-intents-neutral-bg-active": "{primitives-colors-sets-roles-neutral-bg-active}",
+          "theme-colors-intents-primary-bg": "{primitives-colors-sets-roles-cyan-bg}",
+          "theme-colors-intents-primary-bg-translucent": "{primitives-colors-sets-roles-cyan-bg-translucent}",
+          "theme-colors-intents-primary-bg-hover": "{primitives-colors-sets-roles-cyan-bg-hover}",
+          "theme-colors-intents-primary-bg-selected": "{primitives-colors-sets-roles-cyan-bg-selected}",
+          "theme-colors-intents-primary-bg-selected-hover": "{primitives-colors-sets-roles-cyan-bg-selected-hover}",
+          "theme-colors-intents-primary-text": "{primitives-colors-sets-roles-cyan-text}",
+          "theme-colors-intents-primary-text-muted": "{primitives-colors-sets-roles-cyan-text-muted}",
+          "theme-colors-intents-primary-text-subtle": "{primitives-colors-sets-roles-cyan-text-subtle}",
+          "theme-colors-intents-primary-accent": "{primitives-colors-sets-roles-cyan-accent}",
+          "theme-colors-intents-primary-bg-active": "{primitives-colors-sets-roles-cyan-bg-active}",
+          "theme-colors-intents-danger-bg": "{primitives-colors-sets-roles-red-bg}",
+          "theme-colors-intents-danger-bg-translucent": "{primitives-colors-sets-roles-red-bg-translucent}",
+          "theme-colors-intents-danger-bg-hover": "{primitives-colors-sets-roles-red-bg-hover}",
+          "theme-colors-intents-danger-bg-selected": "{primitives-colors-sets-roles-red-bg-selected}",
+          "theme-colors-intents-danger-bg-selected-hover": "{primitives-colors-sets-roles-red-bg-selected-hover}",
+          "theme-colors-intents-danger-text": "{primitives-colors-sets-roles-red-text}",
+          "theme-colors-intents-danger-text-muted": "{primitives-colors-sets-roles-red-text-muted}",
+          "theme-colors-intents-danger-text-subtle": "{primitives-colors-sets-roles-red-text-subtle}",
+          "theme-colors-intents-danger-accent": "{primitives-colors-sets-roles-red-accent}",
+          "theme-colors-intents-danger-bg-active": "{primitives-colors-sets-roles-red-bg-active}",
+          "theme-colors-intents-success-bg": "{primitives-colors-sets-roles-green-bg}",
+          "theme-colors-intents-success-bg-translucent": "{primitives-colors-sets-roles-green-bg-translucent}",
+          "theme-colors-intents-success-bg-hover": "{primitives-colors-sets-roles-green-bg-hover}",
+          "theme-colors-intents-success-bg-selected": "{primitives-colors-sets-roles-green-bg-selected}",
+          "theme-colors-intents-success-bg-selected-hover": "{primitives-colors-sets-roles-green-bg-selected-hover}",
+          "theme-colors-intents-success-text": "{primitives-colors-sets-roles-green-text}",
+          "theme-colors-intents-success-text-muted": "{primitives-colors-sets-roles-green-text-muted}",
+          "theme-colors-intents-success-text-subtle": "{primitives-colors-sets-roles-green-text-subtle}",
+          "theme-colors-intents-success-accent": "{primitives-colors-sets-roles-green-accent}",
+          "theme-colors-intents-success-bg-active": "{primitives-colors-sets-roles-green-bg-active}",
+          "theme-colors-intents-alerts-info-bg": "{primitives-colors-sets-roles-alerts-info-bg}",
+          "theme-colors-intents-alerts-info-bg-hover": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
+          "theme-colors-intents-alerts-info-bg-translucent": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
+          "theme-colors-intents-alerts-info-bg-selected": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
+          "theme-colors-intents-alerts-info-bg-selected-hover": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
+          "theme-colors-intents-alerts-info-text": "{primitives-colors-sets-roles-alerts-info-text}",
+          "theme-colors-intents-alerts-info-text-muted": "{primitives-colors-sets-roles-alerts-info-text-muted}",
+          "theme-colors-intents-alerts-info-text-subtle": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
+          "theme-colors-intents-alerts-info-accent": "{primitives-colors-sets-roles-alerts-info-accent}",
+          "theme-colors-intents-alerts-info-bg-active": "{primitives-colors-sets-roles-alerts-info-bg-active}",
+          "theme-colors-intents-alerts-warning-bg": "{primitives-colors-sets-roles-alerts-warning-bg}",
+          "theme-colors-intents-alerts-warning-bg-translucent": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
+          "theme-colors-intents-alerts-warning-bg-hover": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
+          "theme-colors-intents-alerts-warning-bg-selected": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
+          "theme-colors-intents-alerts-warning-bg-selected-hover": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
+          "theme-colors-intents-alerts-warning-text": "{primitives-colors-sets-roles-alerts-warning-text}",
+          "theme-colors-intents-alerts-warning-text-muted": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
+          "theme-colors-intents-alerts-warning-text-subtle": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
+          "theme-colors-intents-alerts-warning-accent": "{primitives-colors-sets-roles-alerts-warning-accent}",
+          "theme-colors-intents-alerts-warning-bg-active": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
+          "theme-colors-intents-alerts-error-bg": "{primitives-colors-sets-roles-alerts-error-bg}",
+          "theme-colors-intents-alerts-error-bg-hover": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
+          "theme-colors-intents-alerts-error-bg-translucent": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
+          "theme-colors-intents-alerts-error-bg-selected": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
+          "theme-colors-intents-alerts-error-bg-selected-hover": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
+          "theme-colors-intents-alerts-error-text": "{primitives-colors-sets-roles-alerts-error-text}",
+          "theme-colors-intents-alerts-error-text-muted": "{primitives-colors-sets-roles-alerts-error-text-muted}",
+          "theme-colors-intents-alerts-error-text-subtle": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
+          "theme-colors-intents-alerts-error-accent": "{primitives-colors-sets-roles-alerts-error-accent}",
+          "theme-colors-intents-alerts-error-bg-active": "{primitives-colors-sets-roles-alerts-error-bg-active}",
+          "theme-colors-intents-alerts-success-bg": "{primitives-colors-sets-roles-alerts-success-bg}",
+          "theme-colors-intents-alerts-success-bg-translucent": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
+          "theme-colors-intents-alerts-success-bg-hover": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
+          "theme-colors-intents-alerts-success-bg-selected": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
+          "theme-colors-intents-alerts-success-bg-selected-hover": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
+          "theme-colors-intents-alerts-success-text": "{primitives-colors-sets-roles-alerts-success-text}",
+          "theme-colors-intents-alerts-success-text-muted": "{primitives-colors-sets-roles-alerts-success-text-muted}",
+          "theme-colors-intents-alerts-success-text-subtle": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
+          "theme-colors-intents-alerts-success-accent": "{primitives-colors-sets-roles-alerts-success-accent}",
+          "theme-colors-intents-alerts-success-bg-active": "{primitives-colors-sets-roles-alerts-success-bg-active}",
           "theme-colors-interaction-disabled-bg": "{primitives-colors-interaction-disabled-bg}",
           "theme-colors-interaction-disabled-fg": "{primitives-colors-interaction-disabled-fg}",
           "theme-colors-interaction-disabled-border": "{primitives-colors-interaction-disabled-border}",
@@ -9173,87 +9173,87 @@
           "theme-colors-surfaces-text-info": "{primitives-colors-palettes-solid-blue-700}",
           "theme-colors-surfaces-text-warning": "{primitives-colors-palettes-solid-amber-700}",
           "theme-colors-surfaces-on-media": "{primitives-colors-surfaces-on-media}",
-          "theme-colors-roles-neutral-bg": "{primitives-colors-sets-roles-neutral-bg}",
-          "theme-colors-roles-neutral-bg-strong": "{primitives-colors-sets-roles-neutral-bg-strong}",
-          "theme-colors-roles-neutral-bg-translucent": "{primitives-colors-sets-roles-neutral-bg-translucent}",
-          "theme-colors-roles-neutral-bg-hover": "{primitives-colors-sets-roles-neutral-bg-hover}",
-          "theme-colors-roles-neutral-bg-selected": "{primitives-colors-sets-roles-neutral-bg-selected}",
-          "theme-colors-roles-neutral-bg-selected-hover": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
-          "theme-colors-roles-neutral-text": "{primitives-colors-sets-roles-neutral-text}",
-          "theme-colors-roles-neutral-text-muted": "{primitives-colors-sets-roles-neutral-text-muted}",
-          "theme-colors-roles-neutral-text-subtle": "{primitives-colors-sets-roles-neutral-text-subtle}",
-          "theme-colors-roles-neutral-accent": "{primitives-colors-sets-roles-neutral-accent}",
-          "theme-colors-roles-neutral-bg-active": "{primitives-colors-sets-roles-neutral-bg-active}",
-          "theme-colors-roles-primary-bg": "{primitives-colors-sets-roles-sky-bg}",
-          "theme-colors-roles-primary-bg-translucent": "{primitives-colors-sets-roles-sky-bg-translucent}",
-          "theme-colors-roles-primary-bg-hover": "{primitives-colors-sets-roles-sky-bg-hover}",
-          "theme-colors-roles-primary-bg-selected": "{primitives-colors-sets-roles-sky-bg-selected}",
-          "theme-colors-roles-primary-bg-selected-hover": "{primitives-colors-sets-roles-sky-bg-selected-hover}",
-          "theme-colors-roles-primary-text": "{primitives-colors-sets-roles-sky-text}",
-          "theme-colors-roles-primary-text-muted": "{primitives-colors-sets-roles-sky-text-muted}",
-          "theme-colors-roles-primary-text-subtle": "{primitives-colors-sets-roles-sky-text-subtle}",
-          "theme-colors-roles-primary-accent": "{primitives-colors-sets-roles-sky-accent}",
-          "theme-colors-roles-primary-bg-active": "{primitives-colors-sets-roles-sky-bg-active}",
-          "theme-colors-roles-danger-bg": "{primitives-colors-sets-roles-red-bg}",
-          "theme-colors-roles-danger-bg-translucent": "{primitives-colors-sets-roles-red-bg-translucent}",
-          "theme-colors-roles-danger-bg-hover": "{primitives-colors-sets-roles-red-bg-hover}",
-          "theme-colors-roles-danger-bg-selected": "{primitives-colors-sets-roles-red-bg-selected}",
-          "theme-colors-roles-danger-bg-selected-hover": "{primitives-colors-sets-roles-red-bg-selected-hover}",
-          "theme-colors-roles-danger-text": "{primitives-colors-sets-roles-red-text}",
-          "theme-colors-roles-danger-text-muted": "{primitives-colors-sets-roles-red-text-muted}",
-          "theme-colors-roles-danger-text-subtle": "{primitives-colors-sets-roles-red-text-subtle}",
-          "theme-colors-roles-danger-accent": "{primitives-colors-sets-roles-red-accent}",
-          "theme-colors-roles-danger-bg-active": "{primitives-colors-sets-roles-red-bg-active}",
-          "theme-colors-roles-success-bg": "{primitives-colors-sets-roles-green-bg}",
-          "theme-colors-roles-success-bg-translucent": "{primitives-colors-sets-roles-green-bg-translucent}",
-          "theme-colors-roles-success-bg-hover": "{primitives-colors-sets-roles-green-bg-hover}",
-          "theme-colors-roles-success-bg-selected": "{primitives-colors-sets-roles-green-bg-selected}",
-          "theme-colors-roles-success-bg-selected-hover": "{primitives-colors-sets-roles-green-bg-selected-hover}",
-          "theme-colors-roles-success-text": "{primitives-colors-sets-roles-green-text}",
-          "theme-colors-roles-success-text-muted": "{primitives-colors-sets-roles-green-text-muted}",
-          "theme-colors-roles-success-text-subtle": "{primitives-colors-sets-roles-green-text-subtle}",
-          "theme-colors-roles-success-accent": "{primitives-colors-sets-roles-green-accent}",
-          "theme-colors-roles-success-bg-active": "{primitives-colors-sets-roles-green-bg-active}",
-          "theme-colors-roles-alerts-info-bg": "{primitives-colors-sets-roles-alerts-info-bg}",
-          "theme-colors-roles-alerts-info-bg-hover": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
-          "theme-colors-roles-alerts-info-bg-translucent": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
-          "theme-colors-roles-alerts-info-bg-selected": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
-          "theme-colors-roles-alerts-info-bg-selected-hover": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
-          "theme-colors-roles-alerts-info-text": "{primitives-colors-sets-roles-alerts-info-text}",
-          "theme-colors-roles-alerts-info-text-muted": "{primitives-colors-sets-roles-alerts-info-text-muted}",
-          "theme-colors-roles-alerts-info-text-subtle": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
-          "theme-colors-roles-alerts-info-accent": "{primitives-colors-sets-roles-alerts-info-accent}",
-          "theme-colors-roles-alerts-info-bg-active": "{primitives-colors-sets-roles-alerts-info-bg-active}",
-          "theme-colors-roles-alerts-warning-bg": "{primitives-colors-sets-roles-alerts-warning-bg}",
-          "theme-colors-roles-alerts-warning-bg-translucent": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
-          "theme-colors-roles-alerts-warning-bg-hover": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
-          "theme-colors-roles-alerts-warning-bg-selected": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
-          "theme-colors-roles-alerts-warning-bg-selected-hover": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
-          "theme-colors-roles-alerts-warning-text": "{primitives-colors-sets-roles-alerts-warning-text}",
-          "theme-colors-roles-alerts-warning-text-muted": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
-          "theme-colors-roles-alerts-warning-text-subtle": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
-          "theme-colors-roles-alerts-warning-accent": "{primitives-colors-sets-roles-alerts-warning-accent}",
-          "theme-colors-roles-alerts-warning-bg-active": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
-          "theme-colors-roles-alerts-error-bg": "{primitives-colors-sets-roles-alerts-error-bg}",
-          "theme-colors-roles-alerts-error-bg-hover": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
-          "theme-colors-roles-alerts-error-bg-translucent": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
-          "theme-colors-roles-alerts-error-bg-selected": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
-          "theme-colors-roles-alerts-error-bg-selected-hover": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
-          "theme-colors-roles-alerts-error-text": "{primitives-colors-sets-roles-alerts-error-text}",
-          "theme-colors-roles-alerts-error-text-muted": "{primitives-colors-sets-roles-alerts-error-text-muted}",
-          "theme-colors-roles-alerts-error-text-subtle": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
-          "theme-colors-roles-alerts-error-accent": "{primitives-colors-sets-roles-alerts-error-accent}",
-          "theme-colors-roles-alerts-error-bg-active": "{primitives-colors-sets-roles-alerts-error-bg-active}",
-          "theme-colors-roles-alerts-success-bg": "{primitives-colors-sets-roles-alerts-success-bg}",
-          "theme-colors-roles-alerts-success-bg-translucent": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
-          "theme-colors-roles-alerts-success-bg-hover": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
-          "theme-colors-roles-alerts-success-bg-selected": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
-          "theme-colors-roles-alerts-success-bg-selected-hover": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
-          "theme-colors-roles-alerts-success-text": "{primitives-colors-sets-roles-alerts-success-text}",
-          "theme-colors-roles-alerts-success-text-muted": "{primitives-colors-sets-roles-alerts-success-text-muted}",
-          "theme-colors-roles-alerts-success-text-subtle": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
-          "theme-colors-roles-alerts-success-accent": "{primitives-colors-sets-roles-alerts-success-accent}",
-          "theme-colors-roles-alerts-success-bg-active": "{primitives-colors-sets-roles-alerts-success-bg-active}",
+          "theme-colors-intents-neutral-bg": "{primitives-colors-sets-roles-neutral-bg}",
+          "theme-colors-intents-neutral-bg-strong": "{primitives-colors-sets-roles-neutral-bg-strong}",
+          "theme-colors-intents-neutral-bg-translucent": "{primitives-colors-sets-roles-neutral-bg-translucent}",
+          "theme-colors-intents-neutral-bg-hover": "{primitives-colors-sets-roles-neutral-bg-hover}",
+          "theme-colors-intents-neutral-bg-selected": "{primitives-colors-sets-roles-neutral-bg-selected}",
+          "theme-colors-intents-neutral-bg-selected-hover": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
+          "theme-colors-intents-neutral-text": "{primitives-colors-sets-roles-neutral-text}",
+          "theme-colors-intents-neutral-text-muted": "{primitives-colors-sets-roles-neutral-text-muted}",
+          "theme-colors-intents-neutral-text-subtle": "{primitives-colors-sets-roles-neutral-text-subtle}",
+          "theme-colors-intents-neutral-accent": "{primitives-colors-sets-roles-neutral-accent}",
+          "theme-colors-intents-neutral-bg-active": "{primitives-colors-sets-roles-neutral-bg-active}",
+          "theme-colors-intents-primary-bg": "{primitives-colors-sets-roles-sky-bg}",
+          "theme-colors-intents-primary-bg-translucent": "{primitives-colors-sets-roles-sky-bg-translucent}",
+          "theme-colors-intents-primary-bg-hover": "{primitives-colors-sets-roles-sky-bg-hover}",
+          "theme-colors-intents-primary-bg-selected": "{primitives-colors-sets-roles-sky-bg-selected}",
+          "theme-colors-intents-primary-bg-selected-hover": "{primitives-colors-sets-roles-sky-bg-selected-hover}",
+          "theme-colors-intents-primary-text": "{primitives-colors-sets-roles-sky-text}",
+          "theme-colors-intents-primary-text-muted": "{primitives-colors-sets-roles-sky-text-muted}",
+          "theme-colors-intents-primary-text-subtle": "{primitives-colors-sets-roles-sky-text-subtle}",
+          "theme-colors-intents-primary-accent": "{primitives-colors-sets-roles-sky-accent}",
+          "theme-colors-intents-primary-bg-active": "{primitives-colors-sets-roles-sky-bg-active}",
+          "theme-colors-intents-danger-bg": "{primitives-colors-sets-roles-red-bg}",
+          "theme-colors-intents-danger-bg-translucent": "{primitives-colors-sets-roles-red-bg-translucent}",
+          "theme-colors-intents-danger-bg-hover": "{primitives-colors-sets-roles-red-bg-hover}",
+          "theme-colors-intents-danger-bg-selected": "{primitives-colors-sets-roles-red-bg-selected}",
+          "theme-colors-intents-danger-bg-selected-hover": "{primitives-colors-sets-roles-red-bg-selected-hover}",
+          "theme-colors-intents-danger-text": "{primitives-colors-sets-roles-red-text}",
+          "theme-colors-intents-danger-text-muted": "{primitives-colors-sets-roles-red-text-muted}",
+          "theme-colors-intents-danger-text-subtle": "{primitives-colors-sets-roles-red-text-subtle}",
+          "theme-colors-intents-danger-accent": "{primitives-colors-sets-roles-red-accent}",
+          "theme-colors-intents-danger-bg-active": "{primitives-colors-sets-roles-red-bg-active}",
+          "theme-colors-intents-success-bg": "{primitives-colors-sets-roles-green-bg}",
+          "theme-colors-intents-success-bg-translucent": "{primitives-colors-sets-roles-green-bg-translucent}",
+          "theme-colors-intents-success-bg-hover": "{primitives-colors-sets-roles-green-bg-hover}",
+          "theme-colors-intents-success-bg-selected": "{primitives-colors-sets-roles-green-bg-selected}",
+          "theme-colors-intents-success-bg-selected-hover": "{primitives-colors-sets-roles-green-bg-selected-hover}",
+          "theme-colors-intents-success-text": "{primitives-colors-sets-roles-green-text}",
+          "theme-colors-intents-success-text-muted": "{primitives-colors-sets-roles-green-text-muted}",
+          "theme-colors-intents-success-text-subtle": "{primitives-colors-sets-roles-green-text-subtle}",
+          "theme-colors-intents-success-accent": "{primitives-colors-sets-roles-green-accent}",
+          "theme-colors-intents-success-bg-active": "{primitives-colors-sets-roles-green-bg-active}",
+          "theme-colors-intents-alerts-info-bg": "{primitives-colors-sets-roles-alerts-info-bg}",
+          "theme-colors-intents-alerts-info-bg-hover": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
+          "theme-colors-intents-alerts-info-bg-translucent": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
+          "theme-colors-intents-alerts-info-bg-selected": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
+          "theme-colors-intents-alerts-info-bg-selected-hover": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
+          "theme-colors-intents-alerts-info-text": "{primitives-colors-sets-roles-alerts-info-text}",
+          "theme-colors-intents-alerts-info-text-muted": "{primitives-colors-sets-roles-alerts-info-text-muted}",
+          "theme-colors-intents-alerts-info-text-subtle": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
+          "theme-colors-intents-alerts-info-accent": "{primitives-colors-sets-roles-alerts-info-accent}",
+          "theme-colors-intents-alerts-info-bg-active": "{primitives-colors-sets-roles-alerts-info-bg-active}",
+          "theme-colors-intents-alerts-warning-bg": "{primitives-colors-sets-roles-alerts-warning-bg}",
+          "theme-colors-intents-alerts-warning-bg-translucent": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
+          "theme-colors-intents-alerts-warning-bg-hover": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
+          "theme-colors-intents-alerts-warning-bg-selected": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
+          "theme-colors-intents-alerts-warning-bg-selected-hover": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
+          "theme-colors-intents-alerts-warning-text": "{primitives-colors-sets-roles-alerts-warning-text}",
+          "theme-colors-intents-alerts-warning-text-muted": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
+          "theme-colors-intents-alerts-warning-text-subtle": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
+          "theme-colors-intents-alerts-warning-accent": "{primitives-colors-sets-roles-alerts-warning-accent}",
+          "theme-colors-intents-alerts-warning-bg-active": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
+          "theme-colors-intents-alerts-error-bg": "{primitives-colors-sets-roles-alerts-error-bg}",
+          "theme-colors-intents-alerts-error-bg-hover": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
+          "theme-colors-intents-alerts-error-bg-translucent": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
+          "theme-colors-intents-alerts-error-bg-selected": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
+          "theme-colors-intents-alerts-error-bg-selected-hover": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
+          "theme-colors-intents-alerts-error-text": "{primitives-colors-sets-roles-alerts-error-text}",
+          "theme-colors-intents-alerts-error-text-muted": "{primitives-colors-sets-roles-alerts-error-text-muted}",
+          "theme-colors-intents-alerts-error-text-subtle": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
+          "theme-colors-intents-alerts-error-accent": "{primitives-colors-sets-roles-alerts-error-accent}",
+          "theme-colors-intents-alerts-error-bg-active": "{primitives-colors-sets-roles-alerts-error-bg-active}",
+          "theme-colors-intents-alerts-success-bg": "{primitives-colors-sets-roles-alerts-success-bg}",
+          "theme-colors-intents-alerts-success-bg-translucent": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
+          "theme-colors-intents-alerts-success-bg-hover": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
+          "theme-colors-intents-alerts-success-bg-selected": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
+          "theme-colors-intents-alerts-success-bg-selected-hover": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
+          "theme-colors-intents-alerts-success-text": "{primitives-colors-sets-roles-alerts-success-text}",
+          "theme-colors-intents-alerts-success-text-muted": "{primitives-colors-sets-roles-alerts-success-text-muted}",
+          "theme-colors-intents-alerts-success-text-subtle": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
+          "theme-colors-intents-alerts-success-accent": "{primitives-colors-sets-roles-alerts-success-accent}",
+          "theme-colors-intents-alerts-success-bg-active": "{primitives-colors-sets-roles-alerts-success-bg-active}",
           "theme-colors-interaction-disabled-bg": "{primitives-colors-interaction-disabled-bg}",
           "theme-colors-interaction-disabled-fg": "{primitives-colors-interaction-disabled-fg}",
           "theme-colors-interaction-disabled-border": "{primitives-colors-interaction-disabled-border}",
@@ -9632,87 +9632,87 @@
           "theme-colors-surfaces-text-info": "{primitives-colors-palettes-solid-blue-700}",
           "theme-colors-surfaces-text-warning": "{primitives-colors-palettes-solid-amber-700}",
           "theme-colors-surfaces-on-media": "{primitives-colors-surfaces-on-media}",
-          "theme-colors-roles-neutral-bg": "{primitives-colors-sets-roles-neutral-bg}",
-          "theme-colors-roles-neutral-bg-strong": "{primitives-colors-sets-roles-neutral-bg-strong}",
-          "theme-colors-roles-neutral-bg-translucent": "{primitives-colors-sets-roles-neutral-bg-translucent}",
-          "theme-colors-roles-neutral-bg-hover": "{primitives-colors-sets-roles-neutral-bg-hover}",
-          "theme-colors-roles-neutral-bg-selected": "{primitives-colors-sets-roles-neutral-bg-selected}",
-          "theme-colors-roles-neutral-bg-selected-hover": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
-          "theme-colors-roles-neutral-text": "{primitives-colors-sets-roles-neutral-text}",
-          "theme-colors-roles-neutral-text-muted": "{primitives-colors-sets-roles-neutral-text-muted}",
-          "theme-colors-roles-neutral-text-subtle": "{primitives-colors-sets-roles-neutral-text-subtle}",
-          "theme-colors-roles-neutral-accent": "{primitives-colors-sets-roles-neutral-accent}",
-          "theme-colors-roles-neutral-bg-active": "{primitives-colors-sets-roles-neutral-bg-active}",
-          "theme-colors-roles-primary-bg": "{primitives-colors-sets-roles-blue-bg}",
-          "theme-colors-roles-primary-bg-translucent": "{primitives-colors-sets-roles-blue-bg-translucent}",
-          "theme-colors-roles-primary-bg-hover": "{primitives-colors-sets-roles-blue-bg-hover}",
-          "theme-colors-roles-primary-bg-selected": "{primitives-colors-sets-roles-blue-bg-selected}",
-          "theme-colors-roles-primary-bg-selected-hover": "{primitives-colors-sets-roles-blue-bg-selected-hover}",
-          "theme-colors-roles-primary-text": "{primitives-colors-sets-roles-blue-text}",
-          "theme-colors-roles-primary-text-muted": "{primitives-colors-sets-roles-blue-text-muted}",
-          "theme-colors-roles-primary-text-subtle": "{primitives-colors-sets-roles-blue-text-subtle}",
-          "theme-colors-roles-primary-accent": "{primitives-colors-sets-roles-blue-accent}",
-          "theme-colors-roles-primary-bg-active": "{primitives-colors-sets-roles-blue-bg-active}",
-          "theme-colors-roles-danger-bg": "{primitives-colors-sets-roles-red-bg}",
-          "theme-colors-roles-danger-bg-translucent": "{primitives-colors-sets-roles-red-bg-translucent}",
-          "theme-colors-roles-danger-bg-hover": "{primitives-colors-sets-roles-red-bg-hover}",
-          "theme-colors-roles-danger-bg-selected": "{primitives-colors-sets-roles-red-bg-selected}",
-          "theme-colors-roles-danger-bg-selected-hover": "{primitives-colors-sets-roles-red-bg-selected-hover}",
-          "theme-colors-roles-danger-text": "{primitives-colors-sets-roles-red-text}",
-          "theme-colors-roles-danger-text-muted": "{primitives-colors-sets-roles-red-text-muted}",
-          "theme-colors-roles-danger-text-subtle": "{primitives-colors-sets-roles-red-text-subtle}",
-          "theme-colors-roles-danger-accent": "{primitives-colors-sets-roles-red-accent}",
-          "theme-colors-roles-danger-bg-active": "{primitives-colors-sets-roles-red-bg-active}",
-          "theme-colors-roles-success-bg": "{primitives-colors-sets-roles-green-bg}",
-          "theme-colors-roles-success-bg-translucent": "{primitives-colors-sets-roles-green-bg-translucent}",
-          "theme-colors-roles-success-bg-hover": "{primitives-colors-sets-roles-green-bg-hover}",
-          "theme-colors-roles-success-bg-selected": "{primitives-colors-sets-roles-green-bg-selected}",
-          "theme-colors-roles-success-bg-selected-hover": "{primitives-colors-sets-roles-green-bg-selected-hover}",
-          "theme-colors-roles-success-text": "{primitives-colors-sets-roles-green-text}",
-          "theme-colors-roles-success-text-muted": "{primitives-colors-sets-roles-green-text-muted}",
-          "theme-colors-roles-success-text-subtle": "{primitives-colors-sets-roles-green-text-subtle}",
-          "theme-colors-roles-success-accent": "{primitives-colors-sets-roles-green-accent}",
-          "theme-colors-roles-success-bg-active": "{primitives-colors-sets-roles-green-bg-active}",
-          "theme-colors-roles-alerts-info-bg": "{primitives-colors-sets-roles-alerts-info-bg}",
-          "theme-colors-roles-alerts-info-bg-hover": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
-          "theme-colors-roles-alerts-info-bg-translucent": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
-          "theme-colors-roles-alerts-info-bg-selected": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
-          "theme-colors-roles-alerts-info-bg-selected-hover": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
-          "theme-colors-roles-alerts-info-text": "{primitives-colors-sets-roles-alerts-info-text}",
-          "theme-colors-roles-alerts-info-text-muted": "{primitives-colors-sets-roles-alerts-info-text-muted}",
-          "theme-colors-roles-alerts-info-text-subtle": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
-          "theme-colors-roles-alerts-info-accent": "{primitives-colors-sets-roles-alerts-info-accent}",
-          "theme-colors-roles-alerts-info-bg-active": "{primitives-colors-sets-roles-alerts-info-bg-active}",
-          "theme-colors-roles-alerts-warning-bg": "{primitives-colors-sets-roles-alerts-warning-bg}",
-          "theme-colors-roles-alerts-warning-bg-translucent": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
-          "theme-colors-roles-alerts-warning-bg-hover": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
-          "theme-colors-roles-alerts-warning-bg-selected": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
-          "theme-colors-roles-alerts-warning-bg-selected-hover": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
-          "theme-colors-roles-alerts-warning-text": "{primitives-colors-sets-roles-alerts-warning-text}",
-          "theme-colors-roles-alerts-warning-text-muted": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
-          "theme-colors-roles-alerts-warning-text-subtle": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
-          "theme-colors-roles-alerts-warning-accent": "{primitives-colors-sets-roles-alerts-warning-accent}",
-          "theme-colors-roles-alerts-warning-bg-active": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
-          "theme-colors-roles-alerts-error-bg": "{primitives-colors-sets-roles-alerts-error-bg}",
-          "theme-colors-roles-alerts-error-bg-hover": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
-          "theme-colors-roles-alerts-error-bg-translucent": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
-          "theme-colors-roles-alerts-error-bg-selected": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
-          "theme-colors-roles-alerts-error-bg-selected-hover": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
-          "theme-colors-roles-alerts-error-text": "{primitives-colors-sets-roles-alerts-error-text}",
-          "theme-colors-roles-alerts-error-text-muted": "{primitives-colors-sets-roles-alerts-error-text-muted}",
-          "theme-colors-roles-alerts-error-text-subtle": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
-          "theme-colors-roles-alerts-error-accent": "{primitives-colors-sets-roles-alerts-error-accent}",
-          "theme-colors-roles-alerts-error-bg-active": "{primitives-colors-sets-roles-alerts-error-bg-active}",
-          "theme-colors-roles-alerts-success-bg": "{primitives-colors-sets-roles-alerts-success-bg}",
-          "theme-colors-roles-alerts-success-bg-translucent": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
-          "theme-colors-roles-alerts-success-bg-hover": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
-          "theme-colors-roles-alerts-success-bg-selected": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
-          "theme-colors-roles-alerts-success-bg-selected-hover": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
-          "theme-colors-roles-alerts-success-text": "{primitives-colors-sets-roles-alerts-success-text}",
-          "theme-colors-roles-alerts-success-text-muted": "{primitives-colors-sets-roles-alerts-success-text-muted}",
-          "theme-colors-roles-alerts-success-text-subtle": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
-          "theme-colors-roles-alerts-success-accent": "{primitives-colors-sets-roles-alerts-success-accent}",
-          "theme-colors-roles-alerts-success-bg-active": "{primitives-colors-sets-roles-alerts-success-bg-active}",
+          "theme-colors-intents-neutral-bg": "{primitives-colors-sets-roles-neutral-bg}",
+          "theme-colors-intents-neutral-bg-strong": "{primitives-colors-sets-roles-neutral-bg-strong}",
+          "theme-colors-intents-neutral-bg-translucent": "{primitives-colors-sets-roles-neutral-bg-translucent}",
+          "theme-colors-intents-neutral-bg-hover": "{primitives-colors-sets-roles-neutral-bg-hover}",
+          "theme-colors-intents-neutral-bg-selected": "{primitives-colors-sets-roles-neutral-bg-selected}",
+          "theme-colors-intents-neutral-bg-selected-hover": "{primitives-colors-sets-roles-neutral-bg-selected-hover}",
+          "theme-colors-intents-neutral-text": "{primitives-colors-sets-roles-neutral-text}",
+          "theme-colors-intents-neutral-text-muted": "{primitives-colors-sets-roles-neutral-text-muted}",
+          "theme-colors-intents-neutral-text-subtle": "{primitives-colors-sets-roles-neutral-text-subtle}",
+          "theme-colors-intents-neutral-accent": "{primitives-colors-sets-roles-neutral-accent}",
+          "theme-colors-intents-neutral-bg-active": "{primitives-colors-sets-roles-neutral-bg-active}",
+          "theme-colors-intents-primary-bg": "{primitives-colors-sets-roles-blue-bg}",
+          "theme-colors-intents-primary-bg-translucent": "{primitives-colors-sets-roles-blue-bg-translucent}",
+          "theme-colors-intents-primary-bg-hover": "{primitives-colors-sets-roles-blue-bg-hover}",
+          "theme-colors-intents-primary-bg-selected": "{primitives-colors-sets-roles-blue-bg-selected}",
+          "theme-colors-intents-primary-bg-selected-hover": "{primitives-colors-sets-roles-blue-bg-selected-hover}",
+          "theme-colors-intents-primary-text": "{primitives-colors-sets-roles-blue-text}",
+          "theme-colors-intents-primary-text-muted": "{primitives-colors-sets-roles-blue-text-muted}",
+          "theme-colors-intents-primary-text-subtle": "{primitives-colors-sets-roles-blue-text-subtle}",
+          "theme-colors-intents-primary-accent": "{primitives-colors-sets-roles-blue-accent}",
+          "theme-colors-intents-primary-bg-active": "{primitives-colors-sets-roles-blue-bg-active}",
+          "theme-colors-intents-danger-bg": "{primitives-colors-sets-roles-red-bg}",
+          "theme-colors-intents-danger-bg-translucent": "{primitives-colors-sets-roles-red-bg-translucent}",
+          "theme-colors-intents-danger-bg-hover": "{primitives-colors-sets-roles-red-bg-hover}",
+          "theme-colors-intents-danger-bg-selected": "{primitives-colors-sets-roles-red-bg-selected}",
+          "theme-colors-intents-danger-bg-selected-hover": "{primitives-colors-sets-roles-red-bg-selected-hover}",
+          "theme-colors-intents-danger-text": "{primitives-colors-sets-roles-red-text}",
+          "theme-colors-intents-danger-text-muted": "{primitives-colors-sets-roles-red-text-muted}",
+          "theme-colors-intents-danger-text-subtle": "{primitives-colors-sets-roles-red-text-subtle}",
+          "theme-colors-intents-danger-accent": "{primitives-colors-sets-roles-red-accent}",
+          "theme-colors-intents-danger-bg-active": "{primitives-colors-sets-roles-red-bg-active}",
+          "theme-colors-intents-success-bg": "{primitives-colors-sets-roles-green-bg}",
+          "theme-colors-intents-success-bg-translucent": "{primitives-colors-sets-roles-green-bg-translucent}",
+          "theme-colors-intents-success-bg-hover": "{primitives-colors-sets-roles-green-bg-hover}",
+          "theme-colors-intents-success-bg-selected": "{primitives-colors-sets-roles-green-bg-selected}",
+          "theme-colors-intents-success-bg-selected-hover": "{primitives-colors-sets-roles-green-bg-selected-hover}",
+          "theme-colors-intents-success-text": "{primitives-colors-sets-roles-green-text}",
+          "theme-colors-intents-success-text-muted": "{primitives-colors-sets-roles-green-text-muted}",
+          "theme-colors-intents-success-text-subtle": "{primitives-colors-sets-roles-green-text-subtle}",
+          "theme-colors-intents-success-accent": "{primitives-colors-sets-roles-green-accent}",
+          "theme-colors-intents-success-bg-active": "{primitives-colors-sets-roles-green-bg-active}",
+          "theme-colors-intents-alerts-info-bg": "{primitives-colors-sets-roles-alerts-info-bg}",
+          "theme-colors-intents-alerts-info-bg-hover": "{primitives-colors-sets-roles-alerts-info-bg-hover}",
+          "theme-colors-intents-alerts-info-bg-translucent": "{primitives-colors-sets-roles-alerts-info-bg-translucent}",
+          "theme-colors-intents-alerts-info-bg-selected": "{primitives-colors-sets-roles-alerts-info-bg-selected}",
+          "theme-colors-intents-alerts-info-bg-selected-hover": "{primitives-colors-sets-roles-alerts-info-bg-selected-hover}",
+          "theme-colors-intents-alerts-info-text": "{primitives-colors-sets-roles-alerts-info-text}",
+          "theme-colors-intents-alerts-info-text-muted": "{primitives-colors-sets-roles-alerts-info-text-muted}",
+          "theme-colors-intents-alerts-info-text-subtle": "{primitives-colors-sets-roles-alerts-info-text-subtle}",
+          "theme-colors-intents-alerts-info-accent": "{primitives-colors-sets-roles-alerts-info-accent}",
+          "theme-colors-intents-alerts-info-bg-active": "{primitives-colors-sets-roles-alerts-info-bg-active}",
+          "theme-colors-intents-alerts-warning-bg": "{primitives-colors-sets-roles-alerts-warning-bg}",
+          "theme-colors-intents-alerts-warning-bg-translucent": "{primitives-colors-sets-roles-alerts-warning-bg-translucent}",
+          "theme-colors-intents-alerts-warning-bg-hover": "{primitives-colors-sets-roles-alerts-warning-bg-hover}",
+          "theme-colors-intents-alerts-warning-bg-selected": "{primitives-colors-sets-roles-alerts-warning-bg-selected}",
+          "theme-colors-intents-alerts-warning-bg-selected-hover": "{primitives-colors-sets-roles-alerts-warning-bg-selected-hover}",
+          "theme-colors-intents-alerts-warning-text": "{primitives-colors-sets-roles-alerts-warning-text}",
+          "theme-colors-intents-alerts-warning-text-muted": "{primitives-colors-sets-roles-alerts-warning-text-muted}",
+          "theme-colors-intents-alerts-warning-text-subtle": "{primitives-colors-sets-roles-alerts-warning-text-subtle}",
+          "theme-colors-intents-alerts-warning-accent": "{primitives-colors-sets-roles-alerts-warning-accent}",
+          "theme-colors-intents-alerts-warning-bg-active": "{primitives-colors-sets-roles-alerts-warning-bg-active}",
+          "theme-colors-intents-alerts-error-bg": "{primitives-colors-sets-roles-alerts-error-bg}",
+          "theme-colors-intents-alerts-error-bg-hover": "{primitives-colors-sets-roles-alerts-error-bg-hover}",
+          "theme-colors-intents-alerts-error-bg-translucent": "{primitives-colors-sets-roles-alerts-error-bg-translucent}",
+          "theme-colors-intents-alerts-error-bg-selected": "{primitives-colors-sets-roles-alerts-error-bg-selected}",
+          "theme-colors-intents-alerts-error-bg-selected-hover": "{primitives-colors-sets-roles-alerts-error-bg-selected-hover}",
+          "theme-colors-intents-alerts-error-text": "{primitives-colors-sets-roles-alerts-error-text}",
+          "theme-colors-intents-alerts-error-text-muted": "{primitives-colors-sets-roles-alerts-error-text-muted}",
+          "theme-colors-intents-alerts-error-text-subtle": "{primitives-colors-sets-roles-alerts-error-text-subtle}",
+          "theme-colors-intents-alerts-error-accent": "{primitives-colors-sets-roles-alerts-error-accent}",
+          "theme-colors-intents-alerts-error-bg-active": "{primitives-colors-sets-roles-alerts-error-bg-active}",
+          "theme-colors-intents-alerts-success-bg": "{primitives-colors-sets-roles-alerts-success-bg}",
+          "theme-colors-intents-alerts-success-bg-translucent": "{primitives-colors-sets-roles-alerts-success-bg-translucent}",
+          "theme-colors-intents-alerts-success-bg-hover": "{primitives-colors-sets-roles-alerts-success-bg-hover}",
+          "theme-colors-intents-alerts-success-bg-selected": "{primitives-colors-sets-roles-alerts-success-bg-selected}",
+          "theme-colors-intents-alerts-success-bg-selected-hover": "{primitives-colors-sets-roles-alerts-success-bg-selected-hover}",
+          "theme-colors-intents-alerts-success-text": "{primitives-colors-sets-roles-alerts-success-text}",
+          "theme-colors-intents-alerts-success-text-muted": "{primitives-colors-sets-roles-alerts-success-text-muted}",
+          "theme-colors-intents-alerts-success-text-subtle": "{primitives-colors-sets-roles-alerts-success-text-subtle}",
+          "theme-colors-intents-alerts-success-accent": "{primitives-colors-sets-roles-alerts-success-accent}",
+          "theme-colors-intents-alerts-success-bg-active": "{primitives-colors-sets-roles-alerts-success-bg-active}",
           "theme-colors-interaction-disabled-bg": "{primitives-colors-interaction-disabled-bg}",
           "theme-colors-interaction-disabled-fg": "{primitives-colors-interaction-disabled-fg}",
           "theme-colors-interaction-disabled-border": "{primitives-colors-interaction-disabled-border}",
@@ -10733,87 +10733,87 @@
     "surface-text-info": "theme-colors-surfaces-text-info",
     "surface-text-warning": "theme-colors-surfaces-text-warning",
     "surface-on-media": "theme-colors-surfaces-on-media",
-    "intent-neutral-bg": "theme-colors-roles-neutral-bg",
-    "intent-neutral-bg-strong": "theme-colors-roles-neutral-bg-strong",
-    "intent-neutral-bg-translucent": "theme-colors-roles-neutral-bg-translucent",
-    "intent-neutral-bg-hover": "theme-colors-roles-neutral-bg-hover",
-    "intent-neutral-bg-selected": "theme-colors-roles-neutral-bg-selected",
-    "intent-neutral-bg-selected-hover": "theme-colors-roles-neutral-bg-selected-hover",
-    "intent-neutral-text": "theme-colors-roles-neutral-text",
-    "intent-neutral-text-muted": "theme-colors-roles-neutral-text-muted",
-    "intent-neutral-text-subtle": "theme-colors-roles-neutral-text-subtle",
-    "intent-neutral-accent": "theme-colors-roles-neutral-accent",
-    "intent-neutral-bg-active": "theme-colors-roles-neutral-bg-active",
-    "intent-primary-bg": "theme-colors-roles-primary-bg",
-    "intent-primary-bg-translucent": "theme-colors-roles-primary-bg-translucent",
-    "intent-primary-bg-hover": "theme-colors-roles-primary-bg-hover",
-    "intent-primary-bg-selected": "theme-colors-roles-primary-bg-selected",
-    "intent-primary-bg-selected-hover": "theme-colors-roles-primary-bg-selected-hover",
-    "intent-primary-text": "theme-colors-roles-primary-text",
-    "intent-primary-text-muted": "theme-colors-roles-primary-text-muted",
-    "intent-primary-text-subtle": "theme-colors-roles-primary-text-subtle",
-    "intent-primary-accent": "theme-colors-roles-primary-accent",
-    "intent-primary-bg-active": "theme-colors-roles-primary-bg-active",
-    "intent-danger-bg": "theme-colors-roles-danger-bg",
-    "intent-danger-bg-translucent": "theme-colors-roles-danger-bg-translucent",
-    "intent-danger-bg-hover": "theme-colors-roles-danger-bg-hover",
-    "intent-danger-bg-selected": "theme-colors-roles-danger-bg-selected",
-    "intent-danger-bg-selected-hover": "theme-colors-roles-danger-bg-selected-hover",
-    "intent-danger-text": "theme-colors-roles-danger-text",
-    "intent-danger-text-muted": "theme-colors-roles-danger-text-muted",
-    "intent-danger-text-subtle": "theme-colors-roles-danger-text-subtle",
-    "intent-danger-accent": "theme-colors-roles-danger-accent",
-    "intent-danger-bg-active": "theme-colors-roles-danger-bg-active",
-    "intent-success-bg": "theme-colors-roles-success-bg",
-    "intent-success-bg-translucent": "theme-colors-roles-success-bg-translucent",
-    "intent-success-bg-hover": "theme-colors-roles-success-bg-hover",
-    "intent-success-bg-selected": "theme-colors-roles-success-bg-selected",
-    "intent-success-bg-selected-hover": "theme-colors-roles-success-bg-selected-hover",
-    "intent-success-text": "theme-colors-roles-success-text",
-    "intent-success-text-muted": "theme-colors-roles-success-text-muted",
-    "intent-success-text-subtle": "theme-colors-roles-success-text-subtle",
-    "intent-success-accent": "theme-colors-roles-success-accent",
-    "intent-success-bg-active": "theme-colors-roles-success-bg-active",
-    "intent-alerts-info-bg": "theme-colors-roles-alerts-info-bg",
-    "intent-alerts-info-bg-hover": "theme-colors-roles-alerts-info-bg-hover",
-    "intent-alerts-info-bg-translucent": "theme-colors-roles-alerts-info-bg-translucent",
-    "intent-alerts-info-bg-selected": "theme-colors-roles-alerts-info-bg-selected",
-    "intent-alerts-info-bg-selected-hover": "theme-colors-roles-alerts-info-bg-selected-hover",
-    "intent-alerts-info-text": "theme-colors-roles-alerts-info-text",
-    "intent-alerts-info-text-muted": "theme-colors-roles-alerts-info-text-muted",
-    "intent-alerts-info-text-subtle": "theme-colors-roles-alerts-info-text-subtle",
-    "intent-alerts-info-accent": "theme-colors-roles-alerts-info-accent",
-    "intent-alerts-info-bg-active": "theme-colors-roles-alerts-info-bg-active",
-    "intent-alerts-warning-bg": "theme-colors-roles-alerts-warning-bg",
-    "intent-alerts-warning-bg-translucent": "theme-colors-roles-alerts-warning-bg-translucent",
-    "intent-alerts-warning-bg-hover": "theme-colors-roles-alerts-warning-bg-hover",
-    "intent-alerts-warning-bg-selected": "theme-colors-roles-alerts-warning-bg-selected",
-    "intent-alerts-warning-bg-selected-hover": "theme-colors-roles-alerts-warning-bg-selected-hover",
-    "intent-alerts-warning-text": "theme-colors-roles-alerts-warning-text",
-    "intent-alerts-warning-text-muted": "theme-colors-roles-alerts-warning-text-muted",
-    "intent-alerts-warning-text-subtle": "theme-colors-roles-alerts-warning-text-subtle",
-    "intent-alerts-warning-accent": "theme-colors-roles-alerts-warning-accent",
-    "intent-alerts-warning-bg-active": "theme-colors-roles-alerts-warning-bg-active",
-    "intent-alerts-error-bg": "theme-colors-roles-alerts-error-bg",
-    "intent-alerts-error-bg-hover": "theme-colors-roles-alerts-error-bg-hover",
-    "intent-alerts-error-bg-translucent": "theme-colors-roles-alerts-error-bg-translucent",
-    "intent-alerts-error-bg-selected": "theme-colors-roles-alerts-error-bg-selected",
-    "intent-alerts-error-bg-selected-hover": "theme-colors-roles-alerts-error-bg-selected-hover",
-    "intent-alerts-error-text": "theme-colors-roles-alerts-error-text",
-    "intent-alerts-error-text-muted": "theme-colors-roles-alerts-error-text-muted",
-    "intent-alerts-error-text-subtle": "theme-colors-roles-alerts-error-text-subtle",
-    "intent-alerts-error-accent": "theme-colors-roles-alerts-error-accent",
-    "intent-alerts-error-bg-active": "theme-colors-roles-alerts-error-bg-active",
-    "intent-alerts-success-bg": "theme-colors-roles-alerts-success-bg",
-    "intent-alerts-success-bg-translucent": "theme-colors-roles-alerts-success-bg-translucent",
-    "intent-alerts-success-bg-hover": "theme-colors-roles-alerts-success-bg-hover",
-    "intent-alerts-success-bg-selected": "theme-colors-roles-alerts-success-bg-selected",
-    "intent-alerts-success-bg-selected-hover": "theme-colors-roles-alerts-success-bg-selected-hover",
-    "intent-alerts-success-text": "theme-colors-roles-alerts-success-text",
-    "intent-alerts-success-text-muted": "theme-colors-roles-alerts-success-text-muted",
-    "intent-alerts-success-text-subtle": "theme-colors-roles-alerts-success-text-subtle",
-    "intent-alerts-success-accent": "theme-colors-roles-alerts-success-accent",
-    "intent-alerts-success-bg-active": "theme-colors-roles-alerts-success-bg-active",
+    "intent-neutral-bg": "theme-colors-intents-neutral-bg",
+    "intent-neutral-bg-strong": "theme-colors-intents-neutral-bg-strong",
+    "intent-neutral-bg-translucent": "theme-colors-intents-neutral-bg-translucent",
+    "intent-neutral-bg-hover": "theme-colors-intents-neutral-bg-hover",
+    "intent-neutral-bg-selected": "theme-colors-intents-neutral-bg-selected",
+    "intent-neutral-bg-selected-hover": "theme-colors-intents-neutral-bg-selected-hover",
+    "intent-neutral-text": "theme-colors-intents-neutral-text",
+    "intent-neutral-text-muted": "theme-colors-intents-neutral-text-muted",
+    "intent-neutral-text-subtle": "theme-colors-intents-neutral-text-subtle",
+    "intent-neutral-accent": "theme-colors-intents-neutral-accent",
+    "intent-neutral-bg-active": "theme-colors-intents-neutral-bg-active",
+    "intent-primary-bg": "theme-colors-intents-primary-bg",
+    "intent-primary-bg-translucent": "theme-colors-intents-primary-bg-translucent",
+    "intent-primary-bg-hover": "theme-colors-intents-primary-bg-hover",
+    "intent-primary-bg-selected": "theme-colors-intents-primary-bg-selected",
+    "intent-primary-bg-selected-hover": "theme-colors-intents-primary-bg-selected-hover",
+    "intent-primary-text": "theme-colors-intents-primary-text",
+    "intent-primary-text-muted": "theme-colors-intents-primary-text-muted",
+    "intent-primary-text-subtle": "theme-colors-intents-primary-text-subtle",
+    "intent-primary-accent": "theme-colors-intents-primary-accent",
+    "intent-primary-bg-active": "theme-colors-intents-primary-bg-active",
+    "intent-danger-bg": "theme-colors-intents-danger-bg",
+    "intent-danger-bg-translucent": "theme-colors-intents-danger-bg-translucent",
+    "intent-danger-bg-hover": "theme-colors-intents-danger-bg-hover",
+    "intent-danger-bg-selected": "theme-colors-intents-danger-bg-selected",
+    "intent-danger-bg-selected-hover": "theme-colors-intents-danger-bg-selected-hover",
+    "intent-danger-text": "theme-colors-intents-danger-text",
+    "intent-danger-text-muted": "theme-colors-intents-danger-text-muted",
+    "intent-danger-text-subtle": "theme-colors-intents-danger-text-subtle",
+    "intent-danger-accent": "theme-colors-intents-danger-accent",
+    "intent-danger-bg-active": "theme-colors-intents-danger-bg-active",
+    "intent-success-bg": "theme-colors-intents-success-bg",
+    "intent-success-bg-translucent": "theme-colors-intents-success-bg-translucent",
+    "intent-success-bg-hover": "theme-colors-intents-success-bg-hover",
+    "intent-success-bg-selected": "theme-colors-intents-success-bg-selected",
+    "intent-success-bg-selected-hover": "theme-colors-intents-success-bg-selected-hover",
+    "intent-success-text": "theme-colors-intents-success-text",
+    "intent-success-text-muted": "theme-colors-intents-success-text-muted",
+    "intent-success-text-subtle": "theme-colors-intents-success-text-subtle",
+    "intent-success-accent": "theme-colors-intents-success-accent",
+    "intent-success-bg-active": "theme-colors-intents-success-bg-active",
+    "intent-alerts-info-bg": "theme-colors-intents-alerts-info-bg",
+    "intent-alerts-info-bg-hover": "theme-colors-intents-alerts-info-bg-hover",
+    "intent-alerts-info-bg-translucent": "theme-colors-intents-alerts-info-bg-translucent",
+    "intent-alerts-info-bg-selected": "theme-colors-intents-alerts-info-bg-selected",
+    "intent-alerts-info-bg-selected-hover": "theme-colors-intents-alerts-info-bg-selected-hover",
+    "intent-alerts-info-text": "theme-colors-intents-alerts-info-text",
+    "intent-alerts-info-text-muted": "theme-colors-intents-alerts-info-text-muted",
+    "intent-alerts-info-text-subtle": "theme-colors-intents-alerts-info-text-subtle",
+    "intent-alerts-info-accent": "theme-colors-intents-alerts-info-accent",
+    "intent-alerts-info-bg-active": "theme-colors-intents-alerts-info-bg-active",
+    "intent-alerts-warning-bg": "theme-colors-intents-alerts-warning-bg",
+    "intent-alerts-warning-bg-translucent": "theme-colors-intents-alerts-warning-bg-translucent",
+    "intent-alerts-warning-bg-hover": "theme-colors-intents-alerts-warning-bg-hover",
+    "intent-alerts-warning-bg-selected": "theme-colors-intents-alerts-warning-bg-selected",
+    "intent-alerts-warning-bg-selected-hover": "theme-colors-intents-alerts-warning-bg-selected-hover",
+    "intent-alerts-warning-text": "theme-colors-intents-alerts-warning-text",
+    "intent-alerts-warning-text-muted": "theme-colors-intents-alerts-warning-text-muted",
+    "intent-alerts-warning-text-subtle": "theme-colors-intents-alerts-warning-text-subtle",
+    "intent-alerts-warning-accent": "theme-colors-intents-alerts-warning-accent",
+    "intent-alerts-warning-bg-active": "theme-colors-intents-alerts-warning-bg-active",
+    "intent-alerts-error-bg": "theme-colors-intents-alerts-error-bg",
+    "intent-alerts-error-bg-hover": "theme-colors-intents-alerts-error-bg-hover",
+    "intent-alerts-error-bg-translucent": "theme-colors-intents-alerts-error-bg-translucent",
+    "intent-alerts-error-bg-selected": "theme-colors-intents-alerts-error-bg-selected",
+    "intent-alerts-error-bg-selected-hover": "theme-colors-intents-alerts-error-bg-selected-hover",
+    "intent-alerts-error-text": "theme-colors-intents-alerts-error-text",
+    "intent-alerts-error-text-muted": "theme-colors-intents-alerts-error-text-muted",
+    "intent-alerts-error-text-subtle": "theme-colors-intents-alerts-error-text-subtle",
+    "intent-alerts-error-accent": "theme-colors-intents-alerts-error-accent",
+    "intent-alerts-error-bg-active": "theme-colors-intents-alerts-error-bg-active",
+    "intent-alerts-success-bg": "theme-colors-intents-alerts-success-bg",
+    "intent-alerts-success-bg-translucent": "theme-colors-intents-alerts-success-bg-translucent",
+    "intent-alerts-success-bg-hover": "theme-colors-intents-alerts-success-bg-hover",
+    "intent-alerts-success-bg-selected": "theme-colors-intents-alerts-success-bg-selected",
+    "intent-alerts-success-bg-selected-hover": "theme-colors-intents-alerts-success-bg-selected-hover",
+    "intent-alerts-success-text": "theme-colors-intents-alerts-success-text",
+    "intent-alerts-success-text-muted": "theme-colors-intents-alerts-success-text-muted",
+    "intent-alerts-success-text-subtle": "theme-colors-intents-alerts-success-text-subtle",
+    "intent-alerts-success-accent": "theme-colors-intents-alerts-success-accent",
+    "intent-alerts-success-bg-active": "theme-colors-intents-alerts-success-bg-active",
     "interaction-disabled-bg": "theme-colors-interaction-disabled-bg",
     "interaction-disabled-fg": "theme-colors-interaction-disabled-fg",
     "interaction-disabled-border": "theme-colors-interaction-disabled-border",
@@ -11050,16 +11050,16 @@
     "success": "theme-colors-surfaces-text-success",
     "warning": "theme-colors-surfaces-text-warning",
     "info": "theme-colors-surfaces-text-info",
-    "primary": "theme-colors-roles-primary-bg",
-    "sidebar-primary": "theme-colors-roles-primary-bg",
-    "primary-foreground": "theme-colors-roles-primary-text",
-    "sidebar-primary-foreground": "theme-colors-roles-primary-text",
-    "secondary": "theme-colors-roles-neutral-bg",
-    "secondary-foreground": "theme-colors-roles-neutral-text",
-    "muted": "theme-colors-roles-neutral-bg-strong",
-    "accent": "theme-colors-roles-neutral-bg-hover",
-    "sidebar-accent": "theme-colors-roles-neutral-bg-hover",
-    "destructive": "theme-colors-roles-danger-bg",
+    "primary": "theme-colors-intents-primary-bg",
+    "sidebar-primary": "theme-colors-intents-primary-bg",
+    "primary-foreground": "theme-colors-intents-primary-text",
+    "sidebar-primary-foreground": "theme-colors-intents-primary-text",
+    "secondary": "theme-colors-intents-neutral-bg",
+    "secondary-foreground": "theme-colors-intents-neutral-text",
+    "muted": "theme-colors-intents-neutral-bg-strong",
+    "accent": "theme-colors-intents-neutral-bg-hover",
+    "sidebar-accent": "theme-colors-intents-neutral-bg-hover",
+    "destructive": "theme-colors-intents-danger-bg",
     "ring": "theme-colors-interaction-focus-ring",
     "sidebar-ring": "theme-colors-interaction-focus-ring",
     "selection": "theme-colors-interaction-text-selection-bg",
