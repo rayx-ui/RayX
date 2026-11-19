@@ -202,9 +202,9 @@ fn release_plz_names_every_package_as_it_is() {
     assert!(problems.is_empty(), "{}", problems.join("\n"));
 }
 
-/// The packages the last release's tag does not have, under their names now: the theme
-/// service's crate, which `v0.12.0` lacks.
-const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &["rayx_services_theme"];
+/// The packages the last release's tag does not have, under their names now.
+/// None since `v0.13.0`, which released `rayx_services_theme`.
+const NEW_SINCE_THE_LAST_RELEASE: &[&str] = &[];
 
 #[test]
 fn changelog_groups_commit_types_and_drops_housekeeping() {
