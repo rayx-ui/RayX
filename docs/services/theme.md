@@ -53,7 +53,7 @@ configuration's):
     "Services": {
       "Theme": {
         "colorMode": { "modifier": "colorMode", "light": "light", "dark": "dark", "choice": "System" },
-        "contexts": { "accent": "cyan", "density": "compact" }
+        "contexts": { "accent": "cyan", "density": "touch" }
       }
     }
   }
@@ -99,7 +99,7 @@ let theme = services.required_service::<dyn ThemeService>()?;
 let accent = theme.selected("accent");
 let subscription = theme.theme().subscribe(|snapshot| redraw(snapshot));
 
-theme.set_context("density".into(), "compact".into()).await?;
+theme.set_context("density".into(), "touch".into()).await?;
 theme.set_color_mode(ColorModeChoice::Dark).await?;
 ```
 
