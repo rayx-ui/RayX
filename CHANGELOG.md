@@ -9,14 +9,8 @@ Conventional Commits by release-plz.
 
 ## [0.13.1] - 2026-11-19
 
-### Features
-- *(theme)* Add rayx_services_theme, which follows the system's light or dark
-
-### Fixes
-- *(theme)* Pick the system's light or dark before a JS app's first frame
-
-### Tests
-- *(theme)* Check that TS's colorScheme() follows the service's light/dark choice
+### Build and CI
+- *(deps)* Build on dXn.Reactive v1.1.1, whose collections and signals are faster
 
 ## [0.13.0] - 2026-11-19
 
