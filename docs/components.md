@@ -122,6 +122,11 @@ update_tokens(
 );
 ```
 
+**Moving from an older RayX theme:** `nsh theme convert` is only for a complete theme of the app's own, which must
+then map RayX's roles; an app that only tweaked some of RayX's tokens moves those values into a patch keyed by the new
+token names (the DTCG path in kebab case, `theme-colors-intents-primary-bg`), or re-points a RayX role in the patch's
+`roles`.
+
 The `rayx-components` skill's `references/theming.md` has the details and the examples.
 
 ## Where it comes from
