@@ -50,11 +50,11 @@ rayx_services_platform = { path = "crates/rayx_services_platform" }
 rayx_services_selection = { path = "crates/rayx_services_selection" }
 rayx_services_storage = { path = "crates/rayx_services_storage" }
 rayx_services_suspension = { path = "crates/rayx_services_suspension" }
-nsh-core = "0.6.0"
-nsh-base = "0.6.0"
-nsh-engine = { version = "0.6.0", default-features = false }
-nsh-bundler = "0.6.0"
-nsh-js = "0.6.0"
+nsh-core = "0.5.0"
+nsh-base = "0.5.0"
+nsh-engine = { version = "0.5.0", default-features = false }
+nsh-bundler = "0.5.0"
+nsh-js = "0.5.0"
 base64 = "0.22"
 crossbeam-channel = "0.5"
 dxn_reactive = { git = "https://github.com/dXnSix/dXn.Reactive", tag = "v1.1.0" }
@@ -101,10 +101,10 @@ expect_used = "deny"
 # NSH comes from an integration tag of the fork (github.com/dXnSix/nsh,
 # `nshx-*`); a consumer's own patch decides there.
 [patch.crates-io]
-nsh-macros = { path = "../../dXn/nsh/nsh/crates/nsh-macros" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
-nsh-core = { path = "../../dXn/nsh/nsh/crates/nsh-core" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
-nsh-base = { path = "../../dXn/nsh/nsh/crates/nsh-base" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
-nsh-package = { path = "../../dXn/nsh/nsh/crates/nsh-package" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
-nsh-js = { path = "../../dXn/nsh/nsh/crates/nsh-js" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
-nsh-engine = { path = "../../dXn/nsh/nsh/crates/nsh-engine" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
-nsh-bundler = { path = "../../dXn/nsh/nsh/crates/nsh-bundler" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
+nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.5.0-7" }
