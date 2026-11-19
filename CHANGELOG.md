@@ -7,6 +7,11 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.13.1] - 2026-11-19
+
+### Build and CI
+- *(deps)* Build on dXn.Reactive v1.1.1, whose collections and signals are faster
+
 ## [0.13.0] - 2026-11-19
 
 ### Build and CI
