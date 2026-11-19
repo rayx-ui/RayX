@@ -503,7 +503,7 @@ fn on_a_host_setup_cannot_install_for_the_pinned_nsh_is_still_ensured() {
     .to_string();
     let text = String::from_utf8(out).expect("UTF-8");
     assert!(text.contains("prerequisites not checked"), "{text}");
-    assert!(error.contains("nsh nshx-0.6.0-4 (aa57574)"), "{error}");
+    assert!(error.contains("nsh nshx-0.6.0-5 (2d6a061)"), "{error}");
     assert!(
         error.contains("`rayx nshx install -C /work/app`") && !error.contains("rayx setup"),
         "the command that works on this host: {error}"
@@ -538,7 +538,7 @@ fn the_pinned_nsh_installs_without_asking_like_any_silent_step() {
     let text = String::from_utf8(out).expect("UTF-8");
     assert!(
         text.contains(
-            "rayx: installing missing prerequisites: nsh nshx-0.6.0-4 (aa57574) (default)"
+            "rayx: installing missing prerequisites: nsh nshx-0.6.0-5 (2d6a061) (default)"
         ),
         "{text}"
     );
