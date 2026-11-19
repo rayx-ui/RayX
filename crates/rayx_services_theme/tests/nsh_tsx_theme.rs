@@ -370,8 +370,7 @@ fn a_light_choice_shows_light_from_the_first_frame_under_a_dark_scheme() {
         ),
         ColorScheme::Dark,
     );
-    // The tokens show light from the first frame. (JS's `colorScheme()` is JS's own appearance,
-    // which only JS's `setColorScheme` sets: it keeps the system's `dark`.)
+    // The tokens show light from the first frame.
     assert!(frames[0].starts_with("starting light "), "{frames:?}");
     assert!(
         frames
@@ -392,6 +391,40 @@ fn without_the_service_the_theme_shows_its_default_light() {
     assert_eq!(frames[0], "starting light dark", "{frames:?}");
     assert!(
         frames.last().unwrap().starts_with("ready light dark"),
+        "{frames:?}"
+    );
+}
+
+const COLOR_SCHEME: &str = r#"import { colorScheme, mount, signal, Text } from "nsh";
+import { RayXAppBuilder, ThemeService } from "test/app";
+
+const wait = () => new Promise((resolve) => setTimeout(resolve, 30));
+const state = signal("starting");
+(async () => {
+  const services = await new RayXAppBuilder().addPlatform().addHostFakes().addTheme().start();
+  const theme = services.getRequiredService(ThemeService);
+  const seen = [colorScheme()];
+  await theme.setColorMode("Light");
+  await wait();
+  seen.push(colorScheme());
+  await theme.setColorMode("System");
+  await wait();
+  seen.push(colorScheme());
+  state.set(`ready ${seen.join(",")}`);
+})().catch((error) => state.set(`ready threw ${error}`));
+mount(() => <Text>{state()}</Text>);
+"#;
+
+#[test]
+fn js_s_color_scheme_follows_the_service_s_choice_under_a_dark_system() {
+    use nsh_core::platform::ColorScheme;
+
+    let frames = frames(COLOR_SCHEME, ColorScheme::Dark);
+    // Under a dark system JS's `colorScheme()` reads `dark`, `light` after the service's
+    // `Light`, and the system's `dark` again after `System`.
+    assert_eq!(
+        frames.last().map(String::as_str),
+        Some("ready dark,light,dark"),
         "{frames:?}"
     );
 }
