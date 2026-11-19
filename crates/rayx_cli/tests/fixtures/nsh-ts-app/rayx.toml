@@ -1,5 +1,5 @@
 # The nsh this app runs with: it has no Rust crates, so no Cargo.lock names it.
 [nsh]
 git = "https://github.com/dXnSix/nsh"
-tag = "nshx-0.6.0-3"
-commit = "6ec3717843ab1de480623f3a0cff39929d1990bf"
+tag = "nshx-0.6.0-4"
+commit = "aa5757480542d1778779cc6cff70ff59329bb913"
