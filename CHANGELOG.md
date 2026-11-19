@@ -7,6 +7,46 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.13.0] - 2026-11-19
+
+### Build and CI
+- *(deps)* [**breaking**] Build on NSH nshx-0.6.0-3, which carries its theme format
+  - Migration: move the app's `[patch.crates-io]` NSH entries to tag nshx-0.6.0-3 and its `nsh-*` requirements to 0.6.0, and replace the removed APIs. Light/dark no longer follows the system by itself: an app that wants it enables `rayx`'s `theme` feature and calls `addTheme()` / `add_theme`.
+
+### Documentation
+- *(components)* Call the intents intents in roles.json and the default theme
+
+### Features
+- *(components)* [**breaking**] Name the default theme's foreground tokens theme-colors-intents-*
+  - Migration: RayX's default theme renames its tokens `theme-colors-roles-*` to `theme-colors-intents-*` (DTCG paths `theme.colors.roles.*` become `theme.colors.intents.*`). RayX's roles (`intent-*`, `surface-*`, `interaction-*`, …) do not change, so components and role-named classes need nothing. A theme patch or `updateTheme` role mapping keyed by an old token name is re-keyed: replace `theme-colors-roles-` with `theme-colors-intents-`.
+- *(cli)* Build a project's NSH from a local checkout with `rayx nshx use`, and name the group nshx
+- *(cli)* Enable the theme service in the apps `rayx new` writes
+- *(cli)* Take `rayx nshx use local` and `latest`, and move NSH's version requirements with the switch
+- *(components)* [**breaking**] Read RayX's roles from a default theme in NSH's format
+  - Migration: an app's token tweaks move into a patch keyed by the new names, or re-point a role in the patch's `roles`. A key becomes its role (`theme::roles::*`), a modifier enum becomes `set_modifier` or the theme service's context, and `color!` becomes a hex value in a patch or a theme document.
+- *(theme)* Add rayx_services_theme, which follows the system's light or dark
+- *(contracts)* Add the theme contract, ThemeService, with its fake
+
+### Fixes
+- *(theme)* Pick the system's light or dark before a JS app's first frame
+- *(cli)* Point NSH patch lines at a checkout by a path relative to their file, never an absolute one
+- *(deps)* Build on NSH nshx-0.6.0-4, whose theme writes from a JS call reach its turn
+- *(deps)* Build on NSH nshx-0.6.0-5, where TS's colorScheme() follows Rust
+
+### Maintenance
+- update Cargo.toml dependencies
+
+### Tests
+- *(theme)* Check that TS's colorScheme() follows the service's light/dark choice
+- *(components)* Record every role's value from the starting theme
+- *(cli)* Expect CI on main's schedule, release builds on tags only and the release pull request on demand
+- *(cli)* Expect the release pull request on demand and the binaries built on the tag only
+- *(cli)* Use made-up pins in the nshx use fixtures, so a pin bump leaves them alone
+- *(cli)* Expect the theme feature in the rayx dependency rayx new writes
+- *(cli)* Give the store's entry test made-up ids, so a pin bump leaves its order alone
+- *(rayx)* Take the crates' folders relative to cargo's own workspace root
+- *(rayx)* Read the copied NSH patch's relative paths from the workspace root in macro_paths
+
 ## [0.12.0] - 2026-11-18
 
 ### Build and CI
