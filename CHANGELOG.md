@@ -7,6 +7,17 @@ one release tag `vX.Y.Z`. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). It is generated from
 Conventional Commits by release-plz.
 
+## [0.13.1] - 2026-11-19
+
+### Features
+- *(theme)* Add rayx_services_theme, which follows the system's light or dark
+
+### Fixes
+- *(theme)* Pick the system's light or dark before a JS app's first frame
+
+### Tests
+- *(theme)* Check that TS's colorScheme() follows the service's light/dark choice
+
 ## [0.13.0] - 2026-11-19
 
 ### Build and CI

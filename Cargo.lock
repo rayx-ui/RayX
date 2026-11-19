@@ -4878,7 +4878,7 @@ dependencies = [
 
 [[package]]
 name = "rayx"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "dxn_i18n",
@@ -4911,7 +4911,7 @@ dependencies = [
 
 [[package]]
 name = "rayx-cli"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -4936,7 +4936,7 @@ dependencies = [
 
 [[package]]
 name = "rayx-gallery"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "nsh-base",
@@ -4951,7 +4951,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "dxn_i18n",
  "dxn_intl",
@@ -4965,7 +4965,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app_macros"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -4975,7 +4975,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_app_nsh"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "base64 0.22.1",
  "crossbeam-channel",
@@ -4999,7 +4999,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_components"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "nsh-base",
@@ -5013,7 +5013,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_devtools_protocol"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -5021,7 +5021,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_application_configuration"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "futures",
  "nsh-core",
@@ -5033,7 +5033,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_assets"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
@@ -5047,7 +5047,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_fonts"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
@@ -5062,7 +5062,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_history"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
@@ -5079,7 +5079,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_i18n"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "dxn_i18n",
@@ -5096,7 +5096,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_input_map"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "futures",
  "nsh-core",
@@ -5109,7 +5109,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_navigation"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
@@ -5124,7 +5124,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_operations"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
@@ -5138,7 +5138,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_platform"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "dxn_intl",
@@ -5152,7 +5152,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_selection"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "futures",
  "nsh-core",
@@ -5164,7 +5164,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_storage"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "base64 0.22.1",
  "crossbeam-channel",
@@ -5178,7 +5178,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_suspension"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
@@ -5191,7 +5191,7 @@ dependencies = [
 
 [[package]]
 name = "rayx_services_theme"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "crossbeam-channel",
  "futures",
