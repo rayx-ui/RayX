@@ -155,17 +155,17 @@ fn a_receipt_of_another_version_or_id_or_a_broken_one_leaves_the_entry_unfinishe
 #[test]
 fn entries_list_complete_and_unfinished_ones_with_their_sizes() {
     let (home, store) = store_with(&[
-        ("2d6a0615cdce", Some(Kind::Distribution), 1000),
+        ("9c0ffee00009", Some(Kind::Distribution), 1000),
         ("5f0c2a91be47", None, 300),
         ("v0.2.0", Some(Kind::Distribution), 50),
     ]);
     // A lock file and a stray file are not entries.
-    home.write("nsh/2d6a0615cdce.lock", "");
+    home.write("nsh/9c0ffee00009.lock", "");
     home.write("nsh/notes.txt", "x");
     let entries = store.entries();
     let ids: Vec<&str> = entries.iter().map(|e| e.id.as_str()).collect();
     // Sorted by id.
-    assert_eq!(ids, ["5f0c2a91be47", "2d6a0615cdce", "v0.2.0"]);
+    assert_eq!(ids, ["5f0c2a91be47", "9c0ffee00009", "v0.2.0"]);
     let (unfinished, complete) = (&entries[0], &entries[1]);
     assert!(complete.receipt.is_some() && unfinished.receipt.is_none());
     assert!(complete.bytes >= 1000, "{}", complete.bytes);
