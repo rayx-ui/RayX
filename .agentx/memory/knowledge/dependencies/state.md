@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/dependencies
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-17T12:00:00+01:00
+  updated: 2026-11-19T03:30:00+01:00
   topics:
     - git-tags
     - nsh-fork
@@ -23,7 +23,7 @@ Context for any change to `Cargo.toml` dependencies or the NSH pin.
 `[workspace.dependencies]` in `Cargo.toml` takes dXn.Reactive, dXn.I18n and dXn.Intl by
 release tag, and the workspace's own crates by path (`rayx` among them, for the gallery's
 crate); NSH crates come from crates.io names patched to the fork `github.com/dXnSix/nsh` at an
-integration tag `nshx-*` in `[patch.crates-io]`, today `nshx-0.6.0-4` (commit `aa5757480`; `-4` adds Rust's theme writes, `set_modifier`, `set_color_scheme`, `update_tokens` and the token resets, queued with a synchronous JS call's turn, dXnSix/nsh#285; it patches every NSH crate, `nsh-theme` too, the `nsh-*` requirements are 0.6.0, and RayX.Dtcg's `nsh-theme` uses the same tag). Earlier tags, up to `nshx-0.5.0-7` (commit `d47d7fd6d`:
+integration tag `nshx-*` in `[patch.crates-io]`, today `nshx-0.6.0-5` (commit `2d6a0615c`; `-5` makes Rust's `set_color_scheme` (from a synchronous JS call, a task or a component) reach TS's `colorScheme()` and `Appearance::System` show the system's scheme again, dXnSix/nsh#286, with upstream sync #287 (embedder-only `Core::appearance()`, `nsh_js::Host::set_appearance` and the required `nsh_engine::browser::Host::set_appearance`, which RayX does not implement); `-4` (`aa5757480`) added Rust's theme writes, `set_modifier`, `set_color_scheme`, `update_tokens` and the token resets, queued with a synchronous JS call's turn, #285; it patches every NSH crate, `nsh-theme` too, the `nsh-*` requirements are 0.6.0, and RayX.Dtcg's `nsh-theme` uses the same tag). Earlier tags, up to `nshx-0.5.0-7` (commit `d47d7fd6d`:
 `JsHandle`, `Constructor`, `#[interface]`, typed `#[ts("…")]` signatures and theme documents
 since `nshx-0.5.0-4`; `-5` adds asking whether a kept JS value can be called now, #269; `-6` adds
 class extensions, methods a crate adds to another crate's `#[class]`, #273, and upstream NSH up to
