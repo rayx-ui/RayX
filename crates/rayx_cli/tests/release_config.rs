@@ -97,7 +97,7 @@ fn dist_builds_rayx_cli_alone_with_the_workspace_s_dist_profile() {
 }
 
 #[test]
-fn installers_use_rayx_home_with_attestations_and_pull_request_uploads() {
+fn installers_use_rayx_home_with_attestations_and_no_pull_request_runs() {
     let config = dist_config();
     let dist = dist_table(&config);
 
@@ -106,7 +106,8 @@ fn installers_use_rayx_home_with_attestations_and_pull_request_uploads() {
         ["$RAYX_HOME/bin", "~/.rayx/bin"]
     );
     assert_eq!(dist["github-attestations"].as_bool(), Some(true));
-    assert_eq!(dist["pr-run-mode"].as_str(), Some("upload"));
+    // The binaries are built by the release tag's run only, never on every pull request.
+    assert_eq!(dist["pr-run-mode"].as_str(), Some("skip"));
 }
 
 #[test]
@@ -149,7 +150,11 @@ fn generated_workflow_is_for_the_pinned_dist_and_is_not_marked_dirty() {
 fn release_tags_still_trigger_the_workflow() {
     let workflow = release_workflow();
     assert!(
-        workflow.contains("push:\n    tags:\n      - '**[0-9]+.[0-9]+.[0-9]+*'"),
-        "the version-tag trigger stays"
+        workflow.contains("on:\n  push:\n    tags:\n      - '**[0-9]+.[0-9]+.[0-9]+*'"),
+        "the version-tag trigger stays, and is the only one"
+    );
+    assert!(
+        !workflow.contains("\n  pull_request:"),
+        "the Release workflow never runs on pull requests (pr-run-mode = \"skip\")"
     );
 }

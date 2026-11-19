@@ -431,7 +431,7 @@ pub fn rayx_toml_pin(text: &str, path: &Path) -> Result<Option<(Source, Option<S
 /// The pin of `dir` (made absolute), reading the project through `runner` (`cargo
 /// locate-project`, and `cargo metadata` to find a path checkout). A missing `Cargo.lock` is
 /// written by `cargo metadata` only when `runner` executes: a dry run (`--check`, `doctor`,
-/// `rayx nsh status`) writes nothing and reports the pin as unknown until the lock exists.
+/// `rayx nshx status`) writes nothing and reports the pin as unknown until the lock exists.
 pub fn resolve(runner: &mut Runner, dir: &Path) -> Result<Pin> {
     resolve_with(runner, dir, "cargo")
 }
@@ -548,7 +548,7 @@ fn locked_source(
     Ok(found)
 }
 
-fn cargo(program: &str, dir: &Path, args: &[&str]) -> CommandSpec {
+pub(crate) fn cargo(program: &str, dir: &Path, args: &[&str]) -> CommandSpec {
     CommandSpec::new(program)
         .args(args.iter().copied())
         .env("RUSTUP_AUTO_INSTALL", "0")
@@ -558,7 +558,7 @@ fn cargo(program: &str, dir: &Path, args: &[&str]) -> CommandSpec {
 /// The Cargo workspace around `dir`, if there is one: `cargo locate-project`, else the manifests
 /// themselves, as project discovery reads them when cargo cannot run (a fresh machine, or the
 /// project's toolchain not installed yet).
-fn workspace_root(runner: &mut Runner, dir: &Path) -> Option<PathBuf> {
+pub(crate) fn workspace_root(runner: &mut Runner, dir: &Path) -> Option<PathBuf> {
     crate::project::Project::discover(runner, dir, None)
         .ok()
         .map(|project| project.workspace_root)

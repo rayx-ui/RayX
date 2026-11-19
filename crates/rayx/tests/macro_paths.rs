@@ -132,19 +132,16 @@ fn fixture_compiles(name: &str) -> Result<(), String> {
     std::fs::create_dir_all(dir.join("src")).unwrap();
     let workspace = std::fs::read_to_string(root.join("Cargo.toml")).unwrap();
     let patch = &workspace[workspace.find("[patch.crates-io]").unwrap()..];
-    // Forward slashes: a Windows path's backslashes are escapes in a TOML string.
-    let path_of = |krate: &str| {
-        root.join("crates")
-            .join(krate)
-            .to_str()
-            .unwrap()
-            .replace('\\', "/")
-    };
+    // The crate sits below the workspace (`target/macro-paths/<name>`), so its paths climb back
+    // to the workspace's root: the crates' own, and the relative ones of the copied patch (NSH
+    // from a checkout, `rayx nshx use local`). Relative and with `/`, as on every system.
+    let up = "../".repeat(dir.strip_prefix(root).unwrap().components().count());
+    let path_of = |krate: &str| format!("{up}crates/{krate}");
     let manifest = std::fs::read_to_string(fixture.join("Cargo.toml.in"))
         .unwrap()
         .replace("@RAYX_APP_NSH@", &path_of("rayx_app_nsh"))
         .replace("@RAYX_APP@", &path_of("rayx_app"))
-        .replace("@PATCH@", patch);
+        .replace("@PATCH@", &from_below(patch, &up));
     std::fs::write(dir.join("Cargo.toml"), manifest).unwrap();
     std::fs::copy(fixture.join("src/lib.rs"), dir.join("src/lib.rs")).unwrap();
     std::fs::copy(root.join("Cargo.lock"), dir.join("Cargo.lock")).unwrap();
@@ -160,6 +157,26 @@ fn fixture_compiles(name: &str) -> Result<(), String> {
     } else {
         Err(String::from_utf8_lossy(&out.stderr).into_owned())
     }
+}
+
+/// `patch` with each relative `path = "…"` read from the workspace's root again, `up` from the
+/// crate it is copied into.
+fn from_below(patch: &str, up: &str) -> String {
+    let key = "path = \"";
+    let mut out = String::with_capacity(patch.len());
+    let mut rest = patch;
+    while let Some(at) = rest.find(key) {
+        let start = at + key.len();
+        out.push_str(&rest[..start]);
+        let value = &rest[start..];
+        let absolute = value.starts_with('/') || value.as_bytes().get(1) == Some(&b':');
+        if !absolute {
+            out.push_str(up);
+        }
+        rest = value;
+    }
+    out.push_str(rest);
+    out
 }
 
 #[test]

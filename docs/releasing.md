@@ -33,11 +33,13 @@ Two tools split the work:
 
 1. Commit to `main` with [Conventional Commits](https://www.conventionalcommits.org/). The commit
    types decide the next version (see below).
-2. On every push to `main` the Release-plz workflow's `release-pr` job opens or updates the
+2. When you want a release, start the Release-plz workflow by hand (Actions > Release-plz > Run
+   workflow, or `gh workflow run release-plz.yml`). Its `release-pr` job opens or updates the
    release pull request (head branch `release-plz-…`): the `[workspace.package]` version bump in
-   `Cargo.toml`, `Cargo.lock` and a new `CHANGELOG.md` section. Its CI builds the `rayx` binaries
-   for all six targets without publishing them (`pr-run-mode = "upload"`), so they are proven
-   before the merge.
+   `Cargo.toml`, `Cargo.lock` and a new `CHANGELOG.md` section, covering every commit since the
+   last tag. Pushes to `main` no longer touch it, so several pushes share one release, one release
+   pull request and one CI run. The binaries are not built on the pull request
+   (`pr-run-mode = "skip"`): the tag's Release run builds them.
 3. Review it (see [before merging](#before-merging-a-release-pull-request)) and merge it.
 4. On that push the `release` job finds a version in `Cargo.toml` with no tag and pushes `vX.Y.Z`.
 5. The tag starts dist's Release workflow. When it is green the GitHub Release exists, with the new
@@ -100,7 +102,8 @@ cargo-semver-checks would build NSH for both the tag and `main` on every run.
   breaking.
 - The pull request changes only `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`.
 - The changelog section reads well (see below).
-- Its Release workflow built the binaries for all six targets.
+- Its CI is green. The binaries for the six targets are built only by the tag's Release run (step
+  5); if one fails there, fix it and tag the fix as the next patch release.
 
 ## The changelog
 
@@ -118,9 +121,11 @@ A release pull request runs `ci.yml`, like any other pull request: one `ubuntu-2
 `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and the `wasm32-unknown-unknown`
 check of the NSH-free crates (`cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown`),
 and the `rayx-cli` job, which formats, lints and tests the CLI on
-Linux, macOS and Windows. It also runs dist's Release workflow, which plans the release and
-builds the binaries without publishing anything. `ci.yml` also runs on every push to `main`;
-`release-plz.yml` runs no tests.
+Linux, macOS and Windows. dist's Release workflow does not run on pull requests
+(`pr-run-mode = "skip"`); it runs on the release tag. `ci.yml` runs on `main` every three hours,
+and only when `main` moved since its last scheduled run (`changed.yml`), never on each push: one
+run covers every push since the last one and keeps the caches pull requests restore warm. Start it
+by hand (`gh workflow run ci.yml`) to check `main` sooner. `release-plz.yml` runs no tests.
 
 ## The `RELEASE_PLZ_TOKEN` secret
 

@@ -74,7 +74,7 @@ fn dispatch(cli: Cli) -> ExitCode {
                 },
         } => update::run(*check, *yes, release.as_deref()),
         Command::App(args) => app::run(args),
-        Command::Nsh { command } => nsh::run(command),
+        Command::Nshx { command } => nsh::run(command),
         Command::New(args) => new::run(args),
         Command::Serve(args) => serve::run(args),
     };

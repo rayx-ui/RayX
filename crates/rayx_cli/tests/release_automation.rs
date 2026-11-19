@@ -265,11 +265,19 @@ fn workflow_runs_on_main_pushes_in_the_rayx_repository_only() {
     );
 
     let jobs = get(&workflow, "jobs");
-    for name in ["release", "release-pr"] {
+    // `release` tags a merged release pull request on its push; the release pull request itself is
+    // opened or updated only on demand, so several pushes share one release.
+    for (name, condition) in [
+        ("release", "github.repository == 'rayx-ui/RayX'"),
+        (
+            "release-pr",
+            "github.repository == 'rayx-ui/RayX' && github.event_name == 'workflow_dispatch'",
+        ),
+    ] {
         let job = get(jobs, name);
         assert_eq!(
             get(job, "if").as_str(),
-            Some("github.repository == 'rayx-ui/RayX'"),
+            Some(condition),
             "{name} runs in rayx-ui/RayX only"
         );
         assert_eq!(

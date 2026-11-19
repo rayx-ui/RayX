@@ -153,7 +153,7 @@ pub fn ensure(
             };
             (
                 Plan { steps: vec![step] },
-                format!("rayx nsh install -C {}", dir.display()),
+                format!("rayx nshx install -C {}", dir.display()),
             )
         }
         Err(error) => return Err(anyhow!("{error}")),

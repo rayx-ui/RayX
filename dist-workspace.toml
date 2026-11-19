@@ -16,7 +16,7 @@ checksum = "sha256"
 # Path that installers should place binaries in
 install-path = ["$RAYX_HOME/bin", "~/.rayx/bin"]
 # Which actions to run on pull requests
-pr-run-mode = "upload"
+pr-run-mode = "skip"
 # Where to host releases
 hosting = "github"
 # Whether to install an updater program

@@ -76,6 +76,16 @@ thiserror = "2.0"
 toml = { version = "0.9", default-features = false, features = ["parse", "serde"] }
 url = "2.5"
 
+# Dev and test builds keep file and line numbers for RayX's own crates (panics and backtraces)
+# and no debug info for dependencies. Full debug info gave every test binary that links NSH,
+# oxc and QuickJS a debug-symbol file of up to 1.2 GB, doubled link times and ran parallel
+# builds out of memory. For a debugger session, build with `--config profile.dev.debug=true`.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
 # The profile dist builds the `rayx` binaries with (dist-workspace.toml).
 [profile.dist]
 inherits = "release"

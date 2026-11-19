@@ -1,13 +1,16 @@
 name: Release-plz
 
 # Releases the workspace's crates under one version (see docs/releasing.md). It runs no tests: `ci.yml`
-# tests pull requests (the release pull request included) and pushes to `main`.
+# tests pull requests (the release pull request included) and `main` on its schedule.
 #
-# `release` tags `vX.Y.Z` when the version in Cargo.toml has no tag yet (the merged release pull
-# request). The tag starts `release.yml`, where dist builds the `rayx` binaries and creates the
-# GitHub Release with that version's CHANGELOG.md section as notes. `release-pr` then keeps the
-# next release pull request up to date. It waits for `release`, so the release pull request is
-# always computed after the newest tag exists.
+# `release` runs on every push to `main` and tags `vX.Y.Z` when the version in Cargo.toml has no
+# tag yet (the merged release pull request); otherwise it does nothing. The tag starts
+# `release.yml`, where dist builds the `rayx` binaries and creates the GitHub Release with that
+# version's CHANGELOG.md section as notes. `release-pr` opens or updates the release pull request
+# only when the workflow is started by hand (Actions > Release-plz > Run workflow), so the commits
+# of several pushes share one release, and one release pull request with its CI run, instead of
+# every push updating it. It waits for `release`, so the release pull request is always computed
+# after the newest tag exists.
 #
 # RELEASE_PLZ_TOKEN is a fine-grained personal access token (see docs/releasing.md). Events made with
 # the default GITHUB_TOKEN start no workflows, so with it the release pull request would get no CI
@@ -47,7 +50,7 @@ jobs:
   release-pr:
     name: release-pr
     needs: release
-    if: github.repository == 'rayx-ui/RayX'
+    if: github.repository == 'rayx-ui/RayX' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     permissions:
       contents: write

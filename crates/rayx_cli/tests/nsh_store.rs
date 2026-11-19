@@ -284,7 +284,7 @@ fn without_a_terminal_and_without_yes_nothing_is_removed_and_the_code_is_1() {
     assert_eq!(prune(&store, &[], false, None, &mut out), 1);
     assert!(home.path("nsh/5f0c2a91be47").is_dir());
     let text = String::from_utf8(out).expect("UTF-8");
-    assert!(text.contains("rayx nsh prune --yes"), "{text}");
+    assert!(text.contains("rayx nshx prune --yes"), "{text}");
 
     let (_empty_home, empty) = store_with(&[]);
     let mut out = Vec::new();

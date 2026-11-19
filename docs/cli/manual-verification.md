@@ -101,7 +101,7 @@ distribution, in the clone, Playwright's Chromium as in the Lima guest
 | The release runs | `gh workflow run fork-release.yml --repo dXnSix/nsh -f tag=nshx-0.2.0-4` | |
 | Four archives and their digests | `gh release view nshx-0.2.0-4 --repo dXnSix/nsh` lists `nsh-macos-arm64.tar.gz`, `nsh-linux-x86_64.tar.gz`, `nsh-linux-arm64.tar.gz` and `nsh-windows-x86_64.zip` with a `.sha256` each (`nsh-windows-arm64.zip` when it built) | |
 | The archive's CLI | `nsh/bin/nsh --version` from `nsh-macos-arm64.tar.gz` prints `nsh 0.2.0 (327bb9e)` | |
-| A distribution entry | `rayx nsh install` in an app pinned to `nshx-0.2.0-4`, then `rayx nsh status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
+| A distribution entry | `rayx nshx install` in an app pinned to `nshx-0.2.0-4`, then `rayx nshx status` shows `installed` and `receipt.json` has `"kind": "distribution"` | |
 
 ### The first RayX release with `rayx`
 

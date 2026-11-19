@@ -99,8 +99,9 @@ cargo test -p rayx --all-features
 cargo check -p rayx_app -p rayx_devtools_protocol --target wasm32-unknown-unknown
 ```
 
-CI (`.github/workflows/ci.yml`) runs the same on every pull request and every push to `main`, and
-formats, lints and tests `rayx-cli` on Linux, macOS and Windows too.
+CI (`.github/workflows/ci.yml`) runs the same on every pull request and, for `main`, every three
+hours when `main` moved (never on each push), and formats, lints and tests `rayx-cli` on Linux,
+macOS and Windows too. Run the list above before pushing to `main`: no CI runs on the push itself.
 
 Test only what you changed: run the touched crate's focused tests while iterating, and the full
 list above once before committing. `rayx_components`' theme is generated: after a token export
@@ -115,6 +116,18 @@ behavior change gets a new group. The umbrella's groups that need service featur
 it), and `crates/rayx_cli/tests/ci_workflow.rs` fails for a feature-gated group CI never runs.
 `crates/rayx/tests/crate_layout.rs` checks the crates, their folders and the dependency rules
 above.
+
+Focused runs resolve features for the whole workspace, as `cargo test --workspace` does:
+`RUSTC_BOOTSTRAP=1 cargo wtest -p <crate> --test <feature>`, and `cargo wclippy` and `cargo wcheck`
+the same way (`.cargo/config.toml`). Plain `cargo test -p` builds NSH in another feature set for
+almost every crate, so moving between crates rebuilds NSH and everything above it. Set
+`RUSTC_BOOTSTRAP=1` on that one command only (PowerShell: `$env:RUSTC_BOOTSTRAP=1; cargo wtest …;
+$env:RUSTC_BOOTSTRAP=$null`), never in a shell profile: inside RayX, `.cargo/config.toml` gives
+rustc and build scripts `-1`, so the compiler stays stable 1.99, but another repository would
+compile with nightly features. An AgentX check runs the alias as its `argv` with
+`"environment": {"RUSTC_BOOTSTRAP": "1"}`. The list above stays plain `cargo`, as CI runs it, and
+so does the wasm32 check, which must not pick up the workspace's std features. Dev and test builds
+keep line tables only (`[profile.dev]`), and Windows links with `rust-lld`.
 
 Raw diagnostic output goes to the ignored `artifacts-temp/`, never into commits.
 
@@ -184,6 +197,8 @@ builds the `rayx` binaries for that tag and creates its GitHub Release; see
 - A breaking commit's body states the break and a `Migration:` footer tells each affected consumer
   what to change (`Migration: <app>: …`).
 - `CHANGELOG.md` is written by release-plz; do not edit it in feature commits.
+- A release starts when the owner runs the Release-plz workflow by hand, which opens or updates the
+  release pull request; pushes to `main` do not.
 - A release is the merge of release-plz's release pull request, after checking that it proposes
   the expected version and changes only `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`.
 - Tags are pushed only by release-plz or the owner, and never moved or deleted.

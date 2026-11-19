@@ -264,7 +264,7 @@ pub fn rfc3339(time: SystemTime) -> String {
     )
 }
 
-/// `3.1 GB` style sizes, as `rayx nsh status`, prune and doctor print them.
+/// `3.1 GB` style sizes, as `rayx nshx status`, prune and doctor print them.
 pub fn human(bytes: u64) -> String {
     crate::doctor::format_bytes(bytes)
 }
@@ -331,7 +331,7 @@ pub fn prune(
     } else {
         let _ = writeln!(
             out,
-            "rayx: nothing removed: confirm in a terminal, or run `rayx nsh prune --yes`"
+            "rayx: nothing removed: confirm in a terminal, or run `rayx nshx prune --yes`"
         );
         return 1;
     };

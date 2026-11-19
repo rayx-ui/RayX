@@ -75,7 +75,7 @@ stay there.
 | `rayx self update` | Updates `rayx` to the latest release, or installs the release `--release` names, and offers to refresh this machine and its guests. |
 | `rayx fmt` | Formats the project, one workspace member at a time. |
 | `rayx app` | Runs an nsh command with the project's pinned nsh. |
-| `rayx nsh` | Shows, installs, locates and prunes the nsh builds `rayx` keeps. |
+| `rayx nshx` | Shows, installs, locates and prunes the nsh builds `rayx` keeps, and builds a project on a local NSH checkout (`rayx nsh` still works). |
 | `rayx new` | Creates a new RayX app (or, with `--nsh-only`, a plain NSH app) pinned to `rayx`'s default nsh. |
 | `rayx serve` | Serves a packaged web app on `127.0.0.1`. |
 
@@ -194,7 +194,7 @@ with `--yes`, and no terminal without `--yes` means not updated and exit 1), sta
 stops it again afterwards, puts the Linux `rayx` of the running version inside, runs
 `sudo apt-get update` and `sudo apt-get upgrade`, and runs `rayx setup --update` inside. A failing
 guest is reported and the next still runs. `apt-get upgrade` runs only inside guests `rayx`
-manages, never on the host. Last it offers `rayx nsh prune` for the nsh builds no recorded project
+manages, never on the host. Last it offers `rayx nshx prune` for the nsh builds no recorded project
 pins any more. `--check` inspects running guests (a stopped VM is not started) and changes nothing.
 
 `rayx setup --update --vm <name>` (repeat the flag for more) refreshes only the named recorded,
@@ -281,7 +281,7 @@ Before nsh starts, `rayx` checks the base set and the sets the command and its `
 license answer (the pinned nsh, a Rust target) is installed on the spot, with a line saying so.
 Anything that needs `sudo`, administrator rights or a license is asked about in a terminal, and
 otherwise the command stops with the exact `rayx setup` command. On a host `rayx setup` does not
-support, only the pinned nsh is checked, with `rayx nsh install -C <dir>` as its command.
+support, only the pinned nsh is checked, with `rayx nshx install -C <dir>` as its command.
 
 nsh runs in the directory the pin was read in, without `CARGO` in its environment. When they are
 unset, `rayx` sets `CC_wasm32_unknown_unknown` and `AR_wasm32_unknown_unknown` to the LLVM the web
@@ -343,16 +343,31 @@ Everything runs as you, with no question and no administrator rights.
 
 | Command | What it does |
 | --- | --- |
-| `rayx nsh status [-C <dir>] [--json]` | Shows the pin, where it comes from (`project`, `rayx.toml` or `default`) and its store entry. |
-| `rayx nsh path [-C <dir>] [--no-install]` | Prints the pinned CLI's path, installing it first when it is missing (for scripts that need the binary). |
-| `rayx nsh install [-C <dir>]` | Installs the pin into the store. |
-| `rayx nsh prune [--yes]` | Lists the entries no recorded project and no default pins, with their sizes, and removes them after asking. |
+| `rayx nshx status [-C <dir>] [--json]` | Shows the pin, where it comes from (`project`, `rayx.toml` or `default`) and its store entry; on a local checkout, its commit, its uncommitted files and the tag to go back to. |
+| `rayx nshx path [-C <dir>] [--no-install]` | Prints the pinned CLI's path, installing it first when it is missing (for scripts that need the binary). |
+| `rayx nshx install [-C <dir>]` | Installs the pin into the store. |
+| `rayx nshx prune [--yes]` | Lists the entries no recorded project and no default pins, with their sizes, and removes them after asking. |
+| `rayx nshx use <checkout>\|local\|<tag>\|latest [-C <dir>]` | Builds the project's NSH from a local NSH checkout, or moves it to a tag of the fork (below). |
 
 **Working on NSH itself.** A path dependency on an NSH checkout makes `rayx` run
 `cargo build --release -p nsh-cli --target-dir target` in that checkout and run its `target/release/nsh`, copying
-nothing into the store. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
+nothing into the store. `rayx nshx use ../nsh` makes that dependency in the checkout you already work
+in: every `[patch.crates-io]` line of an NSH crate, in the workspace's `Cargo.toml` and in each
+`.cargo/config.toml` under it (the gallery's), points at that crate in the checkout by a path
+relative to that file (never an absolute one), with a comment keeping what it was, and Cargo relocks. Nothing waits for an nshx release while you work on both.
+`rayx nshx use local` takes the checkout in a folder above the project: the first `dXn/nsh/nsh` or
+`nsh/nsh` holding `crates/nsh-cli`, nearest first (`…/projects/dXn/nsh/nsh` beside
+`…/projects/RayX/RayX`). `rayx nshx use <tag>` puts the lines back at that tag of the fork
+(`nshx-0.5.0-8`) and relocks, and `rayx nshx use latest` at the fork's newest `nshx-*` tag (by NSH
+version, then build number). The project's NSH version requirements follow: one the new NSH does not
+meet moves to the checkout crate's version, or to the version the tag names (`nshx-0.6.0-2` is NSH
+0.6.0), so going back to the old tag moves it back. In RayX's own repository a new tag also moves the
+default pin and every tracked file that names it, the way a pin bump does (`CHANGELOG.md` and
+`.agentx/` keep their history). While the lines point at a checkout, commit neither them nor
+`Cargo.lock`: `tests/nsh_pin_rayx.rs` fails until the tag is back. A checkout Cargo cannot lock, or
+that lacks a patched crate, is refused with every file as it was. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
 every command: `rayx: RAYX_NSH=<path> replaces the project's nsh 6ec3717843ab`. A relative path is
-read against the directory `rayx` started in (never searched on `PATH`), and `rayx nsh path` prints
+read against the directory `rayx` started in (never searched on `PATH`), and `rayx nshx path` prints
 it too, for scripts that need the binary.
 
 A source entry or a path checkout builds nsh's hosts and runtimes into its own `target/` the first
