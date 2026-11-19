@@ -2,8 +2,8 @@
 
 RayX is an app framework for [Native Shell (NSH)](https://github.com/dXnSix/nsh) apps. It replaces
 the GPUI and gpux stack of the previous RayX, now `RayX.Old` (`../_archive/RayX.Old`), which is not
-a dependency. The workspace has nineteen crates sharing one version (`rayx`, `rayx_app`,
-`rayx_app_nsh`, the twelve `rayx_services_<name>`, `rayx_components`, `rayx_devtools_protocol`,
+a dependency. The workspace has twenty crates sharing one version (`rayx`, `rayx_app`,
+`rayx_app_nsh`, the thirteen `rayx_services_<name>`, `rayx_components`, `rayx_devtools_protocol`,
 `rayx_app_macros` and `rayx-cli`), and the gallery app's crate:
 
 - `crates/rayx_app`: the pure-Rust core: dependency injection (singleton, scoped and transient
@@ -15,7 +15,7 @@ a dependency. The workspace has nineteen crates sharing one version (`rayx`, `ra
   NSH-free services depends on it alone.
 - `crates/rayx_services_<name>`: RayX's implementation of one service each (platform,
   suspension, assets, fonts, storage, navigation, i18n, operations, history, selection, input map,
-  application configuration) on the core's contract `rayx_app::services::<name>`, with its NSH
+  application configuration, theme) on the core's contract `rayx_app::services::<name>`, with its NSH
   side, TS class, set (`register`) and builder extension (`add_<name>`, which replaces any
   implementation registered before and declares, with `require_for`, the services it resolves). A
   service crate depends on `rayx_app`, `rayx_app_nsh` and `nsh-core`, never on another service
@@ -27,11 +27,13 @@ a dependency. The workspace has nineteen crates sharing one version (`rayx`, `ra
   module, its classes beside what they wrap: TS's `RayXAppBuilder` with a camelCase twin of every
   builder method, its `ServiceProvider`, services written in TS in the one container, contracts
   with `ContractState` and `ContractEvents`). It depends on no service crate.
-- `crates/rayx_components`: RayX's component library, the RayX design system in code: its tokens
-  as an NSH theme document, `theme.json` (generated from the Figma export by the
-  `rayx-components` skill's `theme_codegen.py` and never edited by hand), read through typed keys
-  (`src/theme/`: `theme_keys!`, the modifiers `accent`, `density`, `os` set by the app, `color!`
-  for custom tokens), and the components, each the
+- `crates/rayx_components`: RayX's component library, the RayX design system in code: RayX's
+  roles, declared in `roles.json` (typed handles in `src/theme/`: `theme::roles`, read with
+  `theme::value`, and the role groups), RayX's default theme, `theme.json`, which maps them (an
+  NSH theme document exported from RayX.Design's DTCG files and role map by RayX.Dtcg, run by the
+  `rayx-components` skill's `theme_export.py`, and never edited by hand; its modifiers
+  `colorMode`, `accent`, `density`, `os` are picked by the app or the theme service), and the
+  components, which read roles only, each the
   Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
   to TSX (in the set `#[rayx::native_module]` makes, or `rayx_components::register` in a
   hand-written `#[native_module]`). It depends on `nsh-core` and
@@ -104,9 +106,10 @@ hours when `main` moved (never on each push), and formats, lints and tests `rayx
 macOS and Windows too. Run the list above before pushing to `main`: no CI runs on the push itself.
 
 Test only what you changed: run the touched crate's focused tests while iterating, and the full
-list above once before committing. `rayx_components`' theme is generated: after a token export
-(or a change to the generator), `python .claude/skills/rayx-components/scripts/theme_codegen.py
-write` from RayX.Root, then `check` must pass before committing. Each feature has its own
+list above once before committing. `rayx_components`' theme is generated: after a change to
+RayX.Design's DTCG files or role map, or to `roles.json`, `python
+.claude/skills/rayx-components/scripts/theme_export.py write` from RayX.Root, then `check` must
+pass before committing. Each feature has its own
 integration-test group in `crates/<crate>/tests/<feature>.rs` (`di_provider`, `di_startup`,
 `nsh_layer`, …); select one with `cargo test -p <crate> --test <feature>`. A new feature or
 behavior change gets a new group. The umbrella's groups that need service features beyond the defaults

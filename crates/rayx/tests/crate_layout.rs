@@ -117,7 +117,7 @@ fn assert_none(what: &str, problems: Vec<String>) {
 }
 
 /// The service crates, by the name after `rayx_services_`.
-const SERVICES: [&str; 12] = [
+const SERVICES: [&str; 13] = [
     "application_configuration",
     "assets",
     "fonts",
@@ -130,6 +130,7 @@ const SERVICES: [&str; 12] = [
     "selection",
     "storage",
     "suspension",
+    "theme",
 ];
 
 /// Whether a dependency is one of RayX's crates.

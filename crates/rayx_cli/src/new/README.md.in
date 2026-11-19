@@ -9,7 +9,7 @@ A [RayX](https://github.com/rayx-ui/RayX) app on [NSH](https://github.com/dXnSix
   `rayx` tag with that release's NSH patch.
 - Each RayX service is behind a `rayx` feature of its name: the defaults are the four the host
   requires (`platform`, `suspension`, `assets`, `fonts`), and `Cargo.toml` lists the others the
-  app uses (`storage`, `operations`, `history`). A service the app adds needs its feature.
+  app uses (`theme`, `storage`, `operations`, `history`). A service the app adds needs its feature.
 - __SERVICES__: RayX's services are listed in its `docs/services.md`.
 - The root mounts RayX's dev tools' layer: in a dev build (`rayx app run`) the app connects to a
   dev tool on this machine and shows its layer; a release build (`rayx app package`) has neither.

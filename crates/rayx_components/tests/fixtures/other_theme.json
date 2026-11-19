@@ -1,0 +1,576 @@
+{
+  "name": "other",
+  "tokens": {
+    "swatch-01": {
+      "kind": "color",
+      "value": "#c32222",
+      "path": "palette.swatch.01"
+    },
+    "swatch-02": {
+      "kind": "color",
+      "value": "#c34922",
+      "path": "palette.swatch.02"
+    },
+    "swatch-03": {
+      "kind": "color",
+      "value": "#c37022",
+      "path": "palette.swatch.03"
+    },
+    "swatch-04": {
+      "kind": "color",
+      "value": "#c39622",
+      "path": "palette.swatch.04"
+    },
+    "swatch-05": {
+      "kind": "color",
+      "value": "#c3bd22",
+      "path": "palette.swatch.05"
+    },
+    "swatch-06": {
+      "kind": "color",
+      "value": "#a3c322",
+      "path": "palette.swatch.06"
+    },
+    "swatch-07": {
+      "kind": "color",
+      "value": "#7cc322",
+      "path": "palette.swatch.07"
+    },
+    "swatch-08": {
+      "kind": "color",
+      "value": "#56c322",
+      "path": "palette.swatch.08"
+    },
+    "swatch-09": {
+      "kind": "color",
+      "value": "#2fc322",
+      "path": "palette.swatch.09"
+    },
+    "swatch-10": {
+      "kind": "color",
+      "value": "#22c33c",
+      "path": "palette.swatch.10"
+    },
+    "swatch-11": {
+      "kind": "color",
+      "value": "#22c363",
+      "path": "palette.swatch.11"
+    },
+    "swatch-12": {
+      "kind": "color",
+      "value": "#22c389",
+      "path": "palette.swatch.12"
+    },
+    "swatch-13": {
+      "kind": "color",
+      "value": "#22c3b0",
+      "path": "palette.swatch.13"
+    },
+    "swatch-14": {
+      "kind": "color",
+      "value": "#22b0c3",
+      "path": "palette.swatch.14"
+    },
+    "swatch-15": {
+      "kind": "color",
+      "value": "#2289c3",
+      "path": "palette.swatch.15"
+    },
+    "swatch-16": {
+      "kind": "color",
+      "value": "#2263c3",
+      "path": "palette.swatch.16"
+    },
+    "swatch-17": {
+      "kind": "color",
+      "value": "#223cc3",
+      "path": "palette.swatch.17"
+    },
+    "swatch-18": {
+      "kind": "color",
+      "value": "#2f22c3",
+      "path": "palette.swatch.18"
+    },
+    "swatch-19": {
+      "kind": "color",
+      "value": "#5622c3",
+      "path": "palette.swatch.19"
+    },
+    "swatch-20": {
+      "kind": "color",
+      "value": "#7c22c3",
+      "path": "palette.swatch.20"
+    },
+    "swatch-21": {
+      "kind": "color",
+      "value": "#a322c3",
+      "path": "palette.swatch.21"
+    },
+    "swatch-22": {
+      "kind": "color",
+      "value": "#c322bd",
+      "path": "palette.swatch.22"
+    },
+    "swatch-23": {
+      "kind": "color",
+      "value": "#c32296",
+      "path": "palette.swatch.23"
+    },
+    "swatch-24": {
+      "kind": "color",
+      "value": "#c32270",
+      "path": "palette.swatch.24"
+    },
+    "swatch-25": {
+      "kind": "color",
+      "value": "#c32249",
+      "path": "palette.swatch.25"
+    },
+    "step-1": {
+      "kind": "number",
+      "value": 1,
+      "path": "palette.step.1"
+    },
+    "step-4": {
+      "kind": "number",
+      "value": 4,
+      "path": "palette.step.4"
+    },
+    "step-21": {
+      "kind": "number",
+      "value": 21,
+      "path": "palette.step.21"
+    },
+    "step-7": {
+      "kind": "number",
+      "value": 7,
+      "path": "palette.step.7"
+    },
+    "step-11": {
+      "kind": "number",
+      "value": 11,
+      "path": "palette.step.11"
+    },
+    "step-3": {
+      "kind": "number",
+      "value": 3,
+      "path": "palette.step.3"
+    },
+    "step-2": {
+      "kind": "number",
+      "value": 2,
+      "path": "palette.step.2"
+    },
+    "step-33": {
+      "kind": "number",
+      "value": 33,
+      "path": "palette.step.33"
+    },
+    "step-13": {
+      "kind": "number",
+      "value": 13,
+      "path": "palette.step.13"
+    },
+    "step-17": {
+      "kind": "number",
+      "value": 17,
+      "path": "palette.step.17"
+    },
+    "step-5": {
+      "kind": "number",
+      "value": 5,
+      "path": "palette.step.5"
+    },
+    "step-6": {
+      "kind": "number",
+      "value": 6,
+      "path": "palette.step.6"
+    },
+    "step-45": {
+      "kind": "number",
+      "value": 45,
+      "path": "palette.step.45"
+    },
+    "step-19": {
+      "kind": "number",
+      "value": 19,
+      "path": "palette.step.19"
+    },
+    "step-23": {
+      "kind": "number",
+      "value": 23,
+      "path": "palette.step.23"
+    },
+    "step-9": {
+      "kind": "number",
+      "value": 9,
+      "path": "palette.step.9"
+    },
+    "step-10": {
+      "kind": "number",
+      "value": 10,
+      "path": "palette.step.10"
+    },
+    "type-small-size": {
+      "kind": "number",
+      "value": 11,
+      "path": "palette.type.small.size"
+    },
+    "type-small-leading": {
+      "kind": "number",
+      "value": 15,
+      "path": "palette.type.small.leading"
+    },
+    "type-small-tracking": {
+      "kind": "number",
+      "value": 0.1,
+      "path": "palette.type.small.tracking"
+    },
+    "type-small-weight": {
+      "kind": "number",
+      "value": 500,
+      "path": "palette.type.small.weight"
+    },
+    "type-default-size": {
+      "kind": "number",
+      "value": 13,
+      "path": "palette.type.default.size"
+    },
+    "type-default-leading": {
+      "kind": "number",
+      "value": 18,
+      "path": "palette.type.default.leading"
+    },
+    "type-default-tracking": {
+      "kind": "number",
+      "value": 0.2,
+      "path": "palette.type.default.tracking"
+    },
+    "type-default-weight": {
+      "kind": "number",
+      "value": 600,
+      "path": "palette.type.default.weight"
+    },
+    "type-large-size": {
+      "kind": "number",
+      "value": 16,
+      "path": "palette.type.large.size"
+    },
+    "type-large-leading": {
+      "kind": "number",
+      "value": 22,
+      "path": "palette.type.large.leading"
+    },
+    "type-large-tracking": {
+      "kind": "number",
+      "value": 0.3,
+      "path": "palette.type.large.tracking"
+    },
+    "type-large-weight": {
+      "kind": "number",
+      "value": 700,
+      "path": "palette.type.large.weight"
+    },
+    "action-neutral-bg": {
+      "kind": "color",
+      "value": "{swatch-01}",
+      "path": "action.neutral.bg"
+    },
+    "action-neutral-bg-hover": {
+      "kind": "color",
+      "value": "{swatch-02}",
+      "path": "action.neutral.bg-hover"
+    },
+    "action-neutral-bg-active": {
+      "kind": "color",
+      "value": "{swatch-03}",
+      "path": "action.neutral.bg-active"
+    },
+    "action-neutral-text": {
+      "kind": "color",
+      "value": "{swatch-04}",
+      "path": "action.neutral.text"
+    },
+    "action-primary-bg": {
+      "kind": "color",
+      "value": "{swatch-05}",
+      "path": "action.primary.bg"
+    },
+    "action-primary-bg-hover": {
+      "kind": "color",
+      "value": "{swatch-06}",
+      "path": "action.primary.bg-hover"
+    },
+    "action-primary-bg-active": {
+      "kind": "color",
+      "value": "{swatch-07}",
+      "path": "action.primary.bg-active"
+    },
+    "action-primary-text": {
+      "kind": "color",
+      "value": "{swatch-08}",
+      "path": "action.primary.text"
+    },
+    "action-danger-bg": {
+      "kind": "color",
+      "value": "{swatch-09}",
+      "path": "action.danger.bg"
+    },
+    "action-danger-bg-hover": {
+      "kind": "color",
+      "value": "{swatch-10}",
+      "path": "action.danger.bg-hover"
+    },
+    "action-danger-bg-active": {
+      "kind": "color",
+      "value": "{swatch-11}",
+      "path": "action.danger.bg-active"
+    },
+    "action-danger-text": {
+      "kind": "color",
+      "value": "{swatch-12}",
+      "path": "action.danger.text"
+    },
+    "action-success-bg": {
+      "kind": "color",
+      "value": "{swatch-13}",
+      "path": "action.success.bg"
+    },
+    "action-success-bg-hover": {
+      "kind": "color",
+      "value": "{swatch-14}",
+      "path": "action.success.bg-hover"
+    },
+    "action-success-bg-active": {
+      "kind": "color",
+      "value": "{swatch-15}",
+      "path": "action.success.bg-active"
+    },
+    "action-success-text": {
+      "kind": "color",
+      "value": "{swatch-16}",
+      "path": "action.success.text"
+    },
+    "link-rest": {
+      "kind": "color",
+      "value": "{swatch-17}",
+      "path": "link.rest"
+    },
+    "link-hover": {
+      "kind": "color",
+      "value": "{swatch-18}",
+      "path": "link.hover"
+    },
+    "edge-rest": {
+      "kind": "color",
+      "value": "{swatch-19}",
+      "path": "edge.rest"
+    },
+    "focus-ring": {
+      "kind": "color",
+      "value": "{swatch-20}",
+      "path": "focus.ring"
+    },
+    "focus-ring-danger": {
+      "kind": "color",
+      "value": "{swatch-21}",
+      "path": "focus.ringDanger"
+    },
+    "focus-ring-success": {
+      "kind": "color",
+      "value": "{swatch-22}",
+      "path": "focus.ringSuccess"
+    },
+    "inert-edge": {
+      "kind": "color",
+      "value": "{swatch-23}",
+      "path": "inert.edge"
+    },
+    "inert-fill": {
+      "kind": "color",
+      "value": "{swatch-24}",
+      "path": "inert.fill"
+    },
+    "inert-ink": {
+      "kind": "color",
+      "value": "{swatch-25}",
+      "path": "inert.ink"
+    },
+    "stroke-outline": {
+      "kind": "number",
+      "value": "{step-1}",
+      "path": "stroke.outline"
+    },
+    "stroke-focus": {
+      "kind": "number",
+      "value": "{step-4}",
+      "path": "stroke.focus"
+    },
+    "control-small-height": {
+      "kind": "number",
+      "value": "{step-21}",
+      "path": "control.small.height"
+    },
+    "control-small-inset": {
+      "kind": "number",
+      "value": "{step-7}",
+      "path": "control.small.inset"
+    },
+    "control-small-icon": {
+      "kind": "number",
+      "value": "{step-11}",
+      "path": "control.small.icon"
+    },
+    "control-small-gap": {
+      "kind": "number",
+      "value": "{step-3}",
+      "path": "control.small.gap"
+    },
+    "control-small-corner": {
+      "kind": "number",
+      "value": "{step-2}",
+      "path": "control.small.corner"
+    },
+    "control-default-height": {
+      "kind": "number",
+      "value": "{step-33}",
+      "path": "control.default.height"
+    },
+    "control-default-inset": {
+      "kind": "number",
+      "value": "{step-13}",
+      "path": "control.default.inset"
+    },
+    "control-default-icon": {
+      "kind": "number",
+      "value": "{step-17}",
+      "path": "control.default.icon"
+    },
+    "control-default-gap": {
+      "kind": "number",
+      "value": "{step-5}",
+      "path": "control.default.gap"
+    },
+    "control-default-corner": {
+      "kind": "number",
+      "value": "{step-6}",
+      "path": "control.default.corner"
+    },
+    "control-large-height": {
+      "kind": "number",
+      "value": "{step-45}",
+      "path": "control.large.height"
+    },
+    "control-large-inset": {
+      "kind": "number",
+      "value": "{step-19}",
+      "path": "control.large.inset"
+    },
+    "control-large-icon": {
+      "kind": "number",
+      "value": "{step-23}",
+      "path": "control.large.icon"
+    },
+    "control-large-gap": {
+      "kind": "number",
+      "value": "{step-9}",
+      "path": "control.large.gap"
+    },
+    "control-large-corner": {
+      "kind": "number",
+      "value": "{step-10}",
+      "path": "control.large.corner"
+    },
+    "label-small": {
+      "kind": "typography",
+      "path": "label.small",
+      "value": {
+        "fontSize": "{type-small-size}",
+        "fontWeight": "{type-small-weight}",
+        "lineHeight": "{type-small-leading}",
+        "letterSpacing": "{type-small-tracking}"
+      }
+    },
+    "label-default": {
+      "kind": "typography",
+      "path": "label.default",
+      "value": {
+        "fontSize": "{type-default-size}",
+        "fontWeight": "{type-default-weight}",
+        "lineHeight": "{type-default-leading}",
+        "letterSpacing": "{type-default-tracking}"
+      }
+    },
+    "label-large": {
+      "kind": "typography",
+      "path": "label.large",
+      "value": {
+        "fontSize": "{type-large-size}",
+        "fontWeight": "{type-large-weight}",
+        "lineHeight": "{type-large-leading}",
+        "letterSpacing": "{type-large-tracking}"
+      }
+    }
+  },
+  "modifiers": {
+    "tone": {
+      "default": "plain",
+      "contexts": {
+        "plain": {},
+        "vivid": {
+          "swatch-05": "#ff00ff"
+        }
+      }
+    }
+  },
+  "resolutionOrder": [
+    "tone"
+  ],
+  "roles": {
+    "intent-neutral-bg": "action-neutral-bg",
+    "intent-neutral-bg-hover": "action-neutral-bg-hover",
+    "intent-neutral-bg-active": "action-neutral-bg-active",
+    "intent-neutral-text": "action-neutral-text",
+    "intent-primary-bg": "action-primary-bg",
+    "intent-primary-bg-hover": "action-primary-bg-hover",
+    "intent-primary-bg-active": "action-primary-bg-active",
+    "intent-primary-text": "action-primary-text",
+    "intent-danger-bg": "action-danger-bg",
+    "intent-danger-bg-hover": "action-danger-bg-hover",
+    "intent-danger-bg-active": "action-danger-bg-active",
+    "intent-danger-text": "action-danger-text",
+    "intent-success-bg": "action-success-bg",
+    "intent-success-bg-hover": "action-success-bg-hover",
+    "intent-success-bg-active": "action-success-bg-active",
+    "intent-success-text": "action-success-text",
+    "surface-link": "link-rest",
+    "surface-link-hover": "link-hover",
+    "surface-border": "edge-rest",
+    "interaction-focus-ring": "focus-ring",
+    "interaction-focus-ring-danger": "focus-ring-danger",
+    "interaction-focus-ring-success": "focus-ring-success",
+    "interaction-disabled-border": "inert-edge",
+    "interaction-disabled-bg": "inert-fill",
+    "interaction-disabled-fg": "inert-ink",
+    "border-width-outline": "stroke-outline",
+    "border-width-focus-ring": "stroke-focus",
+    "spacing-small-lvl5-height": "control-small-height",
+    "spacing-small-lvl5-inset": "control-small-inset",
+    "spacing-small-lvl5-adornment-size": "control-small-icon",
+    "spacing-small-content": "control-small-gap",
+    "radius-small": "control-small-corner",
+    "spacing-default-lvl5-height": "control-default-height",
+    "spacing-default-lvl5-inset": "control-default-inset",
+    "spacing-default-lvl5-adornment-size": "control-default-icon",
+    "spacing-default-content": "control-default-gap",
+    "radius-default": "control-default-corner",
+    "spacing-large-lvl5-height": "control-large-height",
+    "spacing-large-lvl5-inset": "control-large-inset",
+    "spacing-large-lvl5-adornment-size": "control-large-icon",
+    "spacing-large-content": "control-large-gap",
+    "radius-large": "control-large-corner",
+    "text-small-title1-bold": "label-small",
+    "text-default-title1-bold": "label-default",
+    "text-large-title1-bold": "label-large"
+  }
+}

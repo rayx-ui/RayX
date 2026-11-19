@@ -1,4 +1,8 @@
 {
   "extends": "./.nsh/tsconfig.json",
+  "compilerOptions": {
+    // The sample theme (`themes/sample.json`) is imported as an object for `setTheme`.
+    "resolveJsonModule": true
+  },
   "include": ["**/*.ts", "**/*.tsx"]
 }

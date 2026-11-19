@@ -3289,8 +3289,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-base"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "chrono",
  "html5ever",
@@ -3299,6 +3299,7 @@ dependencies = [
  "markdown",
  "markup5ever_rcdom",
  "nsh-core",
+ "nsh-theme",
  "regex",
  "ropey",
  "rustc-hash",
@@ -3313,17 +3314,17 @@ dependencies = [
 
 [[package]]
 name = "nsh-bundler"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "anyhow",
  "dunce",
  "imagesize 0.15.0",
  "log",
- "nsh-base",
  "nsh-core",
  "nsh-i18n",
  "nsh-js",
+ "nsh-theme",
  "oxc",
  "oxc_sourcemap",
  "resvg",
@@ -3339,10 +3340,11 @@ dependencies = [
 
 [[package]]
 name = "nsh-core"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "cap-std",
+ "chrono",
  "crc32fast",
  "flate2",
  "gif",
@@ -3351,6 +3353,7 @@ dependencies = [
  "libc",
  "log",
  "nsh-macros",
+ "nsh-theme",
  "ordered-float",
  "resvg",
  "rust-i18n",
@@ -3372,8 +3375,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-engine"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "crossbeam-channel",
  "env_filter",
@@ -3393,8 +3396,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-i18n"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "rust-i18n-support",
  "serde_json",
@@ -3402,8 +3405,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-js"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "futures-util",
  "getrandom 0.4.3",
@@ -3411,6 +3414,7 @@ dependencies = [
  "log",
  "nsh-core",
  "nsh-i18n",
+ "nsh-theme",
  "percent-encoding",
  "quickjs-jit",
  "quickjs-jit-stdlib",
@@ -3425,14 +3429,14 @@ dependencies = [
 
 [[package]]
 name = "nsh-macros"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "imagesize 0.15.0",
+ "nsh-theme",
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "serde_json",
  "syn 2.0.119",
  "ttf-parser",
  "wuff",
@@ -3440,8 +3444,8 @@ dependencies = [
 
 [[package]]
 name = "nsh-package"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -3454,9 +3458,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nsh-theme"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "nsh-updater"
-version = "0.5.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85"
+version = "0.6.0"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a0615cdce9556f66b0001f82fe0041944df7e"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -4891,6 +4904,7 @@ dependencies = [
  "rayx_services_selection",
  "rayx_services_storage",
  "rayx_services_suspension",
+ "rayx_services_theme",
  "serde",
  "serde_json",
 ]
@@ -4930,7 +4944,9 @@ dependencies = [
  "nsh-core",
  "nsh-engine",
  "nsh-js",
+ "nsh-theme",
  "rayx",
+ "serde_json",
 ]
 
 [[package]]
@@ -4991,6 +5007,7 @@ dependencies = [
  "nsh-core",
  "nsh-engine",
  "nsh-js",
+ "nsh-theme",
  "serde_json",
 ]
 
@@ -5169,6 +5186,22 @@ dependencies = [
  "nsh-engine",
  "rayx_app",
  "rayx_app_nsh",
+ "serde_json",
+]
+
+[[package]]
+name = "rayx_services_theme"
+version = "0.12.0"
+dependencies = [
+ "crossbeam-channel",
+ "futures",
+ "nsh-bundler",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "rayx_services_platform",
+ "serde",
  "serde_json",
 ]
 

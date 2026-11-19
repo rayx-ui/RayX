@@ -6,7 +6,7 @@
 use rayx::prelude::Registry;
 
 /// Each service's feature, its builder method in TS and whether the test's build enables it.
-pub const BUILDER_METHODS: [(&str, &str, bool); 12] = [
+pub const BUILDER_METHODS: [(&str, &str, bool); 13] = [
     (
         "application_configuration",
         "addApplicationConfiguration",
@@ -23,6 +23,7 @@ pub const BUILDER_METHODS: [(&str, &str, bool); 12] = [
     ("selection", "addSelection", cfg!(feature = "selection")),
     ("storage", "addStorage", cfg!(feature = "storage")),
     ("suspension", "addSuspension", cfg!(feature = "suspension")),
+    ("theme", "addTheme", cfg!(feature = "theme")),
 ];
 
 /// Adds the set of every service crate the test's build enables, through `rayx::services`.
@@ -52,4 +53,6 @@ pub fn register_service_sets(registry: &mut Registry) {
     rayx::services::storage::register(registry);
     #[cfg(feature = "suspension")]
     rayx::services::suspension::register(registry);
+    #[cfg(feature = "theme")]
+    rayx::services::theme::register(registry);
 }

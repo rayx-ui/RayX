@@ -93,14 +93,19 @@ fn the_crates_are_reachable_by_name() {
     let _: fn(RayXAppBuilder) = StartAppBuilderExt::start;
     // The screen's (or the surface root's) provider, for Rust components.
     let _: fn() -> Result<ServiceProvider, AppError> = services;
-    // The component library and its theme: the document, its typed keys and modifiers.
-    assert!(rayx::components::theme::DOCUMENT.contains("\"spacing-size-default-lvl5-height\""));
-    let key = rayx::components::theme::keys::platform::density::size::default::lvl5::HEIGHT;
-    assert_eq!(key.name(), "spacing-size-default-lvl5-height");
-    assert_eq!(
-        rayx::components::theme::modifiers::Accent::DEFAULT,
-        rayx::components::theme::modifiers::Accent::Cyan
+    // The component library and its theme: the default document (tokens named by their DTCG
+    // paths), RayX's roles and their reads.
+    assert!(
+        rayx::components::theme::DOCUMENT.contains("\"platform-density-size-default-lvl5-height\"")
     );
+    let role = rayx::components::theme::roles::SPACING_DEFAULT_LVL5_HEIGHT;
+    assert_eq!(role.name(), "spacing-default-lvl5-height");
+    assert!(
+        rayx::components::theme::roles::all()
+            .iter()
+            .any(|r| r.name == role.name() && r.required)
+    );
+    let _: fn(nsh_core::element::Role) -> nsh_core::color::Hsla = rayx::components::theme::value;
     let _register = rayx::components::register;
 }
 
@@ -112,11 +117,12 @@ fn the_crates_are_reachable_by_name() {
     feature = "navigation",
     feature = "operations",
     feature = "selection",
-    feature = "storage"
+    feature = "storage",
+    feature = "theme"
 ))]
 #[test]
 fn every_other_service_crate_is_reachable_under_its_feature() {
-    let _: [fn(&mut Registry); 8] = [
+    let _: [fn(&mut Registry); 9] = [
         rayx::services::application_configuration::register,
         rayx::services::history::register,
         rayx::services::i18n::register,
@@ -125,6 +131,7 @@ fn every_other_service_crate_is_reachable_under_its_feature() {
         rayx::services::operations::register,
         rayx::services::selection::register,
         rayx::services::storage::register,
+        rayx::services::theme::register,
     ];
     // Their builder extensions are in the prelude.
     let _ = RayXAppBuilder::new()
@@ -134,7 +141,8 @@ fn every_other_service_crate_is_reachable_under_its_feature() {
         .add_selection()
         .add_storage()
         .add_operations()
-        .add_history();
+        .add_history()
+        .add_theme(|_| {});
     #[allow(unused_imports)]
     use rayx::prelude::{navigation_region, navigation_view};
     // `tr!` comes with `i18n`, and its checked form (which reads an app's messages when it

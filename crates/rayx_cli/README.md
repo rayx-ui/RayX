@@ -237,7 +237,7 @@ for every retired guest.
 Reports every requirement of the selected sets as present, missing or the wrong version, with the
 version found and the exact fix, plus the desktop session (`interactiveDesktop`) and, from Windows,
 the size of each WSL virtual disk. It shows every pin with its source, the project's nsh among them
-(`nsh  nshx-0.5.0-7 (d47d7fd)  project  installed  3.1 GiB`). On macOS it reports Lima (the
+(`nsh  nshx-0.6.0-5 (2d6a061)  project  installed  3.1 GiB`). On macOS it reports Lima (the
 `limactl` version, or missing with `rayx setup --lima`), and on macOS and Windows every guest
 `rayx` manages: state (running, stopped, missing), CPUs, memory and disk, whether the home is
 read-only or writable, the Ubuntu version, whether the guest is current, outdated or retired, and
@@ -318,21 +318,21 @@ in the directory it runs nsh in:
 1. **`Cargo.lock`:** in the project's Cargo workspace (`cargo locate-project --workspace`, or the
    crates `nsh.json` lists under `"rust"` when there is none), every NSH package (NSH's own crates,
    not an app's `nsh-app-*`) has one and the same `source`. Without a lock, `cargo metadata` writes it first, and two sources stop with both
-   named. A git source with a tag (`git+https://github.com/dXnSix/nsh?tag=nshx-0.5.0-7#d47d7fd…`)
+   named. A git source with a tag (`git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-5#2d6a061…`)
    installs from that tag's release, a branch or bare commit from source, crates.io's `0.2.0` from
    upstream's `v0.2.0` release, and a path dependency runs that checkout (see below).
 2. **`rayx.toml`:** an app without Rust crates names its nsh in the `[nsh]` table of `rayx.toml`
    beside its `nsh.json` (`git`, `tag` and `commit`, or `version = "0.2.0"` for an upstream
    release). The commit is checked against what the tag gives. An app with both is refused: its
    pin is `Cargo.lock`'s, so remove the table.
-3. **The default:** with neither, `rayx` uses the nsh this release was tested with (`nshx-0.5.0-7`
-   at `d47d7fd`) and says so in an app, with the three lines that pin it.
+3. **The default:** with neither, `rayx` uses the nsh this release was tested with (`nshx-0.6.0-5`
+   at `2d6a061`) and says so in an app, with the three lines that pin it.
 
 The project contract (the pins, their sources and the `rayx.toml` table) is in
 [Projects](../../docs/cli/projects.md).
 
 **The store.** Each pin is installed once per machine, in `$RAYX_HOME/nsh/<id>` (`~/.rayx/nsh`):
-the id is the commit's first 12 hex digits (`d47d7fd6dfdc`), or `v0.2.0` for an upstream release.
+the id is the commit's first 12 hex digits (`2d6a0615cdce`), or `v0.2.0` for an upstream release.
 An install downloads the release's `nsh-<platform>.tar.gz` (`.zip` on Windows) and its `.sha256`,
 checks the digest and unpacks it. A pin with no release archive for this host is built from source:
 a shallow checkout of the commit, its own Rust toolchain, and
@@ -366,7 +366,7 @@ default pin and every tracked file that names it, the way a pin bump does (`CHAN
 `.agentx/` keep their history). While the lines point at a checkout, commit neither them nor
 `Cargo.lock`: `tests/nsh_pin_rayx.rs` fails until the tag is back. A checkout Cargo cannot lock, or
 that lacks a patched crate, is refused with every file as it was. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
-every command: `rayx: RAYX_NSH=<path> replaces the project's nsh d47d7fd6dfdc`. A relative path is
+every command: `rayx: RAYX_NSH=<path> replaces the project's nsh 2d6a0615cdce`. A relative path is
 read against the directory `rayx` started in (never searched on `PATH`), and `rayx nshx path` prints
 it too, for scripts that need the binary.
 
@@ -381,23 +381,23 @@ runtime (the fork's release archives bring every runtime prebuilt).
 names its nsh from its first commit: it installs the default pin, runs its `nsh init`, makes the app
 a RayX app and pins it.
 
-- **RayX:** the app's `Cargo.toml` depends on `rayx` at this `rayx`'s own tag with the features
-  its builder uses beyond the defaults (git `https://github.com/rayx-ui/RayX`, `tag = "vX.Y.Z"`,
-  `features = ["storage", "operations", "history"]`; the defaults are the four services the host
-  requires), and RayX's files take the place of nsh's: for `mixed` (the default: TSX with a Rust
-  crate at the app's root) a `src/lib.rs` whose UI set is RayX's attribute,
+- **RayX:** the app's `Cargo.toml` depends on `rayx` at this `rayx`'s own tag with the features its
+  builder uses beyond the defaults (git `https://github.com/rayx-ui/RayX`, `tag = "vX.Y.Z"`,
+  `features = ["theme", "storage", "operations", "history"]`; the defaults are the four services the
+  host requires), and RayX's files take the place of nsh's: for `mixed` (the default: TSX with a
+  Rust crate at the app's root) a `src/lib.rs` whose UI set is RayX's attribute,
   `#[rayx::native_module("<specifier>")] fn native(registry: &mut Registry)` (every RayX TS class
-  and RayX's components, and in its body RayX's dev tools: `DevTools` and the `DevLayer`
-  component), an `App.tsx` that builds the app's services with `new RayXAppBuilder()`,
+  and RayX's components, and in its body RayX's dev tools: `DevTools` and the `DevLayer` component),
+  an `App.tsx` that builds the app's services with `new RayXAppBuilder()`,
   `.addPlatform().addSuspension().addAssets().addFonts()` (the four the host requires, each
-  replaceable by the app's own) then `.addStorage().addOperations().addHistory()`, `await`s
-  `start()` and resolves a service from the `ServiceProvider` it gives, and mounts `<DevLayer />`
-  (absolute, out of the layout), its test and a README; for `rust` a root component that builds
-  `RayXAppBuilder::new()` with the same services (`add_platform()`, `add_suspension()`,
-  `add_assets(..)`, `add_fonts(..)`, then `add_storage()`, `add_operations()`, `add_history()`)
-  and calls `.start()`, shows `app_state()` and mounts `dev_layer()`. In a dev build the dev tools
-  are the in-app agent a tool connects to and its layer; a release build has neither. `ts` has no
-  Rust crate to hold RayX's classes, so it needs `--nsh-only`.
+  replaceable by the app's own) then `.addTheme().addStorage().addOperations().addHistory()`,
+  `await`s `start()` and resolves a service from the `ServiceProvider` it gives, and mounts
+  `<DevLayer />` (absolute, out of the layout), its test and a README; for `rust` a root component
+  that builds `RayXAppBuilder::new()` with the same services (`add_platform()`, `add_suspension()`,
+  `add_assets(..)`, `add_fonts(..)`, then `add_theme(..)`, `add_storage()`, `add_operations()`,
+  `add_history()`) and calls `.start()`, shows `app_state()` and mounts `dev_layer()`. In a dev
+  build the dev tools are the in-app agent a tool connects to and its layer; a release build has
+  neither. `ts` has no Rust crate to hold RayX's classes, so it needs `--nsh-only`.
 - **`--nsh-only`:** a plain NSH app, as `nsh init` writes it.
 - **The pin:** `mixed` and `rust` get a `.cargo/config.toml` that patches to the default pin's tag
   the NSH crates RayX patches, those of the hosts, runners and platforms nsh generates for the
@@ -432,7 +432,7 @@ built-in default. `rayx doctor` shows each pin with its source, `project` or `de
 
 | Pin | Default | Project key |
 | --- | --- | --- |
-| nsh | `nshx-0.5.0-7` at `d47d7fd` | none: the NSH crates' source in `Cargo.lock`, or `rayx.toml` |
+| nsh | `nshx-0.6.0-5` at `2d6a061` | none: the NSH crates' source in `Cargo.lock`, or `rayx.toml` |
 | Rust toolchain | stable | none: `rust-toolchain.toml` |
 | wasm-bindgen | none | none: `Cargo.lock` |
 | Node.js | 22 | `node` |

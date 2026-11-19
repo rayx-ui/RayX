@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The service crates, by the name after `rayx_services_`: the feature names.
-const SERVICES: [&str; 12] = [
+const SERVICES: [&str; 13] = [
     "application_configuration",
     "assets",
     "fonts",
@@ -24,6 +24,7 @@ const SERVICES: [&str; 12] = [
     "selection",
     "storage",
     "suspension",
+    "theme",
 ];
 
 /// The services the host requires: the default features.

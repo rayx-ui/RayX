@@ -13,8 +13,9 @@ workspace = true
 
 [dependencies]
 nsh-core.workspace = true
-# The services the gallery starts RayX with (`App.tsx`): the four the host requires.
-rayx = { workspace = true, features = ["platform", "suspension", "assets", "fonts"] }
+# The services the gallery starts RayX with (`App.tsx`): the four the host requires, and the theme
+# service its toolbar picks the color mode and the modifiers' contexts through.
+rayx = { workspace = true, features = ["platform", "suspension", "assets", "fonts", "theme"] }
 
 [dev-dependencies]
 nsh-core = { workspace = true, features = ["declarations"] }
@@ -23,3 +24,5 @@ nsh-engine = { workspace = true, features = ["js"] }
 nsh-bundler.workspace = true
 nsh-js.workspace = true
 crossbeam-channel.workspace = true
+nsh-theme.workspace = true
+serde_json.workspace = true

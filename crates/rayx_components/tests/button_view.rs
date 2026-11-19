@@ -1,7 +1,8 @@
 //! RayX's `Button` in a Rust view, headless: its height, padding and radius come from the size's
-//! level 5, its fill from the variant's role, its slots and icons show as their props say,
-//! presses reach `on_press` unless it is disabled, and the app's modifiers (Sky, Touch) resize and
-//! recolor it in place. The expected values are the theme document's (`theme.json`).
+//! level 5 roles, its fill from the variant's intent, its slots and icons show as their props
+//! say, presses reach `on_press` unless it is disabled, and the app's picks of the theme's
+//! modifiers (Sky, Touch) resize and recolor it in place. The expected values are those RayX's
+//! default theme gives the roles.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -9,12 +10,11 @@ mod support;
 
 use nsh_core::Color;
 use nsh_core::color::rgba;
-use nsh_core::element::Root;
+use nsh_core::element::{Root, set_modifier};
 use nsh_core::prelude::*;
 use nsh_engine::App;
 use rayx_components::button::{ButtonVariant, button};
 use rayx_components::theme::ComponentSize;
-use rayx_components::theme::modifiers::{Accent, Density};
 use support::{Running, Screen};
 
 #[component]
@@ -54,8 +54,8 @@ fn Buttons() -> impl IntoElement {
                 .slot_left(text("y")),
         )
         .child(button().text("Touch").on_press(|| {
-            Accent::Sky.set();
-            Density::Touch.set();
+            set_modifier("accent", "sky");
+            set_modifier("density", "touch");
         }))
         .child(text(move || format!("presses {}", presses.get())))
 }
@@ -102,23 +102,27 @@ fn a_buttons_size_is_its_level_5_and_its_look_its_variant() {
     let label = screen.text_node("Save").unwrap();
     let (width, _) = frame(screen, "Save");
     let label_width = screen.frames.get(&label).unwrap().0;
-    assert_eq!(width, label_width + 2.0 * 12.0, "default lvl5/inset is 12");
+    assert_eq!(
+        width,
+        label_width + 2.0 * 12.0,
+        "spacing-default-lvl5-inset is 12"
+    );
 
     let style = screen.styles.get(&save).unwrap();
-    assert_eq!(style.border_radius.0, 8.0, "size/default/borders/radius");
+    assert_eq!(style.border_radius.0, 8.0, "radius-default");
     assert_eq!(
         fill(screen, "Save"),
         hex(0x007796ff),
-        "roles-primary-bg, cyan"
+        "intent-primary-bg, cyan"
     );
     assert_eq!(
         fill(screen, "Small"),
         hex(0x00000008),
-        "roles-neutral-bg, light"
+        "intent-neutral-bg, light"
     );
     assert_eq!(
         fill(screen, "Quiet"),
-        Color::from(AdaptiveColor::TRANSPARENT.light),
+        Color::from(nsh_core::color::Hsla::default()),
         "a ghost button has no fill at rest"
     );
     assert_eq!(
@@ -126,13 +130,13 @@ fn a_buttons_size_is_its_level_5_and_its_look_its_variant() {
         hex(0x0000000a),
         "interaction-disabled-bg, light"
     );
-    // `outlined`: borders/outlineWidth in surfaces/border.
+    // `outlined`: border-width-outline in surface-border.
     let large = screen.styles.get(&screen.button("Large").unwrap()).unwrap();
     assert_eq!(large.borders.widths.top.0, 1.0);
     assert_eq!(
         large.borders.colors[0],
         hex(0x0000001a),
-        "surfaces-border, light"
+        "surface-border, light"
     );
     assert_eq!(style.borders.widths.top.0, 0.0, "not outlined");
 }
@@ -147,7 +151,7 @@ fn icons_and_slots_show_as_their_props_say() {
     // `showLeftIcon: false` hides the icon; `slotLeft` without `showSlotLeft` stays hidden.
     assert!(!shown.contains(&"x".to_string()), "{shown:?}");
     assert!(!shown.contains(&"y".to_string()), "{shown:?}");
-    // The icon's box is lvl5/adornmentSize square (18 on Desktop's default size).
+    // The icon's box is spacing-default-lvl5-adornment-size square (18 on Desktop).
     let plus = app.screen.text_node("+").unwrap();
     let holder = *app.screen.parents.get(&plus).unwrap();
     assert_eq!(app.screen.frames.get(&holder), Some(&(18.0, 18.0)));
@@ -187,6 +191,6 @@ fn the_apps_modifiers_resize_and_recolor_the_buttons_in_place() {
     assert!(app.wait(|s| s.frames.get(&save).is_some_and(|f| f.1 == 48.0)));
     assert_eq!(app.screen.button("Save"), Some(save));
     assert_eq!(frame(&app.screen, "Small").1, 40.0);
-    // Sky's roles-primary-bg, light.
+    // Sky's intent-primary-bg, light.
     assert!(app.wait(|s| fill(s, "Save") == hex(0x075e8eff)));
 }

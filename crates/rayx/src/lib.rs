@@ -10,9 +10,9 @@
 //!   `RayXAppBuilder`, `ServiceProvider`, the startup and options classes).
 //! - [`services`]: RayX's implementations of the services, one crate and one feature each, an
 //!   enabled crate at `rayx::services::<name>` with its builder extension in the prelude.
-//! - [`components`] ([`rayx_components`]): RayX's component library: the design system's theme
-//!   (its tokens as an NSH theme document read through typed keys, its modes as the document's
-//!   modifiers) and its components (`Button`), for Rust views and TSX.
+//! - [`components`] ([`rayx_components`]): RayX's component library: the design system's roles
+//!   (`theme::roles`), its default theme (an NSH theme document that maps them, whose modes are
+//!   its modifiers) and its components (`Button`), for Rust views and TSX.
 //! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
 //!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
@@ -38,9 +38,13 @@
 //! | `operations` | `rayx_services_operations` | `OperationsAppBuilderExt` | |
 //! | `selection` | `rayx_services_selection` | `SelectionAppBuilderExt` | |
 //! | `storage` | `rayx_services_storage` | `StorageAppBuilderExt` | |
+//! | `theme` | `rayx_services_theme` | `ThemeAppBuilderExt` (`add_theme`) | |
 //!
 //! The defaults are the four services the host requires; a feature off removes its crate from
-//! the build. `rayx = { version = "…", features = ["i18n", "storage"] }` adds two.
+//! the build. With `theme`'s service registered, the theme's light/dark changes through it (with
+//! the color scheme, or the app's choice); without it, RayX's theme shows its `colorMode`
+//! default, `light`. Density, OS and contrast are never followed from the platform: an app picks
+//! them with the service's `set_context`. `rayx = { version = "…", features = ["i18n", "storage"] }` adds two.
 //!
 //! A TSX app's crate is one attribute at its root, its UI set with RayX's TS classes, every
 //! enabled service's set and RayX's components ([`native_module`]); an app's own Rust services
@@ -101,6 +105,8 @@ pub mod services {
     pub use rayx_services_storage as storage;
     #[cfg(feature = "suspension")]
     pub use rayx_services_suspension as suspension;
+    #[cfg(feature = "theme")]
+    pub use rayx_services_theme as theme;
 }
 
 /// Exports a Rust extension of the app builder to TS (`#[rayx::app_extension] fn
@@ -179,6 +185,8 @@ pub mod __private {
         rayx_services_storage::register(registry);
         #[cfg(feature = "suspension")]
         rayx_services_suspension::register(registry);
+        #[cfg(feature = "theme")]
+        rayx_services_theme::register(registry);
         rayx_components::register(registry);
     }
 }
@@ -228,4 +236,6 @@ pub mod prelude {
     pub use rayx_services_storage::StorageAppBuilderExt;
     #[cfg(feature = "suspension")]
     pub use rayx_services_suspension::SuspensionAppBuilderExt;
+    #[cfg(feature = "theme")]
+    pub use rayx_services_theme::ThemeAppBuilderExt;
 }

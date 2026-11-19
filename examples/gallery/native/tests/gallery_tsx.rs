@@ -1,7 +1,8 @@
 //! The gallery's TSX screens on the gallery's crate, headless: `App.tsx` bundles against the
 //! crate's UI set (RayX's library and the glyphs), starts RayX with the four services the host
-//! requires, shows the Button page, its playground sets the Figma properties, and its toolbar
-//! switches the theme's modes. (`nsh test` runs `App.test.tsx` the same way, with the nsh the
+//! requires and the theme service, shows the Button page, its playground sets the Figma
+//! properties, and its toolbar switches the theme's modes. (`gallery_theme` checks the theme's
+//! switches in detail.) (`nsh test` runs `App.test.tsx` the same way, with the nsh the
 //! project pins.)
 
 // Loading the compiled TSX app takes `Bundle::bytecode`.
@@ -132,7 +133,7 @@ impl Gallery {
 }
 
 #[test]
-fn the_gallery_starts_rayx_with_the_services_the_host_requires() {
+fn the_gallery_starts_rayx_with_the_services_the_host_requires_and_the_theme_service() {
     let mut gallery = Gallery::start();
     let settled =
         gallery.wait(|s| s.ids.contains_key("rayx-started") || s.ids.contains_key("rayx-failed"));
@@ -197,10 +198,12 @@ fn the_playground_sets_the_figma_properties() {
 #[test]
 fn the_toolbar_switches_the_themes_modes() {
     let mut gallery = Gallery::start();
+    // The pickers come from the theme service's snapshot, once RayX started.
+    assert!(gallery.wait(|s| s.ids.contains_key("accent-sky")));
     gallery.press("accent-sky");
     gallery.press("density-touch");
-    gallery.press("appearance-dark");
-    assert!(gallery.wait(|s| s.shows("dark · sky · touch")));
+    gallery.press("colormode-Dark");
+    assert!(gallery.wait(|s| s.shows("rayx · dark · sky · touch · windows")));
     // Touch's default lvl5 is 48.
     let playground = gallery.screen.ids["playground"];
     assert!(gallery.wait(|s| s.heights.get(&playground) == Some(&48.0)));

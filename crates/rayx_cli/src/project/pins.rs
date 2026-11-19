@@ -101,9 +101,9 @@ pub const DEFAULTS: Defaults = Defaults {
     ubuntu: "24.04",
     nsh: DefaultNsh {
         git: "https://github.com/dXnSix/nsh",
-        tag: "nshx-0.5.0-7",
-        commit: "d47d7fd6dfdcb1d3ad11400d121b91a9d63bbf85",
-        version: "0.5.0",
+        tag: "nshx-0.6.0-5",
+        commit: "2d6a0615cdce9556f66b0001f82fe0041944df7e",
+        version: "0.6.0",
         crates: &[
             "nsh-base",
             "nsh-bundler",
@@ -112,6 +112,7 @@ pub const DEFAULTS: Defaults = Defaults {
             "nsh-js",
             "nsh-macros",
             "nsh-package",
+            "nsh-theme",
         ],
         generated: &[
             "nsh-gpui-host",

@@ -54,6 +54,7 @@ use crate::services::suspension::{
     SuspensionError, SuspensionEvent, SuspensionEventKind, SuspensionEventReason,
     SuspensionService, SuspensionSnapshot,
 };
+use crate::services::theme::{ColorModeChoice, ThemeError, ThemeService, ThemeSnapshot};
 
 fn lock<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     mutex.lock().unwrap_or_else(PoisonError::into_inner)
@@ -1364,6 +1365,88 @@ impl InputMapService for FakeInputMap {
             Ok(candidate)
         });
         futures::future::ready(result).boxed()
+    }
+}
+
+/// A theme command a [`FakeTheme`] was asked.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ThemeCall {
+    SetContext { modifier: String, context: String },
+    SetColorMode(ColorModeChoice),
+}
+
+/// A theme service publishing the snapshot the test gives it ([`FakeTheme::new`],
+/// [`FakeTheme::publish`]); it records the commands asked of it. `set_context` refuses a
+/// modifier or context the snapshot lacks, as RayX's does, and otherwise shows the pick at once
+/// (the fake has no engine to wait for); `set_color_mode` takes any choice. Each change is
+/// published at the next revision; a command that changes nothing publishes nothing.
+pub struct FakeTheme {
+    theme: FakeState<ThemeSnapshot>,
+    calls: Mutex<Vec<ThemeCall>>,
+}
+
+impl FakeTheme {
+    /// A theme at `snapshot`.
+    pub fn new(snapshot: ThemeSnapshot) -> Arc<Self> {
+        Arc::new(Self {
+            theme: FakeState::new(snapshot),
+            calls: Mutex::default(),
+        })
+    }
+
+    /// Publishes `snapshot`, as a change of the theme would.
+    pub fn publish(&self, snapshot: ThemeSnapshot) {
+        self.theme.set(snapshot);
+    }
+
+    /// The commands asked of it, in order.
+    pub fn calls(&self) -> Vec<ThemeCall> {
+        lock(&self.calls).clone()
+    }
+}
+
+impl ThemeService for FakeTheme {
+    fn theme(&self) -> &StateCell<ThemeSnapshot> {
+        self.theme.cell()
+    }
+
+    fn set_context(
+        &self,
+        modifier: String,
+        context: String,
+    ) -> BoxFuture<'_, Result<bool, ThemeError>> {
+        lock(&self.calls).push(ThemeCall::SetContext {
+            modifier: modifier.clone(),
+            context: context.clone(),
+        });
+        let result = self.theme.change(|snapshot| {
+            let Some(axis) = snapshot.modifiers.iter_mut().find(|m| m.name == modifier) else {
+                return Err(ThemeError::UnknownModifier { modifier });
+            };
+            if !axis.has_context(&context) {
+                return Err(ThemeError::UnknownContext { modifier, context });
+            }
+            if axis.selected == context {
+                return Ok(false);
+            }
+            axis.selected = context;
+            snapshot.revision += 1;
+            Ok(true)
+        });
+        futures::future::ready(result).boxed()
+    }
+
+    fn set_color_mode(&self, choice: ColorModeChoice) -> BoxFuture<'_, Result<bool, ThemeError>> {
+        lock(&self.calls).push(ThemeCall::SetColorMode(choice));
+        let changed = self.theme.change(|snapshot| {
+            if snapshot.color_mode == choice {
+                return false;
+            }
+            snapshot.color_mode = choice;
+            snapshot.revision += 1;
+            true
+        });
+        futures::future::ready(Ok(changed)).boxed()
     }
 }
 
