@@ -4,12 +4,13 @@
 //! `modifiers()`, the only source of the snapshot's modifiers and their `selected` contexts.
 //! Outside an engine there is no bridge.
 
+use std::cell::RefCell;
 use std::sync::Arc;
 
 use futures::StreamExt as _;
 use futures::channel::mpsc::unbounded;
 use futures::channel::oneshot;
-use nsh_core::element::{ModifierAxis, modifiers, runtime_entered, set_modifier};
+use nsh_core::element::{ModifierAxis, modifiers, runtime_entered, set_modifier, start_task};
 use nsh_core::prelude::{Appearance, Owner, dark, effect, set_color_scheme, spawn, untracked};
 use rayx_app::services::theme::{ColorModeChoice, ThemeModifier};
 
@@ -41,21 +42,76 @@ fn appearance(choice: ColorModeChoice) -> Appearance {
     }
 }
 
-/// The builder's provisional pick, synchronous where it runs (while the root is built, or
-/// before `mount` in TSX), so it reaches the app's first frame: `options`' start contexts and
-/// the light/dark context of its choice (with `System`, `dark` exactly when NSH shows dark;
-/// with `Light` or `Dark`, that context, and NSH's appearance set to it). A modifier or
-/// context the active document lacks is skipped; outside an engine nothing is picked.
+/// What NSH shows on this engine thread's surface, for a synchronous call from JS, where NSH's
+/// reactive runtime is not entered and it cannot be read: whether it is dark, and the active
+/// document's modifiers. [`follow_shown`] keeps it current.
+#[derive(Clone, Default)]
+struct Shown {
+    dark: bool,
+    modifiers: Vec<ThemeModifier>,
+}
+
+thread_local! {
+    static SHOWN: RefCell<Option<Shown>> = const { RefCell::new(None) };
+}
+
+/// Keeps [`SHOWN`] on what the surface shows, from before the app's first op on (the set's
+/// setup, `register`'s), so `addTheme`'s pick in a JS app's synchronous call knows the scheme and
+/// the document.
+pub(crate) fn follow_shown() {
+    if !in_engine() {
+        return;
+    }
+    Owner::detached().run(|| {
+        effect(|| {
+            let now = Shown {
+                dark: dark(),
+                modifiers: shown(modifiers()),
+            };
+            SHOWN.with_borrow_mut(|shown| *shown = Some(now));
+        });
+    });
+}
+
+/// Whether this runs inside a synchronous call from JS (a class member, a class extension's
+/// method), where NSH queues theme writes with the call's turn: NSH starts a core task there,
+/// and nowhere else outside its runtime.
+fn in_js_call() -> bool {
+    !in_engine() && start_task(async {}).is_ok()
+}
+
+/// What NSH shows where the builder runs: read in NSH's runtime (a Rust root), else as
+/// [`follow_shown`] last saw it in a synchronous call from JS (TS's `addTheme`); `None` outside
+/// an engine.
+fn shown_now() -> Option<Shown> {
+    if in_engine() {
+        return Some(Shown {
+            dark: untracked(dark),
+            modifiers: shown(untracked(modifiers)),
+        });
+    }
+    if in_js_call() {
+        return SHOWN.with_borrow(Clone::clone);
+    }
+    None
+}
+
+/// The builder's provisional pick, synchronous where it runs (while a Rust root is built, or in
+/// TS's `addTheme` call before `mount`), so it reaches the app's first frame: `options`' start
+/// contexts and the light/dark context of its choice (with `System`, `dark` exactly when NSH
+/// shows dark; with `Light` or `Dark`, that context, and NSH's appearance set to it). NSH queues
+/// these writes with the turn (in a JS call, with the call's turn, as JS's `setModifier` does).
+/// A modifier or context the active document lacks is skipped; outside an engine nothing is
+/// picked.
 pub(crate) fn provisional_pick(options: &ThemeOptions) -> Provisional {
     let mut provisional = Provisional::default();
-    if !in_engine() {
+    let Some(now) = shown_now() else {
         return provisional;
-    }
-    let document = untracked(modifiers);
+    };
     let has = |modifier: &str, context: &str| {
-        document.iter().any(|axis| {
-            &*axis.name == modifier && axis.contexts.iter().any(|known| &**known == context)
-        })
+        now.modifiers
+            .iter()
+            .any(|axis| axis.name == modifier && axis.has_context(context))
     };
     for (modifier, context) in options.valid_contexts() {
         if has(modifier, context) {
@@ -69,7 +125,7 @@ pub(crate) fn provisional_pick(options: &ThemeOptions) -> Provisional {
         provisional.appearance = Some(choice);
     }
     let context = match choice {
-        ColorModeChoice::System if untracked(dark) => &color.dark,
+        ColorModeChoice::System if now.dark => &color.dark,
         ColorModeChoice::System | ColorModeChoice::Light => &color.light,
         ColorModeChoice::Dark => &color.dark,
     };

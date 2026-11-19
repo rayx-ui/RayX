@@ -25,5 +25,7 @@ rayx_services_platform.workspace = true
 nsh-core = { workspace = true, features = ["declarations"] }
 nsh-engine = { workspace = true, features = ["js", "inspect"] }
 crossbeam-channel.workspace = true
+# A JS app on a dark surface from its first frame (`nsh_tsx_theme`).
+nsh-bundler.workspace = true
 futures = { workspace = true, features = ["std", "executor"] }
 serde_json.workspace = true

@@ -64,7 +64,8 @@ pub const THEME_SNAPSHOT: TsAlias = TsAlias {
 /// Adds the theme service's TS side to an app's set: its class [`ThemeService`], its options
 /// class (`ThemeOptions` in TS), the contract a TS implementation follows (the TS interface
 /// `ThemeServiceContract`, [`ThemeContract`] in Rust, whose token is the class) and
-/// `builder.addTheme(..)`.
+/// `builder.addTheme(..)`, with a setup that follows the surface's color scheme and document for
+/// `addTheme`'s pick, which reaches the app's first frame.
 pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(COLOR_MODE_CHOICE)
@@ -72,5 +73,8 @@ pub fn register(registry: &mut Registry) {
         .ts_alias(THEME_SNAPSHOT)
         .class::<TsThemeOptions>()
         .contract_class::<ThemeContract, ThemeService>()
-        .class_extension::<ThemeBuilder>();
+        .class_extension::<ThemeBuilder>()
+        // What `addTheme`'s pick reads in a JS app's synchronous call (NSH's runtime is not
+        // entered there): the surface's scheme and document, from before the app's first op.
+        .setup(nsh::follow_shown);
 }

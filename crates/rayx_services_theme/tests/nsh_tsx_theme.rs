@@ -3,7 +3,9 @@
 //! reaches (the snapshot, picks and the color mode as promises, hearing changes); a TS
 //! implementation of the contract registered under the class replaces RayX's, Rust uses it, and
 //! what it throws reaches Rust as `ThemeError::Failed` and the class's promise as a rejection.
-//! The class, its options, the contract and `addTheme` are declared.
+//! The class, its options, the contract and `addTheme` are declared. Under a dark scheme, a JS
+//! app's first frame already shows `addTheme`'s pick (made in its call, before `mount`), and
+//! without the service it shows the theme's default, `light`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -252,4 +254,144 @@ fn without_the_set_there_is_no_add_theme() {
     let ts = testing::declarations(&testing::set(|_| {}));
     assert!(!ts.contains("addTheme("), "{ts}");
     assert!(!ts.contains("class ThemeService"), "{ts}");
+}
+
+/// A JS app's frames: the texts of each batch, on a surface whose scheme is `scheme` from its
+/// start (the app's NSH platform service follows it).
+fn frames(tsx: &str, scheme: nsh_core::platform::ColorScheme) -> Vec<String> {
+    use std::time::{Duration, Instant};
+
+    use crossbeam_channel::Sender;
+    use nsh_core::{ApproxTextEngine, MountBatch, MountItem};
+    use nsh_engine::{App, Bundle, Engine, EngineConfig, Environment, MountSink};
+
+    struct Sink(Sender<MountBatch>);
+    impl MountSink for Sink {
+        fn submit(&self, batch: MountBatch) {
+            let _ = self.0.send(batch);
+        }
+    }
+
+    static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let dir = std::env::temp_dir().join(format!(
+        "rayx-theme-first-frame-{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, std::sync::atomic::Ordering::SeqCst)
+    ));
+    std::fs::create_dir_all(&dir).unwrap();
+    let entry = dir.join("App.tsx");
+    std::fs::write(&entry, tsx).unwrap();
+    let sets = vec![testing::set(|set| {
+        rayx_services_platform::register(set);
+        rayx_services_theme::register(set);
+        set.theme_document(THEME);
+    })];
+    let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
+        development: false,
+        app: nsh_bundler::AppInfo::default(),
+        asset_root_from: None,
+        entry,
+        minify: false,
+        split: false,
+        ui_sets: sets.iter().map(Into::into).collect(),
+    })
+    .unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    let (tx, rx) = crossbeam_channel::unbounded();
+    let config = EngineConfig {
+        ui_sets: sets,
+        environment: Environment {
+            color_scheme: scheme,
+            ..Environment::default()
+        },
+        ..EngineConfig::new(App::Js(Bundle::source(bundle.code)))
+    };
+    let _engine = Engine::start(config, || ApproxTextEngine, Sink(tx)).unwrap();
+    let mut frames = Vec::new();
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while let Ok(batch) = rx.recv_deadline(deadline) {
+        let texts: Vec<String> = batch
+            .items
+            .iter()
+            .filter_map(|item| match item {
+                MountItem::Text { text, .. } => Some(text.text.to_string()),
+                _ => None,
+            })
+            .collect();
+        if texts.is_empty() {
+            continue;
+        }
+        let done = texts.iter().any(|text| text.starts_with("ready"));
+        frames.push(texts.join(";"));
+        if done {
+            break;
+        }
+    }
+    frames
+}
+
+/// An app that builds `builder` before `mount` and shows the light/dark modifier and the
+/// scheme, then `ready` once it started.
+fn first_frame_app(builder: &str) -> String {
+    format!(
+        r#"import {{ colorScheme, modifier, mount, signal, Text }} from "nsh";
+import {{ RayXAppBuilder }} from "test/app";
+
+const state = signal("starting");
+{builder}.start().then(() => setTimeout(() => state.set("ready"), 30));
+mount(() => <Text>{{`${{state()}} ${{modifier("colorMode")}} ${{colorScheme()}}`}}</Text>);
+"#
+    )
+}
+
+#[test]
+fn under_a_dark_scheme_a_js_app_s_first_frame_shows_add_theme_s_pick() {
+    use nsh_core::platform::ColorScheme;
+
+    let frames = frames(
+        &first_frame_app("new RayXAppBuilder().addPlatform().addHostFakes().addTheme()"),
+        ColorScheme::Dark,
+    );
+    assert_eq!(frames[0], "starting dark dark", "{frames:?}");
+    assert!(
+        frames.iter().all(|frame| frame.ends_with("dark dark")),
+        "{frames:?}"
+    );
+    assert!(frames.last().unwrap().starts_with("ready"), "{frames:?}");
+}
+
+#[test]
+fn a_light_choice_shows_light_from_the_first_frame_under_a_dark_scheme() {
+    use nsh_core::platform::ColorScheme;
+
+    let frames = frames(
+        &first_frame_app(
+            "new RayXAppBuilder().addPlatform().addHostFakes().addTheme((options) => options.colorMode(\"Light\"))",
+        ),
+        ColorScheme::Dark,
+    );
+    // The tokens show light from the first frame. (JS's `colorScheme()` is JS's own appearance,
+    // which only JS's `setColorScheme` sets: it keeps the system's `dark`.)
+    assert!(frames[0].starts_with("starting light "), "{frames:?}");
+    assert!(
+        frames
+            .iter()
+            .all(|frame| frame.split(' ').nth(1) == Some("light")),
+        "{frames:?}"
+    );
+}
+
+#[test]
+fn without_the_service_the_theme_shows_its_default_light() {
+    use nsh_core::platform::ColorScheme;
+
+    let frames = frames(
+        &first_frame_app("new RayXAppBuilder().addPlatform().addHostFakes()"),
+        ColorScheme::Dark,
+    );
+    assert_eq!(frames[0], "starting light dark", "{frames:?}");
+    assert!(
+        frames.last().unwrap().starts_with("ready light dark"),
+        "{frames:?}"
+    );
 }
