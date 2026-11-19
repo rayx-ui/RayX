@@ -134,7 +134,7 @@
   {
     "name": "intent-neutral-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
@@ -146,475 +146,475 @@
   {
     "name": "intent-neutral-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-neutral-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-neutral-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-neutral-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-neutral-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-neutral-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-neutral-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-neutral-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-neutral-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Neutral role: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Neutral intent: default components without semantic meaning (secondary buttons, tabs, inputs, list items). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-primary-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-primary-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-primary-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-primary-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-primary-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-primary-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-primary-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-primary-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-primary-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-primary-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Primary role: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Primary intent: brand-colored emphasis (primary buttons, selected tabs, toggles that are on). Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-danger-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-danger-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-danger-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-danger-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-danger-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-danger-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-danger-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-danger-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-danger-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-danger-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Danger role: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Danger intent: destructive or blocking actions and error states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-success-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-success-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-success-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-success-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-success-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-success-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-success-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-success-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-success-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-success-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Success role: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Success intent: confirming actions and positive states of components. Aliases the role set the current theme mode selects.",
     "required": true
   },
   {
     "name": "intent-alerts-info-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-info-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Alert role (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert intent (info): fills for alert, toast and notification components with informational severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-warning-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Alert role (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert intent (warning): fills for alert, toast and notification components with warning severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-error-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Alert role (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert intent (error): fills for alert, toast and notification components with error severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-bg",
     "type": "color",
-    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Resting background of the element (button, tab, chip, alert, and similar). Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-bg-translucent",
     "type": "color",
-    "doc": "Translucent tint of the role color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Translucent tint of the intent color for soft elements that let the surface behind show through: inactive badges, soft tags and chips, the hover of transparent elements. Lighter than `bg`. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-bg-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-bg-selected",
     "type": "color",
-    "doc": "Background of the element when selected or toggled on. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element when selected or toggled on. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-bg-selected-hover",
     "type": "color",
-    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while the pointer hovers over it when selected or toggled on. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-text",
     "type": "color",
-    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Main text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA (4.5:1) against them, AAA where the fill allows. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-text-muted",
     "type": "color",
-    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Secondary, muted text color over `bg`, `bgHover` and `bgSelected`. At least WCAG AA against them. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-text-subtle",
     "type": "color",
-    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some roles, so never use it for essential text. Aliases the role set the current theme mode selects.",
+    "doc": "Faintest text color over `bg`, `bgHover` and `bgSelected`: placeholders, hints and captions. Roughly 3 to 4:1 contrast, below WCAG AA in some intents, so never use it for essential text. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-accent",
     "type": "color",
-    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Accent color for icons and small emphasized marks inside the element (e.g. the icon of an alert). Deliberately lighter than `text`, which reads better perceptually. Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
     "name": "intent-alerts-success-bg-active",
     "type": "color",
-    "doc": "Background of the element while it is pressed (the press in progress). Alert role (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
+    "doc": "Background of the element while it is pressed (the press in progress). Alert intent (success): fills for alert, toast and notification components with success severity. Aliases the role set the current theme mode selects.",
     "required": false
   },
   {
