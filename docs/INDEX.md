@@ -16,8 +16,8 @@
 - [TSX](tsx.md): a TSX app's crate (RayX's attribute), its builder and provider, RayX's service classes, services written
   in TS, contracts (shapes, threads and costs), implementing a RayX service in TS, options and app extensions, each
   beside its Rust twin.
-- [Components and theme](components.md): RayX's component library, its theme from the Figma tokens, custom themes, and the
-  gallery app.
+- [Components and theme](components.md): RayX's component library, the roles it reads, its default theme from the
+  Figma tokens, another theme or a patch over RayX's, and the gallery app.
 - [Dev tools](devtools.md): the in-app agent of dev builds, how it connects to a tool, and the agent protocol.
 
 ## Reference

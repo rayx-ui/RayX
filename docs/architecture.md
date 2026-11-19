@@ -8,7 +8,7 @@ service it registers; an app's own crate of NSH-free services depends on `rayx_a
 | `rayx_app` | The core: dependency injection (singleton, scoped and transient services, scopes, async startup, required services and declared dependencies), configuration sources, .NET's options model, the `RayXAppBuilder`, every service's contract (`rayx_app::services::<name>`) and a fake of each (`rayx_app::testing`) | no |
 | `rayx_app_nsh` | The NSH host: the app's start on each surface (requiring the platform, suspension, asset and font services), a root provider per surface, a scope per screen, view-model activation and binding, `add_app_settings`, the dev tools' agent, and the TS side (`rayx_app_nsh::ts`: TS's `RayXAppBuilder`, its `ServiceProvider`, services written in TS, contracts with `ContractState` and `ContractEvents`) | yes |
 | `rayx_services_<name>` | RayX's implementation of one core service contract each, on NSH, with its builder extension, its TS class and its set: `rayx_services_platform`, `rayx_services_suspension`, `rayx_services_assets`, `rayx_services_fonts`, `rayx_services_storage`, `rayx_services_navigation` (with its regions as NSH navigation stacks), `rayx_services_i18n` (with `tr!`), `rayx_services_operations`, `rayx_services_history`, `rayx_services_selection`, `rayx_services_input_map`, `rayx_services_application_configuration`, `rayx_services_theme` (the theme's modifier contexts, light/dark with the color scheme) | yes |
-| `rayx_components` | The component library: the design system's tokens as an NSH theme document (`theme.json`, generated from the Figma export) read through typed keys, its modes as the document's modifiers, and the components (`Button`) on nsh-base, for Rust and TSX | yes |
+| `rayx_components` | The component library: the design system's roles (`roles.json`, typed handles in `theme::roles`), RayX's default theme that maps them (`theme.json`, an NSH theme document exported from the design system's DTCG by RayX.Dtcg, its modes the document's modifiers), and the components (`Button`) on nsh-base, reading roles only, for Rust and TSX | yes |
 | `rayx_devtools_protocol` | The agent protocol of the dev tools: the JSON-RPC messages between an app's dev-build agent and a tool's hub ([Dev tools](devtools.md)); serde and serde_json alone | no |
 | `rayx_app_macros` | `#[derive(AppService)]`, re-exported by `rayx_app`, `rayx_app_nsh` and `rayx`; `#[app_extension]` and `#[contract]`, re-exported by `rayx_app_nsh` and `rayx`; `contract_nsh!`, re-exported by `rayx_app_nsh`; `#[native_module]`, used as `#[rayx::native_module]` | no |
 | `rayx` | The umbrella: re-exports the other crates (each service crate behind a feature of its name, the four the host requires by default) and dXn.I18n and dXn.Intl, with a prelude, and `#[rayx::native_module]`, the attribute of a TSX app's UI set | yes |
@@ -48,7 +48,8 @@ CLI's `tests/library_guard.rs` its dependency tree.
 - `rayx::app`: `rayx_app`, the core, with every service's contract at `rayx::app::services::<name>`
 - `rayx::app_nsh`: `rayx_app_nsh`
 - `rayx::services::<name>`: `rayx_services_<name>`, for each service crate its feature enables
-- `rayx::components`: `rayx_components` (not in the prelude: its names, `Button`, `Density`, would clash)
+- `rayx::components`: `rayx_components` (not in the prelude: a view imports `rayx::components::prelude::*`, the
+  components, `ComponentSize`, the role groups, `roles` and `value`)
 - `rayx::devtools_protocol`: `rayx_devtools_protocol`
 - `rayx::i18n` and `rayx::intl`: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
   [dXn.Intl](https://github.com/dXnSix/dXn.Intl), for their message, number and date types

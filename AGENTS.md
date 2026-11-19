@@ -27,11 +27,13 @@ a dependency. The workspace has twenty crates sharing one version (`rayx`, `rayx
   module, its classes beside what they wrap: TS's `RayXAppBuilder` with a camelCase twin of every
   builder method, its `ServiceProvider`, services written in TS in the one container, contracts
   with `ContractState` and `ContractEvents`). It depends on no service crate.
-- `crates/rayx_components`: RayX's component library, the RayX design system in code: its tokens
-  as an NSH theme document, `theme.json` (generated from the Figma export by the
-  `rayx-components` skill's `theme_codegen.py` and never edited by hand), read through typed keys
-  (`src/theme/`: `theme_keys!`, the modifiers `accent`, `density`, `os` set by the app, `color!`
-  for custom tokens), and the components, each the
+- `crates/rayx_components`: RayX's component library, the RayX design system in code: RayX's
+  roles, declared in `roles.json` (typed handles in `src/theme/`: `theme::roles`, read with
+  `theme::value`, and the role groups), RayX's default theme, `theme.json`, which maps them (an
+  NSH theme document exported from RayX.Design's DTCG files and role map by RayX.Dtcg, run by the
+  `rayx-components` skill's `theme_export.py`, and never edited by hand; its modifiers
+  `colorMode`, `accent`, `density`, `os` are picked by the app or the theme service), and the
+  components, which read roles only, each the
   Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
   to TSX (in the set `#[rayx::native_module]` makes, or `rayx_components::register` in a
   hand-written `#[native_module]`). It depends on `nsh-core` and
@@ -104,9 +106,10 @@ hours when `main` moved (never on each push), and formats, lints and tests `rayx
 macOS and Windows too. Run the list above before pushing to `main`: no CI runs on the push itself.
 
 Test only what you changed: run the touched crate's focused tests while iterating, and the full
-list above once before committing. `rayx_components`' theme is generated: after a token export
-(or a change to the generator), `python .claude/skills/rayx-components/scripts/theme_codegen.py
-write` from RayX.Root, then `check` must pass before committing. Each feature has its own
+list above once before committing. `rayx_components`' theme is generated: after a change to
+RayX.Design's DTCG files or role map, or to `roles.json`, `python
+.claude/skills/rayx-components/scripts/theme_export.py write` from RayX.Root, then `check` must
+pass before committing. Each feature has its own
 integration-test group in `crates/<crate>/tests/<feature>.rs` (`di_provider`, `di_startup`,
 `nsh_layer`, …); select one with `cargo test -p <crate> --test <feature>`. A new feature or
 behavior change gets a new group. The umbrella's groups that need service features beyond the defaults
