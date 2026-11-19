@@ -45,4 +45,6 @@ local checkout for a day and moved back to `nshx-0.5.0-7` for that reason.
 
 Code and docs: `Cargo.toml`, `AGENTS.md` ("Dependencies"), `crates/rayx_cli/tests/dependency_sources.rs`.
 
-Memory: [app](../app/state.md), [cli](../cli/state.md).
+Decision: [one NSH tag across RayX and RayX.Dtcg](../../decisions/dependencies/nsh-pin/2026-11-19-dependencies-nsh-pin-one-tag.md) (2026-11-19, current).
+
+Memory: [app](../app/state.md), [cli](../cli/state.md) (the `rayx nshx use` follow-up).

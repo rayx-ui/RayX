@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/components
   status: current
   created: 2026-11-15T03:00:00+01:00
-  updated: 2026-11-16T23:00:00+01:00
+  updated: 2026-11-19T13:30:00+01:00
   topics:
     - rayx_components
     - theme
@@ -34,8 +34,9 @@ Route work on RayX's components, its theme document and roles, and the gallery.
   enums or `bind_text_style`. Custom themes are NSH's (`update_tokens`, theme files, `ThemeScope`).
 - `src/button.rs`: `Button` on nsh-base's `Button`, its look one `Look` memo of roles; the focus ring binds its width with `.outline(move || ...)`.
 - `register(registry)` adds the theme document and the components to an app's UI set;
-  `#[rayx::native_module]` calls it, and a hand-written `#[native_module]` calls it itself. RayX
-  sets no modifier itself: the app does (a `ThemeService` may later).
+  `#[rayx::native_module]` calls it, and a hand-written `#[native_module]` calls it itself.
+  `rayx_components` sets no modifier itself: the app does, through NSH's `set_modifier` or the
+  theme service (`rayx_services_theme`, see [runtime](../runtime/state.md)).
 - `examples/gallery`: a mixed NSH app (`nsh.json` `"rust": "native"`), its crate `rayx-gallery`
   (a workspace member, `release = false`) whose UI set is
   `#[rayx::native_module("rayx-gallery/native")]` with `Glyph`; its toolbar picks the accent and
@@ -43,8 +44,9 @@ Route work on RayX's components, its theme document and roles, and the gallery.
 
 ## Open follow-ups
 
-- A RayX `ThemeService` that picks the theme modifiers (OS, density, accent) from the platform or
-  the user's settings: the owner's later decision (2026-11-16); until then RayX sets none itself.
+- The theme service (`rayx_services_theme`, epic `theme-roles`) follows the system's light/dark
+  and changes contexts on request; picking density, OS or contrast from the platform, switching
+  theme documents and persisting picks are still open.
 
 ## Backlinks
 
@@ -52,5 +54,9 @@ Code and docs: [docs/components.md](../../../../docs/components.md),
 [examples/gallery/README.md](../../../../examples/gallery/README.md); tests
 `crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx}.rs`,
 `examples/gallery/native/tests/gallery_tsx.rs` (`role_parity` checks against `tests/fixtures/role_values.json`).
+
+Decisions: [role list and role map](../../decisions/components/roles/2026-11-19-components-roles-role-list-and-map.md)
+(2026-11-19, current); components read roles only, RayX.Root's
+`decisions/workspace/2026-11-19-theme-roles-only.md` (2026-11-19, current).
 
 Memory: [app](../app/state.md), [dependencies](../dependencies/state.md) (the NSH pin).

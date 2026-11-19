@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/cli
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-16T23:00:00+01:00
+  updated: 2026-11-19T13:30:00+01:00
   topics:
     - rayx_cli
     - rayx-cli
@@ -32,6 +32,12 @@ Modules `cli`, `host`, `project` (pins), `setup` (doctor, WSL and Lima guests), 
 `RayXAppBuilder::new().add_storage().add_history().start()` and shows `app_state()`, its set
 `#[rayx::native_module("<specifier>")]` registering `App`. The specifier
 comes from nsh init's own `#[native_module("…")]` (`native_module_specifier`).
+
+## Open follow-ups
+
+- `rayx nshx use <tag>` leaves two copies of the old pin behind, so every repin needs two hand
+  fixes (found in the epic `theme-roles`, 2026-11-19): the pin's short commit hash where tests
+  cite it, and the percent-encoded form of the tag (`nshx%2D…`). The command should move both.
 
 ## Backlinks
 
