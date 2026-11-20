@@ -1,7 +1,8 @@
 // Button (Figma `buttons/Button`, page "Button"): a playground of every Figma property, the
 // variants and sizes as the component set lays them out, and the page's usage examples.
 import { signal, Text, View } from "nsh";
-import { Button, Glyph, type ButtonVariant, type ComponentSize } from "rayx-gallery/native";
+import { Button, type ButtonVariant, type ComponentSize } from "rayx/components";
+import { Glyph } from "rayx-gallery/native";
 import { Choice, CountBadge, Example, Note, Page, Section, Stage, type } from "../ui";
 
 const variants = ["neutral", "primary", "danger", "success", "ghost", "link"] as const satisfies readonly ButtonVariant[];

@@ -386,8 +386,9 @@ a RayX app and pins it.
   `features = ["theme", "storage", "operations", "history"]`; the defaults are the four services the
   host requires), and RayX's files take the place of nsh's: for `mixed` (the default: TSX with a
   Rust crate at the app's root) a `src/lib.rs` whose UI set is RayX's attribute,
-  `#[rayx::native_module("<specifier>")] fn native(registry: &mut Registry)` (every RayX TS class
-  and RayX's components, and in its body RayX's dev tools: `DevTools` and the `DevLayer` component),
+  `#[rayx::native_module("<specifier>")] fn native(registry: &mut Registry)` (every RayX TS class,
+  serving RayX's components as the set `rayx/components`, and in its body RayX's dev tools:
+  `DevTools` and the `DevLayer` component),
   an `App.tsx` that builds the app's services with `new RayXAppBuilder()`,
   `.addPlatform().addSuspension().addAssets().addFonts()` (the four the host requires, each
   replaceable by the app's own) then `.addTheme().addStorage().addOperations().addHistory()`,

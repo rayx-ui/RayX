@@ -1,7 +1,8 @@
 # Assets
 
 The files the app's packages ship in their `assets/` directories, as the platform lists them or a manifest does, served
-as `asset:/` URLs.
+as `asset:/` URLs: the app's own, and those of every UI set the app serves (a library's, such as RayX's components),
+without the app naming their packages.
 
 ## Register
 
@@ -26,13 +27,32 @@ let builder = RayXAppBuilder::new()
 ```
 
 `add_assets(configure)` registers RayX's implementation as the app's `dyn AssetService`, replacing any earlier
-registration of it: a startup service (keyed `dyn AssetService`) that reads the packages' manifests into the catalog
-when the app starts. The app's start requires a `dyn AssetService`, RayX's or the app's own; [fonts](fonts.md) and
-[i18n](i18n.md) require one too.
+registration of it: a startup service (keyed `dyn AssetService`) that reads the packages' manifests and the files the
+app's UI sets ship into the catalog when the app starts. The app's start requires a `dyn AssetService`, RayX's or the
+app's own; [fonts](fonts.md) and [i18n](i18n.md) require one too.
 
 `add_asset_files(files)` (NSH's `assets!()`) and `add_bundled_assets(uris)` (any list of `asset:/@<package>/<path>`
 URLs) add files to the catalog, so their package needs no manifest listing them. Packages they add come after the
 asset options' packages, in the order their files are added. TS has no counterpart.
+
+## The sets' files
+
+Every file a UI set the app serves ships (`registry.assets(assets!())` in the set: the app's crate's, and a library's
+set its set serves, such as RayX's `rayx/components`) is in the catalog with nothing named: on NSH the catalog reads
+NSH's `served_asset_files()` on the engine thread (through the surface's engine runner) when it loads. Their packages
+come after the asset options' packages and the ones `add_asset_files` and `add_bundled_assets` add, so the app's own
+files win a path without a package; a served package's manifest (`assets.toml`) is read only when the package ships
+one, for its metadata (tags, scales, …). A library's icons are then `assets.uri("@acme-ui/icons/star.svg")`, or
+`assets.query(..)` by their tags, with no `options.package("acme-ui")`.
+
+Two ways to reach such a file:
+
+- **Checked at build time**, in TSX: `import star from "asset:/@acme-ui/icons/star.svg"` imports a file a served set
+  ships by its URL (an image's `ImageAsset`, a font's family, any other file's URL; `?url` for the URL of any). The
+  bundler fails the build for a file no set ships, and `.nsh/types/nsh/set-assets.d.ts` types each one. Use it when the
+  code names the file.
+- **Looked up at run time**, through this service: the catalog, its metadata and queries, `uri(path)`, `load_bytes`.
+  Use it when the file is chosen while the app runs (by a tag, a locale, a name from data).
 
 The TS side is there once the crate's set is registered: `#[rayx::native_module]` with the `assets` feature on, or
 `rayx_services_assets::register(registry)` by hand.
@@ -56,8 +76,9 @@ TS's options object has `package(name)` only.
 
 ## The manifest
 
-A package whose files are added (`add_asset_files`, `add_bundled_assets`) needs a manifest only for metadata, and its
-manifest is read only when it ships one; a package whose files are not added lists them in its manifest. The manifest is TOML,
+A package whose files are added (`add_asset_files`, `add_bundled_assets`) or shipped by a served set needs a manifest
+only for metadata, and its manifest is read only when it ships one; a package whose files are not listed so lists them
+in its manifest. The manifest is TOML,
 `assets.toml` by default:
 
 ```toml
@@ -125,7 +146,9 @@ Kinds and MIME types come from file names. RayX's implementation keeps what it r
 
 NSH packages each crate's `assets/` and serves `asset:/` URLs itself (from the app's package on a device, the dev
 server during `nsh run`, the page's assets on the web), and RayX's implementation reads them with NSH's `fetch`
-through the surface's engine runner, so the same code reads them on every platform and from any thread. Assets are
+through the surface's engine runner, so the same code reads them on every platform and from any thread. The list of
+the files the served sets ship is the engine's (`served_asset_files()`, in its context on its thread), read the same
+way (a test over `rayx_services_assets::testing::MemoryAssetReader` lists its own with `serve`). Assets are
 read-only, and a session restart reads them again (no hot reload).
 
 ## TSX

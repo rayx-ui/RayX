@@ -57,8 +57,8 @@
 //!   method (`add_weather` is `builder.addWeather()`), and a service crate adds its TS builder
 //!   method the same way, a class extension of [`ts::RayXAppBuilder`] acting on it through
 //!   [`ts::RayXAppBuilder::extend_with`] and [`ts::record`]; `#[rayx::native_module("spec")]`,
-//!   in the umbrella, makes an app's UI set with [`ts::register`]'s classes, the sets of the
-//!   service crates the umbrella's features enable and RayX's components.
+//!   in the umbrella, makes an app's UI set with [`ts::register`]'s classes and the sets of the
+//!   service crates the umbrella's features enable, serving RayX's components (`rayx/components`).
 //!
 //! Everything here runs on the engine's thread. The services' contracts stay NSH-free in
 //! [`rayx_app`]; the `di`, `options`, `configuration`, `services` and `prelude` modules

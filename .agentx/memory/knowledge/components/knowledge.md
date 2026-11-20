@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/components
   status: current
   created: 2026-11-15T03:00:00+01:00
-  updated: 2026-11-16T21:00:00+01:00
+  updated: 2026-11-20T12:00:00+01:00
   topics:
     - rayx_components
     - theme
@@ -44,3 +44,8 @@ agentx:
   bundles). RayX's are reached through `var()`: `shadow-(--shadow-md)`, `blur-(--blur-md)`.
 - The Windows development host exposes each `testID` as a UI Automation `AutomationId`, so the
   gallery can be driven (Invoke, Scroll) and captured (`PrintWindow`) without screen control.
+- `SetDescription::from(&set)` describes that set alone: a bundler, `compile_bytecode_with` or
+  `theme_document` given an app's set without `Registry::served_sets(..)` does not see the sets
+  it serves (`import { Button } from "rayx/components"` fails to bundle). Engines
+  (`EngineConfig::ui_sets`) and `Registry::merged` take served sets themselves (found 2026-11-20,
+  on the NSH worktree with `Registry::serve`).

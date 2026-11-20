@@ -35,8 +35,10 @@ a dependency. The workspace has twenty crates sharing one version (`rayx`, `rayx
   `colorMode`, `accent`, `density`, `os` are picked by the app or the theme service), and the
   components, which read roles only, each the
   Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
-  to TSX (in the set `#[rayx::native_module]` makes, or `rayx_components::register` in a
-  hand-written `#[native_module]`). It depends on `nsh-core` and
+  to TSX as the library's own UI set `rayx/components` (`rayx_components::set()`), which every
+  app's set serves (`#[rayx::native_module]` does; a hand-written `#[native_module]` calls
+  `registry.serve(rayx::components::set())`), each with its preview file beside it
+  (`button.preview.tsx`, typed with the set's `Previews<C>`). It depends on `nsh-core` and
   `nsh-base`, not on the other RayX crates. The `rayx-components` skill
   (`../RayX.Root/.claude/skills/rayx-components/`) is its guide: how each component is used and
   how one is built.
@@ -53,8 +55,8 @@ a dependency. The workspace has twenty crates sharing one version (`rayx`, `rayx
   optional feature each),
   `rayx_app_nsh`, `rayx_components` (`rayx::components`), `rayx_devtools_protocol`, `dxn_i18n` and
   `dxn_intl`, with a prelude, and `#[rayx::native_module("spec")]` (from `rayx_app_macros`), the
-  attribute of a TSX app's UI set (every RayX TS class and RayX's components, then the
-  function's body).
+  attribute of a TSX app's UI set (every RayX TS class, serving RayX's components as
+  `rayx/components`, then the function's body).
 - `examples/gallery`: the RayX gallery, a mixed NSH app (TSX screens with hot reload, its crate
   `rayx-gallery` in `native/`) showing every component's Figma properties, variants, sizes and
   examples in code. Its crate is a workspace member and is never released.

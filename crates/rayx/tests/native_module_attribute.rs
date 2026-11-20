@@ -1,7 +1,8 @@
 //! `#[rayx::native_module("spec")]` on an app crate's registry function: the set holds RayX's TS
-//! classes, the set of every service crate the umbrella's features enable (and no other's) and
-//! RayX's components with their theme document, then what the function's body adds (a component,
-//! a module, an app extension TS applies), and nothing else; its declarations declare them all,
+//! classes and the set of every service crate the umbrella's features enable (and no other's),
+//! then what the function's body adds (a component, a module, an app extension TS applies), and
+//! nothing else, and serves RayX's components with their theme document as the library's set,
+//! `rayx/components`; its declarations declare its own exports,
 //! documented; TS's `RayXAppBuilder` has the builder methods of the enabled crates only, in JS and
 //! in the declarations (with the default features `addFonts` and no `addI18n`, with every feature
 //! both); and NSH's CLI reads the set's specifier from the attribute's line in the crate's source,
@@ -98,7 +99,6 @@ fn the_set_is_rayx_s_then_the_body_s_exports_and_nothing_else() {
     // The harness's `builder.addHostFakes()`, which the body adds too.
     rayx.class_extension::<headless::HostFakes>();
     enabled::register_service_sets(&mut rayx);
-    rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     let own: BTreeSet<String> = exports(&set).difference(&expected).cloned().collect();
     assert_eq!(own.len(), 3, "the body's three exports: {own:?}");
@@ -112,9 +112,13 @@ fn the_set_is_rayx_s_then_the_body_s_exports_and_nothing_else() {
     expected.extend(own);
     assert_eq!(exports(&set), expected);
     assert!(exports(&set).contains("class RayXAppBuilder"));
+    // RayX's components and theme document are the served library's.
+    let sets: Vec<Option<&str>> = set.sets().iter().map(|s| s.specifier()).collect();
+    assert_eq!(sets, [Some("test/app"), Some(rayx::components::SPECIFIER)]);
+    assert!(set.theme_documents().is_empty());
     assert_eq!(
-        set.theme_documents(),
-        rayx.theme_documents(),
+        set.sets()[1].theme_documents(),
+        rayx::components::set().theme_documents(),
         "RayX's theme document"
     );
     assert_eq!(set.specifier(), Some("test/app"));
@@ -127,13 +131,18 @@ fn the_declarations_declare_rayx_s_and_the_body_s_exports_documented() {
     for declared in [
         "export declare class RayXAppBuilder",
         "export declare class ServiceProvider",
-        "export declare const Button:",
         "export declare const Badge:",
         "  /** Registers a greeting. */\n  addGreeting(): RayXAppBuilder;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }
+    assert!(!ts.contains("export declare const Button:"), "{ts}");
     assert_eq!(set.undocumented(), Vec::<String>::new());
+    // The library's set declares RayX's components, documented.
+    let library = set.sets()[1];
+    let ts = nsh_core::element::declarations(library, &[]);
+    assert!(ts.contains("export declare const Button:"), "{ts}");
+    assert_eq!(library.undocumented(), Vec::<String>::new());
 }
 
 #[test]

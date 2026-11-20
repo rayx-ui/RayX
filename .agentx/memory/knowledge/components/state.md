@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/components
   status: current
   created: 2026-11-15T03:00:00+01:00
-  updated: 2026-11-19T13:30:00+01:00
+  updated: 2026-11-20T12:00:00+01:00
   topics:
     - rayx_components
     - theme
@@ -33,14 +33,19 @@ Route work on RayX's components, its theme document and roles, and the gallery.
 - `src/theme/`: `value(role)`, `ComponentSize`, `roles` and the groups; no typed keys, modifier
   enums or `bind_text_style`. Custom themes are NSH's (`update_tokens`, theme files, `ThemeScope`).
 - `src/button.rs`: `Button` on nsh-base's `Button`, its look one `Look` memo of roles; the focus ring binds its width with `.outline(move || ...)`.
-- `register(registry)` adds the theme document and the components to an app's UI set;
-  `#[rayx::native_module]` calls it, and a hand-written `#[native_module]` calls it itself.
+- `set()` is the library's own UI set, `SPECIFIER` `rayx/components`: the theme document, the
+  roles, `Previews<C>` / `PreviewState<P>` (`src/previews.rs`, moved from `rayx_app_nsh::ts`) and
+  the components. Every app's set serves it (`registry.serve(rayx_components::set())`:
+  `#[rayx::native_module]` does, a hand-written `#[native_module]` calls it itself); there is no
+  `register(registry)` any more. TSX imports from `rayx/components`.
+- `src/button.preview.tsx`: Button's previews (id `button`; each variant, outlined, sizes,
+  disabled), literal, beside `button.rs`. The crate ships no `assets/` yet.
   `rayx_components` sets no modifier itself: the app does, through NSH's `set_modifier` or the
   theme service (`rayx_services_theme`, see [runtime](../runtime/state.md)).
 - `examples/gallery`: a mixed NSH app (`nsh.json` `"rust": "native"`), its crate `rayx-gallery`
   (a workspace member, `release = false`) whose UI set is
-  `#[rayx::native_module("rayx-gallery/native")]` with `Glyph`; its toolbar picks the accent and
-  density with `setModifier`.
+  `#[rayx::native_module("rayx-gallery/native")]` with `Glyph`, serving `rayx/components`, which
+  its screens import `Button` from; its toolbar picks the accent and density with `setModifier`.
 
 ## Open follow-ups
 
@@ -52,11 +57,12 @@ Route work on RayX's components, its theme document and roles, and the gallery.
 
 Code and docs: [docs/components.md](../../../../docs/components.md),
 [examples/gallery/README.md](../../../../examples/gallery/README.md); tests
-`crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx}.rs`,
+`crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx,preview_types,previews}.rs`,
 `examples/gallery/native/tests/gallery_tsx.rs` (`role_parity` checks against `tests/fixtures/role_values.json`).
 
 Decisions: [role list and role map](../../decisions/components/roles/2026-11-19-components-roles-role-list-and-map.md)
-(2026-11-19, current); components read roles only, RayX.Root's
+(2026-11-19, current); [the library set `rayx/components`](../../decisions/components/library-set/2026-11-20-components-library-set-served-by-every-app.md)
+(2026-11-20, current); components read roles only, RayX.Root's
 `decisions/workspace/2026-11-19-theme-roles-only.md` (2026-11-19, current).
 
 Memory: [app](../app/state.md), [dependencies](../dependencies/state.md) (the NSH pin).

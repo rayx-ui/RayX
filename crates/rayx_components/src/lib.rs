@@ -9,23 +9,28 @@
 //! - The components, each the Figma component of the same name on its nsh-base base component
 //!   (behavior, focus, keyboard and accessibility from nsh-base; the look from the roles):
 //!   [`Button`](button::Button).
+//! - [`previews`]: `Previews<C>` and `PreviewState<P>`, the types of a component's previews, the
+//!   states a design tool or a gallery shows it in, declared in a `*.preview.tsx` file beside the
+//!   component. Each of RayX's components ships its own (`button.preview.tsx`).
 //!
-//! An app registers the library in its UI set, which makes the components, RayX's roles (TS's
-//! `role()` is typed with them) and RayX's default theme (its tokens in theme files, classes and
-//! `token()`, its modifiers in `setModifier`) available to its TSX:
+//! The library is a UI set of its own, [`set`], imported as [`SPECIFIER`] (`rayx/components`):
+//! the components, the previews' types, RayX's roles (TS's `role()` is typed with them) and
+//! RayX's default theme (its tokens in theme files, classes and `token()`, its modifiers in
+//! `setModifier`). An app's set serves it (`#[rayx::native_module]` does), so every app, and the
+//! library's own preview files, import it by that one name; nothing names it in `nsh.json`:
 //!
 //! ```no_run
 //! use nsh_core::prelude::*;
 //!
 //! #[native_module("my-app/native")]
 //! fn native(registry: &mut Registry) {
-//!     rayx_components::register(registry);
+//!     registry.serve(rayx_components::set());
 //! }
 //! # fn main() {}
 //! ```
 //!
 //! ```tsx
-//! import { Button } from "my-app/native";
+//! import { Button } from "rayx/components";
 //!
 //! <Button text="Save changes" variant="primary" onPress={save} />
 //! ```
@@ -33,6 +38,7 @@
 //! Rust views use the constructors: `button().text("Save changes").variant(ButtonVariant::Primary)`.
 
 pub mod button;
+pub mod previews;
 pub mod theme;
 
 use nsh_core::element::Registry;
@@ -49,13 +55,22 @@ pub mod prelude {
     };
 }
 
-/// Registers RayX's theme document, RayX's roles and its components into `registry`, an app's
-/// UI set: its TSX imports the components by the set's specifier, `role()` and role-named
-/// classes read RayX's roles, the default theme maps them (and nsh-base's) unless the app has a
-/// theme of its own, and NSH checks a theme's mappings against them.
-pub fn register(registry: &mut Registry) -> &mut Registry {
-    registry
-        .theme_document(theme::DOCUMENT)
+/// The specifier RayX's component library is imported by, in apps and in the library's own
+/// files: `import { Button } from "rayx/components"`.
+pub const SPECIFIER: &str = "rayx/components";
+
+/// RayX's component library as a UI set of its own, [`SPECIFIER`]: RayX's theme document,
+/// RayX's roles, the previews' types ([`previews`]) and the components. An app's set serves it
+/// (`registry.serve(rayx_components::set())`; `#[rayx::native_module]` does), and registers none
+/// of it: its TSX imports the components from `rayx/components`, `role()` and role-named classes
+/// read RayX's roles, the default theme maps them (and nsh-base's) unless the app has a theme of
+/// its own, and NSH checks a theme's mappings against them.
+pub fn set() -> Registry {
+    let mut set = Registry::ui_set(SPECIFIER);
+    set.theme_document(theme::DOCUMENT)
         .roles(theme::roles::all())
-        .register::<button::Button>()
+        .ts_alias(previews::PREVIEWS)
+        .ts_alias(previews::PREVIEW_STATE)
+        .register::<button::Button>();
+    set
 }

@@ -107,8 +107,9 @@ let name = fonts.register_font(bytes).await?; // bytes: Vec<u8>
 ```
 
 - At the start RayX's implementation takes the catalog's font files (`ttf`, `otf`, `woff`, `woff2`) from the app's
-  `dyn AssetService` and reads their families; `register_font(data)` registers others while the app runs, from any
-  thread.
+  `dyn AssetService` and reads their families: with RayX's asset service, a served library's fonts too, which the
+  catalog lists without the app naming the library's package; `register_font(data)` registers others while the app
+  runs, from any thread.
 - An alias resolves to its family, its load fallback (another alias or a family) when that family did not load, and
   its glyph fallbacks, as one family list for NSH's `font_family` / `fontFamily`.
 

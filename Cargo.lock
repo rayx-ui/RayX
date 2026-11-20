@@ -5039,6 +5039,7 @@ dependencies = [
  "nsh-engine",
  "nsh-js",
  "nsh-theme",
+ "oxc",
  "serde_json",
 ]
 

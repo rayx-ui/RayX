@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/runtime
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-18T03:10:00+01:00
+  updated: 2026-11-20T12:00:00+01:00
   topics:
     - rayx_services
     - services
@@ -44,7 +44,10 @@ persistent; selection on navigation; input map on storage; application configura
 platform). i18n has two traits: the `I18nService` contract and the Rust-only, synchronous
 `MessageFormatter` (`add_message_formatter()` over any `dyn I18nService`), with `tr!` here.
 Platform and suspension keep themselves current from their initialization; suspension wires NSH's
-quitting. `HistoryStore` stays public in `rayx_services_history` as its extension point; other
+quitting. RayX's asset catalog takes, after the options' packages and the files the app added,
+every file a UI set the app serves ships (`AssetReader::served_files`: on NSH
+`served_asset_files()` read on the engine thread through the `EngineRunner`), so a library's files
+(RayX's components') need no package named (`assets_served`, `nsh_served_assets`). `HistoryStore` stays public in `rayx_services_history` as its extension point; other
 platform seams are private to their crate. Calls to NSH from other threads go through the host's
 `EngineRunner`.
 

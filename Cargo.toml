@@ -58,6 +58,8 @@ nsh-engine = { version = "0.6.0", default-features = false }
 nsh-bundler = "0.6.0"
 nsh-js = "0.6.0"
 nsh-theme = "0.6.0"
+# Parses TSX in tests (`rayx_components`' preview files), at the oxc NSH's bundler builds with.
+oxc = { version = "0.153", default-features = false }
 base64 = "0.22"
 crossbeam-channel = "0.5"
 dxn_reactive = { git = "https://github.com/dXnSix/dXn.Reactive", tag = "v1.1.1" }

@@ -22,7 +22,8 @@ configuration and options classes, `ContractState` and `ContractEvents`), the se
 features enable (its class, its contract's interface, its options classes and its builder method:
 `rayx_services_i18n::register` gives `addI18n(..)`, `addMessageFormatter()`, `I18nService`, `I18nServiceContract` and
 `I18nOptions`, and `rayx_services_theme::register` gives `addTheme(..)`, `ThemeService`, `ThemeServiceContract` and
-`ThemeOptions`) and RayX's components with their theme document (`rayx::components::register`), and nothing else. With
+`ThemeOptions`), and nothing else, and serves RayX's component library, the set `rayx/components`
+(`registry.serve(rayx::components::set())`: the components, `Previews<C>` and RayX's theme document). With
 the default features the builder has `addPlatform()`, `addSuspension()`, `addAssets(..)` and `addFonts(..)`; a feature
 off leaves its method and class out of the set and its declarations. The function's own body adds the app's exports:
 
@@ -38,13 +39,14 @@ fn native(registry: &mut Registry) {
 }
 ```
 
-TSX imports the set by its specifier (`import { RayXAppBuilder } from "my-app"`), and the crate gains `pub fn
-registry()`, as with NSH's attribute. Keep the attribute's line in the crate's source: NSH's CLI reads the set's
-specifier from it, and the web runtime keeps the set by that name. A hand-written `#[native_module]` registers the same
-with `rayx::app_nsh::register(registry)`, each service crate's `register(registry)`
-(`rayx::services::storage::register(registry)`, …) and `rayx::components::register(registry)`. If the crate depends on `nsh-core`,
-depend on it in `[dependencies]` (or not at all): the attribute takes NSH's core from the crate's own dependency when it
-names one, so `nsh-core` in `[dev-dependencies]` alone breaks the crate's normal build.
+TSX imports the set by its specifier (`import { RayXAppBuilder } from "my-app"`), and RayX's components by the
+library's (`import { Button } from "rayx/components"`); the crate gains `pub fn registry()`, as with NSH's attribute.
+Keep the attribute's line in the crate's source: NSH's CLI reads the set's specifier from it, and the web runtime keeps
+the set by that name. A hand-written `#[native_module]` registers the same with `rayx::app_nsh::register(registry)`,
+each service crate's `register(registry)` (`rayx::services::storage::register(registry)`, …) and serves the library
+with `registry.serve(rayx::components::set())`. If the crate depends on `nsh-core`, depend on it in `[dependencies]` (or
+not at all): the attribute takes NSH's core from the crate's own dependency when it names one, so `nsh-core` in
+`[dev-dependencies]` alone breaks the crate's normal build.
 
 ## Starting the app
 
@@ -403,11 +405,12 @@ A view-model class exposes `Observable`s and `ReactiveCommand`s; see [View model
 
 ## Components
 
-RayX's components (`Button`) and its theme document are in the set `#[rayx::native_module]` makes; import them by its
-specifier. See [Components and theme](components.md).
+RayX's components (`Button`) and its theme document are RayX's library set, `rayx/components`, which the set
+`#[rayx::native_module]` makes serves; import them from `rayx/components` in every app. See
+[Components and theme](components.md) and, for a component's `*.preview.tsx` file, [Previews](previews.md).
 
 ```tsx
-import { Button } from "my-app";
+import { Button } from "rayx/components";
 
 declare function save(): void; // the app's own
 

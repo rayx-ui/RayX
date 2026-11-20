@@ -13,9 +13,11 @@ examples, DO and DON'T) is the `rayx-components` skill in RayX.Root (`.claude/sk
 
 ## Use it
 
-The library is in the app's UI set: `#[rayx::native_module]` registers it with every RayX TS class. It adds the
-components, RayX's roles (`role()` and role-named classes read them, and NSH checks every theme against them) and
-RayX's default theme, the app's theme unless it has one of its own:
+The library is a UI set of its own, `rayx/components` (`rayx::components::set()`, its specifier
+`rayx::components::SPECIFIER`): the components, the previews' types (`Previews<C>`, [Previews](previews.md)), RayX's
+roles (`role()` and role-named classes read them, and NSH checks every theme against them) and RayX's default theme,
+the app's theme unless it has one of its own. Every app's set serves it: `#[rayx::native_module]` does, so nothing
+names it in `nsh.json` and the app's set registers none of it:
 
 ```rust
 use rayx::prelude::*;
@@ -24,29 +26,32 @@ use rayx::prelude::*;
 fn native(registry: &mut Registry) {}
 ```
 
-A hand-written `#[native_module]` registers it with `rayx::components::register`:
+A hand-written `#[native_module]` serves it with `Registry::serve`:
 
 ```rust
 use nsh_core::prelude::*;
 
 #[native_module("my-app/native")]
 fn native(registry: &mut Registry) {
-    rayx::components::register(registry);
+    registry.serve(rayx::components::set());
 }
 ```
 
-TSX imports them by the set's specifier; props are Figma's properties in camel case (a fragment: `save`, `Icon` and
-`Badge` are the app's own):
+TSX imports them from `rayx/components`, in every app, and so do the library's own preview files; props are Figma's
+properties in camel case (a fragment: `save`, `Icon` and `Badge` are the app's own):
 
 <!-- tsx: fragment -->
 ```tsx
-import { Button } from "my-app/native";
+import { Button } from "rayx/components";
 
 const saveButton = <Button text="Save changes" variant="primary" onPress={save} />;
 const inboxButton = (
   <Button text="Inbox" iconLeft={<Icon name="inbox" />} showSlotRight slotRight={<Badge count={3} />} />
 );
 ```
+
+An app's set that registers a component of the library itself is refused when the app is described (NSH names both
+sets): serve the library's set instead. Two crates of one app serving it serve it once.
 
 Rust views use the constructors; props are Figma's properties in snake case:
 
@@ -58,6 +63,20 @@ button().text("Save changes").variant(ButtonVariant::Primary).on_press(move || s
 
 `class` and `style` on a component place it (a margin, a width); they never restyle it. A look the library lacks is a new
 variant in the library and in Figma.
+
+## Previews and files
+
+Each component ships its previews beside its source, `crates/rayx_components/src/<name>.preview.tsx`
+(`button.preview.tsx`): plain data typed with `Previews<C>`, importing the component and the type from
+`rayx/components`, with an `id` unique in the crate and literal props, so a design tool shows RayX's components in their
+states with nothing written by the app (see [Previews](previews.md)). A new component lands with its preview file;
+`crates/rayx_components/tests/previews.rs` checks that every component the set registers has one, literal, and that
+each state renders.
+
+A file the library ships (an icon, a font) goes in the crate's `assets/` and is listed by its set
+(`registry.assets(assets!())` in `set()`): TSX imports it checked at build time
+(`import star from "asset:/@rayx_components/icons/star.svg"`), and RayX's [asset service](services/assets.md) lists it
+in the catalog without the app naming the package. The library ships none yet.
 
 ## The theme
 

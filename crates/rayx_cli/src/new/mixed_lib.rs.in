@@ -5,7 +5,8 @@ use rayx::prelude::*;
 
 /// The crate's UI set (`nsh.json` `"rust"`): RayX's attribute registers every RayX TS class
 /// (`RayXAppBuilder`, with which `App.tsx` builds and starts the app, `ServiceProvider` and the
-/// services' classes) and RayX's components with their theme document, then this body adds
+/// services' classes) and serves RayX's components with their theme document as the set
+/// `rayx/components` (`import { Button } from "rayx/components"`), then this body adds
 /// RayX's dev tools (`DevTools` and `<DevLayer />`: in a dev build the in-app agent a tool
 /// connects to and its layer, nothing in a release build) and the app's own exports:
 /// `.register::<…>()` for components, `.module::<…>()` for modules and

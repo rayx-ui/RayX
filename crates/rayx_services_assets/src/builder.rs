@@ -19,8 +19,9 @@ use crate::{ASSET_OPTIONS_SECTION, AssetOptions, BundledAssets};
 /// Registers RayX's asset service on an app builder.
 pub trait AssetAppBuilderExt: AppBuilder {
     /// Registers RayX's asset service as the app's `dyn AssetService`, replacing any other: a
-    /// startup service that reads the packages' manifests when the app starts, and the files
-    /// with NSH (from any thread). Its [`AssetOptions`] bind from [`ASSET_OPTIONS_SECTION`],
+    /// startup service that reads the packages' manifests and the files the app's UI sets ship
+    /// (a library's set, which the app's serves, ships its own) when the app starts, and the
+    /// files with NSH (from any thread). Its [`AssetOptions`] bind from [`ASSET_OPTIONS_SECTION`],
     /// then `configure` changes them (`options.package("my-app")`).
     fn add_assets(self, configure: impl Fn(&mut AssetOptions) + Send + Sync + 'static) -> Self {
         register(self, configure, None)
@@ -29,7 +30,8 @@ pub trait AssetAppBuilderExt: AppBuilder {
     /// Adds the files at `uris` (`asset:/@<package>/<path>`: the files a package ships, as the
     /// platform lists them) to the asset catalog, which then needs no manifest listing them;
     /// a package's manifest still adds metadata when the package ships one. Packages not in
-    /// the asset options come after theirs, in the order their files are added.
+    /// the asset options come after theirs, in the order their files are added, and before the
+    /// packages of the files the app's UI sets ship (which the catalog takes without this).
     fn add_bundled_assets<I>(mut self, uris: I) -> Self
     where
         I: IntoIterator,

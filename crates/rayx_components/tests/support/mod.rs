@@ -11,6 +11,7 @@ use crossbeam_channel::{Receiver, Sender};
 use nsh_core::ApproxTextEngine;
 use nsh_core::ViewStyle;
 use nsh_core::color::{Hsla, Rgba};
+use nsh_core::element::description::SetDescription;
 use nsh_core::element::{Registry, RoleSpec, Tokens};
 use nsh_core::{EventKind, EventMask, EventPayload, MountBatch, MountItem, NodeId};
 use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
@@ -23,11 +24,21 @@ impl MountSink for ChannelSink {
     }
 }
 
-/// The UI sets of an app that registers RayX's library in its set `test/native`.
+/// The UI sets of an app whose set `test/native` serves RayX's library (`rayx/components`), as
+/// `#[rayx::native_module]` does.
 pub fn ui_sets() -> Vec<Registry> {
     let mut set = Registry::ui_set("test/native");
-    rayx_components::register(&mut set);
+    set.serve(rayx_components::set());
     vec![nsh_base::registry(), set]
+}
+
+/// The sets a host of [`ui_sets`] serves, the library's among them, described: what the bundler
+/// and the compiler take.
+pub fn described() -> Vec<SetDescription> {
+    Registry::served_sets(&ui_sets())
+        .into_iter()
+        .map(SetDescription::from)
+        .collect()
 }
 
 /// What the engine mounted so far.

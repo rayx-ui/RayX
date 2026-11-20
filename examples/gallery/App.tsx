@@ -1,5 +1,6 @@
 // The RayX gallery: RayX's components as the Figma file shows them, in code. Its screens are TSX
-// (hot reload); the components are Rust (`rayx_components`), imported from the app's crate.
+// (hot reload); the components are Rust (`rayx_components`), imported from RayX's library set,
+// `rayx/components`, which the app's crate serves.
 import { mount, signal } from "nsh";
 import { RayXAppBuilder, ThemeService } from "rayx-gallery/native";
 import { Gallery, type GalleryTheme, type RayXStart } from "./src/gallery";

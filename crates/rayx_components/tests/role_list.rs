@@ -1,8 +1,8 @@
 //! RayX's role list (`roles.json`) and its typed handles: every entry is one role of the design
 //! system's semantic layer, named and typed by D-ROLE-NAMES' table, the required ones are
 //! exactly Button's 45, `theme::roles::all()` is the file entry for entry, the typed groups name
-//! declared roles of their types, and `register` lists them all in the UI set, so NSH's
-//! `roles.d.ts` types TS's `role()` with them.
+//! declared roles of their types, and the library's set (`rayx_components::set()`) lists them
+//! all, so NSH's `roles.d.ts` types TS's `role()` with them in an app serving it.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -10,8 +10,7 @@ mod support;
 
 use std::collections::{BTreeSet, HashMap};
 
-use nsh_core::element::description::SetDescription;
-use nsh_core::element::{Registry, RoleSpec};
+use nsh_core::element::RoleSpec;
 use rayx_components::theme::{ComponentSize, IntentRoles, roles};
 
 const ROLES: &str = include_str!("../roles.json");
@@ -403,9 +402,8 @@ fn the_typed_groups_are_built_over_the_constants() {
 }
 
 #[test]
-fn register_lists_every_role_in_the_ui_set() {
-    let mut set = Registry::ui_set("test/native");
-    rayx_components::register(&mut set);
+fn the_library_set_lists_every_role() {
+    let set = rayx_components::set();
     let listed: HashMap<String, Entry> = set
         .role_specs()
         .iter()
@@ -440,11 +438,8 @@ fn register_lists_every_role_in_the_ui_set() {
 
 #[test]
 fn roles_d_ts_types_role_with_every_rayx_role() {
-    let sets: Vec<SetDescription> = support::ui_sets()
-        .iter()
-        .map(SetDescription::from)
-        .collect();
-    let dts = nsh_bundler::roles_declaration(&sets).expect("no role two sets type differently");
+    let dts = nsh_bundler::roles_declaration(&support::described())
+        .expect("no role two sets type differently");
     let mut missing = Vec::new();
     for entry in entries() {
         let member = format!("{:?}:", entry.name);

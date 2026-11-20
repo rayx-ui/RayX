@@ -94,7 +94,12 @@ mod harness {
         let ui_sets = vec![set];
         let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
             entry,
-            ui_sets: ui_sets.iter().map(Into::into).collect(),
+            // The set and the sets it serves (a library's, `rayx/components`), as a host serves
+            // them.
+            ui_sets: Registry::served_sets(&ui_sets)
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             // The rest as by default: not minified, not split, no app info, the entry's own
             // folder as the app's.
             ..Default::default()

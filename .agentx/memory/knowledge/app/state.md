@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/app
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-18T03:10:00+01:00
+  updated: 2026-11-20T12:00:00+01:00
   topics:
     - rayx_app_nsh
     - nsh
@@ -58,8 +58,11 @@ per enabled feature (one per service crate; defaults `platform`, `suspension`, `
 no feature implies another), `rayx::components`, `rayx::devtools_protocol`, `i18n`/`intl` and
 `checked` (with `i18n`), a prelude with each enabled crate's builder extension, and
 `#[rayx::native_module("spec")]`, whose expansion calls `rayx::__private::register` (the host's
-classes, each enabled crate's set, the components) before the function's body. Its line in the
-source is what NSH's CLI reads the set's specifier from, so it stays an attribute.
+classes, each enabled crate's set, then `registry.serve(rayx_components::set())`: RayX's
+components, roles, theme document and `Previews<C>` are the served set `rayx/components`, not the
+app's) before the function's body. Its line in the source is what NSH's CLI reads the set's
+specifier from, so it stays an attribute. The headless harness (`src/testing.rs`) bundles with
+`Registry::served_sets(..)`, so test TSX imports from `rayx/components`.
 
 ## Backlinks
 
@@ -73,5 +76,6 @@ Code and docs: `crates/rayx_app_nsh/src/lib.rs`, `crates/rayx_app_nsh/src/ts.rs`
 `crate_layout`).
 
 Memory: [core](../core/state.md), [runtime](../runtime/state.md),
+[library set decision](../../decisions/components/library-set/2026-11-20-components-library-set-served-by-every-app.md) (current, 2026-11-20),
 [dependencies](../dependencies/state.md) (the NSH pin),
 [TSX contracts and builder extensions decision](../../decisions/app/tsx/2026-11-17-app-tsx-contracts-any-thread-builder-extensions.md) (current, 2026-11-17).

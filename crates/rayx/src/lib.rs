@@ -12,7 +12,9 @@
 //!   enabled crate at `rayx::services::<name>` with its builder extension in the prelude.
 //! - [`components`] ([`rayx_components`]): RayX's component library: the design system's roles
 //!   (`theme::roles`), its default theme (an NSH theme document that maps them, whose modes are
-//!   its modifiers) and its components (`Button`), for Rust views and TSX.
+//!   its modifiers), its components (`Button`) with their preview files, and the previews' types
+//!   (`Previews<C>`), for Rust views and TSX. In TSX it is the UI set `rayx/components`
+//!   ([`components::set`]), which every app's set serves.
 //! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
 //!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
 //! - [`i18n`] and [`intl`]: [dXn.I18n](https://github.com/dXnSix/dXn.I18n) and
@@ -46,9 +48,9 @@
 //! default, `light`. Density, OS and contrast are never followed from the platform: an app picks
 //! them with the service's `set_context`. `rayx = { version = "…", features = ["i18n", "storage"] }` adds two.
 //!
-//! A TSX app's crate is one attribute at its root, its UI set with RayX's TS classes, every
-//! enabled service's set and RayX's components ([`native_module`]); an app's own Rust services
-//! reach TS as [`app_extension`]s.
+//! A TSX app's crate is one attribute at its root, its UI set with RayX's TS classes and every
+//! enabled service's set, serving RayX's components as the set `rayx/components`
+//! ([`native_module`]); an app's own Rust services reach TS as [`app_extension`]s.
 //!
 //! ```no_run
 //! # #[cfg(all(feature = "platform", feature = "suspension", feature = "assets", feature = "fonts"))]
@@ -123,8 +125,9 @@ pub use rayx_app_nsh::contract;
 /// first registers RayX's TS classes (`rayx::app_nsh::register`: the builder, the provider and
 /// its tokens, the startup and options classes), the set of every service crate the umbrella's
 /// features enable (its classes, its contract's interface and its builder method:
-/// `addFonts`, `addI18n`, …) and RayX's components with their theme document
-/// (`rayx::components::register`), then runs the function's own body, the app's exports:
+/// `addFonts`, `addI18n`, …), and serves RayX's component library, the set `rayx/components`
+/// (`registry.serve(rayx::components::set())`: the components, the previews' types, RayX's roles
+/// and theme document), then runs the function's own body, the app's exports:
 ///
 /// ```ignore
 /// use rayx::prelude::*;
@@ -140,7 +143,8 @@ pub use rayx_app_nsh::contract;
 ///
 /// With the default features a TS `RayXAppBuilder` has `addPlatform`, `addSuspension`,
 /// `addAssets` and `addFonts`; `features = ["i18n"]` adds `addI18n` and the `I18nService` class.
-/// TSX imports the set by the specifier (`import { RayXAppBuilder } from "my-app"`). The crate
+/// TSX imports the set by the specifier (`import { RayXAppBuilder } from "my-app"`), and RayX's
+/// components by the library's (`import { Button } from "rayx/components"`). The crate
 /// gains `pub fn registry()`, as with NSH's attribute, and NSH's CLI reads the specifier from the
 /// attribute's line in the crate's source, so the set is found on every target.
 #[doc(inline)]
@@ -157,8 +161,9 @@ pub use rayx_services_i18n::checked;
 pub mod __private {
     use rayx_app_nsh::__private::nsh_core::element::Registry;
 
-    /// Registers RayX's TS classes, the set of each service crate the umbrella's features enable
-    /// and RayX's components, in that order: what an app's set holds before its own exports.
+    /// Registers RayX's TS classes and the set of each service crate the umbrella's features
+    /// enable, in that order, and serves RayX's component library (`rayx/components`): what an
+    /// app's set holds and serves before its own exports.
     pub fn register(registry: &mut Registry) {
         rayx_app_nsh::register(registry);
         #[cfg(feature = "application_configuration")]
@@ -187,7 +192,7 @@ pub mod __private {
         rayx_services_suspension::register(registry);
         #[cfg(feature = "theme")]
         rayx_services_theme::register(registry);
-        rayx_components::register(registry);
+        registry.serve(rayx_components::set());
     }
 }
 

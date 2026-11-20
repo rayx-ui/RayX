@@ -1,6 +1,6 @@
-//! RayX's `Button` from TSX, headless: an app's UI set that registers the library exports it with
-//! typed declarations, a TSX screen sets the Figma props in camel case and fills the slots with
-//! JSX, presses reach `onPress`, RayX's roles are classes (`bg-surface-app`, `p-gap4` reading
+//! RayX's `Button` from TSX, headless: the library's set, `rayx/components`, exports it with typed
+//! declarations, an app's UI set serves it, a TSX screen imports it from `rayx/components`, sets
+//! the Figma props in camel case and fills the slots with JSX, presses reach `onPress`, RayX's roles are classes (`bg-surface-app`, `p-gap4` reading
 //! `spacing-gap4`), and `setModifier` switches the modes. The expected values are those RayX's
 //! default theme gives the roles.
 
@@ -13,13 +13,13 @@ use std::time::{Duration, Instant};
 
 use crossbeam_channel::Receiver;
 use nsh_core::color::rgba;
-use nsh_core::element::{Registry, declarations};
+use nsh_core::element::declarations;
 use nsh_core::{ApproxTextEngine, Color, MountBatch};
 use nsh_engine::{App, Bundle, Engine, EngineConfig};
-use support::{ChannelSink, Screen, ui_sets};
+use support::{ChannelSink, Screen, described, ui_sets};
 
 const TSX: &str = r#"import { mount, setModifier, signal, Text, View } from "nsh";
-import { Button } from "test/native";
+import { Button } from "rayx/components";
 
 const presses = signal(0);
 mount(() => (
@@ -55,12 +55,11 @@ impl Tsx {
             entry,
             minify: false,
             split: false,
-            ui_sets: sets.iter().map(Into::into).collect(),
+            ui_sets: described(),
         })
         .unwrap();
         let _ = std::fs::remove_dir_all(&dir);
-        let described: Vec<_> = sets.iter().map(Into::into).collect();
-        let bytecode = nsh_js::compile_bytecode_with(&bundle.code, false, &described).unwrap();
+        let bytecode = nsh_js::compile_bytecode_with(&bundle.code, false, &described()).unwrap();
         let (tx, rx) = crossbeam_channel::unbounded();
         // SAFETY: compiled just now by this runtime.
         let app = App::Js(unsafe { Bundle::bytecode(bytecode) });
@@ -108,9 +107,9 @@ impl Tsx {
 }
 
 #[test]
-fn the_ui_set_declares_the_figma_props_for_tsx() {
-    let mut set = Registry::ui_set("test/native");
-    rayx_components::register(&mut set);
+fn the_library_set_declares_the_figma_props_for_tsx() {
+    let set = rayx_components::set();
+    assert_eq!(set.specifier(), Some("rayx/components"));
     assert_eq!(set.undocumented(), Vec::<String>::new());
     let ts = declarations(&set, &[]);
     for line in [

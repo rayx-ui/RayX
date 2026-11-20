@@ -1,5 +1,6 @@
 //! The gallery's TSX screens on the gallery's crate, headless: `App.tsx` bundles against the
-//! crate's UI set (RayX's library and the glyphs), starts RayX with the four services the host
+//! crate's UI set (RayX's TS classes and the glyphs) and the set it serves, RayX's library
+//! (`rayx/components`), starts RayX with the four services the host
 //! requires and the theme service, shows the Button page, its playground sets the Figma
 //! properties, and its toolbar switches the theme's modes. (`gallery_theme` checks the theme's
 //! switches in detail.) (`nsh test` runs `App.test.tsx` the same way, with the nsh the
@@ -13,6 +14,8 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
+use nsh_core::element::Registry;
+use nsh_core::element::description::SetDescription;
 use nsh_core::{ApproxTextEngine, EventKind, EventPayload, MountBatch, MountItem, NodeId};
 use nsh_engine::{App, Bundle, Engine, EngineConfig, MountSink};
 
@@ -75,6 +78,12 @@ impl Gallery {
     fn start() -> Gallery {
         let entry = Path::new(env!("CARGO_MANIFEST_DIR")).join("../App.tsx");
         let sets = vec![nsh_base::registry(), rayx_gallery::registry()];
+        // The sets and the ones they serve (RayX's library, `rayx/components`), as a host serves
+        // them.
+        let described: Vec<SetDescription> = Registry::served_sets(&sets)
+            .into_iter()
+            .map(SetDescription::from)
+            .collect();
         let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
             development: false,
             app: nsh_bundler::AppInfo::default(),
@@ -83,10 +92,9 @@ impl Gallery {
             entry,
             minify: false,
             split: false,
-            ui_sets: sets.iter().map(Into::into).collect(),
+            ui_sets: described.clone(),
         })
         .unwrap();
-        let described: Vec<_> = sets.iter().map(Into::into).collect();
         let bytecode = nsh_js::compile_bytecode_with(&bundle.code, false, &described).unwrap();
         let (tx, rx) = crossbeam_channel::unbounded();
         // SAFETY: compiled just now by this runtime.

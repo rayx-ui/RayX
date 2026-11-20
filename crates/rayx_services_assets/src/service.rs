@@ -54,24 +54,24 @@ impl RayxAssets {
         service
     }
 
-    /// Reads the catalog: the files of the options' packages and of the packages
-    /// [`BundledAssets`] lists (after them), with each package's manifest. A package whose files
-    /// are listed has its manifest read only when it ships one; one whose files are not needs
-    /// its manifest, which lists them.
+    /// Reads the catalog: the files of the options' packages, then of the packages
+    /// [`BundledAssets`] lists, then of the packages whose files the app's UI sets ship (the
+    /// reader's [`served_files`](AssetReader::served_files): a library's set, served by the
+    /// app's, ships its own), each with its manifest. A package whose files are listed has its
+    /// manifest read only when it ships one; one whose files are not needs its manifest, which
+    /// lists them.
     async fn read_catalog(&self) -> Result<AssetCatalog> {
         let mut builder = AssetCatalog::builder();
         let strict = self.options.validation == AssetValidationPolicy::Strict;
+        let listed = self.listed_files().await;
         let mut packages = self.options.packages.clone();
-        let bundled = self.bundled.as_deref();
-        for package in bundled.map(BundledAssets::packages).unwrap_or_default() {
+        for package in listed.packages() {
             if !packages.contains(&package) {
                 packages.push(package);
             }
         }
         for package in &packages {
-            let files = bundled
-                .map(|bundled| bundled.files(package))
-                .unwrap_or_default();
+            let files = listed.files(package);
             let ships_manifest = files.contains(&self.options.manifest);
             let manifest = if files.is_empty() || ships_manifest {
                 self.read_manifest(package).await
@@ -122,6 +122,23 @@ impl RayxAssets {
             catalog = catalog.without_diagnostics();
         }
         Ok(catalog)
+    }
+
+    /// The files the platform lists: those the app added ([`BundledAssets`]), then those its UI
+    /// sets ship, each once.
+    async fn listed_files(&self) -> BundledAssets {
+        let listed = BundledAssets::new();
+        if let Some(bundled) = self.bundled.as_deref() {
+            for package in bundled.packages() {
+                for path in bundled.files(&package) {
+                    listed.add(&format!("asset:/@{package}/{path}"));
+                }
+            }
+        }
+        for uri in self.reader.served_files().await {
+            listed.add(&uri);
+        }
+        listed
     }
 
     /// `package`'s manifest, read and parsed.

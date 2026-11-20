@@ -1,7 +1,8 @@
 //! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds RayX's TS
-//! classes, the set of every service crate the umbrella's features enable, RayX's components and
-//! theme document and what its function's body adds, nothing else; an extension is a TS function
-//! that `builder.apply(..)` runs in chain order.
+//! classes, the set of every service crate the umbrella's features enable and what its function's
+//! body adds, nothing else, and serves RayX's component library, the set `rayx/components` (the
+//! components, the previews' types, RayX's theme document), which its TSX imports `Button` from;
+//! an extension is a TS function that `builder.apply(..)` runs in chain order.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -103,7 +104,6 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     // The harness's `builder.addHostFakes()`, which the body adds too.
     rayx.class_extension::<headless::HostFakes>();
     enabled::register_service_sets(&mut rayx);
-    rayx::components::register(&mut rayx);
     let mut expected = exports(&rayx);
     expected.extend(
         [
@@ -128,18 +128,64 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
         "class StartupInitializationState",
         "class StartupInitializationContext",
         "class ReadyContext",
-        "component rayx_components::button::Button",
         "type ServiceKey<T>",
     ] {
         assert!(exported.contains(name), "no {name} in {exported:?}");
     }
+    // RayX's components are the library's, not the app's: the set serves `rayx/components`.
+    for name in [
+        "component rayx_components::button::Button",
+        "type Previews<C>",
+        "type PreviewState<P>",
+    ] {
+        assert!(!exported.contains(name), "{name} in the app's set");
+    }
+    assert!(
+        set.theme_documents().is_empty(),
+        "no theme document of the app's"
+    );
+    let sets: Vec<Option<&str>> = set.sets().iter().map(|s| s.specifier()).collect();
+    assert_eq!(sets, [Some("test/app"), Some("rayx/components")]);
+    let library = set.sets()[1];
+    let components = rayx::components::set();
+    assert_eq!(exports(library), exports(&components));
+    for name in [
+        "component rayx_components::button::Button",
+        "type Previews<C>",
+        "type PreviewState<P>",
+    ] {
+        assert!(
+            exports(library).contains(name),
+            "no {name} in rayx/components"
+        );
+    }
     assert_eq!(
-        set.theme_documents(),
-        rayx.theme_documents(),
+        library.theme_documents(),
+        components.theme_documents(),
         "RayX's theme document"
     );
-    assert!(!set.theme_documents().is_empty());
+    assert!(!library.theme_documents().is_empty());
     assert_eq!(set.specifier(), Some("test/app"));
+}
+
+const BUTTON_TSX: &str = r#"import { mount, View } from "nsh";
+import { Button } from "rayx/components";
+
+mount(() => (
+  <View>
+    <Button text="done: a Button from rayx/components" variant="primary" />
+  </View>
+));
+"#;
+
+#[test]
+fn the_app_s_tsx_imports_rayx_s_components_from_rayx_components() {
+    assert_eq!(
+        headless::run(registry(), BUTTON_TSX),
+        "done: a Button from rayx/components"
+    );
+    let ts = nsh_core::element::declarations(&registry(), &[]);
+    assert!(!ts.contains("export declare const Button"), "{ts}");
 }
 
 #[test]

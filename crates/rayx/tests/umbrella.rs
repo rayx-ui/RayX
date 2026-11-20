@@ -106,7 +106,8 @@ fn the_crates_are_reachable_by_name() {
             .any(|r| r.name == role.name() && r.required)
     );
     let _: fn(nsh_core::element::Role) -> nsh_core::color::Hsla = rayx::components::theme::value;
-    let _register = rayx::components::register;
+    let _set: fn() -> nsh_core::element::Registry = rayx::components::set;
+    assert_eq!(rayx::components::SPECIFIER, "rayx/components");
 }
 
 #[cfg(all(

@@ -1,5 +1,6 @@
-//! RayX's asset service on NSH: the app's files, listed by its packages' manifests (and the
-//! files NSH lists) in the catalog RayX's implementation of
+//! RayX's asset service on NSH: the app's files, listed by its packages' manifests and by NSH
+//! (the files every UI set the app serves ships, a library's among them) in the catalog RayX's
+//! implementation of
 //! [`rayx_app::services::assets::AssetService`] publishes when the app starts, and read with
 //! NSH's `fetch` of their `asset:/` URLs from any thread (through the surface's engine runner),
 //! with a byte cache.

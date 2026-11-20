@@ -17,7 +17,9 @@ modifiers. Every class of the screens names a role (`bg-surface-panel1`, `h-defa
 `rounded-default`, `text-default-title1-bold`), never a token of a theme.
 
 It is a mixed NSH app: the screens are TSX, so they reload as you save; the components are Rust
-(`rayx_components`), imported from the app's crate.
+(`rayx_components`), imported from RayX's library set, `rayx/components`
+(`import { Button } from "rayx/components"`), which the app's crate serves; the gallery's own
+exports (`Glyph`, RayX's TS classes) come from `rayx-gallery/native`.
 
 | Path | What it is |
 | --- | --- |
@@ -28,7 +30,7 @@ It is a mixed NSH app: the screens are TSX, so they reload as you save; the comp
 | `src/ui.tsx` | The gallery's own layout (pages, sections, captioned examples, choices) and RayX's text styles as classes of its typography roles |
 | `themes/sample.json` | The sample theme: a palette, semantic tokens of its own that reference it, the modifiers `colorMode` and `brand`, and `roles` mapping every role the gallery reads onto its semantic tokens (never onto the palette) |
 | `.cargo/config.toml` | The fork's NSH for nsh's own build of the app (`.nsh/rust`, a workspace of its own, where RayX's `[patch.crates-io]` does not reach): the file `rayx new` writes, at RayX's pin. Move it with the root `Cargo.toml`'s patch |
-| `native/` | The app's crate `rayx-gallery`: its UI set is `#[rayx::native_module("rayx-gallery/native")]`, RayX's (every RayX TS class, the services of the `rayx` features its `Cargo.toml` names, the theme service's among them, and the component library with its roles and default theme) with `Glyph`, the icons the examples use, added in its function's body |
+| `native/` | The app's crate `rayx-gallery`: its UI set is `#[rayx::native_module("rayx-gallery/native")]`, RayX's (every RayX TS class and the services of the `rayx` features its `Cargo.toml` names, the theme service's among them) with `Glyph`, the icons the examples use, added in its function's body; it serves RayX's component library, `rayx/components`, with its roles and default theme |
 | `App.test.tsx` | `nsh test`: RayX's start, the page, the playground and the theme's switches, headless |
 | `native/tests/gallery_tsx.rs` | The same screens bundled and run by `cargo test`, without the nsh CLI |
 | `native/tests/gallery_theme.rs` | `cargo test`: every theme-reading class names a role, the sample theme maps the gallery's roles onto its semantic tokens, and the toolbar's switches draw what the active document resolves |
@@ -51,8 +53,9 @@ TSX edit reloads in place.
 
 ## Adding a component's page
 
-1. Build the component in `crates/rayx_components` (the `rayx-components` skill in RayX.Root).
-2. Add `src/pages/<component>.tsx`: a `Page` with a playground of every Figma property (the same
+1. Build the component in `crates/rayx_components` with its preview file beside it
+   (`<name>.preview.tsx`; the `rayx-components` skill in RayX.Root).
+2. Add `src/pages/<component>.tsx`, importing the component from `rayx/components`: a `Page` with a playground of every Figma property (the same
    names), the variants matrix, the sizes, and the Figma page's examples, each an `Example` with
    its caption. Components and slot content at `size="default"`, except in an example about sizes.
 3. Add the page to `pages` in `src/gallery.tsx`, and its checks to `App.test.tsx` and

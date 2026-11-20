@@ -21,6 +21,7 @@ use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
 use nsh_core::color::Rgba;
+use nsh_core::element::description::SetDescription;
 use nsh_core::element::{Registry, Token, Tokens};
 use nsh_core::platform::ColorScheme;
 use nsh_core::{
@@ -745,6 +746,12 @@ impl Gallery {
     fn start(scheme: ColorScheme) -> Gallery {
         let entry = gallery_dir().join("App.tsx");
         let sets = ui_sets();
+        // The sets and the ones they serve (RayX's library, `rayx/components`), as a host serves
+        // them.
+        let described: Vec<SetDescription> = Registry::served_sets(&sets)
+            .into_iter()
+            .map(SetDescription::from)
+            .collect();
         let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
             development: false,
             app: nsh_bundler::AppInfo::default(),
@@ -753,10 +760,9 @@ impl Gallery {
             entry,
             minify: false,
             split: false,
-            ui_sets: sets.iter().map(Into::into).collect(),
+            ui_sets: described.clone(),
         })
         .unwrap();
-        let described: Vec<_> = sets.iter().map(Into::into).collect();
         let bytecode = nsh_js::compile_bytecode_with(&bundle.code, false, &described).unwrap();
         let (tx, rx) = crossbeam_channel::unbounded();
         // SAFETY: compiled just now by this runtime.

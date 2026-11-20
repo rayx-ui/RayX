@@ -1,8 +1,10 @@
-//! Reading the app's files on NSH: NSH's `fetch` of their `asset:/` URLs, on the engine thread,
-//! through the surface's engine runner (so the asset service reads from any thread).
+//! Reading the app's files on NSH: NSH's `fetch` of their `asset:/` URLs, and the list of the
+//! files the app's UI sets ship (`served_asset_files()`, a library's among them), on the engine
+//! thread, through the surface's engine runner (so the asset service reads from any thread).
 
 use futures::FutureExt as _;
 use futures::future::BoxFuture;
+use nsh_core::element::served_asset_files;
 use nsh_core::prelude::fetch;
 use rayx_app_nsh::EngineRunner;
 
@@ -34,5 +36,20 @@ impl AssetReader for NshAssetReader {
             }
         });
         async move { read.await.map_err(|gone| gone.to_string())? }.boxed()
+    }
+
+    /// The files the engine's UI sets ship, read from its context on its thread (empty off it):
+    /// none outside an app's start, or once the engine stopped.
+    fn served_files(&self) -> BoxFuture<'static, Vec<String>> {
+        let Some(runner) = self.runner.clone() else {
+            return futures::future::ready(Vec::new()).boxed();
+        };
+        let files = runner.run(|| async {
+            served_asset_files()
+                .iter()
+                .map(|file| file.uri.to_owned())
+                .collect::<Vec<String>>()
+        });
+        async move { files.await.unwrap_or_default() }.boxed()
     }
 }

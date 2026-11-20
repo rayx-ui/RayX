@@ -25,5 +25,6 @@ nsh-engine = { workspace = true, features = ["js"] }
 nsh-bundler.workspace = true
 nsh-js.workspace = true
 nsh-theme.workspace = true
+oxc.workspace = true
 crossbeam-channel.workspace = true
 serde_json.workspace = true

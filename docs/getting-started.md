@@ -49,8 +49,8 @@ from RayX's `Cargo.toml` at that tag.
 
 An app has one composition root: a `RayXAppBuilder` with its configuration and services, started once on each NSH
 surface, which builds its own root provider from it. A TSX app builds it in TS, with the same methods in camelCase; its
-Rust crate is its UI set: RayX's attribute on one function, with RayX's TS classes and components and the TS side of
-every service its features enable. For the app below, `rayx`'s features are `["storage", "operations", "history",
+Rust crate is its UI set: RayX's attribute on one function, with RayX's TS classes and the TS side of every service its
+features enable, serving RayX's components as the set `rayx/components`. For the app below, `rayx`'s features are `["storage", "operations", "history",
 "i18n"]` beside the defaults:
 
 ```rust

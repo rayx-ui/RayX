@@ -1,12 +1,12 @@
 # Previews
 
-A component's previews are the states a design tool (or a gallery) shows it in. They are declared
-in a `*.preview.tsx` file beside the component, as plain data typed with `Previews<C>`, which every
-app's set exports (`rayx_app_nsh::ts::PREVIEWS`):
+A component's previews are the states a design tool (RayX Studio) or a gallery shows it in. They are declared in a
+`*.preview.tsx` file beside the component, as plain data typed with `Previews<C>`, which RayX's component library
+exports from its set, `rayx/components` (`rayx::components::previews::PREVIEWS`), served by every app's set:
 
 ```tsx
 // src/components/Card.preview.tsx
-import type { Previews } from "my-app/native";
+import type { Previews } from "rayx/components";
 import { Card } from "./Card";
 
 export default {
@@ -21,17 +21,47 @@ export default {
 } satisfies Previews<typeof Card>;
 ```
 
-- `id`: the previews' identity, unique in the project. A tool keeps it when the file moves or is
-  renamed, so what refers to it does not break.
+- `id`: the previews' identity, unique in its package (the app's project, or a library's crate). A tool keeps it when
+  the file moves or is renamed, so what refers to it does not break.
 - `title`, `group`: what a tool lists it as, and under which heading.
-- `component`: the component, imported by name from its module (a TSX file of the app, or the
-  app's native module for a Rust component).
-- `states`: each named state's `props` (`PreviewState<P>`, `Partial` of the component's props);
-  props left out keep the component's defaults.
+- `component`: the component, imported by name from its module (a TSX file of the app, the app's native module for a
+  Rust component of its own, or a library's set: `import { Button } from "rayx/components"`).
+- `states`: each named state's `props` (`PreviewState<P>`, `Partial` of the component's props); props left out keep
+  the component's defaults.
 
-Nothing runs to make a file a preview: a tool reads the literal `id`, `title`, `group`, state names
-and props without running it, and imports the file only to show one of its states. Keep them
-literals; a value written as code still reaches the component but the tool cannot show it.
+Nothing runs to make a file a preview: a tool reads the literal `id`, `title`, `group`, state names and props without
+running it, and imports the file only to show one of its states. Keep them literals; a value written as code still
+reaches the component but the tool cannot show it.
 
-The file is the app's own code, committed beside the component and reviewed like it. It is not part
-of the app's bundle unless something imports it.
+The file is the app's own code, committed beside the component and reviewed like it. It is not part of the app's
+bundle unless something imports it.
+
+## A library's previews
+
+A library of components ships its previews beside each component in its own crate, importing the component and
+`Previews` from the library's set (its specifier, not an app's), with ids unique within the library's package. RayX's
+own components ship theirs with RayX: `crates/rayx_components/src/button.preview.tsx` beside `button.rs`.
+
+```tsx
+// crates/rayx_components/src/button.preview.tsx (an excerpt)
+import { Button, type Previews } from "rayx/components";
+
+export default {
+  id: "button",
+  title: "Button",
+  group: "Components",
+  component: Button,
+  states: {
+    Primary: { props: { text: "Button", variant: "primary" } },
+    Small: { props: { text: "Button", size: "small" } },
+    Disabled: { props: { text: "Button", disabled: true } },
+  },
+} satisfies Previews<typeof Button>;
+```
+
+The files ship in the crate's source (its package keeps them), and every app serves the library's set, so a tool can
+show the library's components in their states beside the app's own, reading the files from the crate as Cargo has it;
+an app writes no previews of RayX's components. A new component of RayX lands with its
+preview file: `crates/rayx_components/tests/previews.rs` checks that every component the set registers has a
+`<snake_name>.preview.tsx` beside its source, written as literals, with a unique `id`, importing its component from
+`rayx/components`, and that every state renders in an app serving the set.

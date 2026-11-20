@@ -2,7 +2,7 @@
 // and modes. Every color, size and text style is a class of a RayX role (the design system's
 // semantic layer, which any theme maps onto its own tokens); nothing here restyles a RayX component.
 import { Text, View, type JSX } from "nsh";
-import { Button } from "rayx-gallery/native";
+import { Button } from "rayx/components";
 
 /**
  * RayX's text styles as classes: each is RayX's typography role of a Figma text style, which sets

@@ -1,7 +1,7 @@
 //! RayX's default theme, `theme.json` (RayX.Dtcg's export of the design system): NSH reads it
 //! with no diagnostic, resolves it under every combination of its contexts, and checks its roles
 //! against RayX's, nsh-base's and the core's declarations with no error and no `role-unmapped`;
-//! in a headless app whose UI set is `rayx_components::register` it is the active document and
+//! in a headless app whose UI set serves the library's (`rayx/components`) it is the active document and
 //! every role resolves to a token of its type. Its role mapping is the design's: each RayX role
 //! maps onto the token whose DTCG path D-ROLE-NAMES' table names it by, and each of the 33 core
 //! and nsh-base roles onto the token it mapped onto before.
@@ -14,7 +14,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use nsh_core::element::description::{SetDescription, theme_document};
+use nsh_core::element::description::theme_document;
 use nsh_core::element::{Root, Tokens};
 use nsh_core::prelude::*;
 use nsh_engine::App;
@@ -273,11 +273,7 @@ fn Reader() -> impl IntoElement {
 
 #[test]
 fn in_an_app_it_is_the_active_document_and_every_role_resolves_to_its_type() {
-    let sets: Vec<SetDescription> = support::ui_sets()
-        .iter()
-        .map(SetDescription::from)
-        .collect();
-    let (active, diagnostics) = theme_document(&sets);
+    let (active, diagnostics) = theme_document(&support::described());
     let (document, _) = support::document();
     assert_eq!(active.as_ref(), Some(&*document));
     let codes: Vec<&str> = diagnostics.iter().map(|d| d.code).collect();

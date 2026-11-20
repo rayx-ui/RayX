@@ -229,7 +229,8 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                         "`App.tsx` is the app; the directory is also its Rust crate (`Cargo.toml`, \
                          `src/lib.rs`), whose `#[rayx::native_module(\"{}\")]` is its UI set: every \
                          RayX TS class (`RayXAppBuilder`, `ServiceProvider` and the services' \
-                         classes), RayX's components and dev tools, and what the app adds.",
+                         classes), RayX's dev tools and what the app adds; it serves RayX's \
+                         components, which TSX imports from `rayx/components`.",
                         templates.specifier
                     ),
                     "`App.tsx` builds the app with `RayXAppBuilder` (the four services the \

@@ -6,7 +6,8 @@ use nsh_core::prelude::*;
 use rayx::prelude::*;
 
 /// The app's UI set (`nsh.json` `"rust"`): what a TSX entry may import from `__SPECIFIER__`,
-/// RayX's TS classes and components (RayX's attribute registers them) and the root `App`.
+/// RayX's TS classes (RayX's attribute registers them; it serves RayX's components as the set
+/// `rayx/components`) and the root `App`.
 #[rayx::native_module("__SPECIFIER__")]
 fn native(registry: &mut Registry) {
     registry.register::<App>();
