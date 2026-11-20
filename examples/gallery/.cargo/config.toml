@@ -5,31 +5,31 @@
 # them names in a warning.
 
 [patch.crates-io]
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-gpui-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-ios-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-ios-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-linux-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-linux-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-macos-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-macos-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-android = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-gpui = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-ios = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-linux = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-macos = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-tizen = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-tui = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-web = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-platform-windows = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-testing = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-theme = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-tui-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-windows-app = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
-nsh-windows-host = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-base = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-base" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-bundler = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-bundler" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-core = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-core" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-engine = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-engine" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-gpui-host = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/gpui/nsh-gpui-host" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-ios-app = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-ios-app" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-ios-host = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-ios-host" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-js = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-js" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-linux-app = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-linux-app" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-linux-host = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-linux-host" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-macos-app = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-macos-app" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-macos-host = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-macos-host" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-macros = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-macros" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-package = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-package" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-android = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-android" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-gpui = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/gpui/nsh-platform-gpui" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-ios = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-ios" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-linux = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-linux" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-macos = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-macos" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-tizen = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/gpui/nsh-platform-tizen" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-tui = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-tui" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-web = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-web" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-platform-windows = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-platform-windows" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-testing = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-testing" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-theme = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-theme" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-tui-host = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-tui-host" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-windows-app = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-windows-app" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
+nsh-windows-host = { path = "/Users/dinko/work-private/projects/dXn/nsh/nsh-wt/libraries-foundation/crates/nsh-windows-host" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.6.0-7" }
