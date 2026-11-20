@@ -2,8 +2,10 @@
 //! `<snake_name>.preview.tsx` beside its source, a literal `Previews` object a design tool reads
 //! without running it (a literal, non-empty `id` unique in the crate, a literal `title` and
 //! `group`, the component imported by name from `rayx/components`, named states whose props are
-//! literals); every preview file in the crate is one of a registered component; each compiles
-//! against the library's set alone, and in an app serving the set every state of it renders.
+//! literals, and, where it has them, a literal `size` and `private` previews as literal as
+//! itself, their ids unique among them); every preview file in the crate is one of a registered
+//! component; each compiles against the library's set alone, and in an app serving the set
+//! every state of it renders.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -167,6 +169,117 @@ fn properties<'a, 'b>(
         .collect()
 }
 
+/// The names of the states `states` declares, in order: an object literal of at least one state,
+/// each an object literal whose props are literals. `of` names whose they are in an error.
+fn state_names(states: Option<&Expression>, of: &str) -> Result<Vec<String>, String> {
+    let Some(Expression::ObjectExpression(states)) = states.map(Expression::get_inner_expression)
+    else {
+        return Err(format!("{of} `states` is not an object literal"));
+    };
+    let states = properties(states).ok_or(format!("{of} states are not written out"))?;
+    if states.is_empty() {
+        return Err(format!("{of} `states` has no state"));
+    }
+    let mut names = Vec::new();
+    for (name, state) in states {
+        let Expression::ObjectExpression(state) = state.get_inner_expression() else {
+            return Err(format!("state `{name}` is not an object literal"));
+        };
+        let state = properties(state).ok_or(format!("state `{name}` is not written out"))?;
+        for (key, value) in state {
+            if key == "props" && !literal(value) {
+                return Err(format!("the props of state `{name}` are not all literals"));
+            }
+        }
+        names.push(name);
+    }
+    Ok(names)
+}
+
+/// Checks a `size`: an object literal of a `width` and a `height`, each a number literal that
+/// is not negative, and nothing else.
+fn size(value: &Expression) -> Result<(), String> {
+    let Expression::ObjectExpression(size) = value.get_inner_expression() else {
+        return Err("its `size` is not an object literal".into());
+    };
+    let size = properties(size).ok_or("its `size` is not written out")?;
+    let mut names: Vec<&str> = size.iter().map(|(name, _)| name.as_str()).collect();
+    names.sort_unstable();
+    if names != ["height", "width"] {
+        return Err("its `size` is not a `width` and a `height`".into());
+    }
+    for (name, value) in size {
+        if !matches!(value.get_inner_expression(), Expression::NumericLiteral(_)) {
+            return Err(format!("its size's `{name}` is not a number literal"));
+        }
+    }
+    Ok(())
+}
+
+/// Checks a `private` list: an array literal of previews as literal as the file's own, each an
+/// object literal (written `{ … } satisfies PrivatePreviews<typeof Part>`) with a literal,
+/// non-empty `id` unique in the list, a literal `title` if it has one, a component imported by
+/// name, its states, and nothing else.
+fn private_previews(
+    value: &Expression,
+    imports: &[(String, String, String)],
+) -> Result<(), String> {
+    let Expression::ArrayExpression(list) = value.get_inner_expression() else {
+        return Err("its `private` is not an array literal".into());
+    };
+    let mut ids: Vec<String> = Vec::new();
+    for (index, entry) in list.elements.iter().enumerate() {
+        let of = format!("its private preview {index}'s");
+        let Some(Expression::ObjectExpression(entry)) =
+            entry.as_expression().map(Expression::get_inner_expression)
+        else {
+            return Err(format!(
+                "its private preview {index} is not an object literal"
+            ));
+        };
+        let fields =
+            properties(entry).ok_or(format!("its private preview {index} is not written out"))?;
+        if let Some((name, _)) = fields
+            .iter()
+            .find(|(name, _)| !["id", "title", "component", "states"].contains(&name.as_str()))
+        {
+            return Err(format!("{of} `{name}` is no member of a private preview"));
+        }
+        let field = |name: &str| {
+            fields
+                .iter()
+                .find(|(key, _)| key == name)
+                .map(|(_, value)| *value)
+        };
+        let id = field("id")
+            .and_then(string)
+            .filter(|id| !id.trim().is_empty())
+            .ok_or(format!("{of} `id` is not a string literal, or is empty"))?;
+        if ids.contains(&id) {
+            return Err(format!("two of its private previews have the id `{id}`"));
+        }
+        ids.push(id);
+        if field("title").is_some_and(|title| string(title).is_none()) {
+            return Err(format!("{of} `title` is not a string literal"));
+        }
+        let Some(Expression::Identifier(component)) =
+            field("component").map(Expression::get_inner_expression)
+        else {
+            return Err(format!(
+                "{of} `component` is not an imported component's name"
+            ));
+        };
+        if !imports
+            .iter()
+            .any(|(local, _, _)| local.as_str() == component.name.as_str())
+        {
+            return Err(format!("{of} `component` is not imported by name"));
+        }
+        state_names(field("states"), &of)?;
+    }
+    Ok(())
+}
+
 /// Reads `file` as a tool does, failing with what is not literal.
 fn read(file: &Path) -> Result<Preview, String> {
     let text = std::fs::read_to_string(file).unwrap();
@@ -222,42 +335,27 @@ fn read(file: &Path) -> Result<Preview, String> {
         let value = field(name).ok_or(format!("it has no `{name}`"))?;
         string(value).ok_or(format!("its `{name}` is not a string literal"))?;
     }
+    if let Some(value) = field("size") {
+        size(value)?;
+    }
     let Some(Expression::Identifier(component)) =
         field("component").map(Expression::get_inner_expression)
     else {
         return Err("its `component` is not an imported component's name".into());
     };
+    if let Some(value) = field("private") {
+        private_previews(value, &imports)?;
+    }
     let component = imports
         .into_iter()
         .find(|(local, _, _)| local.as_str() == component.name.as_str())
         .ok_or("its `component` is not imported by name")?;
-    let Some(Expression::ObjectExpression(states)) =
-        field("states").map(Expression::get_inner_expression)
-    else {
-        return Err("its `states` is not an object literal".into());
-    };
-    let states = properties(states).ok_or("its states are not written out")?;
-    if states.is_empty() {
-        return Err("it has no state".into());
-    }
-    let mut names = Vec::new();
-    for (name, state) in states {
-        let Expression::ObjectExpression(state) = state.get_inner_expression() else {
-            return Err(format!("state `{name}` is not an object literal"));
-        };
-        let state = properties(state).ok_or(format!("state `{name}` is not written out"))?;
-        for (key, value) in state {
-            if key == "props" && !literal(value) {
-                return Err(format!("the props of state `{name}` are not all literals"));
-            }
-        }
-        names.push(name);
-    }
+    let states = state_names(field("states"), "its")?;
     Ok(Preview {
         file: file.to_path_buf(),
         id,
         component,
-        states: names,
+        states,
     })
 }
 
@@ -329,6 +427,50 @@ fn a_file_with_code_for_a_literal_is_refused() {
             "no-state",
             "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: {} };",
         ),
+        (
+            "code-size",
+            "const width = 390;\nexport default { id: \"button\", title: \"A\", group: \"B\", size: { width, height: 844 }, component: Button, states: { A: {} } };",
+        ),
+        (
+            "computed-size",
+            "export default { id: \"button\", title: \"A\", group: \"B\", size: { width: 390, height: 2 * 422 }, component: Button, states: { A: {} } };",
+        ),
+        (
+            "half-a-size",
+            "export default { id: \"button\", title: \"A\", group: \"B\", size: { width: 390 }, component: Button, states: { A: {} } };",
+        ),
+        (
+            "private-code",
+            "const parts = [];\nexport default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: parts };",
+        ),
+        (
+            "private-spread",
+            "const parts = [];\nexport default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [...parts] };",
+        ),
+        (
+            "private-code-prop",
+            "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [{ id: \"part\", component: Button, states: { A: { props: { text: String(1) } } } }] };",
+        ),
+        (
+            "private-no-id",
+            "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [{ component: Button, states: { A: {} } }] };",
+        ),
+        (
+            "private-same-id",
+            "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [{ id: \"part\", component: Button, states: { A: {} } }, { id: \"part\", component: Button, states: { B: {} } }] };",
+        ),
+        (
+            "private-no-state",
+            "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [{ id: \"part\", component: Button, states: {} }] };",
+        ),
+        (
+            "private-not-imported",
+            "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [{ id: \"part\", component: Part, states: { A: {} } }] };",
+        ),
+        (
+            "private-nested",
+            "export default { id: \"button\", title: \"A\", group: \"B\", component: Button, states: { A: {} }, private: [{ id: \"part\", component: Button, states: { A: {} }, private: [] }] };",
+        ),
     ];
     for (name, body) in refused {
         let file = dir.join(format!("{name}.preview.tsx"));
@@ -339,6 +481,21 @@ fn a_file_with_code_for_a_literal_is_refused() {
         .unwrap();
         assert!(read(&file).is_err(), "{name} is refused");
     }
+    // The same file with a literal size and literal private previews is read.
+    let file = dir.join("read.preview.tsx");
+    std::fs::write(
+        &file,
+        "import { Button, type Previews, type PrivatePreviews } from \"rayx/components\";\n\
+         export default { id: \"button\", title: \"A\", group: \"B\", size: { width: 390, height: 844.5 }, \
+         component: Button, states: { A: {} }, private: [\
+         { id: \"part\", title: \"Part\", component: Button, states: { A: { props: { text: \"A\" } } } } \
+         satisfies PrivatePreviews<typeof Button>, \
+         { id: \"other\", component: Button, states: { A: {} } } satisfies PrivatePreviews<typeof Button>] } \
+         satisfies Previews<typeof Button>;\n",
+    )
+    .unwrap();
+    let preview = read(&file).unwrap_or_else(|error| panic!("read.preview.tsx: {error}"));
+    assert_eq!((preview.id.as_str(), preview.states.len()), ("button", 1));
     let _ = std::fs::remove_dir_all(&dir);
 }
 

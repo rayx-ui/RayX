@@ -3,6 +3,8 @@
 
 #![allow(dead_code, clippy::expect_used, clippy::unwrap_used)]
 
+pub mod typecheck;
+
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};

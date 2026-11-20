@@ -34,7 +34,8 @@ Route work on RayX's components, its theme document and roles, and the gallery.
   enums or `bind_text_style`. Custom themes are NSH's (`update_tokens`, theme files, `ThemeScope`).
 - `src/button.rs`: `Button` on nsh-base's `Button`, its look one `Look` memo of roles; the focus ring binds its width with `.outline(move || ...)`.
 - `set()` is the library's own UI set, `SPECIFIER` `rayx/components`: the theme document, the
-  roles, `Previews<C>` / `PreviewState<P>` (`src/previews.rs`, moved from `rayx_app_nsh::ts`) and
+  roles, `Previews<C>` (with an optional `size` and `private` list) / `PrivatePreviews<C>` /
+  `PreviewState<P>` (`src/previews.rs`, moved from `rayx_app_nsh::ts`) and
   the components. Every app's set serves it (`registry.serve(rayx_components::set())`:
   `#[rayx::native_module]` does, a hand-written `#[native_module]` calls it itself); there is no
   `register(registry)` any more. TSX imports from `rayx/components`.
@@ -57,7 +58,7 @@ Route work on RayX's components, its theme document and roles, and the gallery.
 
 Code and docs: [docs/components.md](../../../../docs/components.md),
 [examples/gallery/README.md](../../../../examples/gallery/README.md); tests
-`crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx,preview_types,previews}.rs`,
+`crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx,preview_types,preview_size,preview_private,previews}.rs`,
 `examples/gallery/native/tests/gallery_tsx.rs` (`role_parity` checks against `tests/fixtures/role_values.json`).
 
 Decisions: [role list and role map](../../decisions/components/roles/2026-11-19-components-roles-role-list-and-map.md)

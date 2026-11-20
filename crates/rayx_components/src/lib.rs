@@ -9,9 +9,10 @@
 //! - The components, each the Figma component of the same name on its nsh-base base component
 //!   (behavior, focus, keyboard and accessibility from nsh-base; the look from the roles):
 //!   [`Button`](button::Button).
-//! - [`previews`]: `Previews<C>` and `PreviewState<P>`, the types of a component's previews, the
-//!   states a design tool or a gallery shows it in, declared in a `*.preview.tsx` file beside the
-//!   component. Each of RayX's components ships its own (`button.preview.tsx`).
+//! - [`previews`]: `Previews<C>`, `PrivatePreviews<C>` and `PreviewState<P>`, the types of a
+//!   component's previews, the states a design tool or a gallery shows it in, declared in a
+//!   `*.preview.tsx` file beside the component. Each of RayX's components ships its own
+//!   (`button.preview.tsx`).
 //!
 //! The library is a UI set of its own, [`set`], imported as [`SPECIFIER`] (`rayx/components`):
 //! the components, the previews' types, RayX's roles (TS's `role()` is typed with them) and
@@ -70,6 +71,7 @@ pub fn set() -> Registry {
     set.theme_document(theme::DOCUMENT)
         .roles(theme::roles::all())
         .ts_alias(previews::PREVIEWS)
+        .ts_alias(previews::PRIVATE_PREVIEWS)
         .ts_alias(previews::PREVIEW_STATE)
         .register::<button::Button>();
     set

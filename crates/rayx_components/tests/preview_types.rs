@@ -1,6 +1,7 @@
 //! The previews' types the library's set declares: `Previews<C>`, a component's previews as a
-//! `*.preview.tsx` file declares them, and `PreviewState<P>`, one named state's props. Every app
-//! serving the set imports them from `rayx/components`, as the library's own preview files do.
+//! `*.preview.tsx` file declares them, `PrivatePreviews<C>`, the previews of one of its private
+//! components, and `PreviewState<P>`, one named state's props. Every app serving the set imports
+//! them from `rayx/components`, as the library's own preview files do.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -13,7 +14,12 @@ fn the_library_set_declares_the_previews_types() {
     let ts = declarations(&set, &[]);
     for declared in [
         "export type Previews<C> = { readonly id: string; readonly title?: string; \
-         readonly group?: string; readonly component: C; readonly states: \
+         readonly group?: string; readonly size?: { readonly width: number; readonly height: number }; \
+         readonly component: C; readonly states: \
+         { readonly [name: string]: PreviewState<C extends (props: infer P) => unknown ? P : never> }; \
+         readonly private?: readonly PrivatePreviews<(props: any) => unknown>[] };",
+        "export type PrivatePreviews<C> = { readonly id: string; readonly title?: string; \
+         readonly component: C; readonly states: \
          { readonly [name: string]: PreviewState<C extends (props: infer P) => unknown ? P : never> } };",
         "export type PreviewState<P> = { readonly props?: Partial<P> };",
     ] {

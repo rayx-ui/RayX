@@ -136,6 +136,7 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     for name in [
         "component rayx_components::button::Button",
         "type Previews<C>",
+        "type PrivatePreviews<C>",
         "type PreviewState<P>",
     ] {
         assert!(!exported.contains(name), "{name} in the app's set");
@@ -152,6 +153,7 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     for name in [
         "component rayx_components::button::Button",
         "type Previews<C>",
+        "type PrivatePreviews<C>",
         "type PreviewState<P>",
     ] {
         assert!(
