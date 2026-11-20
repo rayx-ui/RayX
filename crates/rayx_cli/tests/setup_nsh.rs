@@ -19,7 +19,7 @@ use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::project::Pins;
 use rayx_cli::setup::{Cx, FakeMachine, PlanEnv, Set, environment_for, plan, run_plan};
 
-const ID: &str = "265966565f62";
+const ID: &str = "6e14d3507b61";
 const UBUNTU: &str = "ID=ubuntu\nVERSION_ID=\"24.04\"\nPRETTY_NAME=\"Ubuntu 24.04 LTS\"\n";
 
 fn host(os: Os, arch: Arch) -> HostFacts {
@@ -61,10 +61,10 @@ fn install_entry(home: &Workspace) -> PathBuf {
             version: 1,
             id: ID.into(),
             kind: Kind::Distribution,
-            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.6.0-6/nsh-macos-arm64.tar.gz"
+            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.6.0-7/nsh-macos-arm64.tar.gz"
                 .into(),
-            reference: Some("nshx-0.6.0-6".into()),
-            commit: Some("265966565f6218c40c988406089b94fe5378483a".into()),
+            reference: Some("nshx-0.6.0-7".into()),
+            commit: Some("6e14d3507b612b4990d816ffe41d0472ff915a98".into()),
             nsh: "0.6.0".into(),
             cli: "nsh/bin/nsh".into(),
             installed: "2026-10-24T01:30:00Z".into(),
@@ -125,7 +125,7 @@ fn the_nsh_step_ends_the_base_set_after_the_toolchain_on_every_host() {
             .pop()
             .expect("step");
         assert!(!step.prompts, "the nsh step asks nothing");
-        assert_eq!(step.title, "nsh nshx-0.6.0-6 (2659665) (default)");
+        assert_eq!(step.title, "nsh nshx-0.6.0-7 (6e14d35) (default)");
     }
     // Without a pin (a guest's inner plan before discovery, tests) there is no nsh step.
     let ids: Vec<&str> = plan(&env(Os::Linux, None), &[Set::Base])
@@ -147,17 +147,17 @@ fn check_prints_the_download_and_the_source_fallback_and_installs_nothing() {
     let store = home.path("rayx-home/nsh");
     assert!(
         text.contains(&format!(
-            "[missing] base: nsh nshx-0.6.0-6 (2659665) (default) ({ID} is not in {})",
+            "[missing] base: nsh nshx-0.6.0-7 (6e14d35) (default) ({ID} is not in {})",
             store.display()
         )),
         "{text}"
     );
     assert!(
-        text.contains("download https://github.com/dXnSix/nsh/releases/download/nshx-0.6.0-6/nsh-macos-arm64.tar.gz (and its .sha256)"),
+        text.contains("download https://github.com/dXnSix/nsh/releases/download/nshx-0.6.0-7/nsh-macos-arm64.tar.gz (and its .sha256)"),
         "{text}"
     );
     assert!(
-        text.contains("else git fetch --depth 1 https://github.com/dXnSix/nsh 265966565f6218c40c988406089b94fe5378483a"),
+        text.contains("else git fetch --depth 1 https://github.com/dXnSix/nsh 6e14d3507b612b4990d816ffe41d0472ff915a98"),
         "{text}"
     );
     assert!(
@@ -185,13 +185,13 @@ fn an_installed_pin_is_present_when_its_cli_answers_and_missing_when_it_does_not
     let (_, text) = check(
         &env,
         &machine(&home),
-        &mut versioned("nsh 0.6.0 (2659665)\n"),
+        &mut versioned("nsh 0.6.0 (6e14d35)\n"),
     );
     assert!(
-        text.contains("[ok     ] base: nsh nshx-0.6.0-6 (2659665) (default) (found distribution 0.6.0 (2659665))"),
+        text.contains("[ok     ] base: nsh nshx-0.6.0-7 (6e14d35) (default) (found distribution 0.6.0 (6e14d35))"),
         "{text}"
     );
-    let mut runner = versioned("nsh 0.6.0 (2659665)\n");
+    let mut runner = versioned("nsh 0.6.0 (6e14d35)\n");
     check(&env, &machine(&home), &mut runner);
     assert!(
         runner
@@ -205,7 +205,7 @@ fn an_installed_pin_is_present_when_its_cli_answers_and_missing_when_it_does_not
         &machine(&home),
         &mut versioned("nsh 0.6.0 (5f0c2a9)\n"),
     );
-    assert!(text.contains("[missing] base: nsh nshx-0.6.0-6"), "{text}");
+    assert!(text.contains("[missing] base: nsh nshx-0.6.0-7"), "{text}");
     assert!(text.contains("built from 5f0c2a9"), "{text}");
 }
 
@@ -252,7 +252,7 @@ fn doctor_shows_one_line_per_pin_and_the_same_fields_in_json() {
     let mut path = UserPath::Windows(Box::new(MemoryPathStore::new(None)));
     let report = report_for(
         &env,
-        &mut versioned("nsh 0.6.0 (2659665)\n"),
+        &mut versioned("nsh 0.6.0 (6e14d35)\n"),
         &machine(&home),
         &mut path,
         None,
@@ -264,18 +264,18 @@ fn doctor_shows_one_line_per_pin_and_the_same_fields_in_json() {
         .unwrap_or_else(|| panic!("an nsh line:\n{text}"));
     assert!(
         line.trim_start()
-            .starts_with("nsh  nshx-0.6.0-6 (2659665)  project  installed  "),
+            .starts_with("nsh  nshx-0.6.0-7 (6e14d35)  project  installed  "),
         "{line}"
     );
     assert!(line.ends_with(" B"), "with its size: {line}");
     let json = report.to_json();
     let nsh = &json["nsh"];
-    assert_eq!(nsh["value"], "nshx-0.6.0-6 (2659665)");
+    assert_eq!(nsh["value"], "nshx-0.6.0-7 (6e14d35)");
     assert_eq!(nsh["source"], "project");
     assert_eq!(nsh["state"], "installed");
     assert_eq!(nsh["id"], ID);
     assert!(nsh["bytes"].as_u64().is_some(), "{nsh}");
-    assert_eq!(json["pins"]["nsh"]["value"], "nshx-0.6.0-6 (2659665)");
+    assert_eq!(json["pins"]["nsh"]["value"], "nshx-0.6.0-7 (6e14d35)");
     assert_eq!(json["pins"]["nsh"]["source"], "project");
 }
 
@@ -287,7 +287,7 @@ fn setup_update_installs_the_pin_of_every_recorded_project() {
     let fork = Workspace::fixture("nsh-fork-app");
     let branch = Workspace::fixture("nsh-fork-app");
     let lock = branch.read("Cargo.lock").replace(
-        "?tag=nshx-0.6.0-6#265966565f6218c40c988406089b94fe5378483a",
+        "?tag=nshx-0.6.0-7#6e14d3507b612b4990d816ffe41d0472ff915a98",
         "?branch=main#5f0c2a91be4700000000000000000000000000aa",
     );
     branch.write("Cargo.lock", &lock);
@@ -322,7 +322,7 @@ fn setup_update_installs_the_pin_of_every_recorded_project() {
     assert!(result.recorded);
     let text = String::from_utf8(out).expect("UTF-8");
     assert!(
-        text.contains("base: nsh nshx-0.6.0-6 (2659665) (project)"),
+        text.contains("base: nsh nshx-0.6.0-7 (6e14d35) (project)"),
         "{text}"
     );
     assert!(
@@ -360,12 +360,12 @@ fn an_unreadable_pin_fails_its_step_and_nothing_stands_in_for_it() {
     let (code, text) = check(
         &env,
         &machine(&home),
-        &mut versioned("nsh 0.6.0 (2659665)\n"),
+        &mut versioned("nsh 0.6.0 (6e14d35)\n"),
     );
     assert_eq!(code, 1, "{text}");
     assert!(text.contains("two sources"), "{text}");
     assert!(
-        !text.contains("nshx-0.6.0-6 (2659665) (default)"),
+        !text.contains("nshx-0.6.0-7 (6e14d35) (default)"),
         "the default never stands in: {text}"
     );
 
@@ -387,7 +387,7 @@ fn an_unreadable_pin_fails_its_step_and_nothing_stands_in_for_it() {
 
     let report = report_for(
         &env,
-        &mut versioned("nsh 0.6.0 (2659665)\n"),
+        &mut versioned("nsh 0.6.0 (6e14d35)\n"),
         &machine(&home),
         &mut UserPath::Windows(Box::new(MemoryPathStore::new(None))),
         None,
@@ -479,7 +479,7 @@ fn an_app_without_a_cargo_workspace_is_recorded_by_its_directory_and_updated() {
     assert!(result.recorded);
     let text = String::from_utf8(out).expect("UTF-8");
     assert!(
-        text.contains("base: nsh nshx-0.6.0-6 (2659665) (rayx.toml)"),
+        text.contains("base: nsh nshx-0.6.0-7 (6e14d35) (rayx.toml)"),
         "--update reads the recorded app's pin: {text}"
     );
     let keep = rayx_cli::nsh::kept_ids(&mut Runner::print(), &machine, &host(Os::Linux, Arch::X64))
@@ -508,14 +508,14 @@ fn a_pin_unreadable_when_planned_is_read_again_when_its_step_runs() {
     let plan = plan(&env, &[Set::Base]).expect("plan");
     let last = plan.steps.last().expect("steps");
     assert_eq!(last.id, "nsh");
-    let mut runner = versioned("nsh 0.6.0 (2659665)\n");
+    let mut runner = versioned("nsh 0.6.0 (6e14d35)\n");
     let fake = machine(&home);
     let mut path = UserPath::Windows(Box::new(MemoryPathStore::new(None)));
     let mut cx = Cx::new(&env, &mut runner, &fake, &mut path);
     let probed = (last.probe)(&mut cx);
     assert!(!probed.satisfied);
     assert!(
-        probed.detail.contains("265966565f62 is not in"),
+        probed.detail.contains("6e14d3507b61 is not in"),
         "the probe reads the pin again: {probed:?}"
     );
     let Install::Actions(build) = &last.install else {
@@ -524,7 +524,7 @@ fn a_pin_unreadable_when_planned_is_read_again_when_its_step_runs() {
     let actions = build(&mut cx, &probed).expect("the pin reads now");
     assert!(
         matches!(actions.as_slice(), [Action::Custom { description, .. }]
-            if description.contains("releases/download/nshx-0.6.0-6/nsh-macos-arm64.tar.gz")),
+            if description.contains("releases/download/nshx-0.6.0-7/nsh-macos-arm64.tar.gz")),
         "the project's pin is installed"
     );
 }
@@ -541,7 +541,7 @@ fn right_after_rustup_is_installed_the_step_finds_rust_in_cargo_bin() {
         source: Source::Git {
             url: "https://github.com/dXnSix/nsh".into(),
             reference: Reference::Branch("main".into()),
-            commit: "265966565f6218c40c988406089b94fe5378483a".into(),
+            commit: "6e14d3507b612b4990d816ffe41d0472ff915a98".into(),
         },
         ..default_pin(&home.root)
     };
@@ -561,11 +561,11 @@ fn right_after_rustup_is_installed_the_step_finds_rust_in_cargo_bin() {
         })
         .responder(move |spec| {
             if spec.args == ["--version"] {
-                return Some(Outcome::success().with_stdout("nsh 0.6.0 (2659665)\n"));
+                return Some(Outcome::success().with_stdout("nsh 0.6.0 (6e14d35)\n"));
             }
             (spec.program == "git" && spec.args == ["rev-parse", "HEAD"]).then(|| {
                 if checked_out.get() {
-                    Outcome::success().with_stdout("265966565f6218c40c988406089b94fe5378483a\n")
+                    Outcome::success().with_stdout("6e14d3507b612b4990d816ffe41d0472ff915a98\n")
                 } else {
                     Outcome::failure(128)
                 }

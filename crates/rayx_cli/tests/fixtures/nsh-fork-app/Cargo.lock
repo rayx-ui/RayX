@@ -13,7 +13,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.6.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-6#265966565f6218c40c988406089b94fe5378483a"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-7#6e14d3507b612b4990d816ffe41d0472ff915a98"
 dependencies = [
  "nsh-macros",
  "serde",
@@ -22,7 +22,7 @@ dependencies = [
 [[package]]
 name = "nsh-macros"
 version = "0.6.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-6#265966565f6218c40c988406089b94fe5378483a"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-7#6e14d3507b612b4990d816ffe41d0472ff915a98"
 
 [[package]]
 name = "serde"

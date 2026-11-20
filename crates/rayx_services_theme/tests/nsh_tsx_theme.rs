@@ -290,6 +290,7 @@ fn frames(tsx: &str, scheme: nsh_core::platform::ColorScheme) -> Vec<String> {
         development: false,
         app: nsh_bundler::AppInfo::default(),
         asset_root_from: None,
+        app_dir: None,
         entry,
         minify: false,
         split: false,

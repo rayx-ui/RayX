@@ -93,13 +93,11 @@ mod harness {
         std::fs::write(&entry, tsx).unwrap();
         let ui_sets = vec![set];
         let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
-            development: false,
-            app: nsh_bundler::AppInfo::default(),
-            asset_root_from: None,
             entry,
-            minify: false,
-            split: false,
             ui_sets: ui_sets.iter().map(Into::into).collect(),
+            // The rest as by default: not minified, not split, no app info, the entry's own
+            // folder as the app's.
+            ..Default::default()
         })
         .unwrap();
         let _ = std::fs::remove_dir_all(&dir);

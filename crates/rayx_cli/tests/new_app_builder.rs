@@ -232,7 +232,7 @@ fn no_file_rayx_writes_names_the_old_api() {
 }
 
 /// NSH's CLI's specifier scan of a crate's source (`specifier_of` in `crates/nsh-cli/src/rust_app.rs`
-/// at `nshx-0.6.0-6`): the first line that, trimmed, starts with `#[` and has `native_module`
+/// at `nshx-0.6.0-7`): the first line that, trimmed, starts with `#[` and has `native_module`
 /// followed by `("…"`. The web runtime keeps a set's gate by it.
 fn nsh_specifier_of(code: &str) -> Option<String> {
     code.lines().find_map(|line| {

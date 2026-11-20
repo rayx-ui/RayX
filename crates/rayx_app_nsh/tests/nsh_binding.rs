@@ -228,6 +228,7 @@ fn a_tsx_class_exposes_the_view_model_as_observables() {
         development: false,
         app: nsh_bundler::AppInfo::default(),
         asset_root_from: None,
+        app_dir: None,
         entry,
         minify: false,
         split: false,

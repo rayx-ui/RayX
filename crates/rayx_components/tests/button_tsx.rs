@@ -51,6 +51,7 @@ impl Tsx {
             development: false,
             app: nsh_bundler::AppInfo::default(),
             asset_root_from: None,
+            app_dir: None,
             entry,
             minify: false,
             split: false,
