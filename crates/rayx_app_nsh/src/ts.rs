@@ -72,8 +72,31 @@ pub const CONTRACT_CLASS: TsAlias = TsAlias {
     doc: "A contract's class, which TS registers implementations of the contract `T` under.",
 };
 
+/// A component's previews: the states a design tool or a gallery shows it in, declared in a
+/// `*.preview.tsx` file beside it as plain data typed with this alias (`export default { … }
+/// satisfies Previews<typeof Card>`). Nothing runs to make it one: a tool reads the literal `id`,
+/// `title`, `group`, state names and props without running the file, and imports it to show one.
+pub const PREVIEWS: TsAlias = TsAlias {
+    name: "Previews<C>",
+    ts: "{ readonly id: string; readonly title?: string; readonly group?: string; \
+         readonly component: C; readonly states: { readonly [name: string]: \
+         PreviewState<C extends (props: infer P) => unknown ? P : never> } }",
+    doc: "A component's previews, declared in its `*.preview.tsx` file: a stable `id` (unique in \
+          the project, kept when the file moves), a `title` and `group` to list it under, the \
+          `component`, and its named `states`.",
+};
+
+/// One named state of a component's previews ([`PREVIEWS`]): the props it is shown with.
+pub const PREVIEW_STATE: TsAlias = TsAlias {
+    name: "PreviewState<P>",
+    ts: "{ readonly props?: Partial<P> }",
+    doc: "A named state of a component's previews: the props it is shown with (those left out \
+          keep the component's defaults).",
+};
+
 /// Adds RayX's TS classes to `registry` (an app's UI set): the builder, the provider and its
-/// tokens (with the `ServiceKey<T>` alias), the TS options' `OptionsToken` and
+/// tokens (with the `ServiceKey<T>` alias), the previews' types (`Previews<C>`,
+/// `PreviewState<P>`), the TS options' `OptionsToken` and
 /// `OptionsBuilder`, the startup interfaces (`AsyncInitializable`,
 /// `StartupInitializable`) and classes, the options classes and the services' classes.
 pub fn register(registry: &mut Registry) {
@@ -81,6 +104,8 @@ pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(SERVICE_KEY)
         .ts_alias(CONTRACT_CLASS)
+        .ts_alias(PREVIEWS)
+        .ts_alias(PREVIEW_STATE)
         .class::<RayXAppBuilder>()
         .class::<ServiceProvider>()
         .class::<ServiceToken>()

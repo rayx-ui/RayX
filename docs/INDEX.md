@@ -18,6 +18,8 @@
   beside its Rust twin.
 - [Components and theme](components.md): RayX's component library, the roles it reads, its default theme from the
   Figma tokens, another theme or a patch over RayX's, and the gallery app.
+- [Previews](previews.md): a component's states declared in a `*.preview.tsx` file (`Previews<C>`), for design tools
+  and galleries.
 - [Dev tools](devtools.md): the in-app agent of dev builds, how it connects to a tool, and the agent protocol.
 
 ## Reference
