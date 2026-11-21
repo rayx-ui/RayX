@@ -67,9 +67,7 @@ Route work on RayX's components, its theme document and roles, and the gallery.
 
 ## Open follow-ups
 
-- `Slot` and `AutoLayout` have no gallery page yet. NSH: looking through a root with bound styles
-  and `children_each` (or `Children` giving its count and NSH taking an empty children-only host
-  out of the layout) would let a slot's props reach the element inside a `Slot`.
+- `Slot` and `AutoLayout` have no gallery page yet.
 
 - The theme service (`rayx_services_theme`, epic `theme-roles`) follows the system's light/dark
   and changes contexts on request; picking density, OS or contrast from the platform, switching

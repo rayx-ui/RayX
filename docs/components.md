@@ -168,10 +168,9 @@ slot()
 - **Holding one element**, it is a box around that element, laid out as it is without the slot.
 - **Two or more things** in one slot are a mistake of the code that gives them: a dev build warns once, naming the
   slot, and shows them all.
-- **A slot's props through it.** NSH gives the props and press handlers a component places on its slot (a trigger's)
-  to the app's one element inside a component that only places its children; `Slot`'s view has more than that (it
-  hides while empty, draws the box in design mode and counts its children), so today those props stay on the `Slot`'s
-  host (`crates/rayx_components/tests/slot_tsx.rs`, an ignored test, says what NSH needs).
+- **A slot's props through it.** The props and press handlers a component places on its slot (a trigger's) reach
+  the one element inside a `Slot`: NSH looks through a component whose root has only styles of its own and places
+  its children, while it holds one element.
 
 ## Previews and files
 
