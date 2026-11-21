@@ -164,7 +164,12 @@ slot()
 - **In design mode only** (NSH's `design_mode()`: a design tool started the app), an empty slot draws a box a design
   tool can drop into, from roles: the `intent-primary-bg-translucent` tint, a dashed `border-width-outline` edge in
   `intent-primary-accent`, `radius-default` corners, at least `spacing-default-lvl5-height` each way, and the slot's
-  name in `text-small-regular` and `surface-text-subtle`, inset by `spacing-small-lvl5-inset`.
+  name in `text-small-regular` and `surface-text-subtle`, inset by `spacing-small-lvl5-inset`. A component that sizes
+  the place (styles on the `slot()` it draws) gets the box at that size: its styles come after the slot's own.
+- **A design tool finds it** in a Rust view as in TSX: `Slot` tells NSH's design mode that it is the place of the slot
+  of its name, of the component that drew it (NSH's `design_slot`, a dev build's only), so the slot is listed under
+  that component, empty or filled. Name it as the prop that fills it in JS (`slotLeft`, not `slot_left`). A slot the
+  component's code makes only on a condition (`Button`'s `showSlotLeft`) is not there while the condition is off.
 - **Holding one element**, it is a box around that element, laid out as it is without the slot.
 - **Two or more things** in one slot are a mistake of the code that gives them: a dev build warns once, naming the
   slot, and shows them all.

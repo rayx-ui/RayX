@@ -3,7 +3,8 @@
 //! A component marks each of its slots with a `Slot`, named as the prop that fills it, around
 //! what goes there: `<Slot name="footer">{props.footer}</Slot>` in TSX,
 //! `slot().name("footer").child(props.footer.place(|f| f))` in a Rust view. A design tool finds
-//! the component's slots by it, and what the component's own code puts in it is the slot's
+//! the component's slots by it, in TSX and in a Rust view alike (it tells NSH's design mode where
+//! it is: `design_slot`), and what the component's own code puts in it is the slot's
 //! default content (`{props.footer ?? <Button text="Close" />}`): what a user of the component
 //! passes replaces it.
 //!
@@ -54,6 +55,9 @@ pub struct SlotProps {
 /// `spacing-default-lvl5-height` on each side, and its name in `text-small-regular`
 /// (`surface-text-subtle`) inset by `spacing-small-lvl5-inset`.
 ///
+/// A component that sizes the place (`slot().name("slotLeft").size(..)`) gets the empty box at
+/// that size: the component's styles on the slot come after the slot's own.
+///
 /// Holding one element, it is a box around it laid out as it is: the element keeps its size and
 /// place. Two or more things in one slot are a mistake: a dev build warns once, naming the slot,
 /// and shows them all. Put several things in an `AutoLayout`, and that in the slot.
@@ -87,6 +91,8 @@ pub struct SlotProps {
 /// ```
 #[component]
 pub fn Slot(props: SlotProps) -> impl IntoElement {
+    // Where it is, for a design tool (nothing without NSH's dev tools).
+    design_slot(props.name);
     let design = design_mode();
     let empty = move || props.children.get().is_empty();
     // The empty box's look, read only in design mode.

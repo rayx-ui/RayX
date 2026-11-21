@@ -82,13 +82,13 @@ pub struct ButtonProps {
     pub show_right_icon: Prop<bool>,
     /// The trailing icon, drawn like `iconLeft`.
     pub icon_right: Prop<Option<Slot>>,
-    /// Shows `slotLeft`.
+    /// Makes the slot `slotLeft`: while it is off there is none (not shown, not made).
     #[prop(default)]
     pub show_slot_left: Prop<bool>,
     /// Content between the leading icon and the label, such as a Badge: the level's
     /// `adornment-size` high and at least as wide, centered and clipped.
     pub slot_left: Prop<Option<Slot>>,
-    /// Shows `slotRight`.
+    /// Makes the slot `slotRight`: while it is off there is none (not shown, not made).
     #[prop(default)]
     pub show_slot_right: Prop<bool>,
     /// Content between the label and the trailing icon, drawn like `slotLeft`.
@@ -141,10 +141,8 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
         )
     });
 
-    // Each icon and slot is a box of the button's own, there while the app fills the slot and
-    // its `show*` prop is on, with the app's content centered in it. The box is a view of this
-    // component, not the slot's own node: a slot TSX fills does not mount when it is placed
-    // straight into a nested component's content (`nsh_base::button()`'s children).
+    // Each icon is a box of the button's own, there while the app gives it and its `show*` prop
+    // is on, with the icon centered in it. The icons are props set in code, not slots.
     let icon = move |slot: Prop<Option<Slot>>, show: Prop<bool>| {
         when(
             move || show.get() && slot.get().is_some(),
@@ -158,13 +156,30 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
             },
         )
     };
-    let content = move |slot: Prop<Option<Slot>>, show: Prop<bool>| {
+    // `slotLeft` and `slotRight` are slots, marked with RayX's `Slot` (named by their JS names),
+    // so a design tool finds them: a box the level's `adornment-size` high and at least as wide,
+    // the content centered and clipped. Their `show*` prop makes them: while it is off there is
+    // no slot. In the running app a slot is there only while filled; in design mode an empty one
+    // is too, as `Slot`'s box at the adornment-size square, so the button keeps its height.
+    let design = design_mode();
+    let content = move |name: &'static str, slot: Prop<Option<Slot>>, show: Prop<bool>| {
         when(
-            move || show.get() && slot.get().is_some(),
+            move || show.get() && (design || slot.get().is_some()),
             move || {
-                view()
-                    .h(move || px(look.with(|l| l.adornment)))
-                    .min_w(move || px(look.with(|l| l.adornment)))
+                let adornment = move || px(look.with(|l| l.adornment));
+                crate::slot::slot()
+                    .name(name)
+                    .h(adornment)
+                    .min_h(adornment)
+                    .min_w(adornment)
+                    // Empty (in design mode only): exactly the square, whatever `Slot` draws in it.
+                    .style_with(move |s| {
+                        if slot.get().is_none() {
+                            s.w(adornment())
+                        } else {
+                            s
+                        }
+                    })
                     .flex_shrink_0()
                     .items_center()
                     .justify_center()
@@ -215,9 +230,13 @@ pub fn Button(props: ButtonProps, cx: Scope<ButtonEvent>) -> impl IntoElement {
                 .outline_color(move || look.with(|l| l.ring))
         })
         .child(icon(props.icon_left, props.show_left_icon))
-        .child(content(props.slot_left, props.show_slot_left))
+        .child(content("slotLeft", props.slot_left, props.show_slot_left))
         .child(text(props.text).number_of_lines(1u32))
-        .child(content(props.slot_right, props.show_slot_right))
+        .child(content(
+            "slotRight",
+            props.slot_right,
+            props.show_slot_right,
+        ))
         .child(icon(props.icon_right, props.show_right_icon))
 }
 
