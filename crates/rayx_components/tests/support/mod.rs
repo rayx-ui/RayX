@@ -14,9 +14,9 @@ use nsh_core::ApproxTextEngine;
 use nsh_core::ViewStyle;
 use nsh_core::color::{Hsla, Rgba};
 use nsh_core::element::description::SetDescription;
-use nsh_core::element::{Registry, RoleSpec, Tokens};
+use nsh_core::element::{Registry, RoleSpec, Token, Tokens};
 use nsh_core::{EventKind, EventMask, EventPayload, MountBatch, MountItem, NodeId};
-use nsh_engine::{App, EngineConfig, LocalEngine, MountSink};
+use nsh_engine::{App, Bundle, Engine, EngineConfig, LocalEngine, MountSink};
 
 pub struct ChannelSink(pub Sender<MountBatch>);
 
@@ -37,7 +37,12 @@ pub fn ui_sets() -> Vec<Registry> {
 /// The sets a host of [`ui_sets`] serves, the library's among them, described: what the bundler
 /// and the compiler take.
 pub fn described() -> Vec<SetDescription> {
-    Registry::served_sets(&ui_sets())
+    described_of(&ui_sets())
+}
+
+/// The sets a host of `sets` serves, described.
+pub fn described_of(sets: &[Registry]) -> Vec<SetDescription> {
+    Registry::served_sets(sets)
         .into_iter()
         .map(SetDescription::from)
         .collect()
@@ -139,6 +144,32 @@ impl Screen {
         self.parents.get(&self.text_node(label)?).copied()
     }
 
+    /// Where node `id` is in the window: its origin and its parents' summed.
+    pub fn absolute(&self, id: NodeId) -> (f32, f32) {
+        let (mut x, mut y) = (0.0, 0.0);
+        let mut at = Some(id);
+        while let Some(node) = at {
+            let (dx, dy) = self.origins.get(&node).copied().unwrap_or_default();
+            x += dx;
+            y += dy;
+            at = self.parents.get(&node).copied();
+        }
+        (x, y)
+    }
+
+    /// The frame of the text view showing exactly `label`, in the window: x, y, width, height.
+    pub fn text_frame(&self, label: &str) -> Option<(f32, f32, f32, f32)> {
+        let id = self.text_node(label)?;
+        let (w, h) = *self.frames.get(&id)?;
+        let (x, y) = self.absolute(id);
+        Some((x, y, w, h))
+    }
+
+    /// The parent of the text view showing exactly `label`.
+    pub fn around(&self, label: &str) -> Option<NodeId> {
+        self.parents.get(&self.text_node(label)?).copied()
+    }
+
     /// The children of `parent`, in no order.
     pub fn children(&self, parent: NodeId) -> Vec<NodeId> {
         self.parents
@@ -212,6 +243,77 @@ impl Running {
     }
 }
 
+/// A TSX app on an engine, compiled from one entry file, and what it mounted.
+pub struct Tsx {
+    pub engine: Engine,
+    pub rx: Receiver<MountBatch>,
+    pub screen: Screen,
+}
+
+impl Tsx {
+    /// Starts the app whose entry is `source`, with RayX's library in its UI sets ([`ui_sets`]).
+    pub fn start(source: &str) -> Tsx {
+        Self::start_with(source, ui_sets())
+    }
+
+    /// Starts the app whose entry is `source` with the UI sets `sets`.
+    pub fn start_with(source: &str, sets: Vec<Registry>) -> Tsx {
+        static APPS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let dir = std::env::temp_dir().join(format!(
+            "rayx-components-tsx-{}-{}",
+            std::process::id(),
+            APPS.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let entry = dir.join("App.tsx");
+        std::fs::write(&entry, source).unwrap();
+        let described = described_of(&sets);
+        let bundle = nsh_bundler::bundle(&nsh_bundler::BundleOptions {
+            entry,
+            ui_sets: described,
+            ..Default::default()
+        })
+        .unwrap();
+        let _ = std::fs::remove_dir_all(&dir);
+        let (tx, rx) = crossbeam_channel::unbounded();
+        let config = EngineConfig {
+            ui_sets: sets,
+            ..EngineConfig::new(App::Js(Bundle::source(bundle.code)))
+        };
+        let engine = Engine::start(config, || ApproxTextEngine, ChannelSink(tx)).unwrap();
+        Tsx {
+            engine,
+            rx,
+            screen: Screen::default(),
+        }
+    }
+
+    /// Takes what the engine mounts until `done` holds of the screen (or 10 s pass), then what
+    /// follows for a moment; whether it held.
+    pub fn wait(&mut self, done: impl Fn(&Screen) -> bool) -> bool {
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while !done(&self.screen) {
+            match self.rx.recv_deadline(deadline) {
+                Ok(batch) => self.screen.apply(&batch),
+                Err(_) => return false,
+            }
+        }
+        while let Ok(batch) = self.rx.recv_timeout(Duration::from_millis(50)) {
+            self.screen.apply(&batch);
+        }
+        true
+    }
+
+    /// Presses node `id`, as the platforms send a press.
+    pub fn press_node(&self, id: NodeId) {
+        for kind in [EventKind::PressDown, EventKind::PressUp, EventKind::Press] {
+            self.engine
+                .control()
+                .dispatch_event(id, kind, EventPayload::None);
+        }
+    }
+}
+
 /// RayX's theme document, read (`nsh_theme::read`), and what reading it said.
 pub fn document() -> (Arc<nsh_theme::ThemeDocument>, Vec<nsh_theme::Diagnostic>) {
     let read = nsh_theme::read(rayx_components::theme::DOCUMENT);
@@ -235,6 +337,24 @@ pub fn tokens_of(
         selection = selection.with(*modifier, *context);
     }
     Tokens::resolve_with_roles(document.clone(), selection, Vec::new(), &declarations())
+}
+
+/// The value RayX's theme gives number role `role` (every modifier at its default).
+pub fn number(role: &str) -> f32 {
+    let (tokens, _) = tokens_of(&document().0, &[]);
+    match tokens.role_by_name(role) {
+        Some(Token::Number(n)) => n,
+        other => panic!("{role}: {other:?}"),
+    }
+}
+
+/// The value RayX's theme gives color role `role` (every modifier at its default), `0xRRGGBBAA`.
+pub fn color(role: &str) -> u32 {
+    let (tokens, _) = tokens_of(&document().0, &[]);
+    match tokens.role_by_name(role) {
+        Some(Token::Color(c)) => rgba(c),
+        other => panic!("{role}: {other:?}"),
+    }
 }
 
 /// A color as `0xRRGGBBAA`.

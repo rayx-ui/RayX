@@ -10,6 +10,8 @@ examples, DO and DON'T) is the `rayx-components` skill in RayX.Root (`.claude/sk
 | Component | Figma | Base |
 | --- | --- | --- |
 | `Button` | `buttons/Button` | nsh-base `Button` |
+| `AutoLayout` | a frame with auto layout | a view ([below](#autolayout)) |
+| `Slot` | a slot | a view ([below](#slot)) |
 
 ## Use it
 
@@ -63,6 +65,113 @@ button().text("Save changes").variant(ButtonVariant::Primary).on_press(move || s
 
 `class` and `style` on a component place it (a margin, a width); they never restyle it. A look the library lacks is a new
 variant in the library and in Figma.
+
+## AutoLayout
+
+`AutoLayout` is RayX's container for several things, laid out as Figma's auto layout lays out a frame. It is a thin
+wrapper: one view whose flex properties its props set, holding its children, any number of them, as they are. Its
+props are Figma's auto layout properties:
+
+| Prop | Values | Figma |
+| --- | --- | --- |
+| `direction` | `vertical` (default), `horizontal` | direction |
+| `gap` | `none` (default), `gap1` … `gap8`: the role `spacing-gap<n>` | gap between items |
+| `spaceBetween` | `true`: the children spread along the direction, `gap` the least space between them | spacing "Auto" |
+| `padding` | `none` (default), `inset1` … `inset8`: the role `spacing-inset<n>`, on every side | padding |
+| `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | as `padding`, for one side, over `padding` | padding per side |
+| `align` | `topLeft` (default), `top`, `topRight`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight` | alignment |
+| `wrap`, `wrapGap` | wraps onto further lines; the space between lines (`gap`'s when unset) | wrap, spacing between rows |
+| `width`, `height` | `hug` (default), `fill`, `fixed` (at `fixedWidth`, `fixedHeight`, in points) | resizing |
+
+The gap and the padding are spacing roles, never numbers, so any theme that maps the roles spaces it. With
+`spaceBetween`, `align` places the children across the direction only. Left and right are the start and the end in a
+right-to-left layout.
+
+<!-- tsx: fragment -->
+```tsx
+import { AutoLayout, Button } from "rayx/components";
+
+const actions = (
+  <AutoLayout direction="horizontal" gap="gap2" padding="inset3" align="right" width="fill">
+    <Button text="Cancel" />
+    <Button text="Save" variant="primary" />
+  </AutoLayout>
+);
+```
+
+```rust
+use rayx::components::prelude::*;
+
+auto_layout()
+    .direction(AutoLayoutDirection::Horizontal)
+    .gap(SpacingGap::Gap2)
+    .padding(SpacingInset::Inset3)
+    .child(button().text("Cancel"))
+    .child(button().text("Save").variant(ButtonVariant::Primary))
+```
+
+**A child's sizing.** In Figma, hug, fill and fixed are each child's own, read against the auto layout around it. JSX
+has no prop of a parent per child, so here they stay each child's:
+
+- An `AutoLayout` child sizes itself with its own `width` and `height`, read against the `AutoLayout` around it, which
+  provides its direction to its children as context: `fill` along that direction takes the space the other children
+  leave (`flex: 1`), across it the whole breadth (`align-self: stretch`); `fixed` is `fixedWidth` / `fixedHeight`;
+  `hug` is its content's size. Outside an `AutoLayout` the parent is taken for a column, as a view is.
+- Any other child (a `Button`, an app's component) hugs, at its natural size. Its `class` (in Rust, its styles), which
+  places a component without restyling it, makes it fill or fixes it: `flex-1` fills along the `AutoLayout`'s
+  direction, `self-stretch` across it, `w-[120px]` / `h-[40px]` fix it. A design tool writes these from the direction
+  it reads in the `AutoLayout`'s props.
+
+Fill acts in the `AutoLayout` directly around the child: a `Slot` between them is a box of its own, and provides no
+direction.
+
+## Slot
+
+A slot is a place in a component that takes content from outside. A component marks each of its slots with `Slot`,
+named as the prop that fills it, around what goes there; a design tool finds the component's slots by it. A slot holds
+one component instance, or nothing; several things go into a slot through an `AutoLayout` put into it. What the
+component's own code puts into the slot is its default content, and what the component's user passes replaces it:
+
+<!-- tsx: fragment -->
+```tsx
+import { Text, type JSX } from "nsh";
+import { AutoLayout, Button, Slot } from "rayx/components";
+
+function Dialog(props: { title: string; footer?: JSX.Element }) {
+  return (
+    <AutoLayout gap="gap4" padding="inset5">
+      <Text>{props.title}</Text>
+      <Slot name="footer">{props.footer ?? <Button text="Close" />}</Slot>
+    </AutoLayout>
+  );
+}
+```
+
+In a Rust view, `slot()` makes it (its type is `rayx::components::slot::Slot`, by its path: NSH's prelude has a `Slot`
+too, the type of a slot prop):
+
+```rust
+use rayx::components::prelude::*;
+
+slot()
+    .name("footer")
+    .child(props.footer.place(|f| f))
+    .child(when(move || props.footer.get().is_none(), || button().text("Close")))
+```
+
+- **Empty**, it shows nothing in the running app and takes no space: it is out of the layout, so its parent's `gap`
+  is not taken for it either, and it comes back when content comes.
+- **In design mode only** (NSH's `design_mode()`: a design tool started the app), an empty slot draws a box a design
+  tool can drop into, from roles: the `intent-primary-bg-translucent` tint, a dashed `border-width-outline` edge in
+  `intent-primary-accent`, `radius-default` corners, at least `spacing-default-lvl5-height` each way, and the slot's
+  name in `text-small-regular` and `surface-text-subtle`, inset by `spacing-small-lvl5-inset`.
+- **Holding one element**, it is a box around that element, laid out as it is without the slot.
+- **Two or more things** in one slot are a mistake of the code that gives them: a dev build warns once, naming the
+  slot, and shows them all.
+- **A slot's props through it.** NSH gives the props and press handlers a component places on its slot (a trigger's)
+  to the app's one element inside a component that only places its children; `Slot`'s view has more than that (it
+  hides while empty, draws the box in design mode and counts its children), so today those props stay on the `Slot`'s
+  host (`crates/rayx_components/tests/slot_tsx.rs`, an ignored test, says what NSH needs).
 
 ## Previews and files
 

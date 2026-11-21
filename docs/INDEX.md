@@ -16,8 +16,9 @@
 - [TSX](tsx.md): a TSX app's crate (RayX's attribute), its builder and provider, RayX's service classes, services written
   in TS, contracts (shapes, threads and costs), implementing a RayX service in TS, options and app extensions, each
   beside its Rust twin.
-- [Components and theme](components.md): RayX's component library, the set `rayx/components` every app serves, the
-  roles it reads, its default theme from the Figma tokens, another theme or a patch over RayX's, its previews and
+- [Components and theme](components.md): RayX's component library, the set `rayx/components` every app serves, its
+  layout components (`AutoLayout`, Figma's auto layout, and `Slot`, a component's place for content), the roles it
+  reads, its default theme from the Figma tokens, another theme or a patch over RayX's, its previews and
   files, and the gallery app.
 - [Previews](previews.md): a component's states declared in a `*.preview.tsx` file (`Previews<C>`, from
   `rayx/components`), for design tools and galleries: the size of a component with none of its own, the previews of

@@ -9,6 +9,9 @@
 //! - The components, each the Figma component of the same name on its nsh-base base component
 //!   (behavior, focus, keyboard and accessibility from nsh-base; the look from the roles):
 //!   [`Button`](button::Button).
+//! - The layout components, Figma's auto layout and slots: [`AutoLayout`](auto_layout::AutoLayout),
+//!   RayX's container for several things, and [`Slot`](slot::Slot), the place in a component that
+//!   takes one component instance from outside.
 //! - [`previews`]: `Previews<C>`, `PrivatePreviews<C>` and `PreviewState<P>`, the types of a
 //!   component's previews, the states a design tool or a gallery shows it in, declared in a
 //!   `*.preview.tsx` file beside the component. Each of RayX's components ships its own
@@ -38,19 +41,27 @@
 //!
 //! Rust views use the constructors: `button().text("Save changes").variant(ButtonVariant::Primary)`.
 
+pub mod auto_layout;
 pub mod button;
 pub mod previews;
+pub mod slot;
 pub mod theme;
 
 use nsh_core::element::Registry;
 
 /// What a RayX view uses: the components and their props' types, [`ComponentSize`](theme::ComponentSize),
 /// the role groups, the roles and [`value`](theme::value). Names that NSH's prelude also has (`Size`,
-/// `Components`) are not in it.
+/// `Components`, `Slot`, `SlotElement`) are not in it: `slot()` makes RayX's `Slot`, whose type is
+/// [`slot::Slot`] by its path.
 pub mod prelude {
+    pub use crate::auto_layout::{
+        AutoLayout, AutoLayoutAlign, AutoLayoutDirection, AutoLayoutElement, AutoLayoutProps,
+        AutoLayoutSizing, SpacingGap, SpacingInset, auto_layout,
+    };
     pub use crate::button::{
         Button, ButtonElement, ButtonEvent, ButtonProps, ButtonVariant, button,
     };
+    pub use crate::slot::{SlotProps, slot};
     pub use crate::theme::{
         ComponentSize, IntentRoles, LevelRoles, SizeRoles, SizeTextRoles, roles, value,
     };
@@ -73,6 +84,8 @@ pub fn set() -> Registry {
         .ts_alias(previews::PREVIEWS)
         .ts_alias(previews::PRIVATE_PREVIEWS)
         .ts_alias(previews::PREVIEW_STATE)
-        .register::<button::Button>();
+        .register::<button::Button>()
+        .register::<auto_layout::AutoLayout>()
+        .register::<slot::Slot>();
     set
 }
