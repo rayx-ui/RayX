@@ -20,9 +20,10 @@ nsh-base.workspace = true
 serde_json.workspace = true
 
 [dev-dependencies]
-# `inspect`: the design-mode tests read NSH's dev tree (`tests/button_slots_design.rs`).
+# `inspect`: the design-mode tests read NSH's dev tree (`tests/button_slots_design.rs`), and the
+# engine answers what a design tool's `design.layers` asks of the script (`tests/slot_places.rs`).
 nsh-core = { workspace = true, features = ["declarations", "inspect"] }
-nsh-engine = { workspace = true, features = ["js"] }
+nsh-engine = { workspace = true, features = ["js", "inspect"] }
 nsh-bundler.workspace = true
 nsh-js.workspace = true
 nsh-theme.workspace = true
