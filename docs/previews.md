@@ -24,6 +24,7 @@ export default {
 - `id`: the previews' identity, unique in its package (the app's project, or a library's crate). A tool keeps it when
   the file moves or is renamed, so what refers to it does not break.
 - `title`, `group`: what a tool lists it as, and under which heading.
+- `tags`: words in lower case to find it by, any number of them, `tags: ["form", "auth"]`; left out, it has none.
 - `component`: the component, imported by name from its module (a TSX file of the app, the app's native module for a
   Rust component of its own, or a library's set: `import { Button } from "rayx/components"`).
 - `states`: each named state's `props` (`PreviewState<P>`, `Partial` of the component's props); props left out keep
@@ -33,9 +34,9 @@ export default {
   that size.
 - `private`: the previews of the component's private components ([below](#private-components)).
 
-Nothing runs to make a file a preview: a tool reads the literal `id`, `title`, `group`, `size`, state names and props
-without running it, and imports the file only to show one of its states. Keep them literals; a value written as code
-still reaches the component but the tool cannot show it.
+Nothing runs to make a file a preview: a tool reads the literal `id`, `title`, `group`, `tags`, `size`, state names and
+props without running it, and imports the file only to show one of its states. Keep them literals; a value written as
+code still reaches the component but the tool cannot show it.
 
 The file is the app's own code, committed beside the component and reviewed like it. It is not part of the app's
 bundle unless something imports it.
@@ -81,8 +82,8 @@ export default {
 - Write each entry `{ … } satisfies PrivatePreviews<typeof Hero>`, naming its own component. The list takes the previews
   of any component (one type cannot check each entry against a different component), so the entry's own `satisfies` is
   what checks its props; without it a tool still reads the entry, and a wrong prop in it goes unnoticed.
-- It has no `group` (a tool lists it under its component), no `size` and no `private` of its own: private components do
-  not nest.
+- It has no `group` (a tool lists it under its component), no `size` and no `private` of its own: private components
+  do not nest. It takes `tags`, as its component's previews do.
 
 ## A library's previews
 
@@ -113,5 +114,6 @@ an app writes no previews of RayX's components. A new component of RayX lands wi
 preview file: `crates/rayx_components/tests/previews.rs` checks that every component the set registers has a
 `<snake_name>.preview.tsx` beside its source, written as literals (a `size` and `private` previews too, where it has
 them), with a unique `id`, importing its component from `rayx/components`, and that every state renders in an app
-serving the set. What TypeScript accepts and refuses of a `size` and of `private` previews is checked by the crate's
-`preview_size` and `preview_private` groups, with the compiler `rayx app check` uses (`-- --include-ignored`).
+serving the set. What TypeScript accepts and refuses of a `size`, of `tags` and of `private` previews is checked by the
+crate's `preview_size`, `preview_tags` and `preview_private` groups, with the compiler `rayx app check` uses
+(`-- --include-ignored`).
