@@ -29,9 +29,10 @@ pub fn step(pin: &Pin) -> Step {
 /// The install of `pin`: one custom action, or none for a path checkout.
 fn actions(cx: &Cx, pin: &Pin) -> Result<Vec<Action>, SetupError> {
     if let Source::Path { checkout } = &pin.source {
-        // A path checkout is built in place by `rayx app` (RUN-3); nothing to install.
+        // A path checkout runs the prebuilt nsh `rayx dev install nsh` keeps; setup builds no CLI.
         return Err(SetupError::Prerequisite(format!(
-            "the NSH checkout {} is built by `rayx app` when it runs",
+            "the NSH checkout {} runs the prebuilt nsh `rayx dev install nsh {}` builds",
+            checkout.display(),
             checkout.display()
         )));
     }

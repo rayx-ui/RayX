@@ -76,6 +76,7 @@ stay there.
 | `rayx fmt` | Formats the project, one workspace member at a time. |
 | `rayx app` | Runs an nsh command with the project's pinned nsh. |
 | `rayx nshx` | Shows, installs, locates and prunes the nsh builds `rayx` keeps, and builds a project on a local NSH checkout (`rayx nsh` still works). |
+| `rayx dev` | Builds and keeps the prebuilt `nsh` and `rayx` that a local NSH checkout and a design tool run, in `~/.rayx/dev`. |
 | `rayx new` | Creates a new RayX app (or, with `--nsh-only`, a plain NSH app) pinned to `rayx`'s default nsh. |
 | `rayx serve` | Serves a packaged web app on `127.0.0.1`. |
 
@@ -349,14 +350,10 @@ Everything runs as you, with no question and no administrator rights.
 | `rayx nshx prune [--yes]` | Lists the entries no recorded project and no default pins, with their sizes, and removes them after asking. |
 | `rayx nshx use <checkout>\|local\|<tag>\|latest [-C <dir>]` | Builds the project's NSH from a local NSH checkout, or moves it to a tag of the fork (below). |
 
-**Working on NSH itself.** A path dependency on an NSH checkout makes `rayx` run
-`cargo build --release -p nsh-cli --target-dir target` in that checkout and run its `target/release/nsh`, copying
-nothing into the store. A design tool's run (`rayx app run` or `rayx app dev` with `NSH_DESIGN_SOCKET` set, NSH's
-design mode) builds it quick instead, because someone is waiting to see their components:
-`cargo build --profile quick -p nsh-cli --target-dir target` into `target/quick/nsh`, the profile being release
-without link-time optimization, in 16 codegen units, built incrementally (`CARGO_PROFILE_QUICK_*`, set for the build
-and for the nsh it starts). A change in NSH then rebuilds the CLI in seconds rather than minutes, and it bundles as
-fast. Builds, packages, publishes and runs started by hand keep the CLI NSH ships. `rayx nshx use ../nsh` makes that dependency in the checkout you already work
+**Working on NSH itself.** A path dependency on an NSH checkout makes `rayx` run the prebuilt `nsh` in
+`~/.rayx/dev` (`$RAYX_HOME/dev`), which `rayx dev install nsh <checkout>` builds ([below](#rayx-dev-and-the-prebuilt-clis)),
+copying nothing into the store: `rayx` never builds a CLI when it runs one, and a change to NSH's libraries needs no
+new one. `rayx nshx use ../nsh` makes that dependency in the checkout you already work
 in: every `[patch.crates-io]` line of an NSH crate, in the workspace's `Cargo.toml` and in each
 `.cargo/config.toml` under it (the gallery's), points at that crate in the checkout by a path
 relative to that file (never an absolute one), with a comment keeping what it was, and Cargo relocks. Nothing waits for an nshx release while you work on both.
@@ -379,6 +376,28 @@ A source entry or a path checkout builds nsh's hosts and runtimes into its own `
 time a command needs them. nsh's web-runtime build follows `CARGO_TARGET_DIR` but looks for its
 output in the checkout's `target/`, so unset `CARGO_TARGET_DIR` while such an nsh builds its web
 runtime (the fork's release archives bring every runtime prebuilt).
+
+### `rayx dev` and the prebuilt CLIs
+
+Working on NSH and RayX themselves, the two CLIs come prebuilt from one local folder, `~/.rayx/dev`
+(`$RAYX_HOME/dev`), outside every repository, so each checkout and worktree on the machine runs the same
+ones. Nothing compiles either CLI when it runs: a design tool that starts a project waits only for the
+project's own build.
+
+| Command | What it does |
+| --- | --- |
+| `rayx dev install nsh [<checkout>]` | Builds the NSH checkout's `nsh-cli` and puts `nsh` in the folder, replacing the one there in one step. Without a checkout: the one the current folder is in, else the one `rayx nshx use local` finds. |
+| `rayx dev install rayx [<checkout>]` | The same for a RayX checkout's `rayx-cli`. |
+| `rayx dev status [--json]` | Shows each CLI and the checkout, commit and uncommitted files it was built from. |
+
+`rayx dev install nsh|rayx` builds in the checkout's own `target/quick/` with `cargo build --profile quick`: release
+without link-time optimization, in 16 codegen units, built incrementally, defined in the build's environment
+(`CARGO_PROFILE_QUICK_*`). After a change it rebuilds `nsh-cli` in seconds where NSH's release profile takes
+minutes, and the CLI bundles as fast. Beside each CLI the folder keeps `<tool>.json`: the checkout, the commit,
+the uncommitted files and when it was installed. Run it after a change to a CLI's own code; `rayx` warns when
+NSH's CLI code (`crates/nsh-cli`, `nsh-bundler`, `nsh-dev`, `nsh-package`) changed since the prebuilt `nsh`'s
+commit, or when it was built from another checkout, and runs it all the same. A project on a local checkout
+with no prebuilt `nsh` stops with the command that builds one.
 
 ### `rayx new`
 

@@ -251,13 +251,10 @@ fn the_readme_says_how_rayx_chooses_and_installs_nsh() {
         "`RAYX_NSH=<path>`",
         "`rayx: RAYX_NSH=<path> replaces the project's nsh 6e14d3507b61`",
         "A path dependency on an NSH checkout",
-        "`cargo build --release -p nsh-cli --target-dir target`",
+        "the prebuilt `nsh` in `~/.rayx/dev`",
+        "`rayx dev install nsh <checkout>`",
         "copying nothing into the store",
-        "`NSH_DESIGN_SOCKET`",
-        "`cargo build --profile quick -p nsh-cli --target-dir target`",
-        "`target/quick/nsh`",
-        "`CARGO_PROFILE_QUICK_*`",
-        "keep the CLI NSH ships",
+        "`rayx` never builds a CLI when it runs one",
     ] {
         assert!(
             nsh.contains(needle),

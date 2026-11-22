@@ -59,14 +59,15 @@ decision changed with the move, it says so. Current source and tests remain the 
 - **Working on NSH.** A path dependency on an NSH checkout makes `rayx app` build that checkout's
   CLI and run it; `RAYX_NSH=<path>` runs that binary instead of the pin's, announced on every
   command. Neither writes to the store.
-- **A design tool's run builds the checkout's CLI quick.** `run` or `dev` with `NSH_DESIGN_SOCKET`
-  set builds it with `--profile quick` (release without link-time optimization, 16 codegen units,
-  incremental) into `target/quick/`, the profile defined in the environment of the build and of the
-  nsh it starts, which builds a checkout's hosts with the profile its folder is named after. Measured
-  on NSH at 94a8acff5: 238 s after an edit in nsh-cli and 330 s after one in nsh-core with NSH's
-  shipped profile (`lto = "fat"`, `codegen-units = 1`), 1.9 s and 7.2 s quick, bundling within 5 %.
-  Everything that makes something to ship (`build`, `package`, `publish`) and every run started by
-  hand keeps the CLI NSH ships.
+- **Prebuilt CLIs, never a build at a run.** Working on NSH and RayX, `nsh` and `rayx` come from
+  `$RAYX_HOME/dev` (`~/.rayx/dev`), which `rayx dev install nsh|rayx [<checkout>]` fills: a quick
+  build (`--profile quick`: release without link-time optimization, 16 codegen units, incremental,
+  defined in the build's environment) in the checkout's `target/quick/`, the binary swapped into the
+  folder in one rename, with a record of the checkout and commit. A project on a local NSH checkout
+  runs that `nsh` and never builds one: a change to NSH's libraries needs no new CLI, and one to the
+  CLI's own code is warned of. Measured on NSH at 94a8acff5, building it at each run with NSH's
+  release profile (`lto = "fat"`, `codegen-units = 1`) cost 238 s after an edit in nsh-cli and 330 s
+  after one in nsh-core; the quick build takes 1.9 s and 7.2 s and bundles within 5 %.
 
 ## app
 

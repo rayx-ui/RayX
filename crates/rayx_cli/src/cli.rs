@@ -59,6 +59,11 @@ pub enum Command {
         #[command(subcommand)]
         command: NshCommand,
     },
+    /// Build and keep the prebuilt nsh and rayx a local NSH checkout and a design tool run
+    Dev {
+        #[command(subcommand)]
+        command: DevCommand,
+    },
     /// Create a new NSH app pinned to rayx's default nsh
     New(NewArgs),
     /// Serve a packaged web app (`nsh package --target web`) on 127.0.0.1
@@ -310,6 +315,35 @@ pub enum NshCommand {
         #[arg(long)]
         yes: bool,
     },
+}
+
+/// Subcommands of `rayx dev`: the prebuilt CLIs in `$RAYX_HOME/dev` (`~/.rayx/dev`).
+#[derive(Debug, Subcommand)]
+pub enum DevCommand {
+    /// Build a checkout's CLI quick and put it in the folder, replacing the one there
+    Install {
+        /// Which CLI: NSH's (from an NSH checkout) or rayx (from a RayX checkout)
+        tool: DevTool,
+        /// The checkout to build; default: the one this folder is in, for nsh else the one
+        /// `rayx nshx use local` finds
+        #[arg(value_name = "CHECKOUT")]
+        checkout: Option<PathBuf>,
+    },
+    /// Show the prebuilt CLIs and the checkout and commit each came from
+    Status {
+        /// Print the status as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+/// A CLI `rayx dev` keeps.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum DevTool {
+    /// NSH's CLI
+    Nsh,
+    /// This CLI
+    Rayx,
 }
 
 /// The app templates `rayx new` knows: nsh's own three.

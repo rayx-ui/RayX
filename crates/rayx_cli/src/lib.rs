@@ -4,6 +4,7 @@
 
 pub mod app;
 pub mod cli;
+pub mod dev;
 pub mod doctor;
 pub mod fmt;
 pub mod host;
@@ -75,6 +76,7 @@ fn dispatch(cli: Cli) -> ExitCode {
         } => update::run(*check, *yes, release.as_deref()),
         Command::App(args) => app::run(args),
         Command::Nshx { command } => nsh::run(command),
+        Command::Dev { command } => dev::run(command),
         Command::New(args) => new::run(args),
         Command::Serve(args) => serve::run(args),
     };

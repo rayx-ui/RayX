@@ -1,6 +1,6 @@
 //! Fork development (RUN-3, design §4.6): `RAYX_NSH=<path>` runs that binary instead of the pin's,
-//! with a warning on every command, and a path dependency on an NSH checkout builds and runs that
-//! checkout's CLI. Neither touches the store.
+//! with a warning on every command, and a path dependency on an NSH checkout runs the prebuilt
+//! `nsh` in `$RAYX_HOME/dev` (`rayx dev install nsh`, the `dev_cli` group). Neither touches the store.
 
 mod common;
 
@@ -141,9 +141,11 @@ fn an_empty_rayx_nsh_is_no_replacement() {
 }
 
 #[test]
-fn a_path_pin_builds_the_checkouts_cli_and_runs_it_writing_nothing_to_the_store() {
+fn a_path_pin_runs_the_prebuilt_nsh_builds_nothing_and_writes_nothing_to_the_store() {
     let home = Workspace::empty();
     let app = Workspace::fixture("nsh-path-app");
+    // `rayx dev install nsh` put a CLI in the folder of prebuilt CLIs.
+    home.write("rayx-home/dev/nsh", "#!");
     let machine = FakeMachine::new()
         .with_home("/Users/dev")
         .with_env("RAYX_HOME", &home.path("rayx-home").display().to_string());
@@ -154,50 +156,24 @@ fn a_path_pin_builds_the_checkouts_cli_and_runs_it_writing_nothing_to_the_store(
         &app.path("app"),
         &machine,
     );
-    let checkout = app.path("nsh");
-    assert_eq!(
-        prepared.launch.program,
-        checkout.join("target").join("release").join("nsh")
-    );
+    assert_eq!(prepared.launch.program, home.path("rayx-home/dev/nsh"));
     assert_eq!(
         prepared.launch.cwd,
         app.path("app"),
         "nsh runs where the pin was read"
     );
-    let build = prepared
-        .runner
-        .specs()
-        .iter()
-        .find(|spec| spec.program == "cargo" && spec.args.first().is_some_and(|a| a == "build"))
-        .expect("a build");
-    assert_eq!(
-        build.args,
-        [
-            "build",
-            "--release",
-            "-p",
-            "nsh-cli",
-            "--target-dir",
-            "target"
-        ],
-        "the CLI lands where rayx runs it, whatever CARGO_TARGET_DIR says"
-    );
-    assert_eq!(build.cwd.as_deref(), Some(checkout.as_path()));
-    assert!(build.unset.contains(&"CARGO".to_string()));
     assert!(
-        build.unset.contains(&"RUSTUP_TOOLCHAIN".to_string()),
-        "the checkout builds with its own toolchain"
+        !prepared
+            .runner
+            .specs()
+            .iter()
+            .any(|spec| spec.program == "cargo" && spec.args.first().is_some_and(|a| a == "build")),
+        "rayx builds no CLI when it runs one: {:?}",
+        prepared.runner.specs()
     );
     assert_eq!(prepared.nsh_step, [true]);
     assert!(
-        prepared
-            .warnings
-            .contains("building the nsh CLI of the checkout"),
-        "{}",
-        prepared.warnings
-    );
-    assert!(
-        !home.path("rayx-home").exists(),
+        !home.path("rayx-home/nsh").exists(),
         "a path checkout is never copied into the store"
     );
 }

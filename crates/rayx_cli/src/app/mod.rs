@@ -8,8 +8,9 @@
 //! through. On Unix rayx replaces itself with nsh; on Windows it waits and exits with nsh's code.
 //!
 //! Fork development has two doors (design §4.6): `RAYX_NSH=<path>` runs that binary instead of
-//! the pin's, with a warning on every command, and a path dependency on an NSH checkout builds and
-//! runs that checkout's CLI. Neither writes to the store.
+//! the pin's, with a warning on every command, and a path dependency on an NSH checkout runs the
+//! prebuilt `nsh` in `$RAYX_HOME/dev` (`rayx dev install nsh`, [`crate::dev`]), never a build.
+//! Neither writes to the store.
 
 pub mod prereqs;
 
@@ -17,12 +18,12 @@ use std::ffi::OsString;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
 
 use crate::cli::AppArgs;
+use crate::dev::{Dev, checkout_cli};
 use crate::host::path_env::UserPath;
-use crate::host::{CommandSpec, HostFacts, Os, Runner};
-use crate::nsh::install::{RustTools, in_nsh_checkout};
+use crate::host::{HostFacts, Os, Runner};
 use crate::nsh::pin::{Pin, Source};
 use crate::nsh::store::Store;
 use crate::nsh::{self, Status};
@@ -232,16 +233,12 @@ pub fn launch_for(
     cx: &mut Cx,
     err: &mut dyn Write,
 ) -> Result<Launch> {
-    let command = args.command().to_string_lossy().into_owned();
-    // A checkout's CLI is built quick only for a design tool's run: someone is waiting on it.
-    let quick = replacement.is_none()
-        && pin.is_some_and(|pin| matches!(pin.source, Source::Path { .. }))
-        && design_run(&command, cx.machine);
     let program = match (replacement, pin) {
         (Some(path), _) => path.to_path_buf(),
-        (None, Some(pin)) => cli_of(pin, quick, cx.runner, cx.machine, &cx.env.host, err)?,
+        (None, Some(pin)) => cli_of(pin, cx.runner, cx.machine, &cx.env.host, err)?,
         (None, None) => return Err(anyhow!("no nsh pin and no {RAYX_NSH}")),
     };
+    let command = args.command().to_string_lossy().into_owned();
     let nsh_args = args.args();
     let browser = prereqs::browser_args(&command, nsh_args, cx);
     let split = nsh_args
@@ -253,103 +250,29 @@ pub fn launch_for(
     launch_args.extend(nsh_args[..split].iter().cloned());
     launch_args.extend(browser);
     launch_args.extend(nsh_args[split..].iter().cloned());
-    let mut set = environment(cx);
-    if quick {
-        // The quick CLI builds a checkout's hosts with its own profile, which only these define.
-        set.extend(quick_profile_env());
-    }
     Ok(Launch {
         program,
         args: launch_args,
         cwd: dir.to_path_buf(),
-        set,
+        set: environment(cx),
         unset: vec!["CARGO".to_string()],
     })
 }
 
-/// The cargo profile a checkout's CLI is built with for a design tool's run ([`design_run`]),
-/// into `target/quick/`: release's optimizations without link-time optimization, in 16 codegen
-/// units, built incrementally. A change in NSH then rebuilds the CLI in seconds instead of
-/// minutes, and it bundles as fast. Every other command builds the CLI as NSH ships it.
-pub const QUICK_PROFILE: &str = "quick";
-
-/// [`QUICK_PROFILE`], defined in the environment (`CARGO_PROFILE_QUICK_*`), not in NSH's
-/// `Cargo.toml`: of the CLI's build, and of the nsh it starts, which builds a checkout's hosts with
-/// the profile its own folder is named after.
-pub fn quick_profile_env() -> Vec<(String, String)> {
-    [
-        ("INHERITS", "release"),
-        ("LTO", "off"),
-        ("CODEGEN_UNITS", "16"),
-        ("INCREMENTAL", "true"),
-    ]
-    .into_iter()
-    .map(|(key, value)| (format!("CARGO_PROFILE_QUICK_{key}"), value.to_string()))
-    .collect()
-}
-
-/// Whether `command` is a design tool's run: `run` or `dev` with `NSH_DESIGN_SOCKET` set, the
-/// socket of the tool that started the app in NSH's design mode. Never a build, a package or a
-/// publish, which get the CLI NSH ships.
-pub fn design_run(command: &str, machine: &dyn Machine) -> bool {
-    matches!(command, "run" | "dev")
-        && machine
-            .env("NSH_DESIGN_SOCKET")
-            .is_some_and(|socket| !socket.trim().is_empty())
-}
-
-/// The pin's CLI: the store entry's (the prerequisites installed it), or a path checkout's,
-/// built in place with `cargo build --release -p nsh-cli --target-dir target`, or with
-/// `--profile quick` ([`QUICK_PROFILE`]) when `quick`.
+/// The pin's CLI: the store entry's (the prerequisites installed it), or for a local NSH
+/// checkout the prebuilt `nsh` in `$RAYX_HOME/dev` (`rayx dev install nsh`); `rayx app` never
+/// builds a CLI.
 fn cli_of(
     pin: &Pin,
-    quick: bool,
     runner: &mut Runner,
     machine: &dyn Machine,
     host: &HostFacts,
     err: &mut dyn Write,
 ) -> Result<PathBuf> {
     if let Source::Path { checkout } = &pin.source {
-        let _ = writeln!(
-            err,
-            "rayx: building the nsh CLI of the checkout {}{}",
-            checkout.display(),
-            if quick {
-                " (quick build, for a design tool's run)"
-            } else {
-                ""
-            }
-        );
-        // The checkout's own toolchain, with the cargo setup's Rust steps find.
-        let cargo = RustTools::find(machine, host.os).cargo;
-        let profile: &[&str] = if quick {
-            &["--profile", QUICK_PROFILE]
-        } else {
-            &["--release"]
-        };
-        // `--target-dir target` outranks a user's `CARGO_TARGET_DIR` and `build.target-dir`:
-        // the CLI rayx runs is the one this build makes.
-        let mut build = in_nsh_checkout(
-            CommandSpec::new(cargo.as_str())
-                .arg("build")
-                .args(profile.iter().copied())
-                .args(["-p", "nsh-cli", "--target-dir", "target"]),
-        );
-        if quick {
-            for (key, value) in quick_profile_env() {
-                build = build.env(key, value);
-            }
-        }
-        runner
-            .run_checked(&build.cwd(checkout).interactive())
-            .with_context(|| format!("building nsh in {}", checkout.display()))?;
-        let exe = if host.os == Os::Windows {
-            "nsh.exe"
-        } else {
-            "nsh"
-        };
-        let folder = if quick { QUICK_PROFILE } else { "release" };
-        return Ok(checkout.join("target").join(folder).join(exe));
+        let dev = Dev::locate(machine)
+            .ok_or_else(|| anyhow!("no home directory for the prebuilt CLIs (set RAYX_HOME)"))?;
+        return checkout_cli(checkout, &dev, runner, host, err);
     }
     let store =
         Store::locate(machine).ok_or_else(|| anyhow!("no home directory for the nsh store"))?;

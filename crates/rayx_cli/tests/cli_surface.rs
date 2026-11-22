@@ -1,4 +1,4 @@
-//! Top-level command surface: the ten commands, help, version, usage errors, and how `app` hands
+//! Top-level command surface: the eleven commands, help, version, usage errors, and how `app` hands
 //! nsh's arguments over unchanged.
 
 use std::ffi::OsString;
@@ -11,8 +11,8 @@ use predicates::prelude::*;
 use predicates::str::contains;
 use rayx_cli::cli::{Cli, Command as Subcommand, NshCommand, Template};
 
-const COMMANDS: [&str; 10] = [
-    "setup", "doctor", "wsl", "lima", "self", "fmt", "app", "nshx", "new", "serve",
+const COMMANDS: [&str; 11] = [
+    "setup", "doctor", "wsl", "lima", "self", "fmt", "app", "nshx", "dev", "new", "serve",
 ];
 
 fn rayx() -> Command {
@@ -28,7 +28,7 @@ fn os(values: &[&str]) -> Vec<OsString> {
 }
 
 #[test]
-fn help_lists_exactly_the_ten_commands_with_one_line_each() {
+fn help_lists_exactly_the_eleven_commands_with_one_line_each() {
     let output = rayx().arg("--help").assert().success().get_output().clone();
     let help = String::from_utf8(output.stdout).expect("help is UTF-8");
 

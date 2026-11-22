@@ -54,7 +54,7 @@ A `Cargo.lock` source is one of:
 | a git URL with `?tag=` and the commit | the tag's release archive for this host, else a checkout of the commit | the commit's first 12 hex digits |
 | a git URL with `?branch=` or `?rev=`, or no ref | a checkout of the commit | the commit's first 12 hex digits |
 | crates.io (`registry+https://github.com/rust-lang/crates.io-index`) at 0.2.0 | upstream's `v0.2.0` release archive, else a checkout of `longbridge/nsh` at `v0.2.0` | `v0.2.0` |
-| none (a path dependency on an NSH checkout) | nothing: `rayx` builds and runs that checkout's CLI | none |
+| none (a path dependency on an NSH checkout) | nothing: `rayx` runs the prebuilt `nsh` in `~/.rayx/dev` (`rayx dev install nsh`) | none |
 
 Two different sources in one lock, or locks of the `"rust"` crates that disagree, stop with both
 named. A crate patched to the fork in `.cargo/config.toml` (`[patch.crates-io]`) shows up in the lock

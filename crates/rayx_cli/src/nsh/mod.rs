@@ -35,21 +35,16 @@ pub struct Status {
     pub kind: Option<Kind>,
     pub installed: bool,
     pub bytes: Option<u64>,
-    /// The CLI: the entry's, or a path checkout's `target/release/nsh`.
+    /// The CLI: the entry's, or for a path checkout the prebuilt `nsh` in `$RAYX_HOME/dev`.
     pub cli: Option<PathBuf>,
 }
 
 impl Status {
     /// The status of `pin` in `store`.
     pub fn of(pin: &Pin, store: &Store, host: &HostFacts) -> Status {
-        if let Source::Path { checkout } = &pin.source {
-            let cli = checkout.join("target").join("release").join(
-                if host.os == crate::host::Os::Windows {
-                    "nsh.exe"
-                } else {
-                    "nsh"
-                },
-            );
+        if let Source::Path { .. } = &pin.source {
+            // A local checkout runs the prebuilt nsh `rayx dev install nsh` keeps.
+            let cli = crate::dev::Dev::beside(store).cli(crate::dev::Tool::Nsh, host.os);
             return Status {
                 pin: pin.clone(),
                 id: None,
@@ -322,7 +317,8 @@ pub fn path_in(
     if let Source::Path { checkout } = &pin.source {
         let _ = writeln!(
             err,
-            "rayx: the NSH checkout {} has no built CLI yet; `rayx app` builds it",
+            "rayx: no prebuilt nsh for the NSH checkout {}: `rayx dev install nsh {}` builds it",
+            checkout.display(),
             checkout.display()
         );
         return Ok(1);
@@ -360,7 +356,7 @@ pub fn install_in(
     let pin = resolve(runner, dir, &mut io::stderr())?;
     if matches!(pin.source, Source::Path { .. }) {
         return Err(anyhow!(
-            "{} uses an NSH checkout by path; `rayx app` builds its CLI in place",
+            "{} uses an NSH checkout by path; its CLI is the prebuilt nsh `rayx dev install nsh` builds",
             dir.display()
         ));
     }
