@@ -1,5 +1,4 @@
-//! The types of a component's previews: the states a design tool (RayX Studio) or a gallery shows
-//! it in, declared in a `*.preview.tsx` file beside the component as plain data typed with
+//! The types of a component's previews: the states a design tool or a gallery shows it in, declared in a `*.preview.tsx` file beside the component as plain data typed with
 //! `Previews<C>`, which the library's set, `rayx/components`, exports:
 //!
 //! ```tsx
@@ -44,6 +43,22 @@
 //!     } satisfies PrivatePreviews<typeof Hero>,
 //!   ],
 //! } satisfies Previews<typeof TripPlanner>;
+//! ```
+//!
+//! A state may add `services`: a function a design host runs to register, in the instance's own
+//! scope, the services that state shows its data with (a fake of a view model, say). It gets
+//! the scope's registrations ([`PREVIEW_SERVICES`]), and it is the one part of the file a tool
+//! runs rather than reads:
+//!
+//! ```tsx
+//! states: {
+//!   Empty: {
+//!     props: { title: "Inbox" },
+//!     services: (scope) => {
+//!       scope.addSingletonAs(InboxViewModel, () => new DesignInboxViewModel([]));
+//!     },
+//!   },
+//! },
 //! ```
 
 use nsh_core::element::TsAlias;
@@ -91,10 +106,34 @@ pub const PRIVATE_PREVIEWS: TsAlias = TsAlias {
 };
 
 /// One named state of a component's previews ([`PREVIEWS`], [`PRIVATE_PREVIEWS`]): the props it
-/// is shown with.
+/// is shown with, and the services it adds to the instance's own scope ([`PREVIEW_SERVICES`]).
 pub const PREVIEW_STATE: TsAlias = TsAlias {
     name: "PreviewState<P>",
-    ts: "{ readonly props?: Partial<P> }",
+    ts: "{ readonly props?: Partial<P>; readonly services?: (scope: PreviewServices) => void }",
     doc: "A named state of a component's previews: the props it is shown with (those left out \
-          keep the component's defaults).",
+          keep the component's defaults), and `services`, a function a design host runs with the \
+          instance's own scope's registrations to add the services the state shows its data \
+          with (they replace the app's and the design registrations' for that instance alone).",
+};
+
+/// What a preview state's `services` gets: the registrations of the instance's own scope, a
+/// scope's `ScopeRegistrations` (`createScope(configure)`'s) as a design host passes it, typed
+/// here by their shape (tokens are objects; a factory gets the provider it resolves in), so the
+/// library names no type of another crate.
+pub const PREVIEW_SERVICES: TsAlias = TsAlias {
+    name: "PreviewServices",
+    ts: "{ \
+         addSingleton(token: object, factory: (services: { getRequiredService(token: object): any; getService(token: object): any }) => unknown): PreviewServices; \
+         addSingletonAs(token: object, factory: (services: { getRequiredService(token: object): any; getService(token: object): any }) => unknown): PreviewServices; \
+         addScoped(token: object, factory: (services: { getRequiredService(token: object): any; getService(token: object): any }) => unknown): PreviewServices; \
+         addScopedAs(token: object, factory: (services: { getRequiredService(token: object): any; getService(token: object): any }) => unknown): PreviewServices; \
+         addTransient(token: object, factory: (services: { getRequiredService(token: object): any; getService(token: object): any }) => unknown): PreviewServices; \
+         addTransientAs(token: object, factory: (services: { getRequiredService(token: object): any; getService(token: object): any }) => unknown): PreviewServices \
+         }",
+    doc: "The registrations of a preview instance's own scope, what a state's `services` gets: \
+          `addSingleton`, `addScoped`, `addTransient` and their `As` forms, each taking a token \
+          (a class, a `ServiceToken`, a contract's class) and a factory called with the provider \
+          it resolves in. A singleton is one per instance; what is registered here wins over \
+          the app's registrations for that instance alone. Startup services belong to the app's \
+          root and are not registered here.",
 };

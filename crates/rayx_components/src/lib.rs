@@ -84,6 +84,7 @@ pub fn set() -> Registry {
         .ts_alias(previews::PREVIEWS)
         .ts_alias(previews::PRIVATE_PREVIEWS)
         .ts_alias(previews::PREVIEW_STATE)
+        .ts_alias(previews::PREVIEW_SERVICES)
         .register::<button::Button>()
         .register::<auto_layout::AutoLayout>()
         .register::<slot::Slot>();
