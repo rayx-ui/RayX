@@ -107,8 +107,9 @@ let maybe = services.service::<Cache<u32>>();         // Option<Arc<Cache<u32>>>
 let scope = services.create_scope();                  // a child scope
 ```
 
-In a Rust component, `rayx_app_nsh::services()` returns the provider of the nearest screen scope (or the surface's root).
-In TSX, `await builder.start()` gives the surface's root (a fragment: `services` is that root, `ApiClient` and `Cache`
+In a Rust component, `rayx_app_nsh::services()` returns the provider of the nearest screen scope (or the surface's root);
+in a TSX component's body, `useServices()` does the same ([screens in TSX](#screens-in-tsx)).
+`await builder.start()` gives the surface's root (a fragment: `services` is that root, `ApiClient` and `Cache`
 the app's classes):
 
 <!-- tsx: fragment -->
@@ -177,7 +178,7 @@ See [TSX](tsx.md#contracts), which has `OpenMeteo`.
 | Lifetime | Core | On NSH |
 | --- | --- | --- |
 | Singleton | one per root provider, shared by its scopes | one per engine surface: each surface builds its root from the builder the app starts there |
-| Scoped | one per scope, dropped with it | one per screen: `use_screen_scope()` in a Rust component, dropped on the component's cleanup; `services.createScope()` in TSX, `scope.dispose()` in its cleanup |
+| Scoped | one per scope, dropped with it | one per screen: `use_screen_scope()` in a Rust component, `useScreenScope()` in a TSX one, dropped on the component's cleanup |
 | Transient | one per resolve | the same |
 
 ## Lifetimes on NSH
@@ -191,20 +192,82 @@ root, `await builder.start()` in TSX).
 let scope = use_screen_scope()?;
 ```
 
+### Screens in TSX
+
+`useScreenScope()`, in a TSX component's body, makes the component a screen: a child scope of `useServices()`,
+provided to everything it renders, TSX and Rust components alike (a Rust component's `services()` under it returns
+that scope), and disposed at the component's cleanup with the scoped services it resolved and the view models
+activated through it. A screen inside a screen gets a child of the outer one's scope. `useServices()` gives every
+component under one screen the same `ServiceProvider` object (so a service's class object is the same too), and the
+surface's root is one object per surface:
+
+<!-- tsx: fragment -->
 ```tsx
-// TSX: a scope per screen, from mount to cleanup, in the provider `start()` gives.
-function screen(services: ServiceProvider) {
-  const scope = services.createScope();
-  // ...
-  scope.dispose();
+function Screen(props) {
+  const screen = useScreenScope();
+  pages[`${props.name} screen`] = Pages.pageOf(screen);
+```
+
+<!-- tsx: fragment -->
+```tsx
+function Under(props) {
+  const services = useServices();
+```
+
+The hooks run their Rust code under the Rust owner NSH ties to the calling component's JS owner
+(`CallCx::with_owner`). In NSH's TSX a component's body has no reactive owner of its own (as in Solid), so a screen's
+scope belongs to the JS owner it was made under: **screens under owners of their own are isolated** (an `<If>` or
+`<Each>` branch, a provider, a navigation region's page), and **views placed statically side by side in one component
+share their owner's scope**. Put each screen in a branch of its own:
+
+<!-- tsx: fragment -->
+```tsx
+      <If when={open()}>
+        <Screen name="first" nested={true} />
+      </If>
+      <If when={open()}>
+        <Screen name="second" nested={false} />
+      </If>
+```
+
+A TSX component in a Rust screen's children (`use_screen_scope()` in its view) sees that screen's scope when the
+children are lazy (`#[prop(lazy)]`: made once the screen places them); eager children are made before the screen's
+view and see the scope around it.
+
+`provideServices(provider)` provides a provider made elsewhere (a scope a test or a design tool made) to what the
+component renders, as a screen's scope is provided, without disposing it at the component's cleanup (Rust:
+`provide_services(provider)`):
+
+<!-- tsx: fragment -->
+```tsx
+function Provided() {
+  provided = root.createScope();
+  provideServices(provided);
+  return <ProvidedChild />;
 }
+```
+
+Called before RayX started on the surface the hooks throw saying it is starting, or has not started (the words of
+`AppError::Starting` and `AppError::NotStarted`); outside a component's body (no reactive owner) they throw saying so.
+`appState()`, the twin of `app_state()`, is an NSH signal of where the app is (`{ state: "notStarted" | "starting" |
+"ready" }` or `{ state: "failed"; message }`), the same signal every time, following the app's start on its surface;
+mount the components bound to view models once it is `"ready"`:
+
+<!-- tsx: fragment -->
+```tsx
+const state = appState();
+const seen = [];
+effect(() => {
+  const now = state();
+  seen.push(now.state === "failed" ? `failed: ${now.message}` : now.state);
+});
 ```
 
 ## View models
 
 `use_view_model::<T>()` resolves an `ActivatableViewModel` in the screen's scope and keeps it active until the
-component's cleanup. `ServiceProvider::view_model::<T>()` (`rayx_app_nsh::ts`) does the same, in a Rust bridge, for a TSX
-screen until its scope is disposed.
+component's cleanup; `useViewModel(token)` is its TSX twin. `ServiceProvider::view_model::<T>()` (`rayx_app_nsh::ts`)
+activates one in a Rust bridge until the provider is disposed.
 
 ```rust
 let vm = use_view_model::<CounterViewModel>()?; // Arc<CounterViewModel>, active with the screen
