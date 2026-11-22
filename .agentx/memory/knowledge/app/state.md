@@ -27,7 +27,8 @@ Route work on the NSH host (`rayx_app_nsh`) and the umbrella (`rayx`).
 - `app/`: `surface.rs` (a root provider per engine surface; a Rust root builds
   `RayXAppBuilder::new()` and calls `.start()`, watched through `app_state()`, or awaits
   `.start_async()`), `builder_ts.rs` (TS's `RayXAppBuilder`: only the core's methods, settings,
-  configuration, options, DI registrations, ready hooks, `apply`, `start`, plus `extend_with`,
+  configuration, options, DI registrations, ready hooks, `apply`, `start`, `restart` (a design tool starts the surface's app afresh: the old root and
+  every scope it made disposed; Rust `restart_async()` in `surface.rs`), plus `extend_with`,
   which service crates' and `#[app_extension]`'s class-extension methods act through),
   `ready_ts.rs`, `state_ts.rs` (TS `appState()`, a signal per VM following `app_state()`, made
   with NSH's `CallCx::signal`). The start requires `dyn PlatformInfoService`, `dyn SuspensionService`,
