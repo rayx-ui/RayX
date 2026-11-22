@@ -535,24 +535,36 @@ fn relock(runner: &mut Runner, root: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Writes `edits` and relocks; on failure puts every file back as it was, `Cargo.lock` included.
-/// Returns the files it changed, relative to `root`, `Cargo.lock` among them when Cargo changed it.
-fn apply(runner: &mut Runner, root: &Path, edits: &[Edit]) -> Result<Vec<String>> {
+/// Writes `edits`, relocks and runs `check` on what Cargo locked; when Cargo refuses or `check`
+/// fails, puts every file back as it was, `Cargo.lock` included (removed when there was none).
+/// Returns the files it changed, relative to `root`, `Cargo.lock` among them when Cargo changed
+/// it, and what `check` found.
+fn apply<T>(
+    runner: &mut Runner,
+    root: &Path,
+    edits: &[Edit],
+    check: impl FnOnce(&mut Runner) -> Result<T>,
+) -> Result<(Vec<String>, T)> {
     let lock = root.join("Cargo.lock");
     let lock_before = fs::read(&lock).ok();
     write_all(edits, true)?;
-    if let Err(error) = relock(runner, root) {
-        write_all(edits, false)?;
-        if let Some(bytes) = lock_before {
-            let _ = fs::write(&lock, bytes);
+    let checked = relock(runner, root).and_then(|()| check(runner));
+    let found = match checked {
+        Ok(found) => found,
+        Err(error) => {
+            write_all(edits, false)?;
+            let _ = match &lock_before {
+                Some(bytes) => fs::write(&lock, bytes),
+                None => fs::remove_file(&lock),
+            };
+            return Err(error);
         }
-        return Err(error);
-    }
+    };
     let mut changed: Vec<String> = edits.iter().map(|e| relative(root, &e.path)).collect();
     if fs::read(&lock).ok() != lock_before {
         changed.push("Cargo.lock".into());
     }
-    Ok(changed)
+    Ok((changed, found))
 }
 
 fn relative(root: &Path, path: &Path) -> String {
@@ -723,17 +735,20 @@ fn use_checkout(
             root.display()
         );
     }
-    let changed =
-        apply(runner, root, &edits).context("Cargo cannot build NSH from the checkout")?;
-    let pin = pin::resolve(runner, root)?;
-    match &pin.source {
-        Source::Path { checkout: locked } if plain_eq(locked, checkout) => {}
-        _ => bail!(
-            "{} still locks NSH as {} after the switch",
-            root.display(),
-            pin.label()
-        ),
-    }
+    // Cargo leaves out a patch it cannot use (a dependency it cannot resolve offline, say) and
+    // locks the registry's NSH instead, so a lock is only the checkout's when it says so.
+    let (changed, ()) = apply(runner, root, &edits, |runner| {
+        let pin = pin::resolve(runner, root)?;
+        match &pin.source {
+            Source::Path { checkout: locked } if plain_eq(locked, checkout) => Ok(()),
+            _ => bail!(
+                "{} would lock NSH as {}, not from the checkout: Cargo left the checkout's patch unused",
+                root.display(),
+                pin.label()
+            ),
+        }
+    })
+    .context("Cargo cannot build NSH from the checkout")?;
     let state = checkout_state(runner, checkout);
     let version = crates
         .get("nsh-core")
@@ -789,26 +804,29 @@ fn use_tag(runner: &mut Runner, root: &Path, tag: &str, out: &mut dyn Write) -> 
             root.display()
         );
     }
-    let mut changed =
-        apply(runner, root, &edits).with_context(|| format!("Cargo cannot lock NSH at {tag}"))?;
-    let pin = pin::resolve(runner, root)?;
-    let Source::Git {
-        reference, commit, ..
-    } = &pin.source
-    else {
-        bail!(
-            "{} locks NSH as {} after moving it to {tag}",
-            root.display(),
-            pin.label()
-        );
-    };
-    if reference.tag() != Some(tag) {
-        bail!(
-            "{} locks NSH as {} after moving it to {tag}",
-            root.display(),
-            pin.label()
-        );
-    }
+    let (mut changed, (pin, commit)) = apply(runner, root, &edits, |runner| {
+        let pin = pin::resolve(runner, root)?;
+        let Source::Git {
+            reference, commit, ..
+        } = &pin.source
+        else {
+            bail!(
+                "{} would lock NSH as {} after moving it to {tag}",
+                root.display(),
+                pin.label()
+            );
+        };
+        if reference.tag() != Some(tag) {
+            bail!(
+                "{} would lock NSH as {} after moving it to {tag}",
+                root.display(),
+                pin.label()
+            );
+        }
+        let commit = commit.clone();
+        Ok((pin, commit))
+    })
+    .with_context(|| format!("Cargo cannot lock NSH at {tag}"))?;
     if let Some(old) = rayx_default(root)? {
         let new = PinText {
             tag: tag.to_string(),

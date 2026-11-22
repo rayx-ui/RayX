@@ -207,7 +207,9 @@ fn use_points_the_project_at_the_checkout_and_status_shows_it() {
 fn a_checkout_cargo_refuses_leaves_the_project_as_it_was() {
     let workspace = Workspace::empty();
     checkout(&workspace, "0.6.0");
-    // A crate nobody has: Cargo, offline, cannot lock the checkout.
+    // A crate nobody has: Cargo, offline, cannot lock the checkout. With no index cached it fails
+    // outright; with one that knows another nsh-core it leaves the patch unused and locks that
+    // nsh-core from the registry instead. Either way the switch is refused and undone.
     workspace.append(
         "nsh/crates/nsh-core/Cargo.toml",
         "\n[dependencies]\nagentx-no-such-crate = \"1\"\n",
@@ -229,6 +231,14 @@ fn a_checkout_cargo_refuses_leaves_the_project_as_it_was() {
         workspace.read("app/Cargo.toml"),
         MANIFEST,
         "the patch line and the requirement it moved are back"
+    );
+    assert_eq!(
+        workspace.read("app/.cargo/config.toml"),
+        "[net]\noffline = true\n"
+    );
+    assert!(
+        !workspace.path("app/Cargo.lock").exists(),
+        "a Cargo.lock the project did not have is not left behind"
     );
 }
 
