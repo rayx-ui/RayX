@@ -59,6 +59,14 @@ decision changed with the move, it says so. Current source and tests remain the 
 - **Working on NSH.** A path dependency on an NSH checkout makes `rayx app` build that checkout's
   CLI and run it; `RAYX_NSH=<path>` runs that binary instead of the pin's, announced on every
   command. Neither writes to the store.
+- **A design tool's run builds the checkout's CLI quick.** `run` or `dev` with `NSH_DESIGN_SOCKET`
+  set builds it with `--profile quick` (release without link-time optimization, 16 codegen units,
+  incremental) into `target/quick/`, the profile defined in the environment of the build and of the
+  nsh it starts, which builds a checkout's hosts with the profile its folder is named after. Measured
+  on NSH at 94a8acff5: 238 s after an edit in nsh-cli and 330 s after one in nsh-core with NSH's
+  shipped profile (`lto = "fat"`, `codegen-units = 1`), 1.9 s and 7.2 s quick, bundling within 5 %.
+  Everything that makes something to ship (`build`, `package`, `publish`) and every run started by
+  hand keeps the CLI NSH ships.
 
 ## app
 

@@ -351,7 +351,12 @@ Everything runs as you, with no question and no administrator rights.
 
 **Working on NSH itself.** A path dependency on an NSH checkout makes `rayx` run
 `cargo build --release -p nsh-cli --target-dir target` in that checkout and run its `target/release/nsh`, copying
-nothing into the store. `rayx nshx use ../nsh` makes that dependency in the checkout you already work
+nothing into the store. A design tool's run (`rayx app run` or `rayx app dev` with `NSH_DESIGN_SOCKET` set, NSH's
+design mode) builds it quick instead, because someone is waiting to see their components:
+`cargo build --profile quick -p nsh-cli --target-dir target` into `target/quick/nsh`, the profile being release
+without link-time optimization, in 16 codegen units, built incrementally (`CARGO_PROFILE_QUICK_*`, set for the build
+and for the nsh it starts). A change in NSH then rebuilds the CLI in seconds rather than minutes, and it bundles as
+fast. Builds, packages, publishes and runs started by hand keep the CLI NSH ships. `rayx nshx use ../nsh` makes that dependency in the checkout you already work
 in: every `[patch.crates-io]` line of an NSH crate, in the workspace's `Cargo.toml` and in each
 `.cargo/config.toml` under it (the gallery's), points at that crate in the checkout by a path
 relative to that file (never an absolute one), with a comment keeping what it was, and Cargo relocks. Nothing waits for an nshx release while you work on both.

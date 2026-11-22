@@ -253,6 +253,11 @@ fn the_readme_says_how_rayx_chooses_and_installs_nsh() {
         "A path dependency on an NSH checkout",
         "`cargo build --release -p nsh-cli --target-dir target`",
         "copying nothing into the store",
+        "`NSH_DESIGN_SOCKET`",
+        "`cargo build --profile quick -p nsh-cli --target-dir target`",
+        "`target/quick/nsh`",
+        "`CARGO_PROFILE_QUICK_*`",
+        "keep the CLI NSH ships",
     ] {
         assert!(
             nsh.contains(needle),
