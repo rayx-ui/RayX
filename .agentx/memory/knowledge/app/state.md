@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/app
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-20T12:00:00+01:00
+  updated: 2026-11-22T12:00:00+01:00
   topics:
     - rayx_app_nsh
     - nsh
@@ -29,12 +29,19 @@ Route work on the NSH host (`rayx_app_nsh`) and the umbrella (`rayx`).
   `.start_async()`), `builder_ts.rs` (TS's `RayXAppBuilder`: only the core's methods, settings,
   configuration, options, DI registrations, ready hooks, `apply`, `start`, plus `extend_with`,
   which service crates' and `#[app_extension]`'s class-extension methods act through),
-  `ready_ts.rs`. The start requires `dyn PlatformInfoService`, `dyn SuspensionService`,
+  `ready_ts.rs`, `state_ts.rs` (TS `appState()`, a signal per VM following `app_state()`, made
+  with NSH's `CallCx::signal`). The start requires `dyn PlatformInfoService`, `dyn SuspensionService`,
   `dyn AssetService` and `dyn FontService` (`require_host_services`, hints in the start's
   language); nothing is pre-registered.
-- `di/`: `screen.rs` (a scope per screen), `provider_ts.rs` (TS `ServiceProvider`,
-  `ServiceToken`, `ServiceClass` and the registry of service classes and resolvers that sets
-  fill), `container_ts.rs` (TS services as thread-bound entries under runtime keys, made and
+- `di/`: `screen.rs` (a scope per screen, one TS `ServiceProvider` object per scope, Rust
+  `provide_services`), `screen_ts.rs` (TS `useServices`, `useScreenScope`, `provideServices`,
+  run under NSH's `CallCx::with_owner`, so TSX and Rust screens nest either way; screens under
+  JS owners of their own are isolated, views placed side by side in one component share their
+  owner's scope), `view_model_ts.rs` (TS `ViewModelActivator`, `ActivationToken`, `DisposeBag`,
+  `useViewModel`, `Command` with `IgnoreWhileRunning`, over `dxn_reactive`'s), `provider_ts.rs`
+  (TS `ServiceProvider`, `ServiceToken`, `ServiceClass` and the registry of service classes and
+  resolvers that sets fill; `view_model_class::<C>()` names a Rust view model by its TS class,
+  resolved once and activated as that instance), `container_ts.rs` (TS services as thread-bound entries under runtime keys, made and
   resolved on the engine thread), `startup_ts.rs`, `contract_ts.rs` (the contracts' TS adapters,
   `ContractState`/`ContractEvents`, `registry.contract::<dyn T>()` and
   `contract_class::<dyn T, Class>()`).
