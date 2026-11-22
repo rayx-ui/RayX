@@ -227,7 +227,7 @@ fn the_declarations_type_both_lookups_over_service_key() {
         "export declare class ServiceProvider {",
         "  getService<T>(token: ServiceKey<T>): T | null;",
         "  getRequiredService<T>(token: ServiceKey<T>): T;",
-        "  createScope(): ServiceProvider;",
+        "  createScope(configure?: (scope: ScopeRegistrations) => void): ServiceProvider;",
         "export declare class ServiceToken<T> {",
         "  constructor(name: string);",
     ] {

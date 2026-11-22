@@ -6,6 +6,7 @@ mod lifecycle;
 mod provider;
 mod ready;
 mod registry;
+mod scope;
 mod service;
 mod thread_bound;
 mod validation;
@@ -27,4 +28,5 @@ pub use provider::{
     default_provider,
 };
 pub use registry::{ServiceLifetime, ServiceRegistry, ServiceResolutionError};
+pub use scope::ScopeRegistrations;
 pub use validation::{ServiceValidationError, ServiceValidationProblem};

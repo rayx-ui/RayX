@@ -7,6 +7,7 @@ pub use rayx_app::di::*;
 pub(crate) mod container_ts;
 pub(crate) mod contract_ts;
 pub(crate) mod provider_ts;
+pub(crate) mod scope_ts;
 pub(crate) mod screen;
 pub(crate) mod screen_ts;
 pub(crate) mod startup_ts;

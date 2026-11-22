@@ -25,9 +25,11 @@ use crate::AppError;
 ///
 /// `getRequiredService(I18nService)` resolves a RayX service by its class, `getService` gives
 /// `null` when none is registered, `createScope()` makes a child scope (for a screen: make it
-/// when the screen mounts, dispose it in its cleanup) and `dispose()` drops the scoped services
+/// when the screen mounts, dispose it in its cleanup), `createScope(configure)` one with
+/// registrations of its own, and `dispose()` drops the scoped services
 /// it resolved and deactivates the view models activated through it; using it afterwards
-/// throws.
+/// throws. The singletons a scope of its own registered live on while one of its descendants
+/// does, made over its registrations ([`ScopeRegistrations`](crate::ts::ScopeRegistrations)).
 ///
 /// # Rust
 ///
@@ -91,8 +93,42 @@ impl ServiceProvider {
 
     /// A child scope: it shares this provider's singletons and has scoped services of its own.
     /// Dispose it when what it serves (a screen) goes.
-    pub fn create_scope(&self) -> Instance<ServiceProvider> {
-        Instance::new(Self::of(self.provider.create_scope()))
+    ///
+    /// With `configure`, called at once with the scope's `ScopeRegistrations`, the scope has
+    /// registrations of its own: for each token registered there, they win in the scope and
+    /// its descendants over this provider's (also once it made that token), its singletons
+    /// are one per such scope and always made with it (also once it is disposed, for a
+    /// descendant that resolves one first), and this provider and its other scopes resolve as
+    /// before. The
+    /// root's scoped and transient services resolved in it see its replacements; the root's
+    /// singletons are made with the root. Throws what `configure` throws.
+    #[ts("(configure?: (scope: ScopeRegistrations) => void): ServiceProvider")]
+    pub fn create_scope(
+        this: Instance<Self>,
+        #[args(scope)] configure: Option<
+            Callback<Instance<crate::di::scope_ts::ScopeRegistrations>>,
+        >,
+    ) -> Result<Instance<ServiceProvider>, String> {
+        if this.is_disposed() {
+            return Err("ServiceProvider is disposed".into());
+        }
+        let services = this.with(|provider| provider.provider.clone());
+        let Some(configure) = configure else {
+            return Ok(Instance::new(Self::of(services.create_scope())));
+        };
+        let recorded = crate::configuration::options_ts::record(
+            crate::di::scope_ts::ScopeRegistrations::new(),
+            Some(configure),
+            crate::di::scope_ts::ScopeRegistrations::take,
+        )?;
+        let mut failed = None;
+        let scope = services.create_scope_with(|scope| {
+            failed = crate::di::scope_ts::apply(scope, recorded).err();
+        });
+        match failed {
+            Some(error) => Err(error),
+            None => Ok(Instance::new(Self::of(scope))),
+        }
     }
 }
 

@@ -12,7 +12,8 @@
 //!   (`addNavigation(options => …)` with the options classes of [`options`](self#options-classes)),
 //!   and `await builder.start()`.
 //! - [`ServiceProvider`]: what `start()` resolves with: `getService`, `getRequiredService`,
-//!   `createScope` and `dispose`. A RayX service's class is its own token, and a
+//!   `createScope` (with a callback, a scope with registrations of its own:
+//!   [`ScopeRegistrations`]) and `dispose`. A RayX service's class is its own token, and a
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
 //!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
 //! - The hooks a component's body calls (`useServices`, `useScreenScope`, `provideServices`,
@@ -53,6 +54,7 @@ pub use crate::di::contract_ts::{
 pub use crate::di::provider_ts::{
     Resolved, ServiceClass, ServiceClassRegistryExt, ServiceKeyArg, ServiceProvider, ServiceToken,
 };
+pub use crate::di::scope_ts::ScopeRegistrations;
 pub use crate::di::screen_ts::ScreenHooks;
 pub use crate::di::startup_ts::{
     AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
@@ -95,6 +97,7 @@ pub fn register(registry: &mut Registry) {
         .ts_alias(ACTIVATABLE_VIEW_MODEL)
         .class::<RayXAppBuilder>()
         .class::<ServiceProvider>()
+        .class::<ScopeRegistrations>()
         .class::<ServiceToken>()
         .class::<ContractState>()
         .class::<ContractEvents>()

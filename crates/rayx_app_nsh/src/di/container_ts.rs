@@ -99,6 +99,27 @@ pub(crate) fn add(
     Ok(())
 }
 
+/// Registers `service` in a scope's own registrations (`createScope(configure)`) with
+/// `lifetime`: a singleton is one object per scope that registers it.
+pub(crate) fn add_in_scope(
+    scope: &mut rayx_app::di::ScopeRegistrations,
+    lifetime: ServiceLifetime,
+    service: SharedTsService,
+) -> Result<(), String> {
+    let key = service
+        .get()
+        .map_err(|error| error.to_string())?
+        .key
+        .clone();
+    let factory = resolver(service, lifetime);
+    match lifetime {
+        ServiceLifetime::Singleton => scope.add_singleton_thread_bound_keyed(key, factory),
+        ServiceLifetime::Scoped => scope.add_scoped_thread_bound_keyed(key, factory),
+        ServiceLifetime::Transient => scope.add_transient_thread_bound_keyed(key, factory),
+    };
+    Ok(())
+}
+
 /// The provider's factory of `service`: the object [`make`] made for it, else its JS factory
 /// called on the spot inside a call from JS.
 fn resolver(

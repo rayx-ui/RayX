@@ -42,8 +42,8 @@ pub mod __private {
 pub use change::ChangeSubscription;
 pub use configuration::{Configuration, ConfigurationBuilder, ConfigurationError};
 pub use di::{
-    AppService, ServiceLifetime, ServiceProvider, ServiceResolutionError, ServiceValidationError,
-    StartupRegistry,
+    AppService, ScopeRegistrations, ServiceLifetime, ServiceProvider, ServiceResolutionError,
+    ServiceValidationError, StartupRegistry,
 };
 pub use options::{Options, OptionsBuilder, OptionsError, OptionsMonitor, OptionsSnapshot};
 pub use published::{EventStream, StateCell};
@@ -60,8 +60,8 @@ pub mod prelude {
     };
     pub use crate::di::{
         AppService, AsyncInitializable, DIReady, DiReady, ErasedService, ImplementedBy,
-        IntoServiceArc, IntoSingletonService, LocalService, RuntimeKey, ServiceKey,
-        ServiceLifetime, ServiceProvider, ServiceRegistry, ServiceResolutionError,
+        IntoServiceArc, IntoSingletonService, LocalService, RuntimeKey, ScopeRegistrations,
+        ServiceKey, ServiceLifetime, ServiceProvider, ServiceRegistry, ServiceResolutionError,
         StartupInitializable, StartupInitializationContext, StartupInitializationError,
         StartupInitializationFailure, StartupInitializationFailures, StartupInitializationPhase,
         StartupInitializationResult, StartupInitializationState, StartupRegistry, StartupService,

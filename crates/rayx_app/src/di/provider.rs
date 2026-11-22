@@ -7,6 +7,7 @@ use super::ready::DiReady;
 use super::registry::{
     ServiceLifetime, ServiceRegistry, ServiceResolutionError, WeakServiceRegistry,
 };
+use super::scope::ScopeRegistrations;
 use super::thread_bound::LocalService;
 use super::validation::{Requirement, Requirements, ServiceValidationError};
 use crate::options::OptionsRegistrations;
@@ -105,11 +106,17 @@ where
 ///   scope's). Dropping the last clone of a scope drops its scoped instances.
 /// - **transient**: the factory runs on every resolve.
 ///
-/// Factories receive the provider the service is resolved from, so a singleton
-/// factory resolved through a scope sees that scope (as in RayX). Registering on
-/// a provider after scopes were created does not affect those scopes'
-/// registrations, except that pre-built singletons (`add_singleton`) land in the
-/// shared singleton cache.
+/// Scoped and transient factories receive the provider the service is resolved from, so they
+/// see that scope's scoped services and its own registrations. A root's singleton factory
+/// always receives the root (each scope keeps a weak reference to the root it came from), so a
+/// singleton first resolved inside a scope never captures that scope's replacements or scoped
+/// instances. Registering on a provider after scopes were created does not affect those
+/// scopes' registrations, except that pre-built singletons (`add_singleton`) land in the shared
+/// singleton cache.
+///
+/// [`ServiceProvider::create_scope_with`] makes a scope with registrations of its own
+/// ([`ScopeRegistrations`]): for their keys they win over the root's, in that scope and its
+/// descendants only, and its singletons are one per such scope.
 ///
 /// Services are keyed by a Rust type or by a [`RuntimeKey`] (`add_*_keyed`,
 /// `service_by_key`); both kinds follow the rules above.
@@ -119,6 +126,8 @@ pub struct ServiceProvider {
     services: ServiceRegistry,
     startup: StartupRegistry,
     requirements: Requirements,
+    /// The root this scope came from, weakly; `None` for a root.
+    root: Option<Arc<WeakServiceProvider>>,
 }
 
 impl ServiceProvider {
@@ -128,6 +137,7 @@ impl ServiceProvider {
             services: ServiceRegistry::default(),
             startup: StartupRegistry::default(),
             requirements: Requirements::default(),
+            root: None,
         }
     }
 
@@ -144,7 +154,29 @@ impl ServiceProvider {
             services: self.services.downgrade(),
             startup: self.startup.clone(),
             requirements: self.requirements.clone(),
+            root: self.root.clone(),
         }
+    }
+
+    /// The root a root singleton resolved here is made with: `None` when this is the root, else
+    /// the root while one of its clones lives, else a root over its registrations and the
+    /// shared singletons.
+    pub(crate) fn root(&self) -> Option<ServiceProvider> {
+        let root = self.root.as_deref()?;
+        Some(root.upgrade().unwrap_or_else(|| Self {
+            options: root.options.clone(),
+            services: self.services.detached_root(&root.services),
+            startup: root.startup.clone(),
+            requirements: root.requirements.clone(),
+            root: None,
+        }))
+    }
+
+    /// The weak reference to the root that this provider's scopes keep.
+    fn root_of_scopes(&self) -> Arc<WeakServiceProvider> {
+        self.root
+            .clone()
+            .unwrap_or_else(|| Arc::new(self.downgrade()))
     }
 
     /// Whether `other` is this provider's scope (a clone of it, sharing its scoped services),
@@ -1153,7 +1185,67 @@ impl ServiceProvider {
             services: self.services.create_scope(),
             startup: self.startup.clone(),
             requirements: self.requirements.clone(),
+            root: Some(self.root_of_scopes()),
         }
+    }
+
+    /// Creates a child scope, as [`create_scope`](Self::create_scope) does, with the
+    /// registrations `configure` adds ([`ScopeRegistrations`]: singleton, scoped and transient,
+    /// by type or runtime key; startup services belong to the root):
+    ///
+    /// - For a key it registers, its registration wins in it and its descendants over the
+    ///   root's (and over a nearer ancestor's), also when the root made that key already; this
+    ///   provider, its other scopes and the root resolve as before.
+    /// - A singleton it registers is one instance per scope made here, shared by every
+    ///   descendant, and always made with this scope: once this scope is gone, a descendant
+    ///   resolving it first gets one made over this scope's registrations and a scoped cache of
+    ///   its own, never over the descendant's scoped services. It is dropped when this scope
+    ///   and all its descendants are gone.
+    /// - Scoped and transient registrations, its own and the root's, resolve their
+    ///   dependencies in the provider they are resolved from, so the root's scoped services
+    ///   resolved here see this scope's replacements; a root singleton is made with the root.
+    ///
+    /// A registration whose dependency is not registered fails the resolve with the
+    /// [`ServiceResolutionError`] a root registration gets.
+    ///
+    /// ```
+    /// use rayx_app::prelude::*;
+    ///
+    /// trait Clock: Send + Sync {
+    ///     fn now(&self) -> u64;
+    /// }
+    /// struct SystemClock;
+    /// impl Clock for SystemClock {
+    ///     fn now(&self) -> u64 { 1_700_000_000 }
+    /// }
+    /// struct FixedClock(u64);
+    /// impl Clock for FixedClock {
+    ///     fn now(&self) -> u64 { self.0 }
+    /// }
+    ///
+    /// let mut root = ServiceProvider::new();
+    /// root.add_singleton_as::<dyn Clock>(std::sync::Arc::new(SystemClock) as std::sync::Arc<dyn Clock>);
+    /// let scope = root.create_scope_with(|scope| {
+    ///     scope.add_singleton_as::<dyn Clock>(std::sync::Arc::new(FixedClock(7)) as std::sync::Arc<dyn Clock>);
+    /// });
+    /// assert_eq!(scope.required_service::<dyn Clock>().unwrap().now(), 7);
+    /// assert_eq!(root.required_service::<dyn Clock>().unwrap().now(), 1_700_000_000);
+    /// ```
+    pub fn create_scope_with(&self, configure: impl FnOnce(&mut ScopeRegistrations)) -> Self {
+        let mut registrations = ScopeRegistrations::new();
+        configure(&mut registrations);
+        let (services, overlay) = self
+            .services
+            .create_scope_with(registrations.into_descriptors());
+        let scope = Self {
+            options: self.options.clone(),
+            services,
+            startup: self.startup.clone(),
+            requirements: self.requirements.clone(),
+            root: Some(self.root_of_scopes()),
+        };
+        overlay.declare(scope.downgrade());
+        scope
     }
 }
 
@@ -1164,6 +1256,7 @@ pub struct WeakServiceProvider {
     services: WeakServiceRegistry,
     startup: StartupRegistry,
     requirements: Requirements,
+    root: Option<Arc<WeakServiceProvider>>,
 }
 
 impl WeakServiceProvider {
@@ -1174,7 +1267,25 @@ impl WeakServiceProvider {
             services: self.services.upgrade()?,
             startup: self.startup.clone(),
             requirements: self.requirements.clone(),
+            root: self.root.clone(),
         })
+    }
+
+    /// Its registrations, for a detached provider over them.
+    pub(crate) fn registry(&self) -> &WeakServiceRegistry {
+        &self.services
+    }
+
+    /// A provider over `services` with this one's options, startup registry, requirements and
+    /// root: what a scope's singleton is made with once that scope is gone.
+    pub(crate) fn detached(&self, services: ServiceRegistry) -> ServiceProvider {
+        ServiceProvider {
+            options: self.options.clone(),
+            services,
+            startup: self.startup.clone(),
+            requirements: self.requirements.clone(),
+            root: self.root.clone(),
+        }
     }
 }
 

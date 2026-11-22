@@ -1,17 +1,17 @@
 use super::key::{ErasedService, RuntimeKey, ServiceKey};
-use super::provider::ServiceProvider;
+use super::provider::{ServiceProvider, WeakServiceProvider};
 use super::thread_bound::{LocalService, ThreadBoundSlot};
 use std::any::type_name;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::{Arc, Mutex, PoisonError, Weak};
+use std::sync::{Arc, Mutex, OnceLock, PoisonError, Weak};
 
 /// A factory as the registry keeps it: typed factories never fail, runtime-keyed ones may.
-type ServiceFactory =
+pub(crate) type ServiceFactory =
     Arc<dyn Fn(&ServiceProvider) -> Result<ErasedService, ServiceResolutionError> + Send + Sync>;
-type ServiceCache = Mutex<HashMap<ServiceKey, ErasedService>>;
-type ResolutionGuards = Mutex<HashMap<ServiceKey, Arc<Mutex<()>>>>;
+pub(crate) type ServiceCache = Mutex<HashMap<ServiceKey, ErasedService>>;
+pub(crate) type ResolutionGuards = Mutex<HashMap<ServiceKey, Arc<Mutex<()>>>>;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ServiceLifetime {
@@ -21,11 +21,75 @@ pub enum ServiceLifetime {
 }
 
 #[derive(Clone)]
-struct ServiceDescriptor {
+pub(crate) struct ServiceDescriptor {
     lifetime: ServiceLifetime,
     /// Made by a thread-bound registration: its cache entries are [`ThreadBoundSlot`]s.
     thread_bound: bool,
     factory: ServiceFactory,
+    /// The scope that registered it with
+    /// [`ServiceProvider::create_scope_with`](super::ServiceProvider::create_scope_with), which
+    /// keeps its singletons; `None` for a registration of the root's. Weak: the scope keeps it
+    /// (and its descendants do, through [`ServiceRegistry::overlays`]).
+    overlay: Option<Weak<OverlayScope>>,
+}
+
+impl ServiceDescriptor {
+    /// A registration of `lifetime` made by `factory` (`thread_bound`: its value stays on the
+    /// thread that made it), not yet owned by a scope.
+    pub(crate) fn new(
+        lifetime: ServiceLifetime,
+        thread_bound: bool,
+        factory: ServiceFactory,
+    ) -> Self {
+        Self {
+            lifetime,
+            thread_bound,
+            factory,
+            overlay: None,
+        }
+    }
+}
+
+/// What a scope made by [`ServiceProvider::create_scope_with`] keeps for the keys it registers:
+/// their singletons (one per declaring scope, shared by its descendants), and the scope itself,
+/// weakly, which those singletons are always made with. It lives while the declaring scope or
+/// one of its descendants does.
+#[derive(Default)]
+pub(crate) struct OverlayScope {
+    singletons: ServiceCache,
+    singleton_resolution_guards: ResolutionGuards,
+    declaring: OnceLock<WeakServiceProvider>,
+    /// The scoped cache the declaring scope's singletons are made over once that scope is gone
+    /// (made then, and kept for every later one), so they never see a descendant's scoped
+    /// services.
+    detached_scope: OnceLock<(Arc<ServiceCache>, Arc<ResolutionGuards>)>,
+}
+
+impl OverlayScope {
+    /// Names the scope that declared it, once it is made.
+    pub(crate) fn declare(&self, scope: WeakServiceProvider) {
+        let _ = self.declaring.set(scope);
+    }
+
+    /// The provider its singletons are made with: the declaring scope while it lives, else a
+    /// scope over the declaring scope's registrations, the shared singletons of `current` (a
+    /// descendant's registry) and a scoped cache of the overlay's own.
+    fn declaring_provider(&self, current: &ServiceRegistry) -> Option<ServiceProvider> {
+        let declaring = self.declaring.get()?;
+        Some(declaring.upgrade().unwrap_or_else(|| {
+            let (scoped, guards) = self.detached_scope.get_or_init(|| {
+                (
+                    Arc::new(Mutex::new(HashMap::new())),
+                    Arc::new(Mutex::new(HashMap::new())),
+                )
+            });
+            declaring.detached(current.detached_scope(
+                declaring.registry(),
+                Arc::clone(scoped),
+                Arc::clone(guards),
+            ))
+        }))
+    }
 }
 
 /// Which API a resolve comes through: the shared one (`service`, `service_by_key`) or the
@@ -47,6 +111,9 @@ pub struct ServiceRegistry {
     scoped: Arc<ServiceCache>,
     scoped_resolution_guards: Arc<ResolutionGuards>,
     descriptors: HashMap<ServiceKey, ServiceDescriptor>,
+    /// The scopes with registrations of their own this one is or descends from, kept alive
+    /// while it lives.
+    overlays: Vec<Arc<OverlayScope>>,
 }
 
 impl Clone for ServiceRegistry {
@@ -57,6 +124,7 @@ impl Clone for ServiceRegistry {
             scoped: Arc::clone(&self.scoped),
             scoped_resolution_guards: Arc::clone(&self.scoped_resolution_guards),
             descriptors: self.descriptors.clone(),
+            overlays: self.overlays.clone(),
         }
     }
 }
@@ -69,6 +137,7 @@ impl Default for ServiceRegistry {
             scoped: Arc::new(Mutex::new(HashMap::new())),
             scoped_resolution_guards: Arc::new(Mutex::new(HashMap::new())),
             descriptors: HashMap::new(),
+            overlays: Vec::new(),
         }
     }
 }
@@ -199,16 +268,7 @@ impl ServiceRegistry {
         + Sync
         + 'static,
     ) -> &mut Self {
-        self.insert_descriptor(
-            key,
-            lifetime,
-            true,
-            Arc::new(move |provider| {
-                let value = factory(provider)?;
-                let slot: ErasedService = Arc::new(ThreadBoundSlot::store(value, service.clone())?);
-                Ok(slot)
-            }),
-        )
+        self.insert_descriptor(key, lifetime, true, thread_bound_factory(service, factory))
     }
 
     /// The thread-bound service under `key`, on the thread that made it: `None` when nothing is
@@ -288,6 +348,7 @@ impl ServiceRegistry {
             scoped: Arc::downgrade(&self.scoped),
             scoped_resolution_guards: Arc::downgrade(&self.scoped_resolution_guards),
             descriptors: self.descriptors.clone(),
+            overlays: self.overlays.iter().map(Arc::downgrade).collect(),
         }
     }
 
@@ -298,6 +359,60 @@ impl ServiceRegistry {
             scoped: Arc::new(Mutex::new(HashMap::new())),
             scoped_resolution_guards: Arc::new(Mutex::new(HashMap::new())),
             descriptors: self.descriptors.clone(),
+            overlays: self.overlays.clone(),
+        }
+    }
+
+    /// A child scope with `registrations` over this one's: they win over every registration
+    /// it has for their keys, and their singletons are kept in the [`OverlayScope`] given with
+    /// it, which the caller names the scope in ([`OverlayScope::declare`]).
+    pub(crate) fn create_scope_with(
+        &self,
+        registrations: HashMap<ServiceKey, ServiceDescriptor>,
+    ) -> (Self, Arc<OverlayScope>) {
+        let overlay = Arc::new(OverlayScope::default());
+        let mut scope = self.create_scope();
+        for (key, mut descriptor) in registrations {
+            descriptor.overlay = Some(Arc::downgrade(&overlay));
+            scope.descriptors.insert(key, descriptor);
+        }
+        scope.overlays.push(Arc::clone(&overlay));
+        (scope, overlay)
+    }
+
+    /// A root over `root`'s registrations and this registry's singletons, with a scope of its
+    /// own: what a root singleton is made with once every clone of the root is gone.
+    pub(crate) fn detached_root(&self, root: &WeakServiceRegistry) -> Self {
+        Self {
+            singletons: Arc::clone(&self.singletons),
+            singleton_resolution_guards: Arc::clone(&self.singleton_resolution_guards),
+            scoped: Arc::new(Mutex::new(HashMap::new())),
+            scoped_resolution_guards: Arc::new(Mutex::new(HashMap::new())),
+            descriptors: root.descriptors.clone(),
+            overlays: Vec::new(),
+        }
+    }
+
+    /// A scope over `declaring`'s registrations and the scopes it descends from (those still
+    /// alive), this registry's singletons, and the scoped cache `scoped`: what a scope's
+    /// singleton is made with once the scope that registered it is gone.
+    pub(crate) fn detached_scope(
+        &self,
+        declaring: &WeakServiceRegistry,
+        scoped: Arc<ServiceCache>,
+        scoped_resolution_guards: Arc<ResolutionGuards>,
+    ) -> Self {
+        Self {
+            singletons: Arc::clone(&self.singletons),
+            singleton_resolution_guards: Arc::clone(&self.singleton_resolution_guards),
+            scoped,
+            scoped_resolution_guards,
+            descriptors: declaring.descriptors.clone(),
+            overlays: declaring
+                .overlays
+                .iter()
+                .filter_map(Weak::upgrade)
+                .collect(),
         }
     }
 
@@ -321,19 +436,36 @@ impl ServiceRegistry {
             return Some(Err(access.refused(service())));
         }
 
+        // A scope's own registration wins over the root's cache, made or not.
+        if let Some(descriptor) = &descriptor
+            && let Some(overlay) = &descriptor.overlay
+        {
+            return Some(self.resolve_overlaid(key, descriptor, overlay, &service, provider));
+        }
+
         if let Some(service) = self.cached(key) {
             return Some(Ok(service));
         }
 
         let descriptor = descriptor?;
         Some(match descriptor.lifetime {
-            ServiceLifetime::Singleton => self.resolve_cached(
-                key,
-                &self.singletons,
-                &self.singleton_resolution_guards,
-                provider,
-                descriptor.factory,
-            ),
+            // The root's singleton is made with the root, whichever scope resolves it first.
+            ServiceLifetime::Singleton => match provider.root() {
+                Some(root) => self.resolve_cached(
+                    key,
+                    &self.singletons,
+                    &self.singleton_resolution_guards,
+                    &root,
+                    descriptor.factory,
+                ),
+                None => self.resolve_cached(
+                    key,
+                    &self.singletons,
+                    &self.singleton_resolution_guards,
+                    provider,
+                    descriptor.factory,
+                ),
+            },
             ServiceLifetime::Scoped => self.resolve_cached(
                 key,
                 &self.scoped,
@@ -343,6 +475,47 @@ impl ServiceRegistry {
             ),
             ServiceLifetime::Transient => (descriptor.factory)(provider),
         })
+    }
+
+    /// The service under `key` that a scope registered with `create_scope_with`: a singleton
+    /// from that scope's cache, made with that scope; a scoped or transient one as the root's
+    /// are, in `provider`.
+    fn resolve_overlaid(
+        &self,
+        key: &ServiceKey,
+        descriptor: &ServiceDescriptor,
+        overlay: &Weak<OverlayScope>,
+        service: &impl Fn() -> Cow<'static, str>,
+        provider: &ServiceProvider,
+    ) -> Result<ErasedService, ServiceResolutionError> {
+        let factory = Arc::clone(&descriptor.factory);
+        match descriptor.lifetime {
+            ServiceLifetime::Singleton => {
+                let overlay = overlay.upgrade().ok_or_else(|| {
+                    ServiceResolutionError::failed(
+                        service(),
+                        "the scope that registered it is gone",
+                    )
+                })?;
+                // Made with the declaring scope, never with the descendant resolving it.
+                let declaring = overlay.declaring_provider(self);
+                self.resolve_cached(
+                    key,
+                    &overlay.singletons,
+                    &overlay.singleton_resolution_guards,
+                    declaring.as_ref().unwrap_or(provider),
+                    factory,
+                )
+            }
+            ServiceLifetime::Scoped => self.resolve_cached(
+                key,
+                &self.scoped,
+                &self.scoped_resolution_guards,
+                provider,
+                factory,
+            ),
+            ServiceLifetime::Transient => factory(provider),
+        }
     }
 
     fn insert_erased(&mut self, key: ServiceKey, service: ErasedService) -> &mut Self {
@@ -386,14 +559,8 @@ impl ServiceRegistry {
         if let Ok(mut services) = self.scoped.lock() {
             services.remove(&key);
         }
-        self.descriptors.insert(
-            key,
-            ServiceDescriptor {
-                lifetime,
-                thread_bound,
-                factory,
-            },
-        );
+        self.descriptors
+            .insert(key, ServiceDescriptor::new(lifetime, thread_bound, factory));
         self
     }
 
@@ -441,6 +608,7 @@ pub(crate) struct WeakServiceRegistry {
     scoped: Weak<ServiceCache>,
     scoped_resolution_guards: Weak<ResolutionGuards>,
     descriptors: HashMap<ServiceKey, ServiceDescriptor>,
+    overlays: Vec<Weak<OverlayScope>>,
 }
 
 impl WeakServiceRegistry {
@@ -452,6 +620,11 @@ impl WeakServiceRegistry {
             scoped: self.scoped.upgrade()?,
             scoped_resolution_guards: self.scoped_resolution_guards.upgrade()?,
             descriptors: self.descriptors.clone(),
+            overlays: self
+                .overlays
+                .iter()
+                .map(Weak::upgrade)
+                .collect::<Option<_>>()?,
         })
     }
 }
@@ -469,6 +642,22 @@ impl Access {
         };
         ServiceResolutionError::failed(service, message)
     }
+}
+
+/// The factory of a thread-bound registration: `factory`'s value, kept in a
+/// [`ThreadBoundSlot`] on the thread that made it.
+pub(crate) fn thread_bound_factory(
+    service: Cow<'static, str>,
+    factory: impl Fn(&ServiceProvider) -> Result<LocalService, ServiceResolutionError>
+    + Send
+    + Sync
+    + 'static,
+) -> ServiceFactory {
+    Arc::new(move |provider| {
+        let value = factory(provider)?;
+        let slot: ErasedService = Arc::new(ThreadBoundSlot::store(value, service.clone())?);
+        Ok(slot)
+    })
 }
 
 fn key_name(key: &ServiceKey) -> Cow<'static, str> {
@@ -609,7 +798,7 @@ impl ServiceResolutionError {
     }
 }
 
-fn erase_service<T>(service: Arc<T>) -> ErasedService
+pub(crate) fn erase_service<T>(service: Arc<T>) -> ErasedService
 where
     T: ?Sized + Send + Sync + 'static,
 {

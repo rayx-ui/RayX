@@ -119,6 +119,41 @@ const maybe = services.getService(Cache);           // the service, or null
 const scope = services.createScope();               // a child scope; `scope.dispose()` drops it
 ```
 
+## Scopes with registrations of their own
+
+`create_scope_with` (TS: `createScope(configure)`) makes a child scope with registrations only it and its descendants
+see: singleton, scoped and transient services and their `_as` forms, by type, runtime key or (in TS) token or contract.
+What it is for: a fake or a different implementation for one part of an app (a preview, a test) without a second root.
+
+```rust
+let scope = services.create_scope_with(|scope| {
+    scope.add_singleton_as::<dyn Clock>(Arc::new(FixedClock(7)) as Arc<dyn Clock>);
+});
+```
+
+<!-- tsx: fragment -->
+```tsx
+const scope = services.createScope((scope) => {
+  scope.addSingletonAs(Clock, () => new FixedClock(7));
+});
+```
+
+- For a key it registers, its registration wins in it and its descendants over the root's (and a nearer scope's over
+  an outer one's), also when the root made that key already. The provider it was made from, that provider's other
+  scopes and the root resolve as before.
+- A singleton it registers is one instance per scope made this way, shared by its descendants (a grandchild resolves
+  the same one), and always made with that scope: once the scope is gone (dropped, or disposed in TS), a descendant
+  that resolves it first gets one made over the scope's registrations and a scoped cache of its own, never over the
+  descendant's scoped services or replacements, and every other descendant shares it. It is dropped when the scope
+  and all its descendants are gone.
+- Scoped and transient services, its own and the root's, resolve their dependencies in the provider they are resolved
+  from: a root-registered scoped service resolved in the scope sees the scope's replacements.
+- A root-registered singleton is always made with the root, whichever scope resolves it first, so it never captures a
+  scope's replacements or scoped instances.
+- A registration whose dependency is missing fails the resolve with the error a root registration gets.
+- Startup services belong to the root: `ScopeRegistrations` has no startup forms in Rust, and TS's throw, naming the
+  token.
+
 ## Runtime keys
 
 A service that is not a Rust type (a service written in TypeScript, for one) is registered under a `RuntimeKey`, an

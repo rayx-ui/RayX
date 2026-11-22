@@ -166,6 +166,9 @@ pub(crate) struct ContractDef {
     pub(crate) startup: fn() -> StartupServiceType,
     /// Registers the adapter as `dyn Trait` over the TS service, with the lifetime.
     pub(crate) add: fn(&mut rayx_app::ServiceProvider, ServiceLifetime, SharedTsService),
+    /// [`add`](Self::add), in a scope's own registrations (`createScope(configure)`).
+    pub(crate) add_in_scope:
+        fn(&mut rayx_app::di::ScopeRegistrations, ServiceLifetime, SharedTsService),
     /// Makes the adapter in a provider (on the engine thread, the TS service made) and links
     /// what it publishes and its constants; why it could not.
     pub(crate) made: MakeAdapter,
@@ -175,7 +178,12 @@ impl ContractDef {
     pub(crate) fn of<C: ?Sized + Contract>() -> Self {
         Self {
             startup: StartupServiceType::of::<C::Dyn>,
-            add: add_adapter::<C>,
+            add: |provider, lifetime, service| {
+                add_adapter::<C>(provider, lifetime, service, false);
+            },
+            add_in_scope: |scope, lifetime, service| {
+                add_adapter::<C>(scope, lifetime, service, true);
+            },
             made: |provider| {
                 provider
                     .service::<C::Dyn>()
@@ -195,10 +203,15 @@ const OFF_THREAD: &str = "its TS object is reached on the engine thread only";
 /// adapter was made in, kept weakly), so an adapter resolved before `start()` made the object,
 /// by a Rust startup service's factory say, is never left without it. A transient adapter is
 /// made over a new object, which it resolves on the engine thread when it is first called.
+///
+/// In a scope's own registrations (`in_scope`), a singleton's adapter looks its object up in
+/// the scope that declared it, as a scoped one's does: no `start()` makes it, so it is made
+/// there on the spot when first needed.
 fn add_adapter<C: ?Sized + Contract>(
-    provider: &mut rayx_app::ServiceProvider,
+    registrations: &mut impl AdapterRegistrations,
     lifetime: ServiceLifetime,
     service: SharedTsService,
+    in_scope: bool,
 ) {
     // The TS service's key, read here on the engine thread (a registration runs in a call from
     // JS), so an adapter made on another thread still knows what to look up on the engine.
@@ -216,8 +229,10 @@ fn add_adapter<C: ?Sized + Contract>(
         __private::ContractSource(
             runner,
             match lifetime {
-                ServiceLifetime::Singleton => __private::Source::Singleton(Arc::clone(&service)),
-                ServiceLifetime::Scoped => {
+                ServiceLifetime::Singleton if !in_scope => {
+                    __private::Source::Singleton(Arc::clone(&service))
+                }
+                ServiceLifetime::Singleton | ServiceLifetime::Scoped => {
                     __private::Source::Scoped(Box::new(services.downgrade()), key.clone())
                 }
                 ServiceLifetime::Transient => __private::Source::Transient(
@@ -228,14 +243,49 @@ fn add_adapter<C: ?Sized + Contract>(
         )
     };
     let factory = move |services: &rayx_app::ServiceProvider| C::adapter(source(services));
-    match lifetime {
-        ServiceLifetime::Singleton => provider.replace_service_factory_as::<C::Dyn>(factory),
-        ServiceLifetime::Scoped => {
-            provider.add_scoped_as::<C::Dyn>(factory);
+    registrations.add_as::<C::Dyn>(lifetime, factory);
+}
+
+/// Where a contract's adapter is registered: the root's provider or a scope's own
+/// registrations.
+trait AdapterRegistrations {
+    /// Registers `factory`'s `T` with `lifetime`.
+    fn add_as<T: ?Sized + Send + Sync + 'static>(
+        &mut self,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&rayx_app::ServiceProvider) -> Arc<T> + Send + Sync + 'static,
+    );
+}
+
+impl AdapterRegistrations for rayx_app::ServiceProvider {
+    fn add_as<T: ?Sized + Send + Sync + 'static>(
+        &mut self,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&rayx_app::ServiceProvider) -> Arc<T> + Send + Sync + 'static,
+    ) {
+        match lifetime {
+            ServiceLifetime::Singleton => self.replace_service_factory_as::<T>(factory),
+            ServiceLifetime::Scoped => {
+                self.add_scoped_as::<T>(factory);
+            }
+            ServiceLifetime::Transient => {
+                self.add_transient_as::<T>(factory);
+            }
         }
-        ServiceLifetime::Transient => {
-            provider.add_transient_as::<C::Dyn>(factory);
-        }
+    }
+}
+
+impl AdapterRegistrations for rayx_app::di::ScopeRegistrations {
+    fn add_as<T: ?Sized + Send + Sync + 'static>(
+        &mut self,
+        lifetime: ServiceLifetime,
+        factory: impl Fn(&rayx_app::ServiceProvider) -> Arc<T> + Send + Sync + 'static,
+    ) {
+        match lifetime {
+            ServiceLifetime::Singleton => self.add_singleton_factory_as::<T>(factory),
+            ServiceLifetime::Scoped => self.add_scoped_as::<T>(factory),
+            ServiceLifetime::Transient => self.add_transient_as::<T>(factory),
+        };
     }
 }
 
