@@ -15,6 +15,10 @@
 //!   `createScope` and `dispose`. A RayX service's class is its own token, and a
 //!   [`ServiceToken`] keys a service with no Rust type; the declarations type both lookups over
 //!   `ServiceKey<T>`, so `getRequiredService(I18nService)` is an `I18nService` in TS.
+//! - The hooks a component's body calls (`useServices`, `useScreenScope`, `provideServices`,
+//!   `useViewModel`, [`ScreenHooks`], [`ViewModelHooks`]), `appState()` ([`AppStateHooks`]), and
+//!   the TS view models' [`ViewModelActivator`], [`ActivationToken`], [`DisposeBag`] and
+//!   [`Command`].
 //! - The services' classes: the service crates (`rayx_services_*`) add theirs
 //!   (`ApplicationConfigurationService`, `AssetService`, `FontService`, `HistoryService`,
 //!   `I18nService`, `InputMapService`, `KeyValueStore`, `NavigationService` with
@@ -36,6 +40,7 @@ use nsh_core::element::{Registry, TsAlias};
 
 pub use crate::app::builder_ts::{ContractFactory, RayXAppBuilder};
 pub use crate::app::ready_ts::ReadyContext;
+pub use crate::app::state_ts::{APP_STATE, AppStateHooks, AppStateValue};
 pub use crate::configuration::configuration_builder_ts::ConfigurationBuilder;
 pub use crate::configuration::options_ts::{OptionsBuilder, OptionsToken};
 pub use crate::configuration::options_ts::{push, record};
@@ -48,9 +53,14 @@ pub use crate::di::contract_ts::{
 pub use crate::di::provider_ts::{
     Resolved, ServiceClass, ServiceClassRegistryExt, ServiceKeyArg, ServiceProvider, ServiceToken,
 };
+pub use crate::di::screen_ts::ScreenHooks;
 pub use crate::di::startup_ts::{
     AsyncInitializable, JsAsyncInitializable, JsStartupInitializable, StartupInitializable,
     StartupInitializationContext, StartupInitializationState,
+};
+pub use crate::di::view_model_ts::{
+    ACTIVATABLE_VIEW_MODEL, ActivationToken, Argument, BoolAccessor, CanExecuteAccessor, Command,
+    Disposable, Disposal, DisposeBag, JsDisposable, ViewModelActivator, ViewModelHooks,
 };
 pub use crate::services::json;
 pub use crate::services::listeners_ts::Listeners;
@@ -81,6 +91,8 @@ pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(SERVICE_KEY)
         .ts_alias(CONTRACT_CLASS)
+        .ts_alias(APP_STATE)
+        .ts_alias(ACTIVATABLE_VIEW_MODEL)
         .class::<RayXAppBuilder>()
         .class::<ServiceProvider>()
         .class::<ServiceToken>()
@@ -93,5 +105,13 @@ pub fn register(registry: &mut Registry) {
         .class::<ReadyContext>()
         .class::<OptionsToken>()
         .class::<OptionsBuilder>()
-        .class::<ConfigurationBuilder>();
+        .class::<ConfigurationBuilder>()
+        .module::<ScreenHooks>()
+        .module::<AppStateHooks>()
+        .interface::<JsDisposable>()
+        .class::<DisposeBag>()
+        .class::<ActivationToken>()
+        .class::<ViewModelActivator>()
+        .class::<Command>()
+        .module::<ViewModelHooks>();
 }

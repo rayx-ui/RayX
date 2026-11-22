@@ -19,12 +19,18 @@
 //! - **Screen scope: from mount to cleanup.** [`use_screen_scope`], in a Rust component, makes a
 //!   child scope of the nearest enclosing screen's (or of the surface root), provides it to what
 //!   the component renders and drops it when the component's owner cleans up, so scoped services
-//!   go with their screen. TSX gets the same through [`ts::ServiceProvider`]:
-//!   `services.createScope()` when a screen mounts, `dispose()` in its cleanup.
+//!   go with their screen. TSX gets the same from `useScreenScope()` in a component's body, and
+//!   `useServices()` the nearest screen's [`ts::ServiceProvider`] (Rust and TSX components in one
+//!   tree share one scope: the hooks run their Rust code under the Rust owner NSH ties to the
+//!   calling component's JS owner); [`provide_services`] (`provideServices`) provides a provider
+//!   made elsewhere. `appState()` is [`app_state`] as an NSH signal.
 //! - **Transient: per resolve**, as in the core.
 //! - **Activation.** [`use_view_model`] resolves an [`ActivatableViewModel`] in the screen's scope
-//!   and activates it until the component's cleanup; [`ts::ServiceProvider::view_model`]
-//!   activates what a Rust bridge resolves for TSX until the provider is disposed.
+//!   and activates it until the component's cleanup, as TSX's `useViewModel(token)` does for a TS
+//!   view model (its `activator` a [`ts::ViewModelActivator`], `dxn_reactive`'s own) or a Rust one
+//!   (its class registered with `view_model_class`); [`ts::ServiceProvider::view_model`]
+//!   activates what a Rust bridge resolves for TSX until the provider is disposed. TS view models'
+//!   commands are [`ts::Command`]s.
 //! - **Binding.** A view model's dXn.Reactive signals, streams, lists and commands are NSH
 //!   signals in a Rust component ([`use_reactive`], [`use_stream`], [`use_two_way`],
 //!   [`use_list`], [`use_command`]) and observable properties of TSX classes ([`Observable`],
@@ -114,7 +120,7 @@ pub use devtools::{
     DevLayer, DevTools, DevToolsOptions, dev_layer, devtools_backoff, devtools_enabled,
     devtools_hook_calls, start_devtools,
 };
-pub use di::screen::{ScreenScope, services, use_screen_scope, use_view_model};
+pub use di::screen::{ScreenScope, provide_services, services, use_screen_scope, use_view_model};
 
 /// What the macros use; not part of the API: NSH's core for the code `#[rayx::native_module]`,
 /// `#[app_extension]` and `#[contract]` generate (an app crate may take NSH through RayX).

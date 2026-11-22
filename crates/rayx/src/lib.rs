@@ -210,9 +210,9 @@ pub mod prelude {
     pub use rayx_app_nsh::{ActivatableViewModel, ActivationToken, ViewModelActivator};
     pub use rayx_app_nsh::{
         AppError, AppSettingsAppBuilderExt, AppState, Observable, ReactiveCommand, ScreenScope,
-        StartAppBuilderExt, UiCommand, app_services, app_state, install, services, use_command,
-        use_event_stream, use_list, use_reactive, use_screen_scope, use_state_cell, use_stream,
-        use_two_way, use_view_model,
+        StartAppBuilderExt, UiCommand, app_services, app_state, install, provide_services,
+        services, use_command, use_event_stream, use_list, use_reactive, use_screen_scope,
+        use_state_cell, use_stream, use_two_way, use_view_model,
     };
     pub use rayx_app_nsh::{DevLayer, DevTools, dev_layer};
     #[cfg(feature = "application_configuration")]

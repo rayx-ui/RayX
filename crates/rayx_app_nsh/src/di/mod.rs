@@ -8,4 +8,6 @@ pub(crate) mod container_ts;
 pub(crate) mod contract_ts;
 pub(crate) mod provider_ts;
 pub(crate) mod screen;
+pub(crate) mod screen_ts;
 pub(crate) mod startup_ts;
+pub(crate) mod view_model_ts;

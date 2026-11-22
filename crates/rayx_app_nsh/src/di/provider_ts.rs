@@ -187,7 +187,13 @@ struct ClassToken {
     resolve: fn(&Instance<ServiceProvider>, bool) -> Result<Resolved, String>,
     startup: fn() -> StartupServiceType,
     contract: Option<crate::di::contract_ts::ContractDef>,
+    /// Activates the class's Rust view model, when it is a view model's class
+    /// ([`ServiceClassRegistryExt::view_model_class`]).
+    activate: Option<ActivateClass>,
 }
+
+/// How a view model's class activates its Rust view model in a provider.
+type ActivateClass = fn(&Instance<ServiceProvider>) -> Result<(Resolved, ActivationToken), String>;
 
 fn class_token<C: ServiceClass>(
     contract: Option<crate::di::contract_ts::ContractDef>,
@@ -196,7 +202,29 @@ fn class_token<C: ServiceClass>(
         resolve: resolve_class::<C>,
         startup: StartupServiceType::of::<C::Service>,
         contract,
+        activate: None,
     }
+}
+
+/// `C`'s Rust view model resolved in `this` once, wrapped in its class's object, and that very
+/// instance activated, as [`ServiceProvider::view_model`] activates it (the token is the caller's
+/// to keep): a transient view model is activated as the object JS gets.
+fn activate_class<C>(
+    this: &Instance<ServiceProvider>,
+) -> Result<(Resolved, ActivationToken), String>
+where
+    C: ServiceClass,
+    C::Service: ActivatableViewModel,
+{
+    let services = this.with(|provider| provider.provider.clone());
+    let view_model = services
+        .required_service::<C::Service>()
+        .map_err(|error| error.to_string())?;
+    let token = view_model
+        .activator()
+        .activate()
+        .map_err(|error| error.to_string())?;
+    Ok((wrap_class::<C>(this, &services, view_model), token))
 }
 
 /// The service classes sets registered ([`ServiceClassRegistryExt::service_class`],
@@ -231,12 +259,69 @@ fn class_of(class: &Constructor) -> Option<ClassToken> {
 pub trait ServiceClassRegistryExt {
     /// Adds the service class `C` and its resolver.
     fn service_class<C: ServiceClass>(&mut self) -> &mut Self;
+
+    /// Adds the class `C` of a Rust view model: a service class whose service TS's
+    /// `useViewModel(C)` activates for as long as the calling component lives.
+    fn view_model_class<C>(&mut self) -> &mut Self
+    where
+        C: ServiceClass,
+        C::Service: ActivatableViewModel;
 }
 
 impl ServiceClassRegistryExt for nsh_core::element::Registry {
     fn service_class<C: ServiceClass>(&mut self) -> &mut Self {
         register_class::<C>(None);
         self.class::<C>()
+    }
+
+    fn view_model_class<C>(&mut self) -> &mut Self
+    where
+        C: ServiceClass,
+        C::Service: ActivatableViewModel,
+    {
+        let mut token = class_token::<C>(None);
+        token.activate = Some(activate_class::<C>);
+        REGISTERED
+            .write()
+            .unwrap_or_else(PoisonError::into_inner)
+            .insert(Constructor::of::<C>(), token);
+        self.class::<C>()
+    }
+}
+
+/// The view model `token` names, resolved in `this` as `getRequiredService` resolves it, and
+/// activated: a Rust view model's class ([`ServiceClassRegistryExt::view_model_class`]) as
+/// [`ServiceProvider::view_model`] activates it, a TS object through its `activator`. Errors
+/// name the token; nothing is activated then.
+pub(crate) fn resolve_view_model(
+    this: &Instance<ServiceProvider>,
+    token: &ServiceKeyArg,
+    sys: &System,
+) -> Result<(Resolved, crate::di::view_model_ts::Activation), String> {
+    use crate::di::view_model_ts::{Activation, activate_object, not_a_view_model};
+    if let Some(class) = token
+        .handle
+        .constructor()
+        .and_then(|class| class_of(&class))
+    {
+        let activate = class
+            .activate
+            .ok_or_else(|| not_a_view_model(&token.name))?;
+        if this.is_disposed() {
+            return Err("ServiceProvider is disposed".into());
+        }
+        // A TS factory this resolve runs gets `this`.
+        let _resolving = Resolving::push(this);
+        let (resolved, activation) = activate(this)?;
+        return Ok((resolved, Activation::Rust(activation)));
+    }
+    let resolved = resolve(this, token, sys, true)?;
+    match &resolved.0 {
+        Inner::Object(object) => {
+            let activation = activate_object(object, &token.name)?;
+            Ok((resolved, activation))
+        }
+        _ => Err(not_a_view_model(&token.name)),
     }
 }
 
@@ -252,6 +337,16 @@ fn resolve_class<C: ServiceClass>(
     let service = services
         .required_service::<C::Service>()
         .map_err(|error| error.to_string())?;
+    Ok(wrap_class::<C>(this, &services, service))
+}
+
+/// `service`, resolved in `this`'s `services`, as the one object of `C` this provider gives for
+/// it.
+fn wrap_class<C: ServiceClass>(
+    this: &Instance<ServiceProvider>,
+    services: &rayx_app::ServiceProvider,
+    service: Arc<C::Service>,
+) -> Resolved {
     let key = (
         TypeId::of::<C>(),
         Arc::as_ptr(&service).cast::<()>() as usize,
@@ -265,10 +360,10 @@ fn resolve_class<C: ServiceClass>(
             .cloned()
     });
     if let Some(instance) = kept {
-        return Ok(Resolved::instance(instance));
+        return Resolved::instance(instance);
     }
     // Made outside the provider's borrow: the class may resolve more services.
-    let instance = Instance::new(C::wrap_in(Arc::clone(&service), &services));
+    let instance = Instance::new(C::wrap_in(Arc::clone(&service), services));
     this.with_mut(|provider| {
         provider.wrapped.insert(
             key,
@@ -278,7 +373,7 @@ fn resolve_class<C: ServiceClass>(
             },
         );
     });
-    Ok(Resolved::instance(instance))
+    Resolved::instance(instance)
 }
 
 thread_local! {
