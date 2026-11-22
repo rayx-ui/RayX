@@ -26,6 +26,7 @@ const ROOT: &[&str] = &[
     "di/provider_ts.rs",
     "di/container_ts.rs",
     "di/contract_ts.rs",
+    "di/scope_ts.rs",
     "di/startup_ts.rs",
     "di/view_model_ts.rs",
     "configuration/mod.rs",
