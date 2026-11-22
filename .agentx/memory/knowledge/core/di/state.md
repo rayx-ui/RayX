@@ -4,7 +4,7 @@ agentx:
   scope: knowledge/core/di
   status: current
   created: 2026-11-04T19:30:18+01:00
-  updated: 2026-11-18T03:10:00+01:00
+  updated: 2026-11-22T14:00:00+01:00
   topics:
     - dependency-injection
     - startup
@@ -43,6 +43,14 @@ per surface and a scope per screen ([app](../../app/state.md)).
   naming the trait wait for whichever implementation is registered. A dependency on a key that
   only a non-startup service is registered under (an app's own implementation, a fake) is met at
   once; one nothing is registered under fails startup (`StartupRegistry`, `src/di/lifecycle.rs`).
+- Scopes with registrations of their own (`src/di/scope.rs` `ScopeRegistrations`,
+  `create_scope_with`; TS `createScope(configure)`, `rayx_app_nsh` `di/scope_ts.rs`): singleton,
+  factory, scoped, transient, keyed and thread-bound forms, no startup ones. The nearest scope's
+  registration wins, also over a root singleton already made. A root singleton is always made
+  with the root (over a detached root once every clone is gone), and a scope's singleton with
+  the scope that registered it (over a detached stand-in of that scope once it is gone), so
+  neither captures a descendant's scoped services; scoped and transient services resolve in the
+  provider they are resolved from. This holds for plain `create_scope()` too.
 
 ## Backlinks
 
@@ -50,7 +58,7 @@ Code and docs: [docs/dependency-injection.md](../../../../../docs/dependency-inj
 [docs/startup.md](../../../../../docs/startup.md); tests `di_provider`, `di_startup`,
 `di_startup_timeout`, `di_startup_first`, `di_app_builder`, `di_runtime_keys`, `di_thread_bound`,
 `di_startup_runtime`, `di_startup_registration_key`, `di_startup_plain_dependency`,
-`di_validation`, `app_ready_hooks` in `crates/rayx_app/tests/`.
+`di_validation`, `di_scope_registrations`, `app_ready_hooks` in `crates/rayx_app/tests/`.
 
 Memory: [core](../state.md), [app](../../app/state.md),
 [crate structure decision](../../../decisions/runtime/service-crates/2026-11-16-runtime-service-crates-crate-structure.md) (current, 2026-11-16).
