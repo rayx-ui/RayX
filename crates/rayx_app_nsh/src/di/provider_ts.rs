@@ -30,6 +30,8 @@ use crate::AppError;
 /// it resolved and deactivates the view models activated through it; using it afterwards
 /// throws. The singletons a scope of its own registered live on while one of its descendants
 /// does, made over its registrations ([`ScopeRegistrations`](crate::ts::ScopeRegistrations)).
+/// When the app is started afresh on the surface (`builder.restart()`), the old root and every
+/// scope made from it with `createScope` are disposed.
 ///
 /// # Rust
 ///
@@ -42,6 +44,9 @@ pub struct ServiceProvider {
     provider: rayx_app::ServiceProvider,
     /// The view models activated through it, until it is disposed.
     activations: Vec<ActivationToken>,
+    /// The scopes made from it with `createScope` that are not disposed yet: disposed with it
+    /// when the surface's app is started afresh ([`dispose_surface_root`]), never otherwise.
+    scopes: Vec<Instance<ServiceProvider>>,
     /// The class objects of what it resolved, by class and service: one per service.
     wrapped: HashMap<(TypeId, usize), Wrapped>,
 }
@@ -114,7 +119,7 @@ impl ServiceProvider {
         }
         let services = this.with(|provider| provider.provider.clone());
         let Some(configure) = configure else {
-            return Ok(Instance::new(Self::of(services.create_scope())));
+            return Ok(Self::keep_scope(&this, services.create_scope()));
         };
         let recorded = crate::configuration::options_ts::record(
             crate::di::scope_ts::ScopeRegistrations::new(),
@@ -127,7 +132,7 @@ impl ServiceProvider {
         });
         match failed {
             Some(error) => Err(error),
-            None => Ok(Instance::new(Self::of(scope))),
+            None => Ok(Self::keep_scope(&this, scope)),
         }
     }
 }
@@ -138,8 +143,32 @@ impl ServiceProvider {
         Self {
             provider,
             activations: Vec::new(),
+            scopes: Vec::new(),
             wrapped: HashMap::new(),
         }
+    }
+
+    /// The TS object of `scope`, made from `parent`, which keeps it among its scopes (those
+    /// disposed meanwhile dropped from the list).
+    fn keep_scope(parent: &Instance<Self>, scope: rayx_app::ServiceProvider) -> Instance<Self> {
+        let made = Instance::new(Self::of(scope));
+        parent.with_mut(|parent| {
+            parent.scopes.retain(|kept| !kept.is_disposed());
+            parent.scopes.push(made.clone());
+        });
+        made
+    }
+
+    /// Disposes `provider` and every scope made from it, at any depth, not disposed yet.
+    fn dispose_tree(provider: &Instance<Self>) {
+        if provider.is_disposed() {
+            return;
+        }
+        let scopes = provider.with_mut(|provider| std::mem::take(&mut provider.scopes));
+        for scope in &scopes {
+            Self::dispose_tree(scope);
+        }
+        provider.dispose();
     }
 
     /// The Rust provider, for Rust bridges that take an `Instance<ServiceProvider>`.
@@ -472,6 +501,16 @@ struct SurfaceRoot(RefCell<Option<(Arc<rayx_app::Configuration>, Instance<Servic
 impl Local for SurfaceRoot {
     fn close(&self) {
         self.0.borrow_mut().take();
+    }
+}
+
+/// Disposes the TS object of the surface's root in the VM `sys` is of, and every scope made from
+/// it with `createScope` (their view models deactivated, using them throws), and forgets it:
+/// the app is started afresh on the surface (`builder.restart()`).
+pub(crate) fn dispose_surface_root(sys: &System) {
+    let kept = sys.locals.get::<SurfaceRoot>().0.borrow_mut().take();
+    if let Some((_, root)) = kept {
+        ServiceProvider::dispose_tree(&root);
     }
 }
 

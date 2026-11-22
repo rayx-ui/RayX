@@ -242,34 +242,68 @@ pub(crate) async fn start_app_with(
     let startup = match running {
         Ok(ready) => return ready,
         Err(Some(startup)) => startup,
-        Err(None) => {
-            let builder = builder.ok_or(AppError::BuilderStarted)?;
-            let startup: Startup = async move {
-                let started = initialize(builder, language).await;
-                global::<SurfaceApp>().set(match &started {
-                    Ok(root) => SurfaceApp {
-                        state: AppState::Ready,
-                        root: Some(root.clone()),
-                        starting: None,
-                    },
-                    Err(error) => SurfaceApp {
-                        state: AppState::Failed(error.to_string()),
-                        root: None,
-                        starting: None,
-                    },
-                });
-                started.map_err(Rc::new)
-            }
-            .boxed_local()
-            .shared();
-            slot.set(SurfaceApp {
-                state: AppState::Starting,
-                root: None,
-                starting: Some(startup.clone()),
-            });
-            startup
-        }
+        Err(None) => begin(builder.ok_or(AppError::BuilderStarted)?, language),
     };
+    joined(startup).await
+}
+
+/// Starts the app on this surface afresh with `builder`, in place of the app that runs there:
+/// what a design tool does when the app's composition changed while it runs. A startup under
+/// way ends first (its result is not kept). Then, in one change, the running app's root is
+/// dropped from the surface and [`app_state`] becomes `Starting` (a scope made from the old root
+/// keeps the old services until whoever made it drops it); startup runs as
+/// [`start_app_with`]'s, and [`app_state`] ends `Ready` with the new root installed, or
+/// `Failed`. On a surface where nothing started, it is [`start_app_with`]. With no builder (a TS
+/// builder started already) it fails with [`AppError::BuilderStarted`], changing nothing.
+/// `dropping` runs once the startup under way ended, just before the old root is dropped (the
+/// TS side disposes its objects of the old root there).
+pub(crate) async fn restart_app_with(
+    builder: Option<RayXAppBuilder>,
+    language: StartLanguage,
+    dropping: impl FnOnce(),
+) -> Result<ServiceProvider, AppError> {
+    let builder = builder.ok_or(AppError::BuilderStarted)?;
+    crate::devtools::register();
+    let under_way = global::<SurfaceApp>().with_untracked(|app| app.starting.clone());
+    if let Some(startup) = under_way {
+        let _ = startup.await;
+    }
+    dropping();
+    joined(begin(builder, language)).await
+}
+
+/// Begins the app's startup on this surface with `builder`: [`app_state`] becomes `Starting`,
+/// its root (if any) dropped, and the startup sets `Ready` with the new root, or `Failed`, when
+/// it ends.
+fn begin(builder: RayXAppBuilder, language: StartLanguage) -> Startup {
+    let startup: Startup = async move {
+        let started = initialize(builder, language).await;
+        global::<SurfaceApp>().set(match &started {
+            Ok(root) => SurfaceApp {
+                state: AppState::Ready,
+                root: Some(root.clone()),
+                starting: None,
+            },
+            Err(error) => SurfaceApp {
+                state: AppState::Failed(error.to_string()),
+                root: None,
+                starting: None,
+            },
+        });
+        started.map_err(Rc::new)
+    }
+    .boxed_local()
+    .shared();
+    global::<SurfaceApp>().set(SurfaceApp {
+        state: AppState::Starting,
+        root: None,
+        starting: Some(startup.clone()),
+    });
+    startup
+}
+
+/// The result of `startup`, which this caller waits for with any other.
+async fn joined(startup: Startup) -> Result<ServiceProvider, AppError> {
     startup.await.map_err(|error| {
         Rc::try_unwrap(error).unwrap_or_else(|shared| AppError::Failed(shared.to_string()))
     })
@@ -286,6 +320,14 @@ pub trait StartAppBuilderExt: Sized {
     /// ([`AppError`]); on a surface whose app started (or is starting), that app's root. Await
     /// it in an NSH task: it waits on NSH's timers.
     fn start_async(self) -> impl Future<Output = Result<ServiceProvider, AppError>>;
+
+    /// Starts the app on this surface afresh with this builder, in place of the app that runs
+    /// there (a design tool reloading the app's composition), and gives its root provider, or
+    /// why it did not start. A startup under way ends first; then the running app's root is
+    /// dropped from the surface, [`app_state`] goes to [`AppState::Starting`] and ends
+    /// [`AppState::Ready`] with the new root, or [`AppState::Failed`]. On a surface where
+    /// nothing started it is [`start_async`](Self::start_async). Await it in an NSH task.
+    fn restart_async(self) -> impl Future<Output = Result<ServiceProvider, AppError>>;
 }
 
 impl StartAppBuilderExt for RayXAppBuilder {
@@ -304,6 +346,10 @@ impl StartAppBuilderExt for RayXAppBuilder {
 
     fn start_async(self) -> impl Future<Output = Result<ServiceProvider, AppError>> {
         start_app_with(Some(self), StartLanguage::Rust)
+    }
+
+    fn restart_async(self) -> impl Future<Output = Result<ServiceProvider, AppError>> {
+        restart_app_with(Some(self), StartLanguage::Rust, || {})
     }
 }
 

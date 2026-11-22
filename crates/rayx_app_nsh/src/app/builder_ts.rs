@@ -389,7 +389,8 @@ impl RayXAppBuilder {
     /// suspension services current from NSH from then on. It rejects with the startup error's
     /// message. The builder is taken in the call itself, so its other methods throw from then
     /// on, in the same turn too. Once started (or while it starts), a second `start()` on the
-    /// surface, of this builder or another, resolves with the same root.
+    /// surface, of this builder or another, resolves with the same root; `restart()` starts it
+    /// afresh.
     pub fn start(this: Instance<Self>, sys: System) -> Later<Instance<ServiceProvider>> {
         // In the JS call: nothing added after `start()` reaches the startup.
         let builder = if this.is_disposed() {
@@ -401,6 +402,32 @@ impl RayXAppBuilder {
             let root = crate::app::surface::start_app_with(
                 builder,
                 crate::app::surface::StartLanguage::Ts,
+            )
+            .await?;
+            crate::devtools::app_ready(Some(&sys));
+            Ok::<_, AppError>(crate::di::provider_ts::root_of(&sys, root))
+        })
+    }
+
+    /// Starts the app on this surface afresh with this builder, in place of the app that runs
+    /// there: what a design tool does when the app's composition changed while it runs (its
+    /// `configure` reloaded). A startup under way ends first. The running app's root is dropped
+    /// from the surface, and its `ServiceProvider` and every scope made from it with
+    /// `createScope` are disposed (their view models deactivated; using them throws);
+    /// `appState()` goes to `starting`, then `ready` or `failed`; and it resolves with the new
+    /// root, or rejects with the startup error's message, as `start()` does. The builder is taken
+    /// in the call itself. On a surface where nothing started, it is `start()`.
+    pub fn restart(this: Instance<Self>, sys: System) -> Later<Instance<ServiceProvider>> {
+        let builder = if this.is_disposed() {
+            None
+        } else {
+            this.with_mut(|this| this.builder.take())
+        };
+        Later::new(async move {
+            let root = crate::app::surface::restart_app_with(
+                builder,
+                crate::app::surface::StartLanguage::Ts,
+                || crate::di::provider_ts::dispose_surface_root(&sys),
             )
             .await?;
             crate::devtools::app_ready(Some(&sys));

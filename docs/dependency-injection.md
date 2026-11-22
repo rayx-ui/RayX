@@ -220,7 +220,9 @@ See [TSX](tsx.md#contracts), which has `OpenMeteo`.
 
 NSH has no process-wide singletons: each window, test and hot restart is a surface of its own. So `rayx_app_nsh` keeps one
 root provider per surface, built from the builder the app starts there (`RayXAppBuilder::new()….start()` in a Rust
-root, `await builder.start()` in TSX).
+root, `await builder.start()` in TSX). A design tool that reloads the app's composition starts it afresh with
+`builder.restart()` (Rust `restart_async()`): the old root goes, and in TSX the old root and the scopes made from it
+are disposed ([TSX](tsx.md)).
 
 ```rust
 // A Rust screen: a child scope of the enclosing screen's, provided to what the component renders.
@@ -285,7 +287,8 @@ function Provided() {
 Called before RayX started on the surface the hooks throw saying it is starting, or has not started (the words of
 `AppError::Starting` and `AppError::NotStarted`); outside a component's body (no reactive owner) they throw saying so.
 `appState()`, the twin of `app_state()`, is an NSH signal of where the app is (`{ state: "notStarted" | "starting" |
-"ready" }` or `{ state: "failed"; message }`), the same signal every time, following the app's start on its surface;
+"ready" }` or `{ state: "failed"; message }`), the same signal every time, following the app's start on its surface
+(and a `restart()`, which takes it through `"starting"` again);
 mount the components bound to view models once it is `"ready"`:
 
 <!-- tsx: fragment -->

@@ -96,6 +96,18 @@ new RayXAppBuilder()
   timeout, an option validated on start, a ready hook.
 - A second `start()` on the same surface, of the same builder or another, resolves with the same root. After
   `start()`, the builder's other methods throw.
+- `restart()` starts the app on the surface afresh with another builder, in place of the one running there: what a
+  design tool does when the app's composition (its `configure`) changed while it runs. A startup under way ends
+  first; then the old root and every scope made from it with `createScope` are disposed (their view models
+  deactivated, using them throws), `appState()` goes to `"starting"` and then `"ready"` or `"failed"`, and it resolves
+  with the new root (or rejects) as `start()` does. A later `start()` gives the new root. Rust's twin is
+  `builder.restart_async()` (`StartAppBuilderExt`).
+
+  <!-- tsx: fragment -->
+  ```tsx
+  // The composition was reloaded: drop what was drawn with the old root, then start the new one.
+  const root = await configure(new RayXAppBuilder()).restart();
+  ```
 - Options callbacks (`addI18n((options) => …)`) take the Rust options' methods in camelCase, and apply after the
   configuration binds, as in Rust.
 - A service crate's builder method (`addNavigation(..)`, `addFonts(..)`, …) and class exist, in JS and in the
