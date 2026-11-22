@@ -180,11 +180,12 @@ impl Templates {
             .replace("__RAYX_TAG__", &format!("v{}", env!("CARGO_PKG_VERSION")))
     }
 
-    fn readme(&self, about: &str, services: &str) -> String {
+    fn readme(&self, about: &str, services: &str, architecture: &str) -> String {
         self.fill(
             &include_str!("new/README.md.in")
                 .replace("__TEMPLATE__", about)
-                .replace("__SERVICES__", services),
+                .replace("__SERVICES__", services)
+                .replace("__ARCHITECTURE__", architecture),
         )
     }
 }
@@ -238,6 +239,11 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                      `addFonts()`, each replaceable by the app's own, then the theme, storage, \
                      operations and history) and `await`s `start()`, whose `ServiceProvider` \
                      resolves them",
+                    "In this app: when it grows, move the composition root out of `App.tsx` into \
+                     an `App.ts` beside it, `export function configure(builder)`, which `App.tsx` \
+                     imports (as `./App.ts`) and starts, and put `configurePreviews(builder)` \
+                     beside it, registering the design view models and services the app's \
+                     previews show its views with. `App.tsx` then holds only components.",
                 ),
             ),
         ]
@@ -262,6 +268,12 @@ fn make_rayx_app(dir: &Path, template: Template, runner: &Runner) -> Result<()> 
                          `add_suspension()`, `add_assets(..)` and `add_fonts(..)`, each \
                          replaceable by the app's own, then the theme, storage, operations and \
                          history) and calls `.start()`, which `app_state()` follows",
+                    "In this app the composition root is Rust (`src/lib.rs`). For previews, add \
+                     an `App.ts` at the app's root, beside `App.tsx` once the app has TSX views, \
+                     that composes through the TS builder and its extensions (RayX's builder \
+                     methods in camelCase, the app's own Rust extensions exported to TS with \
+                     `#[app_extension]`): `configure(builder)` registering what the Rust root \
+                     does, and `configurePreviews(builder)` the design view models and services.",
                 ),
             ),
         ],

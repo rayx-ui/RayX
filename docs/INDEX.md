@@ -7,10 +7,12 @@
 - [Architecture](architecture.md): the crates (the core, the NSH host, the service crates, the umbrella), the two
   layers, the dependency rules, the umbrella's features, and releases.
 - [Dependency injection](dependency-injection.md): services, required services and declared dependencies, lifetimes,
-  scopes and screens.
+  scopes (with registrations of their own) and screens.
 - [Configuration and options](configuration.md): configuration sources and .NET's options model.
 - [Startup](startup.md): services that initialize asynchronously (in Rust or TS), the services the host requires and the
   checks before the start, ready hooks, and starting the app from TSX or Rust.
+- [App architecture](app-architecture.md): dumb views, view models and services under contracts, their names, the
+  composition root `configure` and the design registrations of `configurePreviews`, and how an app adopts them.
 - [View models](view-models.md): activation, and binding dXn.Reactive state to Rust components and TSX.
 - [Navigation](navigation.md): navigation regions as NSH navigation stacks.
 - [TSX](tsx.md): a TSX app's crate (RayX's attribute), its builder and provider, RayX's service classes, services written
@@ -21,8 +23,9 @@
   reads, its default theme from the Figma tokens, another theme or a patch over RayX's, its previews and
   files, and the gallery app.
 - [Previews](previews.md): a component's states declared in a `*.preview.tsx` file (`Previews<C>`, from
-  `rayx/components`), for design tools and galleries: the size of a component with none of its own, the previews of
-  its private components, and the previews a library (RayX's own) ships.
+  `rayx/components`), for design tools and galleries: the size of a component with none of its own, design services
+  (`configurePreviews` and a state's `services`), the previews of its private components, and the previews a library
+  (RayX's own) ships.
 - [Dev tools](devtools.md): the in-app agent of dev builds, how it connects to a tool, and the agent protocol.
 
 ## Reference

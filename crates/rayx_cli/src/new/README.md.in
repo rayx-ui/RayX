@@ -22,5 +22,18 @@ rayx app test                     # cargo test, then App.test.tsx, headless
 rayx app package --target web     # or ios, android, macos, linux, windows
 ```
 
+## App architecture
+
+As the app grows, build it to RayX's
+[app architecture](https://github.com/rayx-ui/RayX/blob/__RAYX_TAG__/docs/app-architecture.md):
+
+- Views are dumb: they render only the data and event props they are given.
+- A screen's or a panel's state is a view model, resolved with `useViewModel` (Rust
+  `use_view_model`) under a contract.
+- Work and data are services under a contract, named `<Name>Service`; their design
+  implementations replace them in `configurePreviews(builder)`.
+
+__ARCHITECTURE__
+
 `rayx app` runs nsh's own commands with the nsh the app pins, installing it and what the target
 needs first; `rayx doctor` shows the pins and what is missing.

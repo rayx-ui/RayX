@@ -2,7 +2,8 @@
 
 A view model holds a screen's state as [dXn.Reactive](https://github.com/dXnSix/dXn.Reactive) signals, streams, lists
 and commands. RayX resolves it in the screen's scope, activates it while the screen is shown, and binds its state to the
-UI as NSH state.
+UI as NSH state. Where view models sit in an app, under which contracts and names, is the
+[app architecture](app-architecture.md).
 
 A view model notifies on the thread that changed it; the bindings carry each change to the engine's thread.
 
