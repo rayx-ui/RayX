@@ -75,6 +75,7 @@ impl Launcher for ProcessLauncher {
         }
         #[cfg(not(unix))]
         {
+            use anyhow::Context;
             // Ctrl+C reaches nsh, which shares this console. rayx registers a handler that takes
             // the event for itself only (a handler is not inherited, unlike the null form, which
             // would keep it from nsh too), so it waits for nsh's exit code, as cargo does.
