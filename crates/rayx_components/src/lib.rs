@@ -12,16 +12,16 @@
 //! - The layout components, Figma's auto layout and slots: [`AutoLayout`](auto_layout::AutoLayout),
 //!   RayX's container for several things, and [`Slot`](slot::Slot), the place in a component that
 //!   takes one component instance from outside.
-//! - [`previews`]: `Previews<C>`, `PrivatePreviews<C>` and `PreviewState<P>`, the types of a
+//! - [`meta`]: `ComponentMeta<C>`, `PrivateMeta<C>`, `MetaSection<P>` and `MetaState<P>`, the types of a
 //!   component's previews, the states a design tool or a gallery shows it in, declared in a
-//!   `*.preview.tsx` file beside the component. Each of RayX's components ships its own
-//!   (`button.preview.tsx`).
+//!   `*.meta.tsx` file beside the component. Each of RayX's components ships its own
+//!   (`button.meta.tsx`).
 //!
 //! The library is a UI set of its own, [`set`], imported as [`SPECIFIER`] (`rayx/components`):
-//! the components, the previews' types, RayX's roles (TS's `role()` is typed with them) and
+//! the components, the meta files' types, RayX's roles (TS's `role()` is typed with them) and
 //! RayX's default theme (its tokens in theme files, classes and `token()`, its modifiers in
 //! `setModifier`). An app's set serves it (`#[rayx::native_module]` does), so every app, and the
-//! library's own preview files, import it by that one name; nothing names it in `nsh.json`:
+//! library's own meta files, import it by that one name; nothing names it in `nsh.json`:
 //!
 //! ```no_run
 //! use nsh_core::prelude::*;
@@ -43,7 +43,7 @@
 
 pub mod auto_layout;
 pub mod button;
-pub mod previews;
+pub mod meta;
 pub mod slot;
 pub mod theme;
 
@@ -72,7 +72,7 @@ pub mod prelude {
 pub const SPECIFIER: &str = "rayx/components";
 
 /// RayX's component library as a UI set of its own, [`SPECIFIER`]: RayX's theme document,
-/// RayX's roles, the previews' types ([`previews`]) and the components. An app's set serves it
+/// RayX's roles, the meta files' types ([`meta`]) and the components. An app's set serves it
 /// (`registry.serve(rayx_components::set())`; `#[rayx::native_module]` does), and registers none
 /// of it: its TSX imports the components from `rayx/components`, `role()` and role-named classes
 /// read RayX's roles, the default theme maps them (and nsh-base's) unless the app has a theme of
@@ -81,10 +81,11 @@ pub fn set() -> Registry {
     let mut set = Registry::ui_set(SPECIFIER);
     set.theme_document(theme::DOCUMENT)
         .roles(theme::roles::all())
-        .ts_alias(previews::PREVIEWS)
-        .ts_alias(previews::PRIVATE_PREVIEWS)
-        .ts_alias(previews::PREVIEW_STATE)
-        .ts_alias(previews::PREVIEW_SERVICES)
+        .ts_alias(meta::COMPONENT_META)
+        .ts_alias(meta::PRIVATE_META)
+        .ts_alias(meta::META_SECTION)
+        .ts_alias(meta::META_STATE)
+        .ts_alias(meta::META_SERVICES)
         .register::<button::Button>()
         .register::<auto_layout::AutoLayout>()
         .register::<slot::Slot>();

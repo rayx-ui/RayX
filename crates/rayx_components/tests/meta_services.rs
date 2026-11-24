@@ -1,10 +1,10 @@
 //! A preview state's `services`: a function a design host runs with the instance's own scope's
-//! registrations (`PreviewServices`, typed by their shape), registering singletons, scoped and
+//! registrations (`MetaServices`, typed by their shape), registering singletons, scoped and
 //! transient services and their `As` forms under object tokens, chained or not; a state without
 //! `services` type checks as before, and a private component's states take them too. What is no
 //! function, a method the registrations have not (a startup one) and a token that is no object
 //! are refused. The type checks run a TypeScript compiler (`support::typecheck`), so they are
-//! `#[ignore]`d: `cargo test -p rayx_components --test preview_services -- --include-ignored`.
+//! `#[ignore]`d: `cargo test -p rayx_components --test meta_services -- --include-ignored`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -25,11 +25,8 @@ fn declared(name: &str) -> String {
 
 #[test]
 fn a_state_takes_optional_services_over_the_scope_s_registrations() {
-    assert!(
-        declared("PreviewState<P>")
-            .contains("readonly services?: (scope: PreviewServices) => void")
-    );
-    let registrations = declared("PreviewServices");
+    assert!(declared("MetaState<P>").contains("readonly services?: (scope: MetaServices) => void"));
+    let registrations = declared("MetaServices");
     for method in [
         "addSingleton(",
         "addSingletonAs(",
@@ -81,7 +78,7 @@ fn services_register_in_the_instance_s_scope() {
       },
     },
   },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
         ),
         (
@@ -99,7 +96,7 @@ fn services_register_in_the_instance_s_scope() {
       },
     },
   },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
         ),
         (
@@ -109,7 +106,7 @@ fn services_register_in_the_instance_s_scope() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: { props: { traveler: "Ana" } } },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
         ),
         (
@@ -129,9 +126,9 @@ fn services_register_in_the_instance_s_scope() {
           services: (scope) => { scope.addSingleton(Clock, () => new Clock()); },
         },
       },
-    } satisfies PrivatePreviews<typeof Hero>,
+    } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
         ),
     ];
@@ -143,9 +140,9 @@ fn services_register_in_the_instance_s_scope() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: { services: "clock" } },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
-            &["Type 'string' is not assignable to type '(scope: PreviewServices) => void'"][..],
+            &["Type 'string' is not assignable to type '(scope: MetaServices) => void'"][..],
         ),
         (
             "a-startup-service",
@@ -158,9 +155,9 @@ fn services_register_in_the_instance_s_scope() {
       services: (scope) => { scope.addStartupSingleton(Clock, () => new Clock()); },
     },
   },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
-            &["Property 'addStartupSingleton' does not exist on type 'PreviewServices'"][..],
+            &["Property 'addStartupSingleton' does not exist on type 'MetaServices'"][..],
         ),
         (
             "a-token-that-is-no-object",
@@ -173,7 +170,7 @@ fn services_register_in_the_instance_s_scope() {
       services: (scope) => { scope.addSingleton("clock", () => new Clock()); },
     },
   },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             &["Argument of type 'string' is not assignable to parameter of type 'object'"][..],
         ),

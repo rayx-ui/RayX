@@ -1,0 +1,45 @@
+{
+  "about": "The state names of RayX's meta files before they were rewritten into sections, per entry (the top level by the file's id, each private entry by its id). Every name stays in the same entry of the same file; this file is never changed.",
+  "files": [
+    {
+      "file": "src/auto_layout.meta.tsx",
+      "entries": [
+        {
+          "id": "auto-layout",
+          "states": ["Vertical", "Horizontal", "Centered", "Space between", "Wrap", "Fill"]
+        }
+      ]
+    },
+    {
+      "file": "src/button.meta.tsx",
+      "entries": [
+        {
+          "id": "button",
+          "states": [
+            "Neutral",
+            "Primary",
+            "Danger",
+            "Success",
+            "Ghost",
+            "Link",
+            "Outlined",
+            "Primary outlined",
+            "Small",
+            "Large",
+            "Disabled",
+            "Primary disabled"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "src/slot.meta.tsx",
+      "entries": [
+        {
+          "id": "slot",
+          "states": ["Empty", "Footer"]
+        }
+      ]
+    }
+  ]
+}

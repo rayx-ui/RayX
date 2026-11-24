@@ -37,8 +37,8 @@ a dependency. The workspace has twenty crates sharing one version (`rayx`, `rayx
   Figma component of its name on its nsh-base component (`Button`), written in Rust and exported
   to TSX as the library's own UI set `rayx/components` (`rayx_components::set()`), which every
   app's set serves (`#[rayx::native_module]` does; a hand-written `#[native_module]` calls
-  `registry.serve(rayx::components::set())`), each with its preview file beside it
-  (`button.preview.tsx`, typed with the set's `Previews<C>`). It depends on `nsh-core` and
+  `registry.serve(rayx::components::set())`), each with its meta file beside it
+  (`button.meta.tsx`, typed with the set's `ComponentMeta<C>`). It depends on `nsh-core` and
   `nsh-base`, not on the other RayX crates. The `rayx-components` skill
   (`../RayX.Root/.claude/skills/rayx-components/`) is its guide: how each component is used and
   how one is built.
@@ -113,7 +113,9 @@ RayX.Design's DTCG files or role map, or to `roles.json`, `python
 .claude/skills/rayx-components/scripts/theme_export.py write` from RayX.Root, then `check` must
 pass before committing. Each feature has its own
 integration-test group in `crates/<crate>/tests/<feature>.rs` (`di_provider`, `di_startup`,
-`nsh_layer`, …); select one with `cargo test -p <crate> --test <feature>`. A new feature or
+`nsh_layer`, …); select one with `cargo test -p <crate> --test <feature>`. `rayx_components`' meta
+file groups (`meta_files`, `meta_types`, `meta_sections`, `meta_private`, `meta_size`, `meta_tags`,
+`meta_services`) run their TypeScript cases with `-- --include-ignored`. A new feature or
 behavior change gets a new group. The umbrella's groups that need service features beyond the defaults
 (`service_replacement`, `ts_service_contracts`, `history_over_operations`) declare
 `required-features` and run with `cargo test -p rayx --all-features --test <group>`;

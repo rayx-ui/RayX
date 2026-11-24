@@ -1,7 +1,7 @@
 //! `#[rayx::native_module]` and `#[rayx::app_extension]`: an app crate's UI set holds RayX's TS
 //! classes, the set of every service crate the umbrella's features enable and what its function's
 //! body adds, nothing else, and serves RayX's component library, the set `rayx/components` (the
-//! components, the previews' types, RayX's theme document), which its TSX imports `Button` from;
+//! components, the meta files' types, RayX's theme document), which its TSX imports `Button` from;
 //! an extension is a TS function that `builder.apply(..)` runs in chain order.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
@@ -135,9 +135,11 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     // RayX's components are the library's, not the app's: the set serves `rayx/components`.
     for name in [
         "component rayx_components::button::Button",
-        "type Previews<C>",
-        "type PrivatePreviews<C>",
-        "type PreviewState<P>",
+        "type ComponentMeta<C>",
+        "type PrivateMeta<C>",
+        "type MetaSection<P>",
+        "type MetaState<P>",
+        "type MetaServices",
     ] {
         assert!(!exported.contains(name), "{name} in the app's set");
     }
@@ -152,14 +154,26 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     assert_eq!(exports(library), exports(&components));
     for name in [
         "component rayx_components::button::Button",
-        "type Previews<C>",
-        "type PrivatePreviews<C>",
-        "type PreviewState<P>",
+        "type ComponentMeta<C>",
+        "type PrivateMeta<C>",
+        "type MetaSection<P>",
+        "type MetaState<P>",
+        "type MetaServices",
     ] {
         assert!(
             exports(library).contains(name),
             "no {name} in rayx/components"
         );
+    }
+    // The meta types' former names are exported by no set (built from parts, so no source line
+    // holds them).
+    for name in former_meta_types() {
+        for (of, names) in [
+            ("the app's set", &exported),
+            ("rayx/components", &exports(library)),
+        ] {
+            assert!(!names.contains(&name), "{name} in {of}");
+        }
     }
     assert_eq!(
         library.theme_documents(),
@@ -168,6 +182,17 @@ fn the_set_holds_rayx_and_what_the_body_adds_and_nothing_else() {
     );
     assert!(!library.theme_documents().is_empty());
     assert_eq!(set.specifier(), Some("test/app"));
+}
+
+/// The exports the meta types had under their former names, built from parts so that no source
+/// line holds them.
+fn former_meta_types() -> [String; 4] {
+    [
+        ["type Prev", "iews<C>"].concat(),
+        ["type PrivatePrev", "iews<C>"].concat(),
+        ["type PreviewSt", "ate<P>"].concat(),
+        ["type PreviewServ", "ices"].concat(),
+    ]
 }
 
 const BUTTON_TSX: &str = r#"import { mount, View } from "nsh";

@@ -23,7 +23,7 @@ features enable (its class, its contract's interface, its options classes and it
 `rayx_services_i18n::register` gives `addI18n(..)`, `addMessageFormatter()`, `I18nService`, `I18nServiceContract` and
 `I18nOptions`, and `rayx_services_theme::register` gives `addTheme(..)`, `ThemeService`, `ThemeServiceContract` and
 `ThemeOptions`), and nothing else, and serves RayX's component library, the set `rayx/components`
-(`registry.serve(rayx::components::set())`: the components, `Previews<C>` and RayX's theme document). With
+(`registry.serve(rayx::components::set())`: the components, `ComponentMeta<C>` and RayX's theme document). With
 the default features the builder has `addPlatform()`, `addSuspension()`, `addAssets(..)` and `addFonts(..)`; a feature
 off leaves its method and class out of the set and its declarations. The function's own body adds the app's exports:
 
@@ -419,7 +419,7 @@ A view-model class exposes `Observable`s and `ReactiveCommand`s; see [View model
 
 RayX's components (`Button`) and its theme document are RayX's library set, `rayx/components`, which the set
 `#[rayx::native_module]` makes serves; import them from `rayx/components` in every app. See
-[Components and theme](components.md) and, for a component's `*.preview.tsx` file, [Previews](previews.md).
+[Components and theme](components.md) and, for a component's `*.meta.tsx` file, [Meta files](component-meta.md).
 
 ```tsx
 import { Button } from "rayx/components";

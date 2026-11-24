@@ -16,7 +16,7 @@ examples, DO and DON'T) is the `rayx-components` skill in RayX.Root (`.claude/sk
 ## Use it
 
 The library is a UI set of its own, `rayx/components` (`rayx::components::set()`, its specifier
-`rayx::components::SPECIFIER`): the components, the previews' types (`Previews<C>`, [Previews](previews.md)), RayX's
+`rayx::components::SPECIFIER`): the components, the meta files' types (`ComponentMeta<C>`, [Meta files](component-meta.md)), RayX's
 roles (`role()` and role-named classes read them, and NSH checks every theme against them) and RayX's default theme,
 the app's theme unless it has one of its own. Every app's set serves it: `#[rayx::native_module]` does, so nothing
 names it in `nsh.json` and the app's set registers none of it:
@@ -39,7 +39,7 @@ fn native(registry: &mut Registry) {
 }
 ```
 
-TSX imports them from `rayx/components`, in every app, and so do the library's own preview files; props are Figma's
+TSX imports them from `rayx/components`, in every app, and so do the library's own meta files; props are Figma's
 properties in camel case (a fragment: `save`, `Icon` and `Badge` are the app's own):
 
 <!-- tsx: fragment -->
@@ -177,13 +177,13 @@ slot()
   the one element inside a `Slot`: NSH looks through a component whose root has only styles of its own and places
   its children, while it holds one element.
 
-## Previews and files
+## Meta files
 
-Each component ships its previews beside its source, `crates/rayx_components/src/<name>.preview.tsx`
-(`button.preview.tsx`): plain data typed with `Previews<C>`, importing the component and the type from
+Each component ships its meta file beside its source, `crates/rayx_components/src/<name>.meta.tsx`
+(`button.meta.tsx`): plain data typed with `ComponentMeta<C>`, importing the component and the type from
 `rayx/components`, with an `id` unique in the crate and literal props, so a design tool shows RayX's components in their
-states with nothing written by the app (see [Previews](previews.md)). A new component lands with its preview file;
-`crates/rayx_components/tests/previews.rs` checks that every component the set registers has one, literal, and that
+states with nothing written by the app (see [Meta files](component-meta.md)). A new component lands with its meta file;
+`crates/rayx_components/tests/meta_files.rs` checks that every component the set registers has one, literal, and that
 each state renders.
 
 A file the library ships (an icon, a font) goes in the crate's `assets/` and is listed by its set

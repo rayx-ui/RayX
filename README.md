@@ -12,8 +12,8 @@ Rust and TSX.
   stacks, and a TSX class for every service.
 - **Components:** the RayX design system in code: its roles, a default theme that maps them onto its Figma tokens
   (any NSH theme document that maps them draws the components), and its components written in Rust on NSH's base
-  components, for Rust and for TSX as the set `rayx/components` every app serves, each with its preview file
-  ([Components and theme](docs/components.md), [Previews](docs/previews.md),
+  components, for Rust and for TSX as the set `rayx/components` every app serves, each with its meta file
+  ([Components and theme](docs/components.md), [Meta files](docs/component-meta.md),
   the [gallery](examples/gallery/README.md)).
 - **The `rayx` CLI:** sets a machine up for NSH work, runs apps through the NSH their project pins, and creates new RayX
   apps.

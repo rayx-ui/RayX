@@ -20,9 +20,9 @@
   beside its Rust twin.
 - [Components and theme](components.md): RayX's component library, the set `rayx/components` every app serves, its
   layout components (`AutoLayout`, Figma's auto layout, and `Slot`, a component's place for content), the roles it
-  reads, its default theme from the Figma tokens, another theme or a patch over RayX's, its previews and
+  reads, its default theme from the Figma tokens, another theme or a patch over RayX's, its meta
   files, and the gallery app.
-- [Previews](previews.md): a component's states declared in a `*.preview.tsx` file (`Previews<C>`, from
+- [Meta files](component-meta.md): a component's states declared in a `*.meta.tsx` file (`ComponentMeta<C>`, from
   `rayx/components`), for design tools and galleries: the size of a component with none of its own, design services
   (`configurePreviews` and a state's `services`), the previews of its private components, and the previews a library
   (RayX's own) ships.

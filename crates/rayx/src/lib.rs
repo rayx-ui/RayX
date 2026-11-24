@@ -12,8 +12,8 @@
 //!   enabled crate at `rayx::services::<name>` with its builder extension in the prelude.
 //! - [`components`] ([`rayx_components`]): RayX's component library: the design system's roles
 //!   (`theme::roles`), its default theme (an NSH theme document that maps them, whose modes are
-//!   its modifiers), its components (`Button`) with their preview files, and the previews' types
-//!   (`Previews<C>`), for Rust views and TSX. In TSX it is the UI set `rayx/components`
+//!   its modifiers), its components (`Button`) with their meta files, and the meta files' types
+//!   (`ComponentMeta<C>`), for Rust views and TSX. In TSX it is the UI set `rayx/components`
 //!   ([`components::set`]), which every app's set serves.
 //! - [`devtools_protocol`] ([`rayx_devtools_protocol`]): the agent protocol of the dev tools, the
 //!   messages between an app's dev-build agent and a tool's hub, for a tool written in Rust.
@@ -126,7 +126,7 @@ pub use rayx_app_nsh::contract;
 /// its tokens, the startup and options classes), the set of every service crate the umbrella's
 /// features enable (its classes, its contract's interface and its builder method:
 /// `addFonts`, `addI18n`, …), and serves RayX's component library, the set `rayx/components`
-/// (`registry.serve(rayx::components::set())`: the components, the previews' types, RayX's roles
+/// (`registry.serve(rayx::components::set())`: the components, the meta files' types, RayX's roles
 /// and theme document), then runs the function's own body, the app's exports:
 ///
 /// ```ignore

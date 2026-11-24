@@ -1,6 +1,6 @@
 // Button's previews (Figma `buttons/Button`): the states a design tool or a gallery shows it in,
-// plain data a tool reads without running it (docs/previews.md). Every value is a literal.
-import { Button, type Previews } from "rayx/components";
+// plain data a tool reads without running it (docs/component-meta.md). Every value is a literal.
+import { Button, type ComponentMeta } from "rayx/components";
 
 export default {
   id: "button",
@@ -21,4 +21,4 @@ export default {
     Disabled: { props: { text: "Button", disabled: true } },
     "Primary disabled": { props: { text: "Button", variant: "primary", disabled: true } },
   },
-} satisfies Previews<typeof Button>;
+} satisfies ComponentMeta<typeof Button>;

@@ -1,8 +1,8 @@
 //! A preview's `tags`: words in lower case to find it by, a literal list of strings at the top of
-//! its `Previews<C>` (`tags: ["form", "auth"]`), any number of them; a preview without tags type
+//! its `ComponentMeta<C>` (`tags: ["form", "auth"]`), any number of them; a preview without tags type
 //! checks as before, and a private component's previews take them too. The type checks run a
 //! TypeScript compiler (`support::typecheck`), so they are `#[ignore]`d:
-//! `cargo test -p rayx_components --test preview_tags -- --include-ignored`.
+//! `cargo test -p rayx_components --test meta_tags -- --include-ignored`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -23,8 +23,8 @@ fn declared(name: &str) -> String {
 
 #[test]
 fn previews_and_private_previews_take_optional_tags() {
-    assert!(declared("Previews<C>").contains("readonly tags?: readonly string[];"));
-    assert!(declared("PrivatePreviews<C>").contains("readonly tags?: readonly string[];"));
+    assert!(declared("ComponentMeta<C>").contains("readonly tags?: readonly string[];"));
+    assert!(declared("PrivateMeta<C>").contains("readonly tags?: readonly string[];"));
 }
 
 #[test]
@@ -42,7 +42,7 @@ fn tags_are_a_list_of_strings() {
   tags: ["form"],
   component: TripPlanner,
   states: { Default: { props: { traveler: "Ana" } } },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             (
                 "several",
@@ -52,7 +52,7 @@ fn tags_are_a_list_of_strings() {
   size: { width: 390, height: 844 },
   component: TripPlanner,
   states: { Default: { props: { traveler: "Ana" } } },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             (
                 "none",
@@ -61,7 +61,7 @@ fn tags_are_a_list_of_strings() {
   tags: [],
   component: TripPlanner,
   states: { Default: {} },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             (
                 "left-out",
@@ -69,7 +69,7 @@ fn tags_are_a_list_of_strings() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: {} },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             (
                 "of-a-private-component",
@@ -83,9 +83,9 @@ fn tags_are_a_list_of_strings() {
       tags: ["form"],
       component: Hero,
       states: { Wide: { props: { destination: "Lisbon" } } },
-    } satisfies PrivatePreviews<typeof Hero>,
+    } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
         ],
         &[
@@ -96,7 +96,7 @@ fn tags_are_a_list_of_strings() {
   tags: "form",
   component: TripPlanner,
   states: { Default: {} },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Type 'string' is not assignable to type 'readonly string[]'"],
             ),
             (
@@ -106,7 +106,7 @@ fn tags_are_a_list_of_strings() {
   tags: ["form", 2],
   component: TripPlanner,
   states: { Default: {} },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Type 'number' is not assignable to type 'string'"],
             ),
             (
@@ -116,7 +116,7 @@ fn tags_are_a_list_of_strings() {
   tags: { form: true },
   component: TripPlanner,
   states: { Default: {} },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["'form' does not exist in type 'readonly string[]'"],
             ),
             (
@@ -131,9 +131,9 @@ fn tags_are_a_list_of_strings() {
       tags: "form",
       component: Hero,
       states: { Wide: { props: { destination: "Lisbon" } } },
-    } satisfies PrivatePreviews<typeof Hero>,
+    } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Type 'string' is not assignable to type 'readonly string[]'"],
             ),
             (
@@ -142,7 +142,7 @@ fn tags_are_a_list_of_strings() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: { tags: ["form"] } },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["'tags' does not exist in type"],
             ),
         ],

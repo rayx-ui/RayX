@@ -1,9 +1,9 @@
-//! A real type check for the tests of the previews' types: a small app serving RayX's library,
+//! A real type check for the tests of the meta files' types: a small app serving RayX's library,
 //! with the `.nsh/types` and `tsconfig.json` NSH writes for one (`nsh_js::type_definitions`,
 //! `nsh_bundler`'s files, NSH's strict settings), checked by a TypeScript compiler. No test
 //! downloads one: it is `NSH_TSC`'s, else the one `rayx app check` keeps in NSH's cache, so the
 //! tests that take it are `#[ignore]`d and run on demand
-//! (`cargo test -p rayx_components --test preview_private -- --include-ignored`).
+//! (`cargo test -p rayx_components --test meta_private -- --include-ignored`).
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -11,7 +11,7 @@ use std::process::Command;
 
 /// The app's own components, `./TripPlanner` to the files beside it: a screen, which fills what
 /// it is given, and the private components written in its file for its own use, exported for a
-/// preview file to import.
+/// meta file to import.
 pub const TRIP_PLANNER: &str = r#"import { Text, View } from "nsh";
 
 export function Hero(props: { destination: string; wide?: boolean }) {
@@ -37,8 +37,8 @@ export function TripPlanner(props: { traveler: string; days?: number }) {
 }
 "#;
 
-/// What every case file starts with: the previews' types and the app's components.
-pub const IMPORTS: &str = r#"import type { Previews, PrivatePreviews } from "rayx/components";
+/// What every case file starts with: the meta files' types and the app's components.
+pub const IMPORTS: &str = r#"import type { ComponentMeta, PrivateMeta } from "rayx/components";
 import { Divider, Hero, Stat, TripPlanner } from "./TripPlanner";
 "#;
 
@@ -152,7 +152,7 @@ pub fn errors(name: &str, files: &[(String, String)]) -> BTreeMap<String, Vec<St
     let mut errors: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut last: Option<String> = None;
     for line in said.lines() {
-        // `Card.preview.tsx(4,19): error TS2353: …`, then indented lines that explain it.
+        // `Card.meta.tsx(4,19): error TS2353: …`, then indented lines that explain it.
         let located = line
             .split_once("): error ")
             .and_then(|(place, message)| Some((place.rsplit_once('(')?.0, message)));
@@ -189,7 +189,7 @@ pub fn errors(name: &str, files: &[(String, String)]) -> BTreeMap<String, Vec<St
 /// refused one, also what its errors say) in one app: every accepted file has no error, every
 /// refused file has one saying each of its fragments, and no other file has any.
 pub fn check(name: &str, accepted: &[(&str, &str)], refused: &[(&str, &str, &[&str])]) {
-    let file = |case: &str| format!("{case}.preview.tsx");
+    let file = |case: &str| format!("{case}.meta.tsx");
     let files: Vec<(String, String)> = accepted
         .iter()
         .map(|(case, text)| (case, text))

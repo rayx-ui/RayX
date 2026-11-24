@@ -1,7 +1,7 @@
 // AutoLayout's previews (Figma's auto layout): the states a design tool or a gallery shows it in,
-// plain data a tool reads without running it (docs/previews.md). Every value is a literal; the
+// plain data a tool reads without running it (docs/component-meta.md). Every value is a literal; the
 // children are what a design tool drops into it.
-import { AutoLayout, type Previews } from "rayx/components";
+import { AutoLayout, type ComponentMeta } from "rayx/components";
 
 export default {
   id: "auto-layout",
@@ -43,4 +43,4 @@ export default {
     },
     Fill: { props: { width: "fill", padding: "inset3" } },
   },
-} satisfies Previews<typeof AutoLayout>;
+} satisfies ComponentMeta<typeof AutoLayout>;

@@ -128,7 +128,7 @@ export function configurePreviews(builder: RayXAppBuilder): RayXAppBuilder {
 ## Data of one state comes from a preview state's services
 
 What one preview state shows comes from that state's `services`, registered in the preview instance's own scope
-([previews](previews.md#design-services)): for its tokens they win over the app's and `configurePreviews`' registrations
+([meta files](component-meta.md#design-services)): for its tokens they win over the app's and `configurePreviews`' registrations
 for that instance alone.
 
 ```tsx
@@ -184,4 +184,4 @@ the Rust ones in camelCase, and the app's own Rust extensions are exported to TS
 - [Dependency injection](dependency-injection.md): lifetimes, scopes, screens, and scopes with registrations of their
   own (`createScope(configure)`).
 - [View models](view-models.md): activation, commands and binding, in Rust and TSX.
-- [Previews](previews.md): preview files, `configurePreviews` and a state's `services`.
+- [Meta files](component-meta.md): meta files, `configurePreviews` and a state's `services`.

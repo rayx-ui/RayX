@@ -1,10 +1,10 @@
 //! The previews of a component's private components: components written in the previewed
-//! component's file for its own use, exported only for the preview file to import. They are the
-//! entries of its previews' `private` list, each written `{ … } satisfies PrivatePreviews<typeof
+//! component's file for its own use, exported only for the meta file to import. They are the
+//! entries of its previews' `private` list, each written `{ … } satisfies PrivateMeta<typeof
 //! Part>`, which checks its states' props against its own component. An entry has an `id`, a
 //! `title`, its `component` and `states`, and no `group`, `size` or `private` of its own. The
 //! type checks run a TypeScript compiler (`support::typecheck`), so they are `#[ignore]`d:
-//! `cargo test -p rayx_components --test preview_private -- --include-ignored`.
+//! `cargo test -p rayx_components --test meta_private -- --include-ignored`.
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -12,6 +12,17 @@ mod support;
 
 use nsh_core::element::declarations;
 use support::typecheck;
+
+/// How TypeScript prints a private entry's type (`PrivateMeta<C>`, whose either-or of `states`
+/// and `sections` it spells out rather than naming the alias): its members up to `component`,
+/// `tags` followed by `component` where a component's own type has `group` and `size` between.
+macro_rules! private_entry_type {
+    () => {
+        "'{ readonly id: string; readonly title?: string | undefined; \
+         readonly description?: string | undefined; \
+         readonly tags?: readonly string[] | undefined; readonly component: "
+    };
+}
 
 #[test]
 fn the_library_set_declares_private_previews_and_previews_list_them() {
@@ -25,10 +36,10 @@ fn the_library_set_declares_private_previews_and_previews_list_them() {
     };
     // The list takes the previews of any component: each entry names its own.
     assert!(
-        declared("Previews<C>")
-            .contains("readonly private?: readonly PrivatePreviews<(props: any) => unknown>[] }")
+        declared("ComponentMeta<C>")
+            .contains("readonly private?: readonly PrivateMeta<(props: any) => unknown>[] }")
     );
-    let private = declared("PrivatePreviews<C>");
+    let private = declared("PrivateMeta<C>");
     for member in ["id", "title?", "component", "states"] {
         assert!(
             private.contains(&format!("readonly {member}: ")),
@@ -57,11 +68,11 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: { props: { traveler: "Ana" } } },
   private: [
-    { id: "hero", component: Hero, states: { Wide: { props: { destination: "Lisbon", wide: true } } } } satisfies PrivatePreviews<typeof Hero>,
-    { id: "stat", title: "Stat", component: Stat, states: { Days: { props: { value: "3", label: "days" } } } } satisfies PrivatePreviews<typeof Stat>,
-    { id: "divider", component: Divider, states: { Default: {} } } satisfies PrivatePreviews<typeof Divider>,
+    { id: "hero", component: Hero, states: { Wide: { props: { destination: "Lisbon", wide: true } } } } satisfies PrivateMeta<typeof Hero>,
+    { id: "stat", title: "Stat", component: Stat, states: { Days: { props: { value: "3", label: "days" } } } } satisfies PrivateMeta<typeof Stat>,
+    { id: "divider", component: Divider, states: { Default: {} } } satisfies PrivateMeta<typeof Divider>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             (
                 "no-parts",
@@ -70,7 +81,7 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: {} },
   private: [],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             (
                 "left-out",
@@ -78,7 +89,7 @@ fn each_private_entry_checks_against_its_own_component() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: { props: { traveler: "Ana" } } },
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
             // The list takes the previews of any component, so an entry written without its
             // own `satisfies` is not checked against its component.
@@ -89,7 +100,7 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: {} },
   private: [{ id: "hero", component: Hero, states: { Wide: { props: { destinaton: 7 } } } }],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
             ),
         ],
         &[
@@ -100,9 +111,9 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: {} },
   private: [
-    { id: "hero", component: Hero, states: { Wide: { props: { destinaton: "Lisbon" } } } } satisfies PrivatePreviews<typeof Hero>,
+    { id: "hero", component: Hero, states: { Wide: { props: { destinaton: "Lisbon" } } } } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["'destinaton' does not exist in type"],
             ),
             (
@@ -112,9 +123,9 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: {} },
   private: [
-    { id: "hero", component: Hero, states: { Wide: { props: { destination: 7 } } } } satisfies PrivatePreviews<typeof Hero>,
+    { id: "hero", component: Hero, states: { Wide: { props: { destination: 7 } } } } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Type 'number' is not assignable to type 'string'"],
             ),
             (
@@ -124,9 +135,9 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: {} },
   private: [
-    { id: "hero", component: Hero, states: { Wide: { props: { traveler: "Ana" } } } } satisfies PrivatePreviews<typeof Hero>,
+    { id: "hero", component: Hero, states: { Wide: { props: { traveler: "Ana" } } } } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["'traveler' does not exist in type"],
             ),
             (
@@ -136,9 +147,9 @@ fn each_private_entry_checks_against_its_own_component() {
   component: TripPlanner,
   states: { Default: {} },
   private: [
-    { id: "hero", component: Stat, states: { Wide: { props: { destination: "Lisbon" } } } } satisfies PrivatePreviews<typeof Hero>,
+    { id: "hero", component: Stat, states: { Wide: { props: { destination: "Lisbon" } } } } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Types of parameters 'props' and 'props' are incompatible"],
             ),
         ],
@@ -163,11 +174,14 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
       id: "hero",
       component: Hero,
       states: { Wide: {} },
-      private: [{ id: "stat", component: Stat, states: { Days: {} } } satisfies PrivatePreviews<typeof Stat>],
-    } satisfies PrivatePreviews<typeof Hero>,
+      private: [{ id: "stat", component: Stat, states: { Days: {} } } satisfies PrivateMeta<typeof Stat>],
+    } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
-                &["'private' does not exist in type 'PrivatePreviews<"],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
+                &[concat!(
+                    "'private' does not exist in type ",
+                    private_entry_type!()
+                )],
             ),
             (
                 "nested-unchecked",
@@ -176,8 +190,11 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   component: TripPlanner,
   states: { Default: {} },
   private: [{ id: "hero", component: Hero, states: { Wide: {} }, private: [] }],
-} satisfies Previews<typeof TripPlanner>;"#,
-                &["'private' does not exist in type 'PrivatePreviews<"],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
+                &[concat!(
+                    "'private' does not exist in type ",
+                    private_entry_type!()
+                )],
             ),
             (
                 "a-group",
@@ -186,10 +203,13 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   component: TripPlanner,
   states: { Default: {} },
   private: [
-    { id: "hero", group: "Parts", component: Hero, states: { Wide: {} } } satisfies PrivatePreviews<typeof Hero>,
+    { id: "hero", group: "Parts", component: Hero, states: { Wide: {} } } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
-                &["'group' does not exist in type 'PrivatePreviews<"],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
+                &[concat!(
+                    "'group' does not exist in type ",
+                    private_entry_type!()
+                )],
             ),
             (
                 "a-size",
@@ -198,10 +218,13 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   component: TripPlanner,
   states: { Default: {} },
   private: [
-    { id: "hero", size: { width: 390, height: 200 }, component: Hero, states: { Wide: {} } } satisfies PrivatePreviews<typeof Hero>,
+    { id: "hero", size: { width: 390, height: 200 }, component: Hero, states: { Wide: {} } } satisfies PrivateMeta<typeof Hero>,
   ],
-} satisfies Previews<typeof TripPlanner>;"#,
-                &["'size' does not exist in type 'PrivatePreviews<"],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
+                &[concat!(
+                    "'size' does not exist in type ",
+                    private_entry_type!()
+                )],
             ),
             (
                 "no-id",
@@ -209,8 +232,8 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: {} },
-  private: [{ component: Hero, states: { Wide: {} } } satisfies PrivatePreviews<typeof Hero>],
-} satisfies Previews<typeof TripPlanner>;"#,
+  private: [{ component: Hero, states: { Wide: {} } } satisfies PrivateMeta<typeof Hero>],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Property 'id' is missing"],
             ),
             (
@@ -219,9 +242,13 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   id: "trip-planner",
   component: TripPlanner,
   states: { Default: {} },
-  private: [{ id: "hero", component: Hero } satisfies PrivatePreviews<typeof Hero>],
-} satisfies Previews<typeof TripPlanner>;"#,
-                &["Property 'states' is missing"],
+  private: [{ id: "hero", component: Hero } satisfies PrivateMeta<typeof Hero>],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
+                // Neither `states` nor `sections`: TypeScript names the last of the two it tried.
+                &[
+                    "is not assignable to type 'PrivateMeta<",
+                    "Property 'sections' is missing",
+                ],
             ),
             (
                 "not-a-list",
@@ -230,8 +257,8 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   component: TripPlanner,
   states: { Default: {} },
   private: { id: "hero", component: Hero, states: { Wide: {} } },
-} satisfies Previews<typeof TripPlanner>;"#,
-                &["does not exist in type 'readonly PrivatePreviews<"],
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
+                &["does not exist in type 'readonly PrivateMeta<"],
             ),
             (
                 "not-a-component",
@@ -240,7 +267,7 @@ fn a_private_entry_is_a_preview_without_group_size_or_private() {
   component: TripPlanner,
   states: { Default: {} },
   private: [{ id: "hero", component: "Hero", states: { Wide: {} } }],
-} satisfies Previews<typeof TripPlanner>;"#,
+} satisfies ComponentMeta<typeof TripPlanner>;"#,
                 &["Type 'string' is not assignable to type '(props: any) => unknown'"],
             ),
         ],

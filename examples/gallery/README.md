@@ -53,8 +53,8 @@ TSX edit reloads in place.
 
 ## Adding a component's page
 
-1. Build the component in `crates/rayx_components` with its preview file beside it
-   (`<name>.preview.tsx`; the `rayx-components` skill in RayX.Root).
+1. Build the component in `crates/rayx_components` with its meta file beside it
+   (`<name>.meta.tsx`; the `rayx-components` skill in RayX.Root).
 2. Add `src/pages/<component>.tsx`, importing the component from `rayx/components`: a `Page` with a playground of every Figma property (the same
    names), the variants matrix, the sizes, and the Figma page's examples, each an `Example` with
    its caption. Components and slot content at `size="default"`, except in an example about sizes.
