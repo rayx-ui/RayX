@@ -27,7 +27,7 @@ not a stopgap.
 
 `#[rayx::native_module("app/native")]` registered RayX's components, roles and theme document
 into each app's own UI set, so TSX imported `Button` from an app-specific specifier, and
-`Previews<C>` came from the app's set too. Nothing written once (a component's preview file, the
+`ComponentMeta<C>` came from the app's set too. Nothing written once (a component's meta file, the
 docs, a design tool) could name RayX's components the same way in every app, and a library could
 not ship its own previews. NSH now lets a library's crate make a set under its own fixed
 specifier that apps serve (`Registry::serve`), refuses two sets registering one component, lets
@@ -37,7 +37,7 @@ every served set ships while the engine runs (`served_asset_files()`).
 ## Decision
 
 - **One set, one name.** `rayx_components` makes its own UI set, `rayx/components`
-  (`SPECIFIER`, `set()`: the theme document, RayX's roles, `Previews<C>` and `PreviewState<P>`,
+  (`SPECIFIER`, `set()`: the theme document, RayX's roles, `ComponentMeta<C>` and `MetaState<P>`,
   the components). It still depends on `nsh-core` and `nsh-base` alone; there is no
   `register(registry)` into another set any more.
 - **Every app serves it.** `rayx::__private::register` (what `#[rayx::native_module]` expands to)
@@ -47,9 +47,9 @@ every served set ships while the engine runs (`served_asset_files()`).
 - **Every TSX file imports RayX's components and the previews' types from `rayx/components`**
   (apps, RayX's docs, the gallery, the `rayx new` templates' wording, the skills).
 - **Libraries ship their previews beside their components.** Each component of RayX has
-  `src/<snake_name>.preview.tsx` beside its source, literal data typed with `Previews<C>`,
+  `src/<snake_name>.meta.tsx` beside its source, literal data typed with `ComponentMeta<C>`,
   importing from `rayx/components`, with an `id` unique in the crate; a new component lands with
-  it (`crates/rayx_components/tests/previews.rs`). Preview ids are unique within their package.
+  it (`crates/rayx_components/tests/meta_files.rs`). Preview ids are unique within their package.
 - **Libraries ship their files beside their components**, listed by their set
   (`registry.assets(assets!())`). TSX names a file it needs checked at build time
   (`import x from "asset:/@pkg/path"`); RayX's asset catalog takes every served set's files when it

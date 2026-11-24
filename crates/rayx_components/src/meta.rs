@@ -15,7 +15,7 @@
 //! ```
 //!
 //! Nothing runs to make a file a meta file: a tool reads the literal `id`, `title`, `group`, `tags`,
-//! state names and props without running it, and imports it to show one state. An app's components
+//! `description`, sections, state names and props without running it, and imports it to show one state. An app's components
 //! declare theirs the same way, importing the types from `rayx/components` too. Each of RayX's
 //! components ships its meta file beside its source (`button.meta.tsx`).
 //!

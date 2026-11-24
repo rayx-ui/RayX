@@ -67,7 +67,7 @@ no feature implies another), `rayx::components`, `rayx::devtools_protocol`, `i18
 `checked` (with `i18n`), a prelude with each enabled crate's builder extension, and
 `#[rayx::native_module("spec")]`, whose expansion calls `rayx::__private::register` (the host's
 classes, each enabled crate's set, then `registry.serve(rayx_components::set())`: RayX's
-components, roles, theme document and `Previews<C>` are the served set `rayx/components`, not the
+components, roles, theme document and `ComponentMeta<C>` are the served set `rayx/components`, not the
 app's) before the function's body. Its line in the source is what NSH's CLI reads the set's
 specifier from, so it stays an attribute. The headless harness (`src/testing.rs`) bundles with
 `Registry::served_sets(..)`, so test TSX imports from `rayx/components`.

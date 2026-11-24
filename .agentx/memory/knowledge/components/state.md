@@ -49,14 +49,14 @@ Route work on RayX's components, its theme document and roles, and the gallery.
   through it to the one element (a slot's props stay on its host): `tests/slot_tsx.rs` keeps that
   case as an ignored test until NSH allows it. No new role: it reuses intent/surface/spacing roles.
 - `set()` is the library's own UI set, `SPECIFIER` `rayx/components`: the theme document, the
-  roles, `Previews<C>` (with an optional `size` and `private` list) / `PrivatePreviews<C>` /
-  `PreviewState<P>` (`src/previews.rs`, moved from `rayx_app_nsh::ts`) and
+  roles, `ComponentMeta<C>` (with an optional `size` and `private` list) / `PrivateMeta<C>` /
+  `MetaState<P>` (`src/meta.rs`, moved from `rayx_app_nsh::ts`) and
   the components. Every app's set serves it (`registry.serve(rayx_components::set())`:
   `#[rayx::native_module]` does, a hand-written `#[native_module]` calls it itself); there is no
   `register(registry)` any more. TSX imports from `rayx/components`.
-- `src/slot.preview.tsx` (id `slot`, shown empty) and `src/auto_layout.preview.tsx` (id
+- `src/slot.meta.tsx` (id `slot`, shown empty) and `src/auto_layout.meta.tsx` (id
   `auto-layout`, props only: previews pass no children).
-- `src/button.preview.tsx`: Button's previews (id `button`; each variant, outlined, sizes,
+- `src/button.meta.tsx`: Button's previews (id `button`; each variant, outlined, sizes,
   disabled), literal, beside `button.rs`. The crate ships no `assets/` yet.
   `rayx_components` sets no modifier itself: the app does, through NSH's `set_modifier` or the
   theme service (`rayx_services_theme`, see [runtime](../runtime/state.md)).
@@ -77,7 +77,7 @@ Route work on RayX's components, its theme document and roles, and the gallery.
 
 Code and docs: [docs/components.md](../../../../docs/components.md),
 [examples/gallery/README.md](../../../../examples/gallery/README.md); tests
-`crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx,preview_types,preview_size,preview_private,previews,slot_view,slot_tsx,slot_design,auto_layout_view,auto_layout_tsx,auto_layout_roles}.rs`
+`crates/rayx_components/tests/{button_roles,role_list,default_theme,role_parity,button_view,button_tsx,meta_types,meta_size,meta_private,meta_files,slot_view,slot_tsx,slot_design,auto_layout_view,auto_layout_tsx,auto_layout_roles}.rs`
 (`slot_design` connects the test process as a design host, so it is a group of its own),
 `examples/gallery/native/tests/gallery_tsx.rs` (`role_parity` checks against `tests/fixtures/role_values.json`).
 

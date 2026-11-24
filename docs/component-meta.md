@@ -208,13 +208,27 @@ import { Button, type ComponentMeta } from "rayx/components";
 export default {
   id: "button",
   title: "Button",
+  description: "Starts an action. Use **primary** for the main action of a screen, …",
   group: "Components",
   component: Button,
-  states: {
-    Primary: { props: { text: "Button", variant: "primary" } },
-    Small: { props: { text: "Button", size: "small" } },
-    Disabled: { props: { text: "Button", disabled: true } },
-  },
+  sections: [
+    {
+      title: "Solid Variants",
+      description: "Filled buttons, one for each kind of action: …",
+      states: {
+        Neutral: { props: { text: "Button" } },
+        Primary: { props: { text: "Button", variant: "primary" } },
+      },
+    },
+    {
+      title: "Sizes",
+      description: "The two sizes besides the default one, for dense toolbars and for prominent calls to action.",
+      states: {
+        Small: { props: { text: "Button", size: "small" } },
+        Large: { props: { text: "Button", size: "large" } },
+      },
+    },
+  ],
 } satisfies ComponentMeta<typeof Button>;
 ```
 

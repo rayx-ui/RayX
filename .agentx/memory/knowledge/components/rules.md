@@ -24,9 +24,9 @@ agentx:
 - A component's look comes from roles only, through one memo; `class` and `style`
   place it.
 - A new component lands with its feature tests (`<name>_view`, `<name>_tsx`), its gallery page,
-  its `rayx-components` reference and its preview file `src/<snake_name>.preview.tsx` beside its
-  source: literal data typed with `Previews<C>`, component and type imported from
-  `rayx/components`, an `id` unique in the crate (`tests/previews.rs`).
+  its `rayx-components` reference and its meta file `src/<snake_name>.meta.tsx` beside its
+  source: literal data typed with `ComponentMeta<C>`, component and type imported from
+  `rayx/components`, an `id` unique in the crate (`tests/meta_files.rs`).
 - Components, roles, the theme document and the previews' types are registered in
   `rayx_components::set()` (`rayx/components`) only; an app's set serves it, never registers any
   of it. TSX imports RayX's components from `rayx/components`, never from an app's specifier.
