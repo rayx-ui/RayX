@@ -810,7 +810,7 @@ fn sections_are_read_and_their_wrong_shapes_refused() {
         format!("import {{ Button }} from \"rayx/components\";\n{head} states: {{ A: {{}} }}, private: [{{ id: \"part\", component: Button, states: {{ A: {{}} }}, sections: [{{ title: \"S\", states: {{ B: {{}} }} }}] }}] }};\n"),
     )
     .unwrap();
-    let error = read(&file).err().expect("private-both is refused");
+    let error = read(&file).expect_err("private-both is refused");
     assert!(error.contains("entry `part` has both"), "{error}");
     let _ = std::fs::remove_dir_all(&dir);
 }
