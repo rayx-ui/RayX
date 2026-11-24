@@ -430,3 +430,86 @@ pub fn checkout_cli(
     }
     Ok(cli)
 }
+
+/// Set on the prebuilt `rayx` a hand-over starts ([`hand_over_to`]), so it never hands over again.
+pub const HANDED_OVER: &str = "RAYX_HANDED_OVER";
+
+/// `1` keeps the installed `rayx` from handing over: it runs itself.
+pub const NO_HANDOVER: &str = "RAYX_NO_DEV_HANDOVER";
+
+/// The prebuilt `rayx` the running one hands its command line over to, if any.
+///
+/// The installed `rayx` (`<home>/bin/rayx`, which the release installers put first on `PATH`)
+/// may be older than the prebuilt one in `<home>/dev` (`rayx dev install rayx`), and an older one
+/// builds NSH's CLI from a local checkout where the prebuilt one runs its `nsh`. So the installed
+/// `rayx` runs the prebuilt one in its place whenever there is one: a stale release on `PATH`
+/// never decides what a checkout's commands build. It does not hand over `rayx self …` (which
+/// updates the installed binary), when [`NO_HANDOVER`] is `1`, when it was itself started by a
+/// hand-over ([`HANDED_OVER`]), or when it is the prebuilt one (a link to it included).
+/// `canonical` resolves links (`fs::canonicalize`; the path itself when that fails).
+pub fn hand_over_to(
+    machine: &dyn Machine,
+    os: Os,
+    current: &Path,
+    first_arg: Option<&std::ffi::OsStr>,
+    canonical: impl Fn(&Path) -> PathBuf,
+) -> Option<PathBuf> {
+    let set = |name: &str| machine.env(name).filter(|value| !value.is_empty());
+    if set(HANDED_OVER).is_some() || set(NO_HANDOVER).as_deref() == Some("1") {
+        return None;
+    }
+    if first_arg.is_some_and(|arg| arg == "self") {
+        return None;
+    }
+    let home = set("RAYX_HOME")
+        .map(PathBuf::from)
+        .or_else(|| machine.home().map(|home| home.join(".rayx")))?;
+    let installed = home.join("bin").join(Tool::Rayx.exe(os));
+    let prebuilt = Dev::at(home.join("dev")).cli(Tool::Rayx, os);
+    let current = canonical(current);
+    if current != canonical(&installed) || !machine.exists(&prebuilt) {
+        return None;
+    }
+    (canonical(&prebuilt) != current).then_some(prebuilt)
+}
+
+/// Runs the prebuilt `rayx` in place of this process when [`hand_over_to`] says so, with this
+/// command line, and returns its exit code; `None` when this process runs the command itself.
+pub fn hand_over() -> Option<std::process::ExitCode> {
+    let current = std::env::current_exe().ok()?;
+    let mut args = std::env::args_os().skip(1);
+    let first = args.next();
+    let os = if cfg!(windows) {
+        Os::Windows
+    } else if cfg!(target_os = "macos") {
+        Os::MacOs
+    } else {
+        Os::Linux
+    };
+    let canonical = |path: &Path| fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let prebuilt = hand_over_to(&SystemMachine, os, &current, first.as_deref(), canonical)?;
+    let mut command = std::process::Command::new(&prebuilt);
+    command
+        .args(first.into_iter().chain(args))
+        .env(HANDED_OVER, "1");
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt;
+        // `exec` returns only when it failed: then this `rayx` runs the command itself.
+        let error = command.exec();
+        eprintln!("rayx: could not run {}: {error}", prebuilt.display());
+        None
+    }
+    #[cfg(not(unix))]
+    {
+        match command.status() {
+            Ok(status) => Some(std::process::ExitCode::from(
+                u8::try_from(status.code().unwrap_or(1)).unwrap_or(1),
+            )),
+            Err(error) => {
+                eprintln!("rayx: could not run {}: {error}", prebuilt.display());
+                None
+            }
+        }
+    }
+}

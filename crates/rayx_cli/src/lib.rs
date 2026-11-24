@@ -26,6 +26,9 @@ use crate::cli::{Cli, Command, LimaCommand, SelfCommand, WslCommand};
 
 /// Runs the command line of this process and returns the process exit code.
 pub fn run() -> ExitCode {
+    if let Some(code) = dev::hand_over() {
+        return code;
+    }
     run_from(std::env::args_os())
 }
 

@@ -399,6 +399,12 @@ NSH's CLI code (`crates/nsh-cli`, `nsh-bundler`, `nsh-dev`, `nsh-package`) chang
 commit, or when it was built from another checkout, and runs it all the same. A project on a local checkout
 with no prebuilt `nsh` stops with the command that builds one.
 
+The installed `rayx` (`~/.rayx/bin/rayx`, which the release installers put first on `PATH`) hands
+its command line over to the prebuilt `~/.rayx/dev/rayx` whenever there is one, so a release older
+than the prebuilt CLI never runs a checkout's commands (an older `rayx` builds NSH's CLI from the
+checkout). `rayx self update` runs the installed one, and `RAYX_NO_DEV_HANDOVER=1` keeps it from handing
+over; the prebuilt one, or a link to it, runs itself.
+
 ### `rayx new`
 
 `rayx new <dir> [--name <name>] [--template mixed|ts|rust] [--nsh-only]` creates a RayX app that
