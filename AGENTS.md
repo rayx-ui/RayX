@@ -115,7 +115,9 @@ pass before committing. Each feature has its own
 integration-test group in `crates/<crate>/tests/<feature>.rs` (`di_provider`, `di_startup`,
 `nsh_layer`, …); select one with `cargo test -p <crate> --test <feature>`. `rayx_components`' meta
 file groups (`meta_files`, `meta_types`, `meta_sections`, `meta_private`, `meta_size`, `meta_tags`,
-`meta_services`) run their TypeScript cases with `-- --include-ignored`. A new feature or
+`meta_services`) run their TypeScript cases with `-- --include-ignored`; `meta_content` reads what the
+three files say (their sections, descriptions and every state name of `tests/fixtures/meta-states.json`)
+and runs as it is. A new feature or
 behavior change gets a new group. The umbrella's groups that need service features beyond the defaults
 (`service_replacement`, `ts_service_contracts`, `history_over_operations`) declare
 `required-features` and run with `cargo test -p rayx --all-features --test <group>`;
