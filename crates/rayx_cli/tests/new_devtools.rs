@@ -81,7 +81,7 @@ fn machine(home: &Workspace) -> FakeMachine {
 fn runner(refuse: bool) -> Runner {
     Runner::record().responder(move |spec| {
         if spec.args == ["--version"] {
-            return Some(Outcome::success().with_stdout(format!("nsh 0.6.0 ({})\n", &DEFAULTS.nsh.commit[..7])));
+            return Some(Outcome::success().with_stdout(format!("nsh 0.7.0 ({})\n", &DEFAULTS.nsh.commit[..7])));
         }
         if spec.args.first().is_some_and(|a| a == "init") {
             if refuse {

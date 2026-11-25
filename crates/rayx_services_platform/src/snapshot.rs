@@ -9,8 +9,8 @@ use nsh_core::prelude::{
     apple_keys, can_pick_screen_color, dark, font_scale, global, idiom, is_catalyst, is_desktop,
     keyboard_duration, keyboard_height, locale, locale_settings, os, os_version, pixel_ratio,
     platform_name, reads_active_descendants, reduce_motion, safe_area, screen_reader,
-    shaders_available, spawn, speech_available, web_evaluate_available, web_input_available,
-    web_view_available, window,
+    shaders_available, spawn, web_evaluate_available, web_input_available, web_view_available,
+    window,
 };
 use rayx_app::services::platform::{
     ColorScheme, DisplaySnapshot, FormFactor, InputCapabilities, Insets, LocaleSnapshot,
@@ -18,7 +18,7 @@ use rayx_app::services::platform::{
     ViewportSnapshot, WindowMode, WindowSnapshot,
 };
 
-/// What the platform answers asynchronously of what it can do (web views, speech), once
+/// What the platform answers asynchronously of what it can do (web views), once
 /// the platform service's initialization asked: `None` until then.
 #[derive(Clone, Copy, Default)]
 struct AnsweredFeatures(Option<Answered>);
@@ -28,7 +28,6 @@ struct Answered {
     web_views: bool,
     web_evaluate: bool,
     web_input: bool,
-    speech: bool,
 }
 
 /// Asks the platform what it answers asynchronously of what it can do, once a surface.
@@ -41,7 +40,6 @@ pub(crate) fn ask_features() {
             web_views: web_view_available().await,
             web_evaluate: web_evaluate_available().await,
             web_input: web_input_available().await,
-            speech: speech_available().await,
         };
         global::<AnsweredFeatures>().set(AnsweredFeatures(Some(answered)));
     }));
@@ -72,7 +70,6 @@ pub fn platform_snapshot() -> PlatformSnapshot {
         web_views: answered.is_some_and(|answered| answered.web_views),
         web_evaluate: answered.is_some_and(|answered| answered.web_evaluate),
         web_input: answered.is_some_and(|answered| answered.web_input),
-        speech: answered.is_some_and(|answered| answered.speech),
     };
     PlatformSnapshot {
         family: match os() {

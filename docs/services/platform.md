@@ -57,7 +57,8 @@ A `PlatformSnapshot` holds:
   of the first language's script;
 - in a terminal, the size of one cell of its grid (`terminal_cell`);
 - what the platform can do (`features`): shader views, the screen colour picker, web views (showing them, running
-  scripts in them, trusted input), speech recognition; `false` until the platform tells;
+  scripts in them, trusted input); `false` until the platform tells. Speech recognition is `nsh-extra`'s
+  (`Speech.available()`), a module an app adds when it uses it;
 - on a desktop, the displays (`displays`: bounds, visible bounds, scale, primary) and the app's window (`window`:
   mode, focus, minimized, visible, bounds and display).
 
@@ -87,9 +88,8 @@ The displays and the window come from NSH's `displays()` and `window_state()`, w
 direction is CLDR's for the first preferred language. The platform's name, Catalyst, Apple's shortcuts, the keyboard's
 animation, active descendants and a terminal's cell come from NSH's environment (`platform_name()`, `is_catalyst()`,
 `apple_keys()`, `keyboard_duration()`, `reads_active_descendants()`, `cell_size()`), shaders and the colour picker
-from `shaders_available()` and `can_pick_screen_color()`, and web views and speech from what NSH answers once the
-service initialized (`web_view_available()`, `web_evaluate_available()`, `web_input_available()`,
-`speech_available()`). NSH reports no high-contrast setting and gives Rust code no user-writable directory: apps write
+from `shaders_available()` and `can_pick_screen_color()`, and web views from what NSH answers once the
+service initialized (`web_view_available()`, `web_evaluate_available()`, `web_input_available()`). NSH reports no high-contrast setting and gives Rust code no user-writable directory: apps write
 through [storage](storage.md).
 
 `rayx_services_platform::platform_snapshot()` reads NSH's environment as a snapshot now, on the engine thread.

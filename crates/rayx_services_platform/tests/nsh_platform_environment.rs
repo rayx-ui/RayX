@@ -1,8 +1,8 @@
 //! What NSH 0.5's environment tells reaches the platform service, headless: the platform's name
 //! (a platform built outside NSH included), a TV's remote input, the keyboard's animation, Apple's
 //! shortcuts in a browser, the screen readers' active descendants, a terminal's cell, and what
-//! the platform can do (shaders, the screen color picker, and the web views and speech it
-//! answers asynchronously).
+//! the platform can do (shaders, the screen color picker, and the web views it answers
+//! asynchronously).
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
@@ -185,7 +185,7 @@ fn a_terminal_has_its_cell_and_a_browser_on_a_mac_apple_s_shortcuts() {
 }
 
 #[test]
-fn what_the_platform_answers_of_web_views_and_speech_reaches_the_service() {
+fn what_the_platform_answers_of_web_views_reaches_the_service() {
     let _serial = serial();
     let environment = Environment {
         os: Os::MacOs,

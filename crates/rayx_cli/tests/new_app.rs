@@ -24,9 +24,9 @@ use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::project::pins::DEFAULTS;
 use rayx_cli::setup::FakeMachine;
 
-const ID: &str = "6e14d3507b61";
+const ID: &str = "d49d11bf3d24";
 const FORK_SOURCE: &str =
-    "git+https://github.com/dXnSix/nsh?tag=nshx-0.6.0-7#6e14d3507b612b4990d816ffe41d0472ff915a98";
+    "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f";
 
 fn new_args(argv: &[&str]) -> NewArgs {
     let mut full = vec!["rayx", "new"];
@@ -56,7 +56,7 @@ fn with_default(home: &Workspace) -> PathBuf {
             id: ID.into(),
             kind: Kind::Distribution,
             url: "u".into(),
-            reference: Some("nshx-0.6.0-7".into()),
+            reference: Some("nshx-0.7.0-1".into()),
             commit: Some(DEFAULTS.nsh.commit.into()),
             nsh: "0.2.0".into(),
             cli: "nsh/bin/nsh".into(),
@@ -79,7 +79,7 @@ fn machine(home: &Workspace) -> FakeMachine {
 fn runner(refuse: bool) -> Runner {
     Runner::record().responder(move |spec| {
         if spec.args == ["--version"] {
-            return Some(Outcome::success().with_stdout("nsh 0.6.0 (6e14d35)\n"));
+            return Some(Outcome::success().with_stdout("nsh 0.7.0 (d49d11b)\n"));
         }
         if spec.args.first().is_some_and(|a| a == "init") {
             if refuse {
@@ -96,10 +96,10 @@ fn runner(refuse: bool) -> Runner {
             if template != "ts" {
                 // nsh's manifest; a Rust app's runs on the desktop platforms too.
                 let mut manifest = String::from(
-                    "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.6.0\"\nnsh-base = \"0.6.0\"\n",
+                    "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.7.0\"\nnsh-base = \"0.7.0\"\n",
                 );
                 if template == "rust" {
-                    manifest.push_str("env_logger = \"0.11\"\n\n[target.'cfg(target_os = \"macos\")'.dependencies]\nnsh-platform-macos = { version = \"0.6.0\", default-features = false }\n");
+                    manifest.push_str("env_logger = \"0.11\"\n\n[target.'cfg(target_os = \"macos\")'.dependencies]\nnsh-platform-macos = { version = \"0.7.0\", default-features = false }\n");
                 }
                 std::fs::write(dir.join("Cargo.toml"), manifest).expect("Cargo.toml");
                 std::fs::create_dir_all(dir.join("src")).expect("src");
@@ -185,7 +185,7 @@ fn a_mixed_app_is_made_by_the_default_pins_nsh_init_and_pinned_through_its_lock(
     let patched: Vec<&str> = config
         .lines()
         .filter(|l| {
-            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.6.0-7\" }")
+            l.contains("= { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.7.0-1\" }")
         })
         .collect();
     assert_eq!(
@@ -234,7 +234,7 @@ fn a_rust_app_gets_the_same_patches_and_lock() {
     );
     assert!(
         config.contains(
-            "\nnsh-platform-macos = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.6.0-7\" }\n"
+            "\nnsh-platform-macos = { git = \"https://github.com/dXnSix/nsh\", tag = \"nshx-0.7.0-1\" }\n"
         ),
         "{config}"
     );
@@ -295,7 +295,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     let mac = run(&["hello"], &work.root, &home, Os::MacOs, false);
     assert!(
         mac.out.contains(&format!(
-            "Created hello, a RayX app on rayx v{}, pinned to nsh nshx-0.6.0-7 (6e14d35). Next:",
+            "Created hello, a RayX app on rayx v{}, pinned to nsh nshx-0.7.0-1 (d49d11b). Next:",
             env!("CARGO_PKG_VERSION")
         )),
         "{}",
@@ -311,7 +311,7 @@ fn the_next_steps_are_printed_with_ios_only_on_a_mac() {
     );
     assert!(
         nsh.out
-            .contains("Created hello, pinned to nsh nshx-0.6.0-7 (6e14d35). Next:"),
+            .contains("Created hello, pinned to nsh nshx-0.7.0-1 (d49d11b). Next:"),
         "{}",
         nsh.out
     );
@@ -354,7 +354,7 @@ fn a_missing_default_pin_is_installed_first() {
     assert!(created.result.is_err());
     let first = created.runner.lines().first().cloned().unwrap_or_default();
     assert!(
-        first.contains("releases/download/nshx-0.6.0-7/nsh-macos-arm64.tar.gz.sha256"),
+        first.contains("releases/download/nshx-0.7.0-1/nsh-macos-arm64.tar.gz.sha256"),
         "{first}"
     );
     assert!(
@@ -518,13 +518,13 @@ fn the_files_rayx_writes_name_the_default_pin() {
         "{config}"
     );
     assert!(config.contains("[patch.crates-io]\n"), "{config}");
-    assert!(config.contains("nshx-0.6.0-7 at 6e14d35"), "{config}");
+    assert!(config.contains("nshx-0.7.0-1 at d49d11b"), "{config}");
     let table = rayx_toml(&DEFAULTS.nsh);
     for line in [
         "[nsh]",
         "git = \"https://github.com/dXnSix/nsh\"",
-        "tag = \"nshx-0.6.0-7\"",
-        "commit = \"6e14d3507b612b4990d816ffe41d0472ff915a98\"",
+        "tag = \"nshx-0.7.0-1\"",
+        "commit = \"d49d11bf3d243cedd01e66c7da5d561be91cd59f\"",
     ] {
         assert!(table.contains(line), "{table}");
     }

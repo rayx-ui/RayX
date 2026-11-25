@@ -63,7 +63,7 @@ fn runner() -> Runner {
         if spec.args == ["--version"] {
             return Some(
                 Outcome::success()
-                    .with_stdout(format!("nsh 0.6.0 ({})\n", &DEFAULTS.nsh.commit[..7])),
+                    .with_stdout(format!("nsh 0.7.0 ({})\n", &DEFAULTS.nsh.commit[..7])),
             );
         }
         if spec.args.first().is_some_and(|a| a == "init") {
@@ -232,7 +232,7 @@ fn no_file_rayx_writes_names_the_old_api() {
 }
 
 /// NSH's CLI's specifier scan of a crate's source (`specifier_of` in `crates/nsh-cli/src/rust_app.rs`
-/// at `nshx-0.6.0-7`): the first line that, trimmed, starts with `#[` and has `native_module`
+/// at `nshx-0.7.0-1`): the first line that, trimmed, starts with `#[` and has `native_module`
 /// followed by `("…"`. The web runtime keeps a set's gate by it.
 fn nsh_specifier_of(code: &str) -> Option<String> {
     code.lines().find_map(|line| {

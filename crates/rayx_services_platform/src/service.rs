@@ -33,8 +33,7 @@ impl NshPlatform {
     }
 
     /// Publishes NSH's environment now and follows it for the surface's life: every change of
-    /// the device and the user's settings, and what the platform answers of web views and
-    /// speech. On the engine thread, where NSH runs Rust code (the startup run).
+    /// the device and the user's settings, and what the platform answers of web views. On the engine thread, where NSH runs Rust code (the startup run).
     fn follow(&self) {
         if self.following.swap(true, Ordering::SeqCst) {
             return;

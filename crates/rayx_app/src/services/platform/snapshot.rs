@@ -147,7 +147,7 @@ impl InputCapabilities {
 }
 
 /// What the platform can do for the app, where it tells. The NSH layer reads the ones it answers
-/// asynchronously (web views, speech) once the app starts; they are `false` until then.
+/// asynchronously (web views) once the app starts; they are `false` until then.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct PlatformFeatures {
     /// It draws shader views (a GPU and a renderer): it starts true where the platform has a
@@ -161,8 +161,6 @@ pub struct PlatformFeatures {
     pub web_evaluate: bool,
     /// A web view takes trusted input from the app (macOS).
     pub web_input: bool,
-    /// It recognizes what the user says (dictation).
-    pub speech: bool,
 }
 
 /// A size in points.
