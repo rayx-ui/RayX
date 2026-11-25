@@ -1,8 +1,10 @@
 //! `rayx nshx use <checkout|tag|latest>` (design §4.6, fork development): a project's NSH patch
 //! lines point at a local NSH checkout and back at a tag (`latest`: the fork's newest), its NSH
 //! version requirements follow, `Cargo.lock` follows, `rayx nshx status` shows the checkout, and in
-//! RayX's own repository a new tag moves every file that names the default pin. The checkout cases run Cargo offline on a temporary project and a fake NSH checkout; the
-//! tag cases answer `cargo metadata` themselves, so nothing is fetched.
+//! RayX's own repository a new tag moves every file that names the default pin, and a tag of
+//! another NSH version that version where it goes with the pin. The checkout cases run Cargo
+//! offline on a temporary project and a fake NSH checkout; the tag cases answer `cargo metadata`
+//! themselves, so nothing is fetched.
 
 mod common;
 
@@ -378,7 +380,7 @@ fn a_new_tag_moves_the_tag_and_every_form_of_the_commit_standing_alone() {
          keep: nshx-0.5.0-40, a1b2c3d4e5f607, fa1b2c3d\n"
     );
     assert_eq!(
-        moved_text(&text, &old, &new),
+        moved_text("README.md", &text, &old, &new),
         format!(
             "`nshx-0.5.0-8` at `c9bf1fe`, id `c9bf1fe9a2b1`, {NEW_COMMIT}, c9bf1fe9a.\n\
              keep: nshx-0.5.0-40, a1b2c3d4e5f607, fa1b2c3d\n"
@@ -446,6 +448,186 @@ fn rayx_s_repository_moves_every_tracked_file_but_its_history() {
             "{kept} keeps its text"
         );
     }
+}
+
+/// A file of the repository in [`a_tag_of_another_nsh_version_moves_the_version_with_the_pin`],
+/// as its pin bump starts it and as the bump must leave it.
+struct Moves {
+    path: &'static str,
+    before: String,
+    after: String,
+}
+
+#[test]
+fn a_tag_of_another_nsh_version_moves_the_version_with_the_pin() {
+    // RayX's repository on nshx-0.3.0-2 (NSH 0.3.0), moved to nshx-0.4.0-1 (NSH 0.4.0).
+    let (old_tag, new_tag) = ("nshx-0.3.0-2", "nshx-0.4.0-1");
+    let (old, new) = ("0.3.0", "0.4.0");
+    let (old_short, new_short) = (&OLD_COMMIT[..7], &NEW_COMMIT[..7]);
+    let both = |text: &str| Moves {
+        path: "",
+        before: text
+            .replace("{tag}", old_tag)
+            .replace("{encoded}", "nshx%2D0.3.0-2")
+            .replace("{commit}", OLD_COMMIT)
+            .replace("{short}", old_short)
+            .replace("{version}", old),
+        after: text
+            .replace("{tag}", new_tag)
+            .replace("{encoded}", "nshx%2D0.4.0-1")
+            .replace("{commit}", NEW_COMMIT)
+            .replace("{short}", new_short)
+            .replace("{version}", new),
+    };
+    let kept = |text: &str| {
+        let text = text.replace("{version}", old);
+        Moves {
+            path: "",
+            before: text.clone(),
+            after: text,
+        }
+    };
+    let files = [
+        Moves {
+            path: "crates/rayx_cli/src/project/pins.rs",
+            ..both(
+                "pub const DEFAULTS: Defaults = Defaults {\n    nsh: DefaultNsh {\n        \
+                 tag: \"{tag}\",\n        commit: \"{commit}\",\n        version: \"{version}\",\n    },\n};\n",
+            )
+        },
+        // A lock source's tag, percent-encoded, beside its decoded one.
+        Moves {
+            path: "crates/rayx_cli/tests/pin.rs",
+            ..both(
+                "    (\"tag={encoded}\", Reference::Tag(\"{tag}\".into())),\n\
+                 assert_eq!(pin.version.as_deref(), Some(\"{version}\"));\n\
+                 assert_eq!(json[\"version\"], \"{version}\");\n\
+                 Source::Release { version: \"{version}\".into() }\n\
+                 assert_eq!(pin.label(), \"v{version}\");\n\
+                 nsh: \"{version}\".into(),\n",
+            )
+        },
+        // nsh's `--version` answers and doctor's entry, at the pin's commit or another one.
+        Moves {
+            path: "crates/rayx_cli/tests/setup.rs",
+            ..both(
+                "// The default, {tag}.\n\
+                 .with_stdout(format!(\"nsh {version} ({})\\n\", &DEFAULTS.nsh.commit[..7]))\n\
+                 versioned(\"nsh {version} (5f0c2a9)\\n\")\n\
+                 \"(found distribution {version} ({short}))\"\n",
+            )
+        },
+        // The fake `nsh init`'s manifest, a test's string.
+        Moves {
+            path: "crates/rayx_cli/tests/new.rs",
+            ..both(
+                "\"[dependencies]\\nnsh-core = \\\"{version}\\\"\\nnsh-base = \\\"{version}\\\"\\nnsh-app-ui = \\\"0.1.0\\\"\\n\"\n\
+                 \"nsh-platform-macos = {{ version = \\\"{version}\\\", default-features = false }}\\n\"\n",
+            )
+        },
+        // A manifest template that is not a `Cargo.toml`: only NSH's crates move.
+        Moves {
+            path: "crates/rayx_app_nsh/tests/switch/Cargo.toml.in",
+            before: format!(
+                "[dependencies]\nnsh-core = \"{old}\"\nnsh-engine = {{ version = \"{old}\", default-features = false }}\n\
+                 nsh-app-ui = \"{old}\"\nserde = \"{old}\"\n"
+            ),
+            after: format!(
+                "[dependencies]\nnsh-core = \"{new}\"\nnsh-engine = {{ version = \"{new}\", default-features = false }}\n\
+                 nsh-app-ui = \"{old}\"\nserde = \"{old}\"\n"
+            ),
+        },
+        // A fixture's lock: NSH's packages move, another at the same version stays.
+        Moves {
+            path: "crates/rayx_cli/tests/fixtures/app/Cargo.lock",
+            before: format!(
+                "[[package]]\nname = \"nsh-core\"\nversion = \"{old}\"\n\
+                 source = \"git+{FORK}?tag={old_tag}#{OLD_COMMIT}\"\n\n\
+                 [[package]]\nname = \"serde\"\nversion = \"{old}\"\n"
+            ),
+            after: format!(
+                "[[package]]\nname = \"nsh-core\"\nversion = \"{new}\"\n\
+                 source = \"git+{FORK}?tag={new_tag}#{NEW_COMMIT}\"\n\n\
+                 [[package]]\nname = \"serde\"\nversion = \"{old}\"\n"
+            ),
+        },
+        // In a file naming the pin, a Rust value after `=` is not the pin's.
+        Moves {
+            path: "crates/rayx_cli/tests/other.rs",
+            before: format!("// {old_tag}\nlet mine = \"{old}\";\n"),
+            after: format!("// {new_tag}\nlet mine = \"{old}\";\n"),
+        },
+        // RayX's own versions, in a file that names no pin.
+        Moves {
+            path: "crates/rayx_cli/tests/release.rs",
+            ..kept(
+                "assert_eq!(release(\"v{version}\").to_string(), \"{version}\");\n\
+                 \"Install rayx 0.2.1 over {version}, an older release? [y/N]\"\n",
+            )
+        },
+        // This group's own fixtures, made-up pins at any version.
+        Moves {
+            path: "crates/rayx_cli/tests/nshx_use.rs",
+            ..kept(
+                "checkout(&workspace, \"{version}\");\n// nshx-0.3.0-2 at a1b2c3d, DEFAULTS.nsh\n",
+            )
+        },
+        Moves {
+            path: "CHANGELOG.md",
+            ..kept("- Build on NSH {version}: nshx-0.3.0-2, `nsh {version} (a1b2c3d)`\n")
+        },
+    ];
+
+    let workspace = Workspace::empty();
+    workspace.write(
+        "Cargo.toml",
+        &format!(
+            "[package]\nname = \"app\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[workspace]\n\n\
+             [dependencies]\nnsh-core = \"{old}\"\n\n\
+             [patch.crates-io]\nnsh-core = {{ git = \"{FORK}\", tag = \"{old_tag}\" }}\n"
+        ),
+    );
+    workspace.write("src/lib.rs", "");
+    workspace.write(".cargo/config.toml", "[net]\noffline = true\n");
+    for file in &files {
+        workspace.write(file.path, &file.before);
+    }
+    let git = |args: &[&str]| {
+        let status = std::process::Command::new("git")
+            .args(args)
+            .current_dir(&workspace.root)
+            .status()
+            .expect("git");
+        assert!(status.success(), "git {args:?}");
+    };
+    git(&["init", "-q"]);
+    git(&["add", "."]);
+
+    let mut out = Vec::new();
+    use_in(
+        &mut locking_at("nshx-0.4.0-1", workspace.path("Cargo.lock")),
+        &workspace.root,
+        &workspace.root,
+        new_tag,
+        &mut out,
+    )
+    .expect("use the tag");
+    let said = String::from_utf8(out).expect("UTF-8");
+    assert!(
+        said.contains("moved 1 NSH version requirement to 0.4.0"),
+        "{said}"
+    );
+    for file in &files {
+        assert_eq!(workspace.read(file.path), file.after, "{}", file.path);
+    }
+    assert_eq!(
+        rayx_default(&workspace.root).expect("readable"),
+        Some(PinText {
+            tag: new_tag.into(),
+            commit: NEW_COMMIT.into(),
+            version: new.into(),
+        })
+    );
 }
 
 #[test]

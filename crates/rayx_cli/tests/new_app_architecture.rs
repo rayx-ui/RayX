@@ -62,7 +62,7 @@ fn runner() -> Runner {
             std::fs::write(dir.join("nsh.json"), "{\"name\":\"hello\"}").expect("nsh.json");
             std::fs::write(
                 dir.join("Cargo.toml"),
-                "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.6.0\"\nnsh-base = \"0.6.0\"\n",
+                "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.7.0\"\nnsh-base = \"0.7.0\"\n",
             )
             .expect("Cargo.toml");
             std::fs::write(

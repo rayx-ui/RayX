@@ -364,8 +364,11 @@ relative to that file (never an absolute one), with a comment keeping what it wa
 version, then build number). The project's NSH version requirements follow: one the new NSH does not
 meet moves to the checkout crate's version, or to the version the tag names (`nshx-0.6.0-2` is NSH
 0.6.0), so going back to the old tag moves it back. In RayX's own repository a new tag also moves the
-default pin and every tracked file that names it, the way a pin bump does (`CHANGELOG.md` and
-`.agentx/` keep their history). While the lines point at a checkout, commit neither them nor
+default pin and every tracked file that names it, the way a pin bump does (`CHANGELOG.md`,
+`.agentx/` and the command's own tests keep theirs): the tag, also percent-encoded in a lock source,
+the commit, and, for a tag of another NSH version, that version where it goes with the pin (nsh's
+`--version` answers, NSH crates' requirements in any manifest or template, their lock entries, and the
+Rust values of files that name the pin), never RayX's own versions. While the lines point at a checkout, commit neither them nor
 `Cargo.lock`: `tests/nsh_pin_rayx.rs` fails until the tag is back. A checkout Cargo cannot lock, or
 that lacks a patched crate, is refused with every file as it was. `RAYX_NSH=<path>` runs that binary instead of the pin's, with a warning on
 every command: `rayx: RAYX_NSH=<path> replaces the project's nsh d49d11bf3d24`. A relative path is

@@ -10,7 +10,8 @@
 //! that result. `Cargo.lock` then locks NSH by path, which is how rayx reads a path pin and builds
 //! the checkout's CLI. A tag puts the git lines back at that tag; in RayX's own repository it also
 //! moves every tracked file that names the default pin (`project::pins`), as
-//! `tests/nsh_pin_rayx.rs` requires.
+//! `tests/nsh_pin_rayx.rs` requires, with the NSH version where it goes with the pin when the tag's
+//! differs ([`moved_text`]).
 //!
 //! The project's NSH version requirements follow (`nsh-core = "0.5.0"`, in `[workspace.dependencies]`
 //! or a member's dependencies): one the new NSH does not meet moves to its version, the checkout
@@ -871,6 +872,10 @@ pub struct PinText {
 /// Where RayX's own repository keeps its default pin.
 pub const PINS: &str = "crates/rayx_cli/src/project/pins.rs";
 
+/// The test group of `rayx nshx use`, which [`move_default`] leaves alone: its fixtures are
+/// made-up pins and NSH versions a pin bump must not move, whatever the default's.
+pub const OWN_TESTS: &str = "crates/rayx_cli/tests/nshx_use.rs";
+
 /// The default pin of RayX's own repository at `root`, read from `project::pins`' source; `None`
 /// for any other project.
 pub fn rayx_default(root: &Path) -> Result<Option<PinText>> {
@@ -901,9 +906,9 @@ fn quoted_field(block: &str, name: &str) -> Option<String> {
 }
 
 /// Moves every tracked text file of RayX's repository that names `old` to `new` (as the pin bumps
-/// before it did by hand): the tag, the commit in full and as the 12-, 9- and 7-digit prefixes the
-/// docs and tests use, and the default's version in `project::pins`. `CHANGELOG.md` keeps its
-/// history, AgentX's records their own, and `Cargo.lock` is Cargo's. Returns the files it changed.
+/// before it did by hand), as [`moved_text`] says. `CHANGELOG.md` keeps its history, AgentX's
+/// records their own, `Cargo.lock` is Cargo's, and [`OWN_TESTS`] keeps its made-up pins. Returns
+/// the files it changed.
 pub fn move_default(
     runner: &mut Runner,
     root: &Path,
@@ -924,6 +929,7 @@ pub fn move_default(
     for relative in listed.stdout.split('\0').filter(|p| !p.is_empty()) {
         if relative == "CHANGELOG.md"
             || relative == "Cargo.lock"
+            || relative == OWN_TESTS
             || relative.starts_with(".agentx/")
         {
             continue;
@@ -933,13 +939,7 @@ pub fn move_default(
         let Ok(text) = fs::read_to_string(&path) else {
             continue;
         };
-        let mut after = moved_text(&text, old, new);
-        if relative == PINS && old.version != new.version {
-            after = after.replace(
-                &format!("version: \"{}\"", old.version),
-                &format!("version: \"{}\"", new.version),
-            );
-        }
+        let after = moved_text(relative, &text, old, new);
         if after != text {
             fs::write(&path, &after).with_context(|| format!("writing {}", path.display()))?;
             moved.push(relative.to_string());
@@ -948,16 +948,217 @@ pub fn move_default(
     Ok(moved)
 }
 
-/// `text` with `old`'s tag and commit (in full, and its 12-, 9- and 7-digit prefixes standing
-/// alone) replaced by `new`'s.
-pub fn moved_text(text: &str, old: &PinText, new: &PinText) -> String {
-    let mut text = replace_alone(text, &old.tag, &new.tag, |c| c.is_ascii_alphanumeric());
+/// `text`, the tracked file `relative` of RayX's repository, with `old`'s pin moved to `new`'s:
+/// the tag, also where a lock source percent-encodes it (`tag=nshx%2D0.6.0-7`); the commit in full
+/// and as the 12-, 9- and 7-digit prefixes the docs and tests use, standing alone; and, when the
+/// NSH version changes, that version where it goes with the pin ([`moved_version`]). The Rust
+/// values among those move only in a `.rs` file that names the pin (its tag or commit, or
+/// `DEFAULTS.nsh`), where a version is the pin's and not RayX's own.
+pub fn moved_text(relative: &str, text: &str, old: &PinText, new: &PinText) -> String {
+    let mut out = moved_tag(text, &old.tag, &new.tag);
     for len in [40, 12, 9, 7] {
         if let (Some(from), Some(to)) = (old.commit.get(..len), new.commit.get(..len)) {
-            text = replace_alone(&text, from, to, |c| c.is_ascii_hexdigit());
+            out = replace_alone(&out, from, to, |c| c.is_ascii_hexdigit());
         }
     }
+    if old.version != new.version {
+        let names_pin = out != text || text.contains("DEFAULTS.nsh");
+        let rust = names_pin && relative.ends_with(".rs");
+        out = moved_version(&out, &old.version, &new.version, &new.commit, rust);
+    }
+    out
+}
+
+/// `text` with every `old` tag standing alone replaced by `new`, as written or with some of its
+/// punctuation percent-encoded (`nshx%2D0.6.0-7`, as Cargo may write a lock source's query). The
+/// new tag is encoded the same way: the n-th `-` (or `.`, …) of `new` where the n-th of `old` was.
+fn moved_tag(text: &str, old: &str, new: &str) -> String {
+    let word = |c: char| c.is_ascii_alphanumeric();
+    let mut text = replace_alone(text, old, new, word);
+    let marks = |tag: &str| -> Vec<(usize, char)> {
+        tag.char_indices()
+            .filter(|(_, c)| c.is_ascii_punctuation())
+            .collect()
+    };
+    let (old_marks, new_marks) = (marks(old), marks(new));
+    if !text.contains('%') || old_marks.is_empty() || old_marks.len() > 8 {
+        return text;
+    }
+    // Whether the n-th mark of `tag` (of `marks`) is encoded, as `encoded(char, its rank)` says.
+    let encode = |tag: &str, marks: &[(usize, char)], encoded: &dyn Fn(char, usize) -> bool| {
+        let mut out = String::with_capacity(tag.len() + 8);
+        let mut rank: BTreeMap<char, usize> = BTreeMap::new();
+        for (at, c) in tag.char_indices() {
+            if marks.iter().any(|&(mark, _)| mark == at) {
+                let n = rank.entry(c).or_default();
+                if encoded(c, *n) {
+                    out.push_str(&format!("%{:02X}", c as u32));
+                } else {
+                    out.push(c);
+                }
+                *n += 1;
+            } else {
+                out.push(c);
+            }
+        }
+        out
+    };
+    for mask in 1u32..1 << old_marks.len() {
+        // The encoded marks of `old` by character and rank among that character's marks.
+        let mut chosen = Vec::new();
+        let mut rank: BTreeMap<char, usize> = BTreeMap::new();
+        for (bit, &(_, c)) in old_marks.iter().enumerate() {
+            let n = rank.entry(c).or_default();
+            if mask & (1 << bit) != 0 {
+                chosen.push((c, *n));
+            }
+            *n += 1;
+        }
+        let encoded = |c: char, n: usize| chosen.contains(&(c, n));
+        let from = encode(old, &old_marks, &encoded);
+        let to = encode(new, &new_marks, &encoded);
+        text = replace_alone(&text, &from, &to, word);
+    }
     text
+}
+
+/// `text` with NSH's version `old` replaced by `new` where it goes with the default pin:
+///
+/// - nsh's `--version` answer, `nsh 0.6.0 (6e14d35)`, and the version before the pin's commit,
+///   `found distribution 0.6.0 (6e14d35)` (`commit`, the new one, once the commits moved);
+/// - an NSH crate's version requirement, `nsh-core = "0.6.0"` or
+///   `nsh-engine = { version = "0.6.0", … }`, in a manifest, a manifest template or a test's
+///   string (`\"` quotes, `\n` line ends);
+/// - an NSH package's entry of a lock, `version = "0.6.0"` on the line after
+///   `name = "nsh-core"`;
+/// - with `rust` (a `.rs` file naming the pin), a Rust string literal of the version or of its
+///   upstream tag that is a value, after `:`, `,`, `(` or `[` (`nsh: "0.6.0".into()`,
+///   `assert_eq!(pin.version.as_deref(), Some("0.6.0"))`, `tag: "v0.6.0".into()`), never after a
+///   `=`.
+///
+/// Anything else that reads `0.6.0` (RayX's own versions, an NSH version a test picks on purpose)
+/// keeps its text.
+pub fn moved_version(text: &str, old: &str, new: &str, commit: &str, rust: bool) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut at = 0;
+    while let Some(found) = text[at..].find(old) {
+        let start = at + found;
+        let end = start + old.len();
+        out.push_str(&text[at..start]);
+        let pins = goes_with_pin(&text[..start], &text[end..], commit, rust);
+        out.push_str(if pins { new } else { old });
+        at = end;
+    }
+    out.push_str(&text[at..]);
+    out
+}
+
+/// Whether the version between `before` and `after` is the pin's ([`moved_version`]).
+fn goes_with_pin(before: &str, after: &str, commit: &str, rust: bool) -> bool {
+    let joined = |c: char| c.is_ascii_alphanumeric() || c == '.';
+    if after.starts_with(joined) {
+        return false;
+    }
+    let line = before.rsplit('\n').next().unwrap_or(before);
+    if let Some(paren) = after.strip_prefix(" (") {
+        let short = commit.get(..7).unwrap_or(commit);
+        let pin_commit = !short.is_empty() && paren.starts_with(short);
+        if line.ends_with("nsh ") || (pin_commit && line.ends_with(' ')) {
+            return true;
+        }
+    }
+    // A Rust literal of the upstream tag, `"v0.6.0"`.
+    if let Some(key) = line.strip_suffix("\"v") {
+        return rust && after.starts_with('"') && rust_value(key);
+    }
+    if line.ends_with(joined) {
+        return false;
+    }
+    let quote = if line.ends_with("\\\"") {
+        "\\\""
+    } else if line.ends_with('"') {
+        "\""
+    } else {
+        return false;
+    };
+    if !after.starts_with(quote) {
+        return false;
+    }
+    let key = &line[..line.len() - quote.len()];
+    requirement(key)
+        || lock_entry(&before[..before.len() - quote.len()], quote)
+        || (rust && quote == "\"" && rust_value(key))
+}
+
+/// Whether `key`, the text before a quoted value, makes the value a Rust value: it follows `:`,
+/// `,`, `(` or `[`.
+fn rust_value(key: &str) -> bool {
+    key.trim_end().ends_with([':', ',', '(', '['])
+}
+
+/// Whether `key`, the line before a quoted value, makes it an NSH crate's version requirement:
+/// `nsh-core = ` or `nsh-engine = { version = ` (`{{` in a format string).
+fn requirement(key: &str) -> bool {
+    let Some(key) = key.trim_end().strip_suffix('=') else {
+        return false;
+    };
+    let key = key.trim_end();
+    if let Some(table) = key.strip_suffix("version") {
+        if !table.trim_end().ends_with(['{', ',']) {
+            return false;
+        }
+        let Some(open) = table.rfind('{') else {
+            return false;
+        };
+        return table[..open]
+            .trim_end_matches('{')
+            .trim_end()
+            .strip_suffix('=')
+            .is_some_and(ends_with_nsh_crate);
+    }
+    ends_with_nsh_crate(key)
+}
+
+/// Whether `text` ends with an NSH crate's name as a key (after a line start or a `\n` escape).
+fn ends_with_nsh_crate(text: &str) -> bool {
+    let text = text.trim_end();
+    let name_at = text
+        .char_indices()
+        .rev()
+        .take_while(|(_, c)| c.is_ascii_alphanumeric() || matches!(c, '-' | '_'))
+        .last()
+        .map_or(text.len(), |(at, _)| at);
+    let mut name = &text[name_at..];
+    // `\nnsh-core`: the `n` belongs to the escape.
+    if text[..name_at].ends_with('\\') && !name.is_empty() {
+        name = &name[1..];
+    }
+    name.starts_with("nsh-") && is_nsh_patch(name)
+}
+
+/// Whether the version after `before` (which ends where its `quote` opened) is an NSH package's in
+/// a lock: its line is `version = ` and the line above `name = "nsh-…"`, lines ending at newlines or
+/// at `\n` escapes.
+fn lock_entry(before: &str, quote: &str) -> bool {
+    let tail_at = before
+        .rmatch_indices('\n')
+        .nth(2)
+        .map_or(0, |(at, _)| at + 1);
+    let tail = before[tail_at..].replace("\\n", "\n");
+    let mut lines = tail.rsplit('\n');
+    let current = lines.next().unwrap_or_default();
+    if current.trim_start() != "version = " {
+        return false;
+    }
+    let previous = lines
+        .next()
+        .unwrap_or_default()
+        .trim_end_matches('\r')
+        .trim();
+    previous
+        .strip_prefix("name = ")
+        .and_then(|name| name.strip_prefix(quote)?.strip_suffix(quote))
+        .is_some_and(|name| name.starts_with("nsh-") && is_nsh_patch(name))
 }
 
 /// `text` with every `old` that no `word` character touches on either side replaced by `new`.

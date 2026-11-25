@@ -98,10 +98,10 @@ fn runner(refuse: bool) -> Runner {
             if template != "ts" {
                 // nsh's manifest; a Rust app's runs on the desktop platforms too.
                 let mut manifest = String::from(
-                    "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.6.0\"\nnsh-base = \"0.6.0\"\n",
+                    "[package]\nname = \"nsh-app-hello\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n\n[workspace]\n\n[dependencies]\nnsh-core = \"0.7.0\"\nnsh-base = \"0.7.0\"\n",
                 );
                 if template == "rust" {
-                    manifest.push_str("env_logger = \"0.11\"\n\n[target.'cfg(target_os = \"macos\")'.dependencies]\nnsh-platform-macos = { version = \"0.6.0\", default-features = false }\n");
+                    manifest.push_str("env_logger = \"0.11\"\n\n[target.'cfg(target_os = \"macos\")'.dependencies]\nnsh-platform-macos = { version = \"0.7.0\", default-features = false }\n");
                 }
                 std::fs::write(dir.join("Cargo.toml"), manifest).expect("Cargo.toml");
                 std::fs::create_dir_all(dir.join("src")).expect("src");
