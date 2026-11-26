@@ -20,7 +20,7 @@ use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::project::Pins;
 use rayx_cli::setup::{Cx, FakeMachine, PlanEnv, Set};
 
-const ID: &str = "d49d11bf3d24";
+const ID: &str = "3d62c3d27f23";
 
 fn app_args(argv: &[&str]) -> AppArgs {
     let mut full = vec!["rayx", "app"];
@@ -60,10 +60,10 @@ fn installed(home: &Workspace) -> PathBuf {
             version: 1,
             id: ID.into(),
             kind: Kind::Distribution,
-            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.7.0-1/nsh-macos-arm64.tar.gz"
+            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.7.0-2/nsh-macos-arm64.tar.gz"
                 .into(),
-            reference: Some("nshx-0.7.0-1".into()),
-            commit: Some("d49d11bf3d243cedd01e66c7da5d561be91cd59f".into()),
+            reference: Some("nshx-0.7.0-2".into()),
+            commit: Some("3d62c3d27f234d71ef695db53016ec1e24c84286".into()),
             nsh: "0.2.0".into(),
             cli: "nsh/bin/nsh".into(),
             installed: "2026-10-24T01:30:00Z".into(),
@@ -290,7 +290,7 @@ fn a_pin_that_is_not_installed_names_the_setup_command() {
     .expect_err("not installed")
     .to_string();
     assert!(
-        error.contains("nsh nshx-0.7.0-1 (d49d11b) is not installed"),
+        error.contains("nsh nshx-0.7.0-2 (3d62c3d) is not installed"),
         "{error}"
     );
     assert!(error.contains("rayx setup"), "{error}");

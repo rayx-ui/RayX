@@ -3324,7 +3324,7 @@ dependencies = [
 [[package]]
 name = "nsh-base"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "chrono",
  "html5ever",
@@ -3341,6 +3341,7 @@ dependencies = [
  "serde_json",
  "syntect",
  "two-face",
+ "unicode-linebreak",
  "unicode-segmentation",
  "unicode-width 0.2.2",
  "vte",
@@ -3349,7 +3350,7 @@ dependencies = [
 [[package]]
 name = "nsh-bundler"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "anyhow",
  "dunce",
@@ -3375,7 +3376,7 @@ dependencies = [
 [[package]]
 name = "nsh-core"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "cap-std",
  "chrono",
@@ -3411,7 +3412,7 @@ dependencies = [
 [[package]]
 name = "nsh-engine"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "crossbeam-channel",
  "env_filter",
@@ -3432,7 +3433,7 @@ dependencies = [
 [[package]]
 name = "nsh-i18n"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "jiff-tzdb 1.0.0",
  "rust-i18n-support",
@@ -3442,9 +3443,8 @@ dependencies = [
 [[package]]
 name = "nsh-js"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
- "futures-util",
  "getrandom 0.4.3",
  "libc",
  "log",
@@ -3455,20 +3455,17 @@ dependencies = [
  "quickjs-jit",
  "quickjs-jit-stdlib",
  "rustc-hash",
- "rustls",
  "serde",
  "serde_json",
  "thiserror",
  "tokio",
- "tokio-tungstenite",
  "url",
- "webpki-roots 0.26.11",
 ]
 
 [[package]]
 name = "nsh-macros"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "imagesize",
  "nsh-theme",
@@ -3483,7 +3480,7 @@ dependencies = [
 [[package]]
 name = "nsh-package"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -3497,7 +3494,7 @@ dependencies = [
 [[package]]
 name = "nsh-theme"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "serde",
  "serde_json",
@@ -3506,7 +3503,7 @@ dependencies = [
 [[package]]
 name = "nsh-updater"
 version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek 2.2.0",
@@ -6009,7 +6006,6 @@ checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "aws-lc-rs",
  "once_cell",
- "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
@@ -6889,12 +6885,8 @@ checksum = "d25a406cddcc431a75d3d9afc6a7c0f7428d4891dd973e4d54c56b46127bf857"
 dependencies = [
  "futures-util",
  "log",
- "rustls",
- "rustls-pki-types",
  "tokio",
- "tokio-rustls",
  "tungstenite",
- "webpki-roots 0.26.11",
 ]
 
 [[package]]
@@ -7172,8 +7164,6 @@ dependencies = [
  "httparse",
  "log",
  "rand 0.9.5",
- "rustls",
- "rustls-pki-types",
  "sha1 0.10.7",
  "thiserror",
  "utf-8",
@@ -7564,24 +7554,6 @@ name = "webpki-root-certs"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e49d0e65abc00c142e8f9428da991da9f1a250c39be97459901eb12b9b49f62a"
-dependencies = [
- "rustls-pki-types",
-]
-
-[[package]]
-name = "webpki-roots"
-version = "0.26.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "521bc38abb08001b01866da9f51eb7c5d647a19260e00054a8c7fd5f9e57f7a9"
-dependencies = [
- "webpki-roots 1.0.10",
-]
-
-[[package]]
-name = "webpki-roots"
-version = "1.0.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9"
 dependencies = [
  "rustls-pki-types",
 ]

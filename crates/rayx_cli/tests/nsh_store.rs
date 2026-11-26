@@ -20,10 +20,10 @@ fn receipt(id: &str, kind: Kind) -> Receipt {
         version: 1,
         id: id.to_string(),
         kind,
-        url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.7.0-1/nsh-macos-arm64.tar.gz"
+        url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.7.0-2/nsh-macos-arm64.tar.gz"
             .into(),
-        reference: Some("nshx-0.7.0-1".into()),
-        commit: Some("d49d11bf3d243cedd01e66c7da5d561be91cd59f".into()),
+        reference: Some("nshx-0.7.0-2".into()),
+        commit: Some("3d62c3d27f234d71ef695db53016ec1e24c84286".into()),
         nsh: "0.2.0".into(),
         cli: match kind {
             Kind::Distribution => "nsh/bin/nsh".into(),
@@ -72,24 +72,24 @@ fn the_store_is_rayx_home_nsh_else_home_rayx_nsh() {
         "no home, no store"
     );
     assert_eq!(
-        Store::at("/s").dir("d49d11bf3d24"),
-        PathBuf::from("/s").join("d49d11bf3d24")
+        Store::at("/s").dir("3d62c3d27f23"),
+        PathBuf::from("/s").join("3d62c3d27f23")
     );
 }
 
 #[test]
 fn a_receipt_written_last_makes_an_entry_complete() {
-    let (home, store) = store_with(&[("d49d11bf3d24", None, 10)]);
+    let (home, store) = store_with(&[("3d62c3d27f23", None, 10)]);
     assert_eq!(
-        store.receipt("d49d11bf3d24"),
+        store.receipt("3d62c3d27f23"),
         None,
         "unfinished without a receipt"
     );
 
-    let written = receipt("d49d11bf3d24", Kind::Distribution);
+    let written = receipt("3d62c3d27f23", Kind::Distribution);
     store.complete(&written).expect("complete");
-    assert_eq!(store.receipt("d49d11bf3d24"), Some(written.clone()));
-    let names: Vec<String> = std::fs::read_dir(home.path("nsh/d49d11bf3d24"))
+    assert_eq!(store.receipt("3d62c3d27f23"), Some(written.clone()));
+    let names: Vec<String> = std::fs::read_dir(home.path("nsh/3d62c3d27f23"))
         .expect("entry")
         .map(|e| e.expect("entry").file_name().to_string_lossy().into_owned())
         .collect();
@@ -100,7 +100,7 @@ fn a_receipt_written_last_makes_an_entry_complete() {
     );
 
     let json: serde_json::Value =
-        serde_json::from_str(&home.read("nsh/d49d11bf3d24/receipt.json")).expect("JSON");
+        serde_json::from_str(&home.read("nsh/3d62c3d27f23/receipt.json")).expect("JSON");
     for field in [
         "version",
         "id",
@@ -119,10 +119,10 @@ fn a_receipt_written_last_makes_an_entry_complete() {
     }
     assert_eq!(json["version"], 1);
     assert_eq!(json["kind"], "distribution");
-    assert_eq!(json["ref"], "nshx-0.7.0-1");
+    assert_eq!(json["ref"], "nshx-0.7.0-2");
     assert_eq!(
         store.cli(&written),
-        home.path("nsh/d49d11bf3d24")
+        home.path("nsh/3d62c3d27f23")
             .join("nsh")
             .join("bin")
             .join("nsh")
@@ -131,25 +131,25 @@ fn a_receipt_written_last_makes_an_entry_complete() {
 
 #[test]
 fn a_receipt_of_another_version_or_id_or_a_broken_one_leaves_the_entry_unfinished() {
-    let (home, store) = store_with(&[("d49d11bf3d24", None, 1)]);
-    let mut other = receipt("d49d11bf3d24", Kind::Source);
+    let (home, store) = store_with(&[("3d62c3d27f23", None, 1)]);
+    let mut other = receipt("3d62c3d27f23", Kind::Source);
     other.version = 2;
     home.write(
-        "nsh/d49d11bf3d24/receipt.json",
+        "nsh/3d62c3d27f23/receipt.json",
         &serde_json::to_string(&other).expect("JSON"),
     );
-    assert_eq!(store.receipt("d49d11bf3d24"), None);
+    assert_eq!(store.receipt("3d62c3d27f23"), None);
     home.write(
-        "nsh/d49d11bf3d24/receipt.json",
+        "nsh/3d62c3d27f23/receipt.json",
         &serde_json::to_string(&receipt("5f0c2a91be47", Kind::Source)).expect("JSON"),
     );
     assert_eq!(
-        store.receipt("d49d11bf3d24"),
+        store.receipt("3d62c3d27f23"),
         None,
         "another entry's receipt"
     );
-    home.write("nsh/d49d11bf3d24/receipt.json", "{\"version\": 1");
-    assert_eq!(store.receipt("d49d11bf3d24"), None);
+    home.write("nsh/3d62c3d27f23/receipt.json", "{\"version\": 1");
+    assert_eq!(store.receipt("3d62c3d27f23"), None);
 }
 
 #[test]
@@ -177,13 +177,13 @@ fn entries_list_complete_and_unfinished_ones_with_their_sizes() {
 fn a_second_install_waits_for_the_lock_says_so_and_then_proceeds() {
     let (_home, store) = store_with(&[]);
     let first = store
-        .lock("d49d11bf3d24", &mut Vec::new())
+        .lock("3d62c3d27f23", &mut Vec::new())
         .expect("first lock");
     let (sender, receiver) = mpsc::channel();
     let waiting = store.clone();
     let second = std::thread::spawn(move || {
         let mut out = Vec::new();
-        let lock = waiting.lock("d49d11bf3d24", &mut out).expect("second lock");
+        let lock = waiting.lock("3d62c3d27f23", &mut out).expect("second lock");
         sender.send(()).expect("send");
         drop(lock);
         String::from_utf8(out).expect("UTF-8")
@@ -198,12 +198,12 @@ fn a_second_install_waits_for_the_lock_says_so_and_then_proceeds() {
         .expect("the second install proceeds once the lock is free");
     let said = second.join().expect("thread");
     assert!(
-        said.contains("another rayx is installing nsh d49d11bf3d24; waiting for it to finish"),
+        said.contains("another rayx is installing nsh 3d62c3d27f23; waiting for it to finish"),
         "{said}"
     );
 
     // Another id does not wait.
-    let _a = store.lock("d49d11bf3d24", &mut Vec::new()).expect("lock");
+    let _a = store.lock("3d62c3d27f23", &mut Vec::new()).expect("lock");
     let mut out = Vec::new();
     let _b = store.lock("v0.2.0", &mut out).expect("other lock");
     assert!(out.is_empty());
@@ -212,11 +212,11 @@ fn a_second_install_waits_for_the_lock_says_so_and_then_proceeds() {
 #[test]
 fn prune_lists_what_no_project_and_no_default_uses_and_removes_it_after_a_yes() {
     let (home, store) = store_with(&[
-        ("d49d11bf3d24", Some(Kind::Distribution), 2048),
+        ("3d62c3d27f23", Some(Kind::Distribution), 2048),
         ("5f0c2a91be47", Some(Kind::Source), 4096),
         ("aaaaaaaaaaaa", None, 10),
     ]);
-    let keep = vec!["d49d11bf3d24".to_string()];
+    let keep = vec!["3d62c3d27f23".to_string()];
     let ids: Vec<String> = prune_candidates(&store, &keep)
         .into_iter()
         .map(|e| e.id)
@@ -242,12 +242,12 @@ fn prune_lists_what_no_project_and_no_default_uses_and_removes_it_after_a_yes() 
     );
     assert!(text.contains("aaaaaaaaaaaa  10 B  unfinished"), "{text}");
     assert!(
-        !text.contains("d49d11bf3d24  "),
+        !text.contains("3d62c3d27f23  "),
         "the kept entry is not listed: {text}"
     );
     assert_eq!(asked.len(), 1);
     assert!(asked[0].starts_with("Remove these ("), "{asked:?}");
-    assert!(home.path("nsh/d49d11bf3d24").is_dir());
+    assert!(home.path("nsh/3d62c3d27f23").is_dir());
     assert!(!home.path("nsh/5f0c2a91be47").exists());
     assert!(!home.path("nsh/aaaaaaaaaaaa").exists());
 }
@@ -306,7 +306,7 @@ fn prune_keeps_the_default_pin_and_every_recorded_projects_pin() {
     // A recorded project pinned to a branch, and a vanished one.
     let project = Workspace::fixture("nsh-fork-app");
     let lock = project.read("Cargo.lock").replace(
-        "?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f",
+        "?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286",
         "?branch=main#5f0c2a91be4700000000000000000000000000aa",
     );
     project.write("Cargo.lock", &lock);
@@ -334,7 +334,7 @@ fn prune_keeps_the_default_pin_and_every_recorded_projects_pin() {
     let keep = kept_ids(&mut Runner::print(), &machine, &host).expect("every pin reads");
     assert_eq!(
         keep,
-        ["d49d11bf3d24", "5f0c2a91be47"],
+        ["3d62c3d27f23", "5f0c2a91be47"],
         "the default first, then the project's"
     );
 }
@@ -459,7 +459,7 @@ fn setup_update_offers_prune_after_its_runs_unless_it_only_checks_or_targets_gue
     use rayx_cli::setup::update::after_update;
 
     let (home, store) = store_with(&[
-        ("d49d11bf3d24", Some(Kind::Distribution), 10),
+        ("3d62c3d27f23", Some(Kind::Distribution), 10),
         ("5f0c2a91be47", Some(Kind::Source), 10),
         ("cccccccccccc", None, 10),
     ]);
@@ -467,7 +467,7 @@ fn setup_update_offers_prune_after_its_runs_unless_it_only_checks_or_targets_gue
     let project = Workspace::fixture("nsh-fork-app");
     let machine = recorded(&home, &config, &project, |lock| {
         lock.replace(
-            "?tag=nshx-0.7.0-1#d49d11bf3d243cedd01e66c7da5d561be91cd59f",
+            "?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286",
             "?branch=main#5f0c2a91be4700000000000000000000000000aa",
         )
     });
@@ -506,7 +506,7 @@ fn setup_update_offers_prune_after_its_runs_unless_it_only_checks_or_targets_gue
     assert!(text.contains("Removed cccccccccccc."), "{text}");
     assert!(!store.dir("cccccccccccc").exists());
     assert!(
-        store.dir("d49d11bf3d24").is_dir() && store.dir("5f0c2a91be47").is_dir(),
+        store.dir("3d62c3d27f23").is_dir() && store.dir("5f0c2a91be47").is_dir(),
         "the default and the recorded project's pin stay"
     );
 }

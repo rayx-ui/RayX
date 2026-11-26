@@ -37,7 +37,7 @@ exports (`Glyph`, RayX's TS classes) come from `rayx-gallery/native`.
 
 ## Run it
 
-From `RayX/`, with the `rayx` this repository builds (it runs the nsh the project pins, `nshx-0.7.0-1`,
+From `RayX/`, with the `rayx` this repository builds (it runs the nsh the project pins, `nshx-0.7.0-2`,
 and installs it the first time):
 
 ```sh
