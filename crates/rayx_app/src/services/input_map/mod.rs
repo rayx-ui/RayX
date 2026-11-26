@@ -11,20 +11,23 @@
 
 mod model;
 
+use std::collections::BTreeSet;
+
 use serde::{Deserialize, Serialize};
 
 pub use model::{
     INPUT_MAP_SCHEMA_VERSION, InputBinding, InputMapDocument, InputMapEntry, InputMapError,
     InputMapSource, InputModifiers, InputPointerButton, InputPointerGesture, InputWheelDirection,
-    InputWheelSource, normalize_key_sequence, valid_key_sequence,
+    InputWheelSource, InputWhen, normalize_key_sequence, resolve_key_sequence_for_platform,
+    to_nsh_keystroke, valid_key_sequence,
 };
 
 use super::ContractFailure;
 use super::storage::StorageError;
 use crate::published::StateCell;
 
-/// What a binding resolved to: the action to run, with its arguments.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// What a binding resolved to: the action to run, with its arguments and dispatch policy.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ResolvedInputAction {
     pub action: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -33,6 +36,39 @@ pub struct ResolvedInputAction {
     pub context: String,
     /// The layer the entry came from.
     pub source: InputMapSource,
+    /// When the binding fires with respect to text editing focus.
+    #[serde(default, skip_serializing_if = "InputWhen::is_auto")]
+    pub when: InputWhen,
+    /// Whether key auto-repeat fires the binding again.
+    #[serde(default, skip_serializing_if = "model::is_false")]
+    pub repeat: bool,
+    /// Whether the key event passes through to the focused view after matching.
+    #[serde(default, skip_serializing_if = "model::is_false")]
+    pub pass_through: bool,
+}
+
+/// A winning effective binding in a context stack, ready to compile into a host keymap table.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ResolvedInputEntry {
+    /// The normalized binding.
+    pub binding: InputBinding,
+    /// The action to run.
+    pub action: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arguments: Option<serde_json::Value>,
+    /// The context of the entry that won.
+    pub context: String,
+    /// The layer the entry came from.
+    pub source: InputMapSource,
+    /// When the binding fires with respect to text editing focus.
+    #[serde(default, skip_serializing_if = "InputWhen::is_auto")]
+    pub when: InputWhen,
+    /// Whether key auto-repeat fires the binding again.
+    #[serde(default, skip_serializing_if = "model::is_false")]
+    pub repeat: bool,
+    /// Whether the key event passes through to the focused view after matching.
+    #[serde(default, skip_serializing_if = "model::is_false")]
+    pub pass_through: bool,
 }
 
 /// Why the user's document was not loaded or applied.
@@ -122,11 +158,105 @@ impl InputMapState {
                         arguments: entry.arguments.clone(),
                         context: entry.context.clone(),
                         source,
+                        when: entry.when,
+                        repeat: entry.repeat,
+                        pass_through: entry.pass_through,
                     });
                 }
             }
         }
         None
+    }
+
+    /// Like [`InputMapState::resolve`], but also resolves `mod` for the target platform
+    /// (`apple == true` maps `mod` to `cmd`, `apple == false` maps `mod` to `ctrl`), so a user
+    /// pressing `ctrl-s` on Windows/Linux or `cmd-s` on macOS matches a `mod-s` binding.
+    pub fn resolve_for_platform(
+        &self,
+        contexts: &[&str],
+        binding: &InputBinding,
+        apple: bool,
+    ) -> Option<ResolvedInputAction> {
+        let normalized = binding.normalized();
+        let resolved = binding.resolved_for_platform(apple);
+        let global = [""];
+        for context in contexts
+            .iter()
+            .chain(global.iter().filter(|_| !contexts.contains(&"")))
+        {
+            for (source, document) in self.layers() {
+                let matched = document
+                    .entries
+                    .iter()
+                    .find(|entry| {
+                        entry.context == *context && entry.binding.normalized() == normalized
+                    })
+                    .or_else(|| {
+                        document.entries.iter().find(|entry| {
+                            entry.context == *context
+                                && entry.binding.resolved_for_platform(apple) == resolved
+                        })
+                    });
+                if let Some(entry) = matched {
+                    if entry.unbind {
+                        return None;
+                    }
+                    return Some(ResolvedInputAction {
+                        action: entry.action.clone(),
+                        arguments: entry.arguments.clone(),
+                        context: entry.context.clone(),
+                        source,
+                        when: entry.when,
+                        repeat: entry.repeat,
+                        pass_through: entry.pass_through,
+                    });
+                }
+            }
+        }
+        None
+    }
+
+    /// The winning effective entries across `contexts` (innermost first, plus `""`), with User
+    /// over Application over Framework precedence and `unbind` entries respected.
+    pub fn effective_entries_for_contexts(&self, contexts: &[&str]) -> Vec<ResolvedInputEntry> {
+        let mut ordered_contexts: Vec<&str> = Vec::with_capacity(contexts.len() + 1);
+        for &context in contexts {
+            if !ordered_contexts.contains(&context) {
+                ordered_contexts.push(context);
+            }
+        }
+        if !ordered_contexts.contains(&"") {
+            ordered_contexts.push("");
+        }
+
+        let mut seen = BTreeSet::<InputBinding>::new();
+        let mut effective = Vec::new();
+        for context in ordered_contexts {
+            for (source, document) in self.layers() {
+                for entry in &document.entries {
+                    if entry.context != context {
+                        continue;
+                    }
+                    let normalized = entry.binding.normalized();
+                    if !seen.insert(normalized.clone()) {
+                        continue;
+                    }
+                    if !entry.unbind {
+                        effective.push(ResolvedInputEntry {
+                            binding: normalized,
+                            action: entry.action.clone(),
+                            arguments: entry.arguments.clone(),
+                            context: entry.context.clone(),
+                            source,
+                            when: entry.when,
+                            repeat: entry.repeat,
+                            pass_through: entry.pass_through,
+                        });
+                    }
+                }
+            }
+        }
+        effective
     }
 
     /// The bindings that run `action` (in any context), for showing shortcuts: each layer's,
@@ -181,6 +311,27 @@ impl dyn InputMapService {
         binding: &InputBinding,
     ) -> Option<ResolvedInputAction> {
         self.input_map().get().resolve(contexts, binding)
+    }
+
+    /// The action `binding` runs in the innermost of `contexts` for the given platform
+    /// ([`InputMapState::resolve_for_platform`]).
+    pub fn resolve_for_platform(
+        &self,
+        contexts: &[&str],
+        binding: &InputBinding,
+        apple: bool,
+    ) -> Option<ResolvedInputAction> {
+        self.input_map()
+            .get()
+            .resolve_for_platform(contexts, binding, apple)
+    }
+
+    /// The winning effective entries across `contexts`
+    /// ([`InputMapState::effective_entries_for_contexts`]).
+    pub fn effective_entries_for_contexts(&self, contexts: &[&str]) -> Vec<ResolvedInputEntry> {
+        self.input_map()
+            .get()
+            .effective_entries_for_contexts(contexts)
     }
 
     /// The bindings that run `action` ([`InputMapState::bindings_for`]).

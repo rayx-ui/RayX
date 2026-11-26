@@ -146,9 +146,35 @@ fn the_history_options_class_is_declared_with_rust_s_methods() {
     for declared in [
         "export declare class HistoryOptions {",
         "  callTimeoutMs(timeout?: number | null): HistoryOptions;",
+        "  recordAgentOperations(enabled: boolean): HistoryOptions;",
         "addHistory(configure?: ((options: HistoryOptions) => void) | null): RayXAppBuilder;",
         "addPersistentHistory(configure?: ((options: HistoryOptions) => void) | null): RayXAppBuilder;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }
+}
+
+#[test]
+fn record_agent_operations_defaults_true_and_can_be_toggled_in_ts() {
+    let run = |add: &str| {
+        let tsx = r#"import { mount, signal, Text } from "nsh";
+import { Probe, RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(async () => {
+  const builder = new RayXAppBuilder().addHostFakes().addFakeOperations();
+  const services = await ADD.start();
+  shown.set(`done ${Probe.options(services).record_agent_operations}`);
+}, 0);
+
+mount(() => <Text>{shown()}</Text>);
+"#
+        .replace("ADD", add);
+        testing::run(set(), &tsx)
+    };
+    assert_eq!(run("builder.addHistory()"), "done true");
+    assert_eq!(
+        run("builder.addHistory((options) => options.recordAgentOperations(false))"),
+        "done false"
+    );
 }

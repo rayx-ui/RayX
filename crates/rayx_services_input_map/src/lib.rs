@@ -49,11 +49,25 @@ pub const INPUT_MAP_DOCUMENT: TsAlias = TsAlias {
     doc: "One layer's bindings: the JSON of Rust's `InputMapDocument` (`schema_version` is 1).",
 };
 
+/// When a keyboard binding fires with respect to text editing focus, in TS.
+pub const INPUT_WHEN: TsAlias = TsAlias {
+    name: "InputWhen",
+    ts: "\"auto\" | \"always\" | \"not_editing\"",
+    doc: "When a keyboard binding fires with respect to text editing focus: the JSON of Rust's `InputWhen`.",
+};
+
+/// Dispatch options for `InputMapOptions.bindKeyWith` in TS.
+pub const INPUT_KEY_BINDING_OPTIONS: TsAlias = TsAlias {
+    name: "InputKeyBindingOptions",
+    ts: "{ arguments?: unknown; when?: InputWhen; repeat?: boolean; pass_through?: boolean }",
+    doc: "Optional dispatch policy and arguments for an application keyboard binding.",
+};
+
 /// An input-map entry in TS.
 pub const INPUT_MAP_ENTRY: TsAlias = TsAlias {
     name: "InputMapEntry",
     ts: "{ context: string; binding: InputBinding; action: string; arguments?: unknown; \
-         unbind?: boolean }",
+         unbind?: boolean; when?: InputWhen; repeat?: boolean; pass_through?: boolean }",
     doc: "A binding of an action in a context (`\"\"` everywhere), or with `unbind` its removal: the JSON of Rust's `InputMapEntry`.",
 };
 
@@ -69,8 +83,18 @@ pub const INPUT_BINDING: TsAlias = TsAlias {
 pub const RESOLVED_INPUT_ACTION: TsAlias = TsAlias {
     name: "ResolvedInputAction",
     ts: "{ action: string; arguments?: unknown; context: string; \
-         source: \"framework\" | \"application\" | \"user\" }",
-    doc: "What a binding runs, the context of the entry that matched and its layer: the JSON of Rust's `ResolvedInputAction`.",
+         source: \"framework\" | \"application\" | \"user\"; \
+         when?: InputWhen; repeat?: boolean; pass_through?: boolean }",
+    doc: "What a binding runs, the context of the entry that matched, its layer and dispatch policy: the JSON of Rust's `ResolvedInputAction`.",
+};
+
+/// An effective resolved binding entry in TS.
+pub const RESOLVED_INPUT_ENTRY: TsAlias = TsAlias {
+    name: "ResolvedInputEntry",
+    ts: "{ binding: InputBinding; action: string; arguments?: unknown; context: string; \
+         source: \"framework\" | \"application\" | \"user\"; \
+         when?: InputWhen; repeat?: boolean; pass_through?: boolean }",
+    doc: "A winning effective binding in a context stack with its layer and dispatch policy: the JSON of Rust's `ResolvedInputEntry`.",
 };
 
 /// Adds the input map's TS side to an app's set: its class [`InputMapService`], its options class
@@ -81,9 +105,12 @@ pub fn register(registry: &mut Registry) {
     registry
         .ts_alias(INPUT_MAP_STATE)
         .ts_alias(INPUT_MAP_DOCUMENT)
+        .ts_alias(INPUT_WHEN)
+        .ts_alias(INPUT_KEY_BINDING_OPTIONS)
         .ts_alias(INPUT_MAP_ENTRY)
         .ts_alias(INPUT_BINDING)
         .ts_alias(RESOLVED_INPUT_ACTION)
+        .ts_alias(RESOLVED_INPUT_ENTRY)
         .class::<TsInputMapOptions>()
         .contract_class::<InputMapContract, InputMapService>()
         .class_extension::<InputMapBuilder>();

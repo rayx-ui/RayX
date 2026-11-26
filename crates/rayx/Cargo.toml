@@ -19,6 +19,7 @@ rayx_devtools_protocol.workspace = true
 # RayX's services, one feature each.
 rayx_services_application_configuration = { workspace = true, optional = true }
 rayx_services_assets = { workspace = true, optional = true }
+rayx_services_commands = { workspace = true, optional = true }
 rayx_services_fonts = { workspace = true, optional = true }
 rayx_services_history = { workspace = true, optional = true }
 rayx_services_i18n = { workspace = true, optional = true }
@@ -40,6 +41,7 @@ dxn_intl.workspace = true
 default = ["platform", "suspension", "assets", "fonts"]
 application_configuration = ["dep:rayx_services_application_configuration"]
 assets = ["dep:rayx_services_assets"]
+commands = ["dep:rayx_services_commands"]
 fonts = ["dep:rayx_services_fonts"]
 history = ["dep:rayx_services_history"]
 i18n = ["dep:rayx_services_i18n"]

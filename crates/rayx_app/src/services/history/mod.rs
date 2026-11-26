@@ -94,6 +94,16 @@ impl dyn HistoryService {
         self.history().get().stack_depths(scope_id)
     }
 
+    /// Label key of the next entry to undo in `scope_id`, if any.
+    pub fn undo_label(&self, scope_id: &HistoryScopeId) -> Option<String> {
+        self.history().get().undo_label(scope_id)
+    }
+
+    /// Label key of the next entry to redo in `scope_id`, if any.
+    pub fn redo_label(&self, scope_id: &HistoryScopeId) -> Option<String> {
+        self.history().get().redo_label(scope_id)
+    }
+
     /// Calls `subscriber` with every history event, until the subscription is dropped; a
     /// subscriber that panics does not stop the others.
     pub fn subscribe(

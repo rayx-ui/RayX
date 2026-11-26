@@ -87,6 +87,8 @@ pub mod services {
     pub use rayx_services_application_configuration as application_configuration;
     #[cfg(feature = "assets")]
     pub use rayx_services_assets as assets;
+    #[cfg(feature = "commands")]
+    pub use rayx_services_commands as commands;
     #[cfg(feature = "fonts")]
     pub use rayx_services_fonts as fonts;
     #[cfg(feature = "history")]
@@ -170,6 +172,8 @@ pub mod __private {
         rayx_services_application_configuration::register(registry);
         #[cfg(feature = "assets")]
         rayx_services_assets::register(registry);
+        #[cfg(feature = "commands")]
+        rayx_services_commands::register(registry);
         #[cfg(feature = "fonts")]
         rayx_services_fonts::register(registry);
         #[cfg(feature = "history")]
@@ -219,6 +223,8 @@ pub mod prelude {
     pub use rayx_services_application_configuration::ApplicationConfigurationAppBuilderExt;
     #[cfg(feature = "assets")]
     pub use rayx_services_assets::AssetAppBuilderExt;
+    #[cfg(feature = "commands")]
+    pub use rayx_services_commands::CommandsAppBuilderExt;
     #[cfg(feature = "fonts")]
     pub use rayx_services_fonts::FontAppBuilderExt;
     #[cfg(feature = "history")]

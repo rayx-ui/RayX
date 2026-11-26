@@ -71,6 +71,39 @@ impl Probe {
     pub(crate) fn value() -> u32 {
         *VALUE.lock().unwrap()
     }
+
+    /// Submits a JSON record to `target_id` from a background OS thread, proving that a TS
+    /// `OperationTarget.fromHandler` target dispatches safely back onto the engine thread.
+    pub(crate) async fn submit_from_background_thread(
+        services: Instance<rayx_app_nsh::ts::ServiceProvider>,
+        target_id: String,
+        value: u32,
+    ) -> Result<u64, String> {
+        let operations = services
+            .with(|services| {
+                services
+                    .services()
+                    .required_service::<dyn rayx_app::services::operations::OperationService>()
+            })
+            .map_err(|error| error.to_string())?;
+        let id = OperationTargetId::new(target_id).map_err(|error| error.to_string())?;
+        let record =
+            OperationRecord::from_json(id, "js.set", 1, serde_json::json!({ "value": value }))
+                .map_err(|error| error.to_string())?;
+        let (tx, rx) = futures::channel::oneshot::channel();
+        std::thread::spawn(move || {
+            let outcome = futures::executor::block_on(operations.submit_record(
+                record,
+                OperationOrigin::Agent("bg-agent".into()),
+                None,
+            ))
+            .map(|receipt| receipt.after_revision)
+            .map_err(|error| error.to_string());
+            let _ = tx.send(outcome);
+        });
+        rx.await
+            .map_err(|_| "background thread dropped".to_owned())?
+    }
 }
 
 const TSX: &str = r#"import { mount, signal, Text } from "nsh";
@@ -120,5 +153,79 @@ fn the_operation_class_reaches_rayx_s_operation_service() {
         testing::run(set, TSX),
         "done doc|Applied 5 0|5|true|rejected target_released|null\
          |committed 3,committed 5"
+    );
+}
+
+const FROM_HANDLER_TSX: &str = r#"import { mount, signal, Text } from "nsh";
+import { OperationService, OperationTarget, Probe, RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(async () => {
+  const lines = [];
+  try {
+    const services = await new RayXAppBuilder().addHostFakes().addOperations().start();
+    const operations = services.getRequiredService(OperationService);
+    let current = 0;
+    const seenOrigins = [];
+    const target = OperationTarget.fromHandler((record, origin) => {
+      const payload = record.payloadJson;
+      if (payload.value < 0) throw new Error("negative not allowed");
+      seenOrigins.push(typeof origin === "string" ? origin : Object.keys(origin)[0]);
+      const before = current;
+      current = payload.value;
+      return {
+        status: "Applied",
+        inverse: {
+          target_id: record.target_id,
+          kind: record.kind,
+          version: record.version,
+          payloadJson: { value: before },
+        },
+        affected_ids: ["value"],
+        before_revision: before,
+        after_revision: current,
+      };
+    });
+    await operations.registerTarget("jsdoc", target);
+
+    const r1 = await operations.submitJson(
+      "jsdoc",
+      "js.set",
+      1,
+      { value: 12 },
+      "LocalUser",
+      { command_id: "cmd.set", label_key: "op.set", tags: ["ui"], extra: { n: 1 } },
+    );
+    lines.push(`${r1.status} ${current} ${r1.forward.metadata.label_key} ${operations.payloadJson(r1.forward).value} ${OperationTarget.payloadJson(r1.inverse).value}`);
+
+    const rec = OperationTarget.recordFromJson("jsdoc", "js.set", 1, { value: 20 }, { label_key: "op.set2" });
+    const r2 = await operations.submitRecord(rec, { Agent: "planner" });
+    lines.push(`${current} ${r2.origin.Agent} ${r2.forward.metadata.label_key}`);
+
+    const fail = await operations
+      .submitJson("jsdoc", "js.set", 1, { value: -5 }, "LocalUser")
+      .then(() => "ok", (err) => `err:${err.message}`);
+    lines.push(`${fail} ${current}`);
+
+    const bgAfter = await Probe.submitFromBackgroundThread(services, "jsdoc", 33);
+    lines.push(`bg:${bgAfter} ${current} ${seenOrigins.join(",")}`);
+  } catch (error) {
+    lines.push(`threw ${error}`);
+  }
+  shown.set(`done ${lines.join("|")}`);
+}, 0);
+
+mount(() => <Text>{shown()}</Text>);
+"#;
+
+#[test]
+fn ts_handler_target_and_submit_json_work_on_and_off_engine_thread() {
+    let set = testing::set(|set| {
+        rayx_services_operations::register(set);
+        set.module::<Probe>();
+    });
+    assert_eq!(
+        testing::run(set, FROM_HANDLER_TSX),
+        "done Applied 12 op.set 12 0|20 planner op.set2|err:apply_failed 20|bg:33 33 LocalUser,Agent,Agent"
     );
 }

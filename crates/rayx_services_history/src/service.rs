@@ -72,6 +72,8 @@ impl ScopeHistory {
             redo_depth: self.redo.len(),
             revision: self.revision,
             entry_limit: self.entry_limit,
+            undo_label: self.undo.last().map(|entry| entry.label_key.clone()),
+            redo_label: self.redo.last().map(|entry| entry.label_key.clone()),
         }
     }
 }
@@ -109,6 +111,7 @@ pub(crate) struct RayxHistory {
     /// Bounds each call of the operation service and the store (`None`: unbounded).
     timer: Option<HistoryTimer>,
     timeout: Option<Duration>,
+    record_agent_operations: bool,
     pub(crate) operations: Arc<dyn OperationService>,
     pub(crate) store: Mutex<Option<Arc<dyn HistoryStore>>>,
     pub(crate) store_configured: bool,
@@ -132,6 +135,7 @@ impl RayxHistory {
         store_configured: bool,
         timer: Option<HistoryTimer>,
         timeout: Option<Duration>,
+        record_agent_operations: bool,
     ) -> Arc<Self> {
         let history = Arc::new_cyclic(|this| Self {
             this: this.clone(),
@@ -139,6 +143,7 @@ impl RayxHistory {
             next_entry: std::sync::atomic::AtomicU64::new(1),
             timer,
             timeout,
+            record_agent_operations,
             operations: Arc::clone(&operations),
             store_configured: store_configured || store.is_some(),
             store: Mutex::new(store),
@@ -341,9 +346,9 @@ impl RayxHistory {
         let Some(inverse) = receipt.inverse.clone() else {
             return Ok(());
         };
-        if receipt.origin != OperationOrigin::LocalUser
-            || receipt.status != OperationApplyStatus::Applied
-        {
+        let recordable_origin = receipt.origin.is_local_user()
+            || (self.record_agent_operations && receipt.origin.is_agent());
+        if !recordable_origin || receipt.status != OperationApplyStatus::Applied {
             return Ok(());
         }
         let scope_id = match self.lock_state()?.target_scopes.get(&receipt.target_id) {
@@ -367,12 +372,20 @@ impl RayxHistory {
                 entry.after_revision = receipt.after_revision;
                 None
             } else {
+                let label_key = receipt
+                    .forward
+                    .metadata
+                    .as_ref()
+                    .and_then(|metadata| metadata.label_key.as_deref())
+                    .filter(|key| !key.is_empty())
+                    .unwrap_or(&receipt.forward.kind)
+                    .to_owned();
                 let entry = HistoryEntry {
                     id: self.next_entry_id(),
                     transaction_id: receipt.transaction_id,
                     scope_id: scope_id.clone(),
                     target_id: receipt.target_id.clone(),
-                    label_key: receipt.forward.kind.clone(),
+                    label_key,
                     forward: vec![receipt.forward.clone()],
                     inverse: vec![inverse],
                     before_revision: receipt.before_revision,

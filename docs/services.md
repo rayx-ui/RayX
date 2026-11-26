@@ -23,6 +23,7 @@ the feature `<name>`. The features marked default are the four services the NSH 
 | [History](services/history.md) | Undo and redo per scope, in memory or persisted | `history` | `add_history()`, `add_persistent_history()`, `add_history_with_store(..)`; `addHistory(..)`, `addPersistentHistory(..)`, `addHistoryWithStore(..)` | operations (persisted: storage) | `RayX:Services:History` |
 | [Selection](services/selection.md) | The active selection area and its status | `selection` | `add_selection()`; `addSelection()` | navigation | |
 | [Input map](services/input-map.md) | Key and pointer bindings per context, in three layers | `input_map` | `add_input_map(..)`; `addInputMap(..)` | storage | `RayX:Services:InputMap` |
+| [Commands](services/commands.md) | Command registry, contextual handlers, active areas, and NSH keymap resolution | `commands` | `add_commands()`; `addCommands()` | | |
 | [Application configuration](services/application-configuration.md) | The app's own settings: motion, scrolling, tooltips, layout direction | `application_configuration` | `add_application_configuration(..)`; `addApplicationConfiguration(..)` | platform | `RayX:Application` |
 | [Theme](services/theme.md) | The theme's modifier contexts on each surface, and light/dark following the color scheme or the app's choice | `theme` | `add_theme(..)`; `addTheme(..)` | platform | `RayX:Services:Theme` |
 

@@ -55,8 +55,8 @@ rayx_app_nsh::contract_nsh!(rayx_app::services::history::HistoryService as Histo
 /// The history's state in TS.
 pub const HISTORY_STATE: TsAlias = TsAlias {
     name: "HistoryState",
-    ts: "{ scopes: Record<string, { undo_depth: number; redo_depth: number; revision: number; entry_limit: number | null }>; unavailable_entry_count: number; recent_failure_codes: string[] }",
-    doc: "Each scope's depths (and diagnostics): the JSON of Rust's `HistoryState`.",
+    ts: "{ scopes: Record<string, { undo_depth: number; redo_depth: number; revision: number; entry_limit: number | null; undo_label?: string | null; redo_label?: string | null }>; unavailable_entry_count: number; recent_failure_codes: string[] }",
+    doc: "Each scope's depths, labels (and diagnostics): the JSON of Rust's `HistoryState`.",
 };
 
 /// A history event in TS.
@@ -66,12 +66,20 @@ pub const HISTORY_EVENT: TsAlias = TsAlias {
     doc: "A step of the history: the JSON of Rust's `HistoryEvent`.",
 };
 
+/// Optional metadata attached to an operation record, in TS: the alias
+/// `rayx_services_operations`' set declares, the same (NSH takes an alias declared twice alike).
+pub const OPERATION_METADATA: TsAlias = TsAlias {
+    name: "OperationMetadata",
+    ts: "{ command_id?: string | null; label_key?: string | null; tags?: string[]; extra?: unknown }",
+    doc: "Optional neutral metadata attached to an `OperationRecord`: the JSON of Rust's `OperationMetadata`.",
+};
+
 /// An operation record in TS: the alias `rayx_services_operations`' set declares, the same
 /// (NSH takes an alias declared twice alike).
 pub const OPERATION_RECORD: TsAlias = TsAlias {
     name: "OperationRecord",
-    ts: "{ target_id: string; kind: string; version: number; payload: number[] }",
-    doc: "An operation as it crosses: its target, kind, version and the operation's JSON as bytes (the JSON of Rust's `OperationRecord`).",
+    ts: "{ target_id: string; kind: string; version: number; payload: number[]; payloadJson?: unknown; metadata?: OperationMetadata | null }",
+    doc: "An operation as it crosses: its target, kind, version, the operation's JSON as bytes (with optional `payloadJson` convenience field), and optional metadata (the JSON of Rust's `OperationRecord`).",
 };
 
 /// Adds the history's TS side to an app's set: its class [`HistoryService`], the contract a TS
@@ -80,6 +88,7 @@ pub const OPERATION_RECORD: TsAlias = TsAlias {
 /// `builder.addHistory(..)` and `builder.addPersistentHistory(..)`.
 pub fn register(registry: &mut Registry) {
     registry
+        .ts_alias(OPERATION_METADATA)
         .ts_alias(OPERATION_RECORD)
         .ts_alias(HISTORY_STATE)
         .ts_alias(HISTORY_EVENT)
@@ -104,7 +113,23 @@ pub mod testing {
 
     /// RayX's history of `operations`' operations, kept in memory.
     pub fn history(operations: Arc<dyn OperationService>) -> Arc<dyn HistoryService> {
-        crate::service::RayxHistory::new(operations, None, false, None, None)
+        crate::service::RayxHistory::new(operations, None, false, None, None, true)
+    }
+
+    /// RayX's history of `operations`' operations, kept in memory, with explicit agent recording
+    /// configuration.
+    pub fn history_with_agent_recording(
+        operations: Arc<dyn OperationService>,
+        record_agent_operations: bool,
+    ) -> Arc<dyn HistoryService> {
+        crate::service::RayxHistory::new(
+            operations,
+            None,
+            false,
+            None,
+            None,
+            record_agent_operations,
+        )
     }
 
     /// RayX's history of `operations`' operations, kept in `store`.
@@ -112,7 +137,7 @@ pub mod testing {
         operations: Arc<dyn OperationService>,
         store: Arc<dyn HistoryStore>,
     ) -> Arc<dyn HistoryService> {
-        crate::service::RayxHistory::new(operations, Some(store), true, None, None)
+        crate::service::RayxHistory::new(operations, Some(store), true, None, None, true)
     }
 
     /// RayX's history of `operations`' operations, kept in `store` when there is one, and a
@@ -123,7 +148,7 @@ pub mod testing {
         store: Option<Arc<dyn HistoryStore>>,
     ) -> (Arc<dyn HistoryService>, Box<dyn Fn() + Send + Sync>) {
         let stored = store.is_some();
-        let history = crate::service::RayxHistory::new(operations, store, stored, None, None);
+        let history = crate::service::RayxHistory::new(operations, store, stored, None, None, true);
         let poisoned = Arc::clone(&history);
         let poison = move || {
             let history = Arc::clone(&poisoned);
@@ -145,6 +170,13 @@ pub mod testing {
         timeout: std::time::Duration,
     ) -> Arc<dyn HistoryService> {
         let stored = store.is_some();
-        crate::service::RayxHistory::new(operations, store, stored, Some(timer), Some(timeout))
+        crate::service::RayxHistory::new(
+            operations,
+            store,
+            stored,
+            Some(timer),
+            Some(timeout),
+            true,
+        )
     }
 }

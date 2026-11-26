@@ -23,10 +23,17 @@ fn key_sequences_normalize_to_one_spelling() {
     let cases = [
         ("cmd-shift-p", "shift-cmd-p"),
         ("shift-cmd-P", "shift-cmd-p"),
+        ("mod-shift-p", "mod-shift-p"),
+        ("shift-mod-P", "mod-shift-p"),
         ("Control-Alt-Delete", "ctrl-alt-delete"),
+        ("option-opt-Shift-a", "alt-shift-a"),
         ("super-k", "cmd-k"),
         ("win-k", "cmd-k"),
-        ("platform-k", "cmd-k"),
+        ("command-meta-k", "cmd-k"),
+        ("platform-k", "mod-k"),
+        ("CmdOrCtrl-S", "mod-s"),
+        ("CommandOrControl-Shift-Z", "mod-shift-z"),
+        ("fn-cmd-shift-alt-ctrl-mod-x", "mod-ctrl-alt-shift-cmd-fn-x"),
         ("control-k control-c", "ctrl-k ctrl-c"),
         ("fn-shift-f1", "shift-fn-f1"),
         ("ctrl--", "ctrl--"),
@@ -51,7 +58,49 @@ fn key_sequences_normalize_to_one_spelling() {
         assert!(!valid_key_sequence(invalid));
     }
     assert!(key("cmd-shift-p").same_as(&key("Shift-Super-P")));
+    assert!(key("mod-s").same_as(&key("Platform-S")));
+    assert!(key("mod-s").same_as(&key("CmdOrCtrl-s")));
+    assert!(!key("mod-s").same_as(&key("cmd-s")));
     assert!(!key("cmd-p").same_as(&key("ctrl-p")));
+}
+
+#[test]
+fn platform_resolution_and_nsh_keystrokes_handle_mod_and_punctuation() {
+    assert_eq!(
+        resolve_key_sequence_for_platform("mod-s", true).as_deref(),
+        Some("cmd-s")
+    );
+    assert_eq!(
+        resolve_key_sequence_for_platform("mod-s", false).as_deref(),
+        Some("ctrl-s")
+    );
+    assert_eq!(
+        resolve_key_sequence_for_platform("mod-shift-z", true).as_deref(),
+        Some("shift-cmd-z")
+    );
+    assert_eq!(
+        resolve_key_sequence_for_platform("mod-shift-z", false).as_deref(),
+        Some("ctrl-shift-z")
+    );
+    assert_eq!(
+        resolve_key_sequence_for_platform("mod-ctrl-a", false).as_deref(),
+        Some("ctrl-a")
+    );
+    assert_eq!(
+        resolve_key_sequence_for_platform("mod-cmd-a", true).as_deref(),
+        Some("cmd-a")
+    );
+
+    assert_eq!(
+        to_nsh_keystroke("mod-shift-z").as_deref(),
+        Some("mod+shift+z")
+    );
+    assert_eq!(to_nsh_keystroke("mod-=").as_deref(), Some("mod+plus"));
+    assert_eq!(to_nsh_keystroke("mod--").as_deref(), Some("mod+-"));
+    assert_eq!(to_nsh_keystroke("mod-+").as_deref(), Some("mod+plus"));
+    assert_eq!(to_nsh_keystroke("ctrl-k ctrl-c"), None);
+    assert_eq!(to_nsh_keystroke("fn-f1"), None);
+    assert_eq!(to_nsh_keystroke(""), None);
 }
 
 #[test]

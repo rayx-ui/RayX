@@ -6,6 +6,7 @@
 pub mod app;
 pub mod application_configuration;
 pub mod assets;
+pub mod commands;
 pub mod fonts;
 pub mod history;
 pub mod i18n;

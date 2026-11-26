@@ -20,7 +20,7 @@ mod transaction;
 pub use error::OperationError;
 pub use model::{
     OperationApplyResult, OperationApplyStatus, OperationDiagnostics, OperationEvent,
-    OperationFailure, OperationOrigin, OperationReceipt, OperationState,
+    OperationFailure, OperationMetadata, OperationOrigin, OperationReceipt, OperationState,
     OperationTransactionDiagnostics,
 };
 pub use record::{

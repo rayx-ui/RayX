@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
-use super::OperationError;
+use super::{OperationError, OperationMetadata};
 
 /// The largest encoded operation a [`DomainOperation`] accepts unless it opts out.
 pub const MAX_OPERATION_PAYLOAD_BYTES: usize = 64 * 1024;
@@ -38,7 +38,8 @@ pub trait DomainOperation: Clone + Serialize + DeserializeOwned + Send + Sync + 
     const MAX_PAYLOAD_BYTES: Option<usize> = Some(MAX_OPERATION_PAYLOAD_BYTES);
 }
 
-/// An operation as it crosses: its target, kind, version and the operation's JSON as bytes.
+/// An operation as it crosses: its target, kind, version, the operation's JSON as bytes, and
+/// optional metadata.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct OperationRecord {
     pub target_id: OperationTargetId,
@@ -49,6 +50,8 @@ pub struct OperationRecord {
         deserialize_with = "deserialize_payload"
     )]
     payload: Arc<[u8]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<OperationMetadata>,
 }
 
 impl OperationRecord {
@@ -72,7 +75,31 @@ impl OperationRecord {
             kind: T::KIND.to_string(),
             version: T::VERSION,
             payload: payload.into(),
+            metadata: None,
         })
+    }
+
+    /// A record for `target_id` with `kind`, `version` and JSON payload `payload_json`.
+    pub fn from_json(
+        target_id: OperationTargetId,
+        kind: impl Into<String>,
+        version: u32,
+        payload_json: impl Serialize,
+    ) -> Result<Self, OperationError> {
+        let payload = serde_json::to_vec(&payload_json).map_err(|_| OperationError::Encode)?;
+        Ok(Self {
+            target_id,
+            kind: kind.into(),
+            version,
+            payload: payload.into(),
+            metadata: None,
+        })
+    }
+
+    /// Attaches optional metadata to this record.
+    pub fn with_metadata(mut self, metadata: OperationMetadata) -> Self {
+        self.metadata = Some(metadata);
+        self
     }
 
     /// The operation, when the record is of `T`'s kind and version.
@@ -83,6 +110,11 @@ impl OperationRecord {
                 version: self.version,
             });
         }
+        serde_json::from_slice(&self.payload).map_err(|_| OperationError::Decode)
+    }
+
+    /// Decodes the encoded operation payload as a JSON value.
+    pub fn payload_json(&self) -> Result<serde_json::Value, OperationError> {
         serde_json::from_slice(&self.payload).map_err(|_| OperationError::Decode)
     }
 

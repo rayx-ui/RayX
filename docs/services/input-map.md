@@ -44,13 +44,26 @@ The TS side is there once the crate's set is registered: `#[rayx::native_module]
 
 `InputMapOptions` bind from `RayX:Services:InputMap` (`INPUT_MAP_OPTIONS_SECTION`), then the closure changes them;
 an invalid or duplicate binding fails startup. They hold the framework's bindings (`framework`) and the
-application's (`application`, which `bind_key(context, sequence, action)` adds to):
+application's (`application`, which `bind_key(context, sequence, action)` and
+`bind_key_with(context, sequence, action, |entry| ..)` add to):
 
 ```json
 { "RayX": { "Services": { "InputMap": { "framework": [
-  { "context": "", "binding": { "kind": "keyboard", "value": "cmd-q" }, "action": "app::quit" }
+  { "context": "", "binding": { "kind": "keyboard", "value": "mod-q" }, "action": "app::quit" }
 ] } } } }
 ```
+
+Each `InputMapEntry` also carries optional dispatch policy fields (all default-omitted in JSON, so existing
+documents remain valid):
+
+- `when` (`InputWhen`: `"auto"` default, `"always"`, or `"not_editing"`): whether the binding fires while a text
+  input has keyboard focus.
+- `repeat` (`bool`, default `false`): whether key auto-repeat fires the binding again.
+- `pass_through` (`bool`, default `false`): whether the key event passes through to the focused view after matching.
+
+In Rust, configure them with `InputMapEntry::with_when`, `with_repeat`, `with_pass_through` (or
+`options.bind_key_with(context, sequence, action, |e| e.with_when(InputWhen::Always))`). In TS, use
+`options.bindKeyWith(context, sequence, action, { when, repeat, pass_through, arguments })`.
 
 ## Layers
 
@@ -77,13 +90,19 @@ Commands (`async`, `Result<InputMapDocument, InputMapApplyError>`; promises in T
 
 Rust helpers on `dyn InputMapService`:
 
-- `resolve(contexts, binding)`: the `ResolvedInputAction` (action, arguments, context, layer) the binding runs in the
-  innermost of `contexts` that binds it, then `""`; `None` when none does or the user unbinds it.
+- `resolve(contexts, binding)`: the `ResolvedInputAction` (action, arguments, context, layer, dispatch policy) the
+  binding runs in the innermost of `contexts` that binds it, then `""`; `None` when none does or the user unbinds it.
+- `resolve_for_platform(contexts, binding, apple)`: like `resolve`, also matching platform-resolved bindings (`mod`
+  resolves to `cmd` when `apple` is `true`, or `ctrl` when `false`, so pressing `ctrl-s` on Windows/Linux matches a
+  `mod-s` entry).
+- `effective_entries_for_contexts(contexts)`: the winning `ResolvedInputEntry` list across `contexts` (innermost
+  first, plus `""`) with User > Application > Framework precedence and `unbind` entries respected.
 - `bindings_for(action)`: the entries that run `action` in any context, for showing shortcuts.
 - `user_document()`, `revision()`, `framework_document()` and `application_document()`.
 
-`resolve` and `bindings_for` are functions of the state (`InputMapState::resolve`, `InputMapState::bindings_for`), so
-they are synchronous whatever the implementation.
+`resolve`, `resolve_for_platform`, `effective_entries_for_contexts` and `bindings_for` are functions of the state
+(`InputMapState::resolve`, `InputMapState::resolve_for_platform`, `InputMapState::effective_entries_for_contexts`,
+`InputMapState::bindings_for`), so they are synchronous whatever the implementation.
 
 ## Use
 
@@ -121,6 +140,13 @@ see keystrokes and gestures ask it what they run.
 
 - `current()`: the state (`{ framework, application, user, revision }`), and `revision()`;
 - `resolve(contexts, binding)`: the `ResolvedInputAction`, `null` when nothing runs;
+- `resolveForPlatform(contexts, binding, apple)`: like `resolve`, resolving `mod` to `cmd` (`apple: true`) or `ctrl`
+  (`apple: false`);
+- `effectiveEntries(contexts)`: the winning `ResolvedInputEntry[]` across `contexts` (innermost first, plus `""`),
+  with User > Application > Framework precedence and `unbind` respected;
+- `toNshKeystroke(sequence)`: converts a single-stroke sequence (`"mod-shift-z"`, `"mod-="`, `"mod--"`) to NSH
+  keymap `+`-separated syntax (`"mod+shift+z"`, `"mod+plus"`, `"mod+-"`), or `null` for multi-stroke chords or
+  invalid sequences;
 - `bindingsFor(action)`: the entries that run `action`;
 - `load()` and `applyUserDocument(expectedRevision, candidate)`: promises that resolve with the user's document and
   reject with the service's error;
@@ -142,11 +168,28 @@ async function rebindSave(services: ServiceProvider) {
 ## Key sequences
 
 A key sequence is keystrokes separated by spaces, each its modifiers and its key joined by `-` (`ctrl-k ctrl-c`,
-`cmd-shift-p`, `ctrl--` for the minus key). Spellings of the same keys are one binding: `normalize_key_sequence` puts
-the modifiers in the order `ctrl`, `alt`, `shift`, `cmd`, `fn` and the key in lowercase, `control` is `ctrl`, and
-`cmd`, `super`, `win` and `platform` are the platform's key (Command on Apple platforms, the Windows or Super key
-elsewhere). So `shift-cmd-P` resolves what `cmd-shift-p` binds, a user's `unbind` of `super-shift-p` removes it, and
-one document that binds both spellings in one context has a duplicate binding.
+`mod-shift-p`, `ctrl--` for the minus key). Spellings of the same keys are one binding: `normalize_key_sequence` puts
+the modifiers in the canonical order `mod`, `ctrl`, `alt`, `shift`, `cmd`, `fn` and the key in lowercase:
+
+- `mod`, `cmdorctrl`, `commandorcontrol`, and `platform` normalize to `mod` (the OS-aware primary shortcut modifier:
+  Command on Apple platforms, Control elsewhere) and stay distinct from literal `cmd`.
+- `ctrl` and `control` normalize to `ctrl` (literal Control).
+- `alt`, `option`, and `opt` normalize to `alt`.
+- `shift` normalizes to `shift`.
+- `cmd`, `command`, `meta`, `super`, and `win` normalize to `cmd` (literal Command / Win / Super).
+- `fn` normalizes to `fn`.
+
+So `shift-mod-P` and `platform-shift-p` both normalize to `mod-shift-p`, `cmd-shift-P` normalizes to `shift-cmd-p`,
+a user's `unbind` of `super-shift-p` removes `cmd-shift-p`, and one document that binds two spellings of the same
+normalized sequence in one context has a duplicate binding.
+
+Helper functions in `rayx_app::services::input_map`:
+
+- `resolve_key_sequence_for_platform(sequence, apple)`: expands `mod` to `cmd` when `apple` is `true` or `ctrl` when
+  `false`, then re-normalizes (deduplicating e.g. `mod-ctrl-a` on non-Apple -> `ctrl-a`).
+- `to_nsh_keystroke(sequence)`: converts a single-stroke sequence (no spaces) into NSH keymap `+`-separated syntax
+  (`"mod-shift-z"` -> `"mod+shift+z"`, `"mod-="` -> `"mod+plus"`, `"mod--"` -> `"mod+-"`, `"mod-+"` -> `"mod+plus"`),
+  returning `None` for multi-stroke chord sequences, unsupported `fn` modifiers, or invalid sequences.
 
 ## Replace it
 

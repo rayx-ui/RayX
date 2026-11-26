@@ -287,3 +287,62 @@ fn the_later_registration_of_an_input_map_wins() {
     let input_map = services.required_service::<dyn InputMapService>().unwrap();
     assert!(Arc::ptr_eq(&input_map, &own));
 }
+
+#[test]
+fn bind_key_with_and_effective_entries_carry_dispatch_policy() {
+    let store: Arc<dyn KeyValueStore> = FakeKeyValueStore::new();
+    let services = start(Arc::clone(&store), |options| {
+        options.framework = vec![
+            InputMapEntry::keyboard("", "mod-z", "edit::undo", None),
+            InputMapEntry::keyboard("", "mod-s", "file::save", None),
+        ];
+        options.bind_key_with("editor", "mod-s", "editor::save", |entry| {
+            entry
+                .with_when(InputWhen::Always)
+                .with_repeat(true)
+                .with_pass_through(true)
+        });
+    });
+    let input_map = services.required_service::<dyn InputMapService>().unwrap();
+
+    // Platform resolution matches `mod-s` against `ctrl-s` on non-Apple and `cmd-s` on Apple.
+    let win = input_map
+        .resolve_for_platform(&["editor"], &key("ctrl-s"), false)
+        .unwrap();
+    assert_eq!(win.action, "editor::save");
+    assert_eq!(win.when, InputWhen::Always);
+    assert!(win.repeat);
+    assert!(win.pass_through);
+    assert_eq!(
+        input_map
+            .resolve_for_platform(&["editor"], &key("cmd-s"), true)
+            .unwrap()
+            .action,
+        "editor::save"
+    );
+    assert_eq!(
+        input_map.resolve_for_platform(&["editor"], &key("ctrl-s"), true),
+        None
+    );
+
+    // User unbind removes `mod-z` from effective entries.
+    block_on(input_map.apply_user_document(
+        0,
+        InputMapDocument::new(
+            InputMapSource::User,
+            0,
+            vec![InputMapEntry {
+                unbind: true,
+                ..InputMapEntry::keyboard("", "mod-z", "edit::undo", None)
+            }],
+        ),
+    ))
+    .unwrap();
+    let effective = input_map.effective_entries_for_contexts(&["editor"]);
+    assert_eq!(effective.len(), 1);
+    assert_eq!(effective[0].binding, key("mod-s"));
+    assert_eq!(effective[0].action, "editor::save");
+    assert_eq!(effective[0].when, InputWhen::Always);
+    assert!(effective[0].repeat);
+    assert!(effective[0].pass_through);
+}

@@ -65,7 +65,7 @@ pub enum HistoryEvent {
 }
 
 /// A scope's stacks, as a history service publishes them.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct HistoryScopeState {
     /// How many entries undo can replay.
     pub undo_depth: usize,
@@ -75,6 +75,12 @@ pub struct HistoryScopeState {
     pub revision: u64,
     /// The most entries the scope keeps, when it is bounded.
     pub entry_limit: Option<usize>,
+    /// Label key of the next entry to undo (top of the undo stack), if any.
+    #[serde(default)]
+    pub undo_label: Option<String>,
+    /// Label key of the next entry to redo (top of the redo stack), if any.
+    #[serde(default)]
+    pub redo_label: Option<String>,
 }
 
 /// What a history service publishes as its state: each scope it has loaded or recorded in, and
@@ -94,7 +100,7 @@ pub struct HistoryState {
 impl HistoryState {
     /// The stacks of `scope_id` (empty for a scope it does not have).
     pub fn scope(&self, scope_id: &HistoryScopeId) -> HistoryScopeState {
-        self.scopes.get(scope_id).copied().unwrap_or_default()
+        self.scopes.get(scope_id).cloned().unwrap_or_default()
     }
 
     /// Whether `scope_id` has an entry to undo.
@@ -111,6 +117,20 @@ impl HistoryState {
     pub fn stack_depths(&self, scope_id: &HistoryScopeId) -> (usize, usize) {
         let scope = self.scope(scope_id);
         (scope.undo_depth, scope.redo_depth)
+    }
+
+    /// Label key of the next entry to undo in `scope_id`, if any.
+    pub fn undo_label(&self, scope_id: &HistoryScopeId) -> Option<String> {
+        self.scopes
+            .get(scope_id)
+            .and_then(|scope| scope.undo_label.clone())
+    }
+
+    /// Label key of the next entry to redo in `scope_id`, if any.
+    pub fn redo_label(&self, scope_id: &HistoryScopeId) -> Option<String> {
+        self.scopes
+            .get(scope_id)
+            .and_then(|scope| scope.redo_label.clone())
     }
 }
 

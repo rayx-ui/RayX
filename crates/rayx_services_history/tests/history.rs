@@ -194,6 +194,158 @@ mod service_contracts {
         #[cfg(feature = "diagnostics")]
         assert_eq!(history.diagnostics(&scope).unavailable_entry_count, 1);
     }
+
+    #[test]
+    fn metadata_label_key_populates_entry_and_undo_redo_labels() {
+        use rayx_app::services::operations::{
+            OperationMetadata, OperationRecord, OperationTransactionMode,
+        };
+
+        let operations = super::operations();
+        let target = Arc::new(ValueTarget::default());
+        let target_id = OperationTargetId::new("history:labels").unwrap();
+        now(operations.register_handler(target_id.clone(), Arc::clone(&target))).unwrap();
+        let history = rayx_services_history::testing::history(Arc::clone(&operations));
+        let scope = HistoryScopeId::new("scope:labels").unwrap();
+        now(history.bind_target_scope(target_id.clone(), scope.clone())).unwrap();
+
+        assert_eq!(history.undo_label(&scope), None);
+        assert_eq!(history.redo_label(&scope), None);
+
+        // First edit without metadata falls back to forward.kind.
+        now(operations.submit(
+            &target_id,
+            SetValue { value: 1 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
+        assert_eq!(history.undo_label(&scope).as_deref(), Some(SetValue::KIND));
+        assert_eq!(history.redo_label(&scope), None);
+
+        // Second edit in a multi-op transaction uses the first receipt's metadata.label_key.
+        let tx = now(operations.begin_transaction(OperationTransactionMode::New)).unwrap();
+        let first = OperationRecord::from_operation(target_id.clone(), &SetValue { value: 2 })
+            .unwrap()
+            .with_metadata(OperationMetadata {
+                command_id: Some("cmd.batch".into()),
+                label_key: Some("history.batchEdit".into()),
+                tags: vec!["user".into()],
+                extra: None,
+            });
+        let second = OperationRecord::from_operation(target_id.clone(), &SetValue { value: 3 })
+            .unwrap()
+            .with_metadata(OperationMetadata {
+                label_key: Some("history.ignoredSecond".into()),
+                ..OperationMetadata::default()
+            });
+        now(tx.resubmit(first, OperationOrigin::LocalUser)).unwrap();
+        now(tx.resubmit(second, OperationOrigin::LocalUser)).unwrap();
+        now(tx.commit()).unwrap();
+
+        assert_eq!(history.stack_depths(&scope), (2, 0));
+        assert_eq!(
+            history.undo_label(&scope).as_deref(),
+            Some("history.batchEdit")
+        );
+        assert_eq!(history.redo_label(&scope), None);
+
+        // Undo moves the batch entry to the redo stack and exposes the earlier label on undo.
+        assert!(now(history.undo(scope.clone())).unwrap());
+        assert_eq!(*target.0.lock().unwrap(), 1);
+        assert_eq!(history.undo_label(&scope).as_deref(), Some(SetValue::KIND));
+        assert_eq!(
+            history.redo_label(&scope).as_deref(),
+            Some("history.batchEdit")
+        );
+
+        // Redo restores the batch label on the undo stack.
+        assert!(now(history.redo(scope.clone())).unwrap());
+        assert_eq!(*target.0.lock().unwrap(), 3);
+        assert_eq!(
+            history.undo_label(&scope).as_deref(),
+            Some("history.batchEdit")
+        );
+        assert_eq!(history.redo_label(&scope), None);
+    }
+
+    #[test]
+    fn agent_operations_record_as_one_transaction_when_enabled_and_are_ignored_when_disabled() {
+        use rayx_app::services::operations::{
+            OperationMetadata, OperationRecord, OperationTransactionMode,
+        };
+
+        // Enabled (default): agent multi-op transaction is recorded as a single undoable step.
+        let operations = super::operations();
+        let target = Arc::new(ValueTarget::default());
+        let target_id = OperationTargetId::new("history:agent-on").unwrap();
+        now(operations.register_handler(target_id.clone(), Arc::clone(&target))).unwrap();
+        let history = rayx_services_history::testing::history_with_agent_recording(
+            Arc::clone(&operations),
+            true,
+        );
+        let scope = HistoryScopeId::new("scope:agent-on").unwrap();
+        now(history.bind_target_scope(target_id.clone(), scope.clone())).unwrap();
+
+        let tx = now(operations.begin_transaction(OperationTransactionMode::New)).unwrap();
+        let step1 = OperationRecord::from_operation(target_id.clone(), &SetValue { value: 10 })
+            .unwrap()
+            .with_metadata(OperationMetadata {
+                label_key: Some("history.agentUpdate".into()),
+                ..OperationMetadata::default()
+            });
+        let step2 =
+            OperationRecord::from_operation(target_id.clone(), &SetValue { value: 20 }).unwrap();
+        now(tx.resubmit(step1, OperationOrigin::Agent("agent-a".into()))).unwrap();
+        now(tx.resubmit(step2, OperationOrigin::Agent("agent-a".into()))).unwrap();
+        now(tx.commit()).unwrap();
+
+        assert_eq!(*target.0.lock().unwrap(), 20);
+        assert_eq!(history.stack_depths(&scope), (1, 0));
+        assert_eq!(
+            history.undo_label(&scope).as_deref(),
+            Some("history.agentUpdate")
+        );
+        assert!(now(history.undo(scope.clone())).unwrap());
+        assert_eq!(*target.0.lock().unwrap(), 0);
+        assert_eq!(
+            history.redo_label(&scope).as_deref(),
+            Some("history.agentUpdate")
+        );
+        assert!(now(history.redo(scope.clone())).unwrap());
+        assert_eq!(*target.0.lock().unwrap(), 20);
+
+        // Disabled: agent operations still apply to the target but are ignored by history.
+        let operations_off = super::operations();
+        let target_off = Arc::new(ValueTarget::default());
+        let target_off_id = OperationTargetId::new("history:agent-off").unwrap();
+        now(operations_off.register_handler(target_off_id.clone(), Arc::clone(&target_off)))
+            .unwrap();
+        let history_off = rayx_services_history::testing::history_with_agent_recording(
+            Arc::clone(&operations_off),
+            false,
+        );
+        let scope_off = HistoryScopeId::new("scope:agent-off").unwrap();
+        now(history_off.bind_target_scope(target_off_id.clone(), scope_off.clone())).unwrap();
+
+        now(operations_off.submit(
+            &target_off_id,
+            SetValue { value: 99 },
+            OperationOrigin::Agent("agent-a".into()),
+        ))
+        .unwrap();
+        assert_eq!(*target_off.0.lock().unwrap(), 99);
+        assert!(!history_off.can_undo(&scope_off));
+        assert_eq!(history_off.undo_label(&scope_off), None);
+
+        // LocalUser still records when agent recording is disabled.
+        now(operations_off.submit(
+            &target_off_id,
+            SetValue { value: 100 },
+            OperationOrigin::LocalUser,
+        ))
+        .unwrap();
+        assert_eq!(history_off.stack_depths(&scope_off), (1, 0));
+    }
 }
 
 mod scope_lifecycle {

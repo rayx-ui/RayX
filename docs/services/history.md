@@ -97,11 +97,15 @@ The crate's own `diagnostics` feature keeps the replays that failed in the publi
 
 `HistoryOptions` (`rayx_services_history::HistoryOptions`) bind from `RayX:Services:History` (`HISTORY_CONFIG_PATH`);
 Rust changes them with `configure_options::<HistoryOptions>(..)`, TS with the builder methods' callback, after
-configuration's (`options.callTimeoutMs(5000)`, `null` for no limit; a callback that throws makes the call throw).
+configuration's (`options.callTimeoutMs(5000)`, `null` for no limit; `options.recordAgentOperations(true | false)`; a
+callback that throws makes the call throw).
 
 ```json
-{ "RayX": { "Services": { "History": { "callTimeoutMs": 5000 } } } }
+{ "RayX": { "Services": { "History": { "callTimeoutMs": 5000, "recordAgentOperations": true } } } }
 ```
+
+`record_agent_operations` (`recordAgentOperations` in TS) controls whether operations with `OperationOrigin::Agent(_)`
+are recorded as undoable history entries alongside `OperationOrigin::LocalUser` (`true` by default).
 
 `call_timeout_ms` bounds each call the history makes to begin a transaction, submit a record or reach the store (30
 seconds by default, `None` for none): one that does not answer in time (a TS promise that never settles) fails the
@@ -118,8 +122,9 @@ it (rejecting its promise, in TS): the replay then fails and frees the scope.
 
 Published state:
 
-- `history()` (TS `history`): a `HistoryState`, each loaded scope's undo and redo depths, revision and entry limit,
-  and the diagnostics (replays that met a released target, the latest failure codes).
+- `history()` (TS `history`): a `HistoryState`, each loaded scope's undo and redo depths, top undo/redo labels
+  (`undo_label`, `redo_label`), revision and entry limit, and the diagnostics (replays that met a released target, the
+  latest failure codes).
 
 Events:
 
@@ -143,7 +148,8 @@ Commands:
 
 Rust helpers (on `dyn HistoryService`), synchronous, over the published state:
 
-- `can_undo(&scope)`, `can_redo(&scope)`, `stack_depths(&scope)`, `diagnostics(&scope)`;
+- `can_undo(&scope)`, `can_redo(&scope)`, `stack_depths(&scope)`, `undo_label(&scope)`, `redo_label(&scope)`,
+  `diagnostics(&scope)`;
 - `subscribe(..)`: hears every event, isolating a subscriber that panics.
 
 ## Use
@@ -160,11 +166,13 @@ if history.can_undo(&editor) {
 history.redo(editor).await?;
 ```
 
-- The history records the operations the local user (`OperationOrigin::LocalUser`) commits through the app's operation
-  service (a transaction is one entry) in the scope their target is bound to, else in the scope of the target's id,
-  and undoes and redoes them by resubmitting their inverse operations (or the operations) in a transaction of its own,
-  carried by its id, keeping the inverses the replay answered. It works over any `dyn OperationService`, one answering
-  later (a TS one) included, from any task or thread.
+- The history records the operations the local user (`OperationOrigin::LocalUser`) and, when
+  `record_agent_operations` is enabled (the default), an agent (`OperationOrigin::Agent(_)`) commit through the app's
+  operation service (a transaction is one entry, whose `label_key` comes from the first receipt's
+  `forward.metadata.label_key` when present, else `forward.kind`) in the scope their target is bound to, else in the
+  scope of the target's id, and undoes and redoes them by resubmitting their inverse operations (or the operations) in
+  a transaction of its own, carried by its id, keeping the inverses the replay answered. It works over any
+  `dyn OperationService`, one answering later (a TS one) included, from any task or thread.
 - A scope is busy (`ScopeBusy`) while it is replayed: another undo, redo, `clear_scope` or `set_scope_entry_limit` of
   it fails meanwhile. An operation recorded meanwhile is kept, and a redo whose entry an edit cleared meanwhile is
   aborted before it commits (`StackChanged`). The stacks keep the order the changes happened in: an edit recorded
@@ -188,7 +196,8 @@ history's journals are in NSH's storage through the app's `dyn KeyValueStore` (`
 
 `HistoryService`, resolved from the provider `start()` gives, wraps whichever `dyn HistoryService` is registered:
 
-- `canUndo(scope)`, `canRedo(scope)` and `depths(scope)` (`[undo, redo]`) answer at once;
+- `canUndo(scope)`, `canRedo(scope)`, `depths(scope)` (`[undo, redo]`), `undoLabel(scope)` and `redoLabel(scope)`
+  answer at once;
 - `bindTargetScope(target, scope)`, `undo(scope)`, `redo(scope)`, `clearScope(scope)`, `setScopeEntryLimit(scope,
   limit)` and `retainedRecords(scope)` return promises that reject with the history's error;
 - `onChange(listener)` hears every event (`{ Recorded: entry }`, `{ UndoCompleted: scope }`, ...); it returns a

@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use super::{OperationRecord, OperationTargetId};
 
-/// Where an operation comes from: history records only the local user's.
+/// Where an operation comes from: history records the local user's (and, when enabled, an
+/// agent's).
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum OperationOrigin {
     LocalUser,
@@ -12,6 +13,8 @@ pub enum OperationOrigin {
     HistoryRedo,
     /// A peer's, by its id.
     Remote(String),
+    /// An agent's, by its id.
+    Agent(String),
 }
 
 impl OperationOrigin {
@@ -19,6 +22,24 @@ impl OperationOrigin {
     pub fn is_local_user(&self) -> bool {
         matches!(self, Self::LocalUser)
     }
+
+    /// Whether it is an agent's.
+    pub fn is_agent(&self) -> bool {
+        matches!(self, Self::Agent(_))
+    }
+}
+
+/// Optional neutral metadata attached to an [`OperationRecord`].
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct OperationMetadata {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub command_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extra: Option<serde_json::Value>,
 }
 
 /// What applying an operation did.
@@ -109,6 +130,7 @@ pub struct OperationFailure {
 /// What an operation service publishes for each operation: committed (outside a transaction at
 /// once, inside one when it commits) or failed.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[allow(clippy::large_enum_variant)]
 pub enum OperationEvent {
     Committed(OperationReceipt),
     Failed(OperationFailure),
