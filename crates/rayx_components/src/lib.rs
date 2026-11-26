@@ -43,6 +43,7 @@
 
 pub mod auto_layout;
 pub mod button;
+pub mod keymap_editor;
 pub mod meta;
 pub mod slot;
 pub mod theme;
@@ -60,6 +61,10 @@ pub mod prelude {
     };
     pub use crate::button::{
         Button, ButtonElement, ButtonEvent, ButtonProps, ButtonVariant, button,
+    };
+    pub use crate::keymap_editor::{
+        KeymapEditor, KeymapEditorElement, KeymapEditorEvent, KeymapEditorProps, KeymapRecording,
+        KeymapRow, KeymapSource, KeymapSourceFilter, keymap_editor,
     };
     pub use crate::slot::{SlotProps, slot};
     pub use crate::theme::{
@@ -88,6 +93,7 @@ pub fn set() -> Registry {
         .ts_alias(meta::META_SERVICES)
         .register::<button::Button>()
         .register::<auto_layout::AutoLayout>()
-        .register::<slot::Slot>();
+        .register::<slot::Slot>()
+        .register::<keymap_editor::KeymapEditor>();
     set
 }
