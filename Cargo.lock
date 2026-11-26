@@ -4942,6 +4942,7 @@ dependencies = [
  "rayx_devtools_protocol",
  "rayx_services_application_configuration",
  "rayx_services_assets",
+ "rayx_services_commands",
  "rayx_services_fonts",
  "rayx_services_history",
  "rayx_services_i18n",
@@ -5095,6 +5096,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayx_services_commands"
+version = "0.13.1"
+dependencies = [
+ "futures",
+ "nsh-core",
+ "nsh-engine",
+ "rayx_app",
+ "rayx_app_nsh",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rayx_services_fonts"
 version = "0.13.1"
 dependencies = [
@@ -5120,6 +5134,7 @@ dependencies = [
  "nsh-engine",
  "rayx_app",
  "rayx_app_nsh",
+ "rayx_services_operations",
  "rayx_services_storage",
  "serde",
  "serde_json",
