@@ -77,7 +77,9 @@ setTimeout(async () => {
   try {
     const builder = new RayXAppBuilder().addHostFakes().addFakeStorage().addAppSettings("app");
     const chained = builder.addInputMap((options) => {
-      options.bindKey("Editor", "ctrl-s", "save").bindKey("Editor", "ctrl-z", "undo");
+      options
+        .bindKey("Editor", "ctrl-s", "save")
+        .bindKeyWith("Editor", "mod-z", "undo", { when: "always", repeat: true, pass_through: true });
     });
     lines.push(String(chained === builder));
     const services = await builder.start();
@@ -85,10 +87,10 @@ setTimeout(async () => {
     // The file's framework bindings, and the callback's application ones.
     const options = Probe.options(services);
     lines.push(options.framework.map((entry) => entry.action).join(","));
-    lines.push(options.application.map((entry) => `${entry.context}:${entry.action}`).join(","));
+    lines.push(options.application.map((entry) => `${entry.context}:${entry.action}:${entry.when ?? "auto"}:${Boolean(entry.repeat)}:${Boolean(entry.pass_through)}`).join(","));
     const inputMap = services.getRequiredService(InputMapService);
     const key = (value) => ({ kind: "keyboard", value });
-    lines.push(`${inputMap.resolve([], key("cmd-q")).action} ${inputMap.resolve(["Editor"], key("ctrl-s")).action}`);
+    lines.push(`${inputMap.resolve([], key("cmd-q")).action} ${inputMap.resolve(["Editor"], key("ctrl-s")).action} ${inputMap.resolveForPlatform(["Editor"], key("ctrl-z"), false).action}`);
   } catch (error) {
     lines.push(`threw ${error}`);
   }
@@ -101,7 +103,10 @@ mount(() => <Text>{shown()}</Text>);
 #[test]
 fn options_set_in_ts_apply_after_configuration_and_reach_the_input_map() {
     let shown = testing::run_with_assets(set(), TSX, Arc::new(AppFiles));
-    assert_eq!(shown, "done true|quit|Editor:save,Editor:undo|quit save");
+    assert_eq!(
+        shown,
+        "done true|quit|Editor:save:auto:false:false,Editor:undo:always:true:true|quit save undo"
+    );
 }
 
 const THROWING: &str = r#"import { mount, signal, Text } from "nsh";
@@ -145,6 +150,7 @@ fn the_options_class_is_declared_with_rust_s_methods() {
     for declared in [
         "export declare class InputMapOptions {",
         "  bindKey(context: string, sequence: string, action: string): InputMapOptions;",
+        "  bindKeyWith(context: string, sequence: string, action: string, options?: InputKeyBindingOptions | null): InputMapOptions;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

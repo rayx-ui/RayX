@@ -29,6 +29,21 @@ impl InputMapOptions {
         self
     }
 
+    /// Adds an application binding of the key sequence `sequence` (`mod-s`, `ctrl-k ctrl-c`) to
+    /// `action` in `context`, with additional dispatch policy or arguments configured by
+    /// `configure` (`with_when`, `with_repeat`, `with_pass_through`).
+    pub fn bind_key_with(
+        &mut self,
+        context: impl Into<String>,
+        sequence: impl Into<String>,
+        action: impl Into<String>,
+        configure: impl FnOnce(InputMapEntry) -> InputMapEntry,
+    ) -> &mut Self {
+        let entry = configure(InputMapEntry::keyboard(context, sequence, action, None));
+        self.application.push(entry);
+        self
+    }
+
     pub(crate) fn documents(&self) -> (InputMapDocument, InputMapDocument) {
         (
             InputMapDocument::new(InputMapSource::Framework, 0, self.framework.clone()),

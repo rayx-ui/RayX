@@ -40,7 +40,11 @@ setTimeout(async () => {
   const lines = [];
   try {
     const services = await new RayXAppBuilder().addHostFakes().addFakeStorage()
-      .addInputMap((options) => { options.bindKey("Editor", "cmd-s", "save"); })
+      .addInputMap((options) => {
+        options
+          .bindKey("Editor", "cmd-s", "save")
+          .bindKeyWith("", "mod-shift-z", "redo", { when: "not_editing", repeat: true });
+      })
       .start();
     const inputMap = services.getRequiredService(InputMapService);
     lines.push(String(inputMap === services.getRequiredService(InputMapService)));
@@ -48,6 +52,12 @@ setTimeout(async () => {
     const resolved = inputMap.resolve(["Editor"], save);
     lines.push(`${resolved.action} ${resolved.source} ${inputMap.resolve(["Other"], save)}`);
     lines.push(inputMap.bindingsFor("save").map((entry) => entry.binding.value).join(","));
+    const winRedo = inputMap.resolveForPlatform(["Editor"], { kind: "keyboard", value: "ctrl-shift-z" }, false);
+    const macRedo = inputMap.resolveForPlatform(["Editor"], { kind: "keyboard", value: "cmd-shift-z" }, true);
+    lines.push(`${winRedo.action}:${winRedo.when}:${winRedo.repeat} ${macRedo.action}`);
+    const eff = inputMap.effectiveEntries(["Editor"]).map((entry) => `${entry.binding.value}->${entry.action}`).join(",");
+    lines.push(eff);
+    lines.push(`${inputMap.toNshKeystroke("mod-shift-z")} ${inputMap.toNshKeystroke("mod-=")} ${inputMap.toNshKeystroke("mod--")} ${inputMap.toNshKeystroke("ctrl-k ctrl-c")}`);
 
     const revisions = [];
     const stop = inputMap.onChange((state) => revisions.push(state.revision));
@@ -80,7 +90,7 @@ mount(() => <Text>{shown()}</Text>);
 fn the_input_map_class_reaches_the_service() {
     assert_eq!(
         testing::run(set(), TSX),
-        "done true|save application null|cmd-s|1 1 1|ctrl-s,cmd-s|conflict|1|1"
+        "done true|save application null|cmd-s|redo:not_editing:true redo|cmd-s->save,mod-shift-z->redo|mod+shift+z mod+plus mod+- null|1 1 1|ctrl-s,cmd-s|conflict|1|1"
     );
 }
 
@@ -109,12 +119,18 @@ fn the_class_the_contract_and_add_input_map_are_declared() {
     for declared in [
         "export declare class InputMapService {",
         "  resolve(contexts: string[], binding: InputBinding): ResolvedInputAction | null;",
+        "  resolveForPlatform(contexts: string[], binding: InputBinding, apple: boolean): ResolvedInputAction | null;",
+        "  effectiveEntries(contexts: string[]): ResolvedInputEntry[];",
+        "  toNshKeystroke(sequence: string): string | null;",
         "  bindingsFor(action: string): InputMapEntry[];",
         "  load(): Promise<InputMapDocument>;",
         "  applyUserDocument(expectedRevision: number, candidate: InputMapDocument): Promise<InputMapDocument>;",
         "export interface InputMapServiceContract {",
         "export type InputMapState = ",
         "export type InputMapDocument = ",
+        "export type InputWhen = ",
+        "export type InputKeyBindingOptions = ",
+        "export type ResolvedInputEntry = ",
         "addInputMap(configure?: ((options: InputMapOptions) => void) | null): RayXAppBuilder;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");

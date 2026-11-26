@@ -5,7 +5,9 @@ use std::sync::Arc;
 use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use rayx_app::ChangeSubscription;
-use rayx_app::services::input_map::{InputBinding, InputMapDocument, InputMapService as InputMap};
+use rayx_app::services::input_map::{
+    InputBinding, InputMapDocument, InputMapService as InputMap, to_nsh_keystroke,
+};
 use rayx_app_nsh::ts::{Listeners, ServiceClass, json};
 
 /// The app's input map, for TSX: `services.getRequiredService(InputMapService)`, what a binding
@@ -69,6 +71,40 @@ impl InputMapService {
             .service
             .resolve(&contexts, &binding)
             .map_or(JsonValue::Null, |resolved| json(&resolved)))
+    }
+
+    /// Like `resolve`, resolving `mod` to `cmd` when `apple` is `true` or `ctrl` when `false`
+    /// so platform-specific key presses match OS-aware `mod-...` bindings.
+    #[ts("(contexts: string[], binding: InputBinding, apple: boolean): ResolvedInputAction | null")]
+    pub fn resolve_for_platform(
+        &self,
+        contexts: Vec<String>,
+        binding: JsonValue,
+        apple: bool,
+    ) -> Result<JsonValue, String> {
+        let binding: InputBinding =
+            serde_json::from_value(binding).map_err(|error| format!("binding: {error}"))?;
+        let contexts: Vec<&str> = contexts.iter().map(String::as_str).collect();
+        Ok(self
+            .service
+            .resolve_for_platform(&contexts, &binding, apple)
+            .map_or(JsonValue::Null, |resolved| json(&resolved)))
+    }
+
+    /// The winning effective entries across `contexts` (innermost first, plus `""`), with the
+    /// user's layer over the application's over the framework's and `unbind` entries respected.
+    #[ts("(contexts: string[]): ResolvedInputEntry[]")]
+    pub fn effective_entries(&self, contexts: Vec<String>) -> JsonValue {
+        let contexts: Vec<&str> = contexts.iter().map(String::as_str).collect();
+        json(&self.service.effective_entries_for_contexts(&contexts))
+    }
+
+    /// Converts a single-stroke key sequence (`"mod-shift-z"`, `"mod-="`, `"mod--"`) into NSH
+    /// keymap `+`-separated syntax (`"mod+shift+z"`, `"mod+plus"`, `"mod+-"`), or `null` for
+    /// multi-stroke chords or invalid sequences.
+    #[ts("(sequence: string): string | null")]
+    pub fn to_nsh_keystroke(&self, sequence: String) -> Option<String> {
+        to_nsh_keystroke(&sequence)
     }
 
     /// The bindings that run `action` in any context, for showing shortcuts.
