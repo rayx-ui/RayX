@@ -6,13 +6,13 @@ use nsh_core::JsonValue;
 use nsh_core::prelude::*;
 use rayx_app::ChangeSubscription;
 use rayx_app::services::operations::{
-    OperationError, OperationOrigin, OperationRecord, OperationService as Operations,
-    OperationTargetId,
+    OperationError, OperationMetadata, OperationOrigin, OperationRecord,
+    OperationService as Operations, OperationTargetId,
 };
 use rayx_app_nsh::ts::{Listeners, ServiceClass, json};
 use serde_json::from_value;
 
-use crate::target_ts::OperationTarget;
+use crate::target_ts::{OperationTarget, decode_record_payload, read_record};
 
 /// The app's operation service, for TSX: `services.getRequiredService(OperationService)`, then
 /// `registerTarget(id, target)` (a target's handler is a Rust object, an `OperationTarget`),
@@ -132,7 +132,7 @@ impl OperationService {
     }
 
     /// Applies `record` from `origin` through its target, in the transaction `transactionId`
-    /// when one is given; the receipt.
+    /// when one is given; the receipt. Accepts either `payload: number[]` or `payloadJson`.
     #[ts(
         "(record: OperationRecord, origin: OperationOrigin, transactionId?: number | null): OperationReceipt"
     )]
@@ -142,13 +142,51 @@ impl OperationService {
         origin: JsonValue,
         transaction_id: Option<f64>,
     ) -> Result<JsonValue, String> {
-        let record: OperationRecord = read(record, "the record")?;
+        let record = read_record(record)?;
         let origin: OperationOrigin = read(origin, "the origin")?;
         service(&this)
             .submit_record(record, origin, transaction_id.map(|id| id as u64))
             .await
             .map(|receipt| json(&receipt))
             .map_err(message)
+    }
+
+    /// Builds a record from a plain JSON `payload` (with optional `metadata`) and applies it from
+    /// `origin` through `targetId`, in the transaction `transactionId` when one is given; the
+    /// receipt.
+    #[ts(
+        "(targetId: string, kind: string, version: number, payload: unknown, origin: OperationOrigin, metadata?: OperationMetadata | null, transactionId?: number | null): OperationReceipt"
+    )]
+    #[allow(clippy::too_many_arguments)]
+    pub async fn submit_json(
+        this: Instance<Self>,
+        target_id: String,
+        kind: String,
+        version: u32,
+        payload: JsonValue,
+        origin: JsonValue,
+        metadata: Option<JsonValue>,
+        transaction_id: Option<f64>,
+    ) -> Result<JsonValue, String> {
+        let target_id = self::target_id(target_id)?;
+        let origin: OperationOrigin = read(origin, "the origin")?;
+        let mut record =
+            OperationRecord::from_json(target_id, kind, version, &payload).map_err(message)?;
+        if let Some(meta_value) = metadata.filter(|value| !value.is_null()) {
+            let parsed: OperationMetadata = read(meta_value, "the metadata")?;
+            record = record.with_metadata(parsed);
+        }
+        service(&this)
+            .submit_record(record, origin, transaction_id.map(|id| id as u64))
+            .await
+            .map(|receipt| json(&receipt))
+            .map_err(message)
+    }
+
+    /// Decodes an `OperationRecord`'s payload bytes into a plain JSON value.
+    #[ts("(record: OperationRecord): unknown")]
+    pub fn payload_json(&self, record: JsonValue) -> Result<JsonValue, String> {
+        decode_record_payload(record)
     }
 
     /// Publishes `record`, which the peer `peerId` applied (its target moved from
@@ -164,7 +202,7 @@ impl OperationService {
         after_revision: f64,
         affected_ids: Vec<String>,
     ) -> Result<JsonValue, String> {
-        let record: OperationRecord = read(record, "the record")?;
+        let record = read_record(record)?;
         service(&this)
             .publish_remote_record(
                 record,

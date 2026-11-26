@@ -50,18 +50,25 @@ pub const OPERATION_EVENT: TsAlias = TsAlias {
     doc: "An operation committed or failed: the JSON of Rust's `OperationEvent`.",
 };
 
+/// Optional metadata attached to an operation record, in TS.
+pub const OPERATION_METADATA: TsAlias = TsAlias {
+    name: "OperationMetadata",
+    ts: "{ command_id?: string | null; label_key?: string | null; tags?: string[]; extra?: unknown }",
+    doc: "Optional neutral metadata attached to an `OperationRecord`: the JSON of Rust's `OperationMetadata`.",
+};
+
 /// An operation record in TS.
 pub const OPERATION_RECORD: TsAlias = TsAlias {
     name: "OperationRecord",
-    ts: "{ target_id: string; kind: string; version: number; payload: number[] }",
-    doc: "An operation as it crosses: its target, kind, version and the operation's JSON as bytes (the JSON of Rust's `OperationRecord`).",
+    ts: "{ target_id: string; kind: string; version: number; payload: number[]; payloadJson?: unknown; metadata?: OperationMetadata | null }",
+    doc: "An operation as it crosses: its target, kind, version, the operation's JSON as bytes (with optional `payloadJson` convenience field), and optional metadata (the JSON of Rust's `OperationRecord`).",
 };
 
 /// An operation's origin in TS.
 pub const OPERATION_ORIGIN: TsAlias = TsAlias {
     name: "OperationOrigin",
-    ts: "\"LocalUser\" | \"System\" | \"Import\" | \"HistoryUndo\" | \"HistoryRedo\" | { Remote: string }",
-    doc: "Where an operation comes from: history records only the local user's.",
+    ts: "\"LocalUser\" | \"System\" | \"Import\" | \"HistoryUndo\" | \"HistoryRedo\" | { Remote: string } | { Agent: string }",
+    doc: "Where an operation comes from: history records the local user's (and, when enabled, an agent's).",
 };
 
 /// A receipt in TS.
@@ -91,6 +98,7 @@ pub const OPERATION_TARGET_RESULT: TsAlias = TsAlias {
 /// `builder.addOperations()`.
 pub fn register(registry: &mut Registry) {
     registry
+        .ts_alias(OPERATION_METADATA)
         .ts_alias(OPERATION_RECORD)
         .ts_alias(OPERATION_ORIGIN)
         .ts_alias(OPERATION_RECEIPT)

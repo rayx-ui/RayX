@@ -112,10 +112,11 @@ fn register<B: AppBuilder>(mut builder: B, stored: bool, steps: Vec<HistoryStep>
         });
     }
     services.replace_service_factory_as::<RayxHistory>(move |services| {
-        let timeout = services
+        let options = services
             .options::<HistoryOptions>()
-            .unwrap_or_else(|error| panic!("the history options are invalid: {error}"))
-            .call_timeout();
+            .unwrap_or_else(|error| panic!("the history options are invalid: {error}"));
+        let timeout = options.call_timeout();
+        let record_agent_operations = options.record_agent_operations;
         // The app's timer, else the engine's on NSH; with neither, calls are unbounded.
         let timer = services
             .service::<HistoryTimer>()
@@ -125,7 +126,14 @@ fn register<B: AppBuilder>(mut builder: B, stored: bool, steps: Vec<HistoryStep>
                     .service::<EngineRunner>()
                     .map(|runner| HistoryTimer::engine((*runner).clone()))
             });
-        RayxHistory::new(operations(services), None, stored, timer, timeout)
+        RayxHistory::new(
+            operations(services),
+            None,
+            stored,
+            timer,
+            timeout,
+            record_agent_operations,
+        )
     });
     // Replaced before the startup service is added: replacing `dyn HistoryService` drops the
     // startup service keyed by it, which `Starting` is.

@@ -29,6 +29,8 @@ fn the_history_class_carries_its_members() {
         "canUndo(scopeId: string): boolean;",
         "canRedo(scopeId: string): boolean;",
         "depths(scopeId: string): (number)[];",
+        "undoLabel(scopeId: string): string | null;",
+        "redoLabel(scopeId: string): string | null;",
         "bindTargetScope(targetId: string, scopeId: string): Promise<void>;",
         "undo(scopeId: string): Promise<boolean>;",
         "redo(scopeId: string): Promise<boolean>;",
@@ -49,9 +51,11 @@ fn the_history_class_carries_its_members() {
         "  readonly history: ContractState<HistoryState>;",
         "export type HistoryState = ",
         "export type HistoryEvent = ",
+        "export type OperationMetadata = ",
         "export type OperationRecord = ",
         "export declare class HistoryOptions {",
         "  callTimeoutMs(timeout?: number | null): HistoryOptions;",
+        "  recordAgentOperations(enabled: boolean): HistoryOptions;",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

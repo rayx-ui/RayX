@@ -130,6 +130,12 @@ transaction.submit(&doc, Rename("Final".into()), OperationOrigin::LocalUser).awa
 transaction.commit().await?;
 ```
 
+- **Origins and metadata:** `OperationOrigin` identifies where an operation came from: `LocalUser`, `System`,
+  `Import`, `HistoryUndo`, `HistoryRedo`, `Remote(peer_id)` and `Agent(agent_id)` (`is_local_user()`, `is_agent()`).
+  `OperationRecord` carries optional neutral `OperationMetadata` (`command_id`, `label_key`, `tags`, `extra`) via
+  `with_metadata(...)`, which propagates on `OperationReceipt.forward.metadata` and supplies `HistoryEntry.label_key`
+  when present. `OperationRecord::from_json(target_id, kind, version, payload_json)` and `payload_json()` construct and
+  decode JSON payloads without defining a `DomainOperation` type.
 - **Events:** `operations.subscribe(|event| ..)` (or `events().subscribe(..)`) hears every event; a subscriber that
   panics fails neither the others nor the operation.
 - **Remote operations:** `publish_remote(&id, operation, peer, before, after, affected).await` publishes what a peer
@@ -147,14 +153,20 @@ and publishes the registered targets as its state.
 
 - `instanceId` and `targets` (getters), read at once;
 - `registerTarget(id, target)` (an `OperationTarget`), `releaseTarget(id)`, `begin()`, `commit(id)`, `abort(id)`,
-  `submitRecord(record, origin, transactionId?)` and `publishRemoteRecord(record, peerId, beforeRevision,
-  afterRevision, affectedIds)`: promises that reject with the service's error;
+  `submitRecord(record, origin, transactionId?)`,
+  `submitJson(targetId, kind, version, payload, origin, metadata?, transactionId?)`,
+  `payloadJson(record)` and `publishRemoteRecord(record, peerId, beforeRevision,
+  afterRevision, affectedIds)`: promises that reject with the service's error (`payloadJson` is synchronous);
 - `onEvent(listener)`: hears every event (`{ Committed: receipt }` or `{ Failed: failure }`); it returns a function
   that stops it.
 
 `OperationTarget` is a target's handler, a Rust object: Rust code hands one to TS with `OperationTarget::new(handle)`,
-and a TS implementation of the service takes the handle it is given with `OperationTarget.of(handle)` (once) and
-applies records with `apply(record, origin)` (synchronous; it throws when the target refused or failed it).
+TS code can create one directly from a JS callback with `OperationTarget.fromHandler((record, origin) => result)`
+(where `record` carries both `payload` bytes and decoded `payloadJson`, and `result.inverse` accepts either `payload`
+or `payloadJson`), and a TS implementation of the service takes the handle it is given with `OperationTarget.of(handle)`
+(once) and applies records with `apply(record, origin)` (synchronous; it throws when the target refused or failed it).
+`OperationTarget.recordFromJson(targetId, kind, version, payload, metadata?)` and `OperationTarget.payloadJson(record)`
+build and decode records from plain JSON values.
 
 ```tsx
 // With the provider `start()` gives, in its `.then(async (services) => { … })`:

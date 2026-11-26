@@ -77,6 +77,16 @@ impl HistoryService {
         ])
     }
 
+    /// Label key of the next entry to undo in `scopeId`, or `null` when empty.
+    pub fn undo_label(&self, scope_id: String) -> Result<Option<String>, String> {
+        Ok(self.service.undo_label(&scope(scope_id)?))
+    }
+
+    /// Label key of the next entry to redo in `scopeId`, or `null` when empty.
+    pub fn redo_label(&self, scope_id: String) -> Result<Option<String>, String> {
+        Ok(self.service.redo_label(&scope(scope_id)?))
+    }
+
     /// Records the operations of the target `targetId` in the scope `scopeId` from now on, and
     /// loads the scope's history.
     pub async fn bind_target_scope(

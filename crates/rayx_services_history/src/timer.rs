@@ -26,12 +26,17 @@ pub struct HistoryOptions {
     /// recovers its scope by answering the commit, or failing it (the replay then fails and
     /// frees the scope).
     pub call_timeout_ms: Option<u64>,
+    /// Whether operations with [`rayx_app::services::operations::OperationOrigin::Agent`] are
+    /// recorded as undoable history entries alongside
+    /// [`rayx_app::services::operations::OperationOrigin::LocalUser`]. Enabled by default.
+    pub record_agent_operations: bool,
 }
 
 impl Default for HistoryOptions {
     fn default() -> Self {
         Self {
             call_timeout_ms: Some(30_000),
+            record_agent_operations: true,
         }
     }
 }

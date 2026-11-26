@@ -34,6 +34,7 @@ getrandom = { workspace = true, features = ["wasm_js"] }
 
 [dev-dependencies]
 rayx_app_nsh = { workspace = true, features = ["testing"] }
+rayx_services_operations.workspace = true
 rayx_services_storage.workspace = true
 nsh-core = { workspace = true, features = ["declarations"] }
 nsh-engine = { workspace = true, features = ["js", "inspect"] }

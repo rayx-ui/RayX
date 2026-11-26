@@ -34,6 +34,8 @@ fn the_operation_classes_carry_their_members() {
         "commit(transactionId: number): Promise<void>;",
         "abort(transactionId: number): Promise<void>;",
         "submitRecord(record: OperationRecord, origin: OperationOrigin, transactionId?: number | null): Promise<OperationReceipt>;",
+        "submitJson(targetId: string, kind: string, version: number, payload: unknown, origin: OperationOrigin, metadata?: OperationMetadata | null, transactionId?: number | null): Promise<OperationReceipt>;",
+        "payloadJson(record: OperationRecord): unknown;",
         "publishRemoteRecord(",
         "onEvent(",
     ] {
@@ -46,6 +48,9 @@ fn the_operation_classes_carry_their_members() {
     assert!(target.contains("private constructor();"), "{target}");
     for member in [
         "static of(handle: OperationTargetHandle): OperationTarget;",
+        "static fromHandler(handler: (record: OperationRecord, origin: OperationOrigin) => OperationTargetResult): OperationTarget;",
+        "static payloadJson(record: OperationRecord): unknown;",
+        "static recordFromJson(targetId: string, kind: string, version: number, payload: unknown, metadata?: OperationMetadata | null): OperationRecord;",
         "apply(record: OperationRecord, origin: OperationOrigin): OperationTargetResult;",
     ] {
         assert!(
@@ -58,10 +63,12 @@ fn the_operation_classes_carry_their_members() {
         "  registerTarget(targetId: string, handler: OperationTargetHandle): void;",
         "  submitRecord(record: OperationRecord, origin: OperationOrigin, transactionId: number | null): Promise<OperationReceipt>;",
         "  readonly instanceId: number;",
+        "export type OperationMetadata = ",
         "export type OperationState = ",
         "export type OperationEvent = ",
         "export type OperationRecord = ",
         "export type OperationTargetHandle = ",
+        "{ Agent: string }",
     ] {
         assert!(ts.contains(declared), "no `{declared}` in\n{ts}");
     }

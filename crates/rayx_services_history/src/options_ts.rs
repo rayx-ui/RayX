@@ -16,12 +16,14 @@ pub struct HistoryOptions {
 #[derive(Clone, Debug)]
 pub(crate) enum HistoryStep {
     CallTimeoutMs(Option<u64>),
+    RecordAgentOperations(bool),
 }
 
 impl HistoryStep {
     pub(crate) fn apply(&self, options: &mut History) {
         match self {
             Self::CallTimeoutMs(timeout) => options.call_timeout_ms = *timeout,
+            Self::RecordAgentOperations(enabled) => options.record_agent_operations = *enabled,
         }
     }
 }
@@ -48,6 +50,14 @@ impl HistoryOptions {
         push(this, |o| {
             o.steps
                 .push(HistoryStep::CallTimeoutMs(timeout.map(u64::from)))
+        })
+    }
+
+    /// Whether operations originating from an agent (`{ Agent: "..." }`) are recorded in history
+    /// alongside local user operations. Enabled (`true`) by default.
+    pub fn record_agent_operations(this: Instance<Self>, enabled: bool) -> Instance<Self> {
+        push(this, |o| {
+            o.steps.push(HistoryStep::RecordAgentOperations(enabled))
         })
     }
 }

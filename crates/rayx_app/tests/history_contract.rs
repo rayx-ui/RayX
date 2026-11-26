@@ -9,7 +9,9 @@ use std::sync::{Arc, Mutex};
 
 use futures::executor::block_on;
 use rayx_app::services::ContractFailure;
-use rayx_app::services::history::{HistoryError, HistoryEvent, HistoryScopeId, HistoryService};
+use rayx_app::services::history::{
+    HistoryError, HistoryEvent, HistoryScopeId, HistoryScopeState, HistoryService, HistoryState,
+};
 use rayx_app::services::operations::OperationTargetId;
 use rayx_app::testing::FakeHistory;
 use rayx_app::{AppBuilder as _, RayXAppBuilder};
@@ -68,4 +70,41 @@ fn a_failed_call_is_the_contract_s_error() {
         HistoryScopeId::new(" ").unwrap_err(),
         HistoryError::InvalidScopeId
     );
+}
+
+#[test]
+fn scope_state_labels_default_and_expose_synchronous_lookups() {
+    let scope = HistoryScopeId::new("editor").unwrap();
+    let legacy: HistoryScopeState = serde_json::from_value(serde_json::json!({
+        "undo_depth": 1,
+        "redo_depth": 0,
+        "revision": 2,
+        "entry_limit": null
+    }))
+    .unwrap();
+    assert_eq!(legacy.undo_label, None);
+    assert_eq!(legacy.redo_label, None);
+
+    let mut state = HistoryState::default();
+    state.scopes.insert(
+        scope.clone(),
+        HistoryScopeState {
+            undo_depth: 2,
+            redo_depth: 1,
+            revision: 3,
+            entry_limit: Some(10),
+            undo_label: Some("history.rename".into()),
+            redo_label: Some("history.move".into()),
+        },
+    );
+    assert_eq!(state.undo_label(&scope).as_deref(), Some("history.rename"));
+    assert_eq!(state.redo_label(&scope).as_deref(), Some("history.move"));
+    let other = HistoryScopeId::new("other").unwrap();
+    assert_eq!(state.undo_label(&other), None);
+    assert_eq!(state.redo_label(&other), None);
+
+    let fake = FakeHistory::new();
+    let history: Arc<dyn HistoryService> = fake;
+    assert_eq!(history.undo_label(&scope), None);
+    assert_eq!(history.redo_label(&scope), None);
 }

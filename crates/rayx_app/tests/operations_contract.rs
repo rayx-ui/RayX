@@ -11,8 +11,9 @@ use futures::FutureExt as _;
 use futures::executor::block_on;
 use rayx_app::services::ContractFailure;
 use rayx_app::services::operations::{
-    DomainOperation, OperationApplyResult, OperationError, OperationEvent, OperationOrigin,
-    OperationService, OperationTargetHandler, OperationTargetId, OperationTransactionMode,
+    DomainOperation, OperationApplyResult, OperationError, OperationEvent, OperationMetadata,
+    OperationOrigin, OperationRecord, OperationService, OperationTargetHandler, OperationTargetId,
+    OperationTransactionMode,
 };
 use rayx_app::testing::FakeOperations;
 use rayx_app::{AppBuilder as _, RayXAppBuilder};
@@ -163,4 +164,43 @@ fn a_failed_call_is_the_contract_s_error() {
     });
     assert_eq!(error.code(), "operation_call_failed");
     assert!(error.to_string().contains("the engine is gone"), "{error}");
+}
+
+#[test]
+fn agent_origin_metadata_and_json_record_helpers_round_trip() {
+    let agent = OperationOrigin::Agent("assistant-1".into());
+    assert!(agent.is_agent());
+    assert!(!agent.is_local_user());
+    assert!(!OperationOrigin::LocalUser.is_agent());
+    assert!(OperationOrigin::LocalUser.is_local_user());
+
+    let (operations, target, id) = operations();
+    let metadata = OperationMetadata {
+        command_id: Some("doc.set".into()),
+        label_key: Some("history.set".into()),
+        tags: vec!["batch".into(), "ai".into()],
+        extra: Some(serde_json::json!({ "source": "tool" })),
+    };
+    let record =
+        OperationRecord::from_json(id.clone(), Set::KIND, Set::VERSION, serde_json::json!(42))
+            .unwrap()
+            .with_metadata(metadata.clone());
+    assert_eq!(record.payload_json().unwrap(), serde_json::json!(42));
+    assert_eq!(record.metadata.as_ref(), Some(&metadata));
+
+    let serialized = serde_json::to_value(&record).unwrap();
+    let round_tripped: OperationRecord = serde_json::from_value(serialized).unwrap();
+    assert_eq!(round_tripped, record);
+
+    let receipt = block_on(operations.submit_record(record, agent.clone(), None)).unwrap();
+    assert_eq!(*target.0.lock().unwrap(), 42);
+    assert_eq!(receipt.origin, agent);
+    assert_eq!(receipt.forward.metadata, Some(metadata));
+
+    // A record without metadata omits the field on the wire and deserializes cleanly.
+    let plain = OperationRecord::from_operation(id, &Set(7)).unwrap();
+    let plain_json = serde_json::to_value(&plain).unwrap();
+    assert!(plain_json.get("metadata").is_none(), "{plain_json}");
+    let decoded_plain: OperationRecord = serde_json::from_value(plain_json).unwrap();
+    assert_eq!(decoded_plain.metadata, None);
 }
