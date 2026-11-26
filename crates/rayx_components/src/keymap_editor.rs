@@ -8,7 +8,7 @@
 //! accents, density, and custom themes apply automatically. The component is pure and controlled
 //! via props and events so any RayX app can embed it in a window, modal, tab, or panel.
 
-use nsh_core::element::{Typography, each, element_ref, input, scroll};
+use nsh_core::element::{Token, Typography, each, element_ref, input, scroll};
 use nsh_core::keyboard::{KeyCapture, KeyEvent};
 use nsh_core::prelude::*;
 
@@ -20,8 +20,8 @@ use crate::theme::roles::{
     RADIUS_SMALL_INNER, SPACING_GAP1, SPACING_GAP2, SPACING_GAP3, SPACING_INSET1, SPACING_INSET2,
     SPACING_INSET3, SPACING_INSET4, SPACING_INSET6, SPACING_SMALL_LVL5_HEIGHT,
     SPACING_SMALL_LVL6_HEIGHT, SURFACE_ALTERNATE_ROW_BG, SURFACE_APP, SURFACE_BORDER,
-    SURFACE_BORDER_MUTED, SURFACE_LINK, SURFACE_OVERLAY, SURFACE_PANEL1, SURFACE_PANEL2,
-    SURFACE_SCRIM, SURFACE_TEXT, SURFACE_TEXT_DANGER, SURFACE_TEXT_MUTED, SURFACE_TEXT_SUBTLE,
+    SURFACE_BORDER_MUTED, SURFACE_OVERLAY, SURFACE_PANEL1, SURFACE_PANEL2, SURFACE_SCRIM,
+    SURFACE_TEXT, SURFACE_TEXT_DANGER, SURFACE_TEXT_MUTED, SURFACE_TEXT_SUBTLE,
     SURFACE_TEXT_WARNING, TEXT_DEFAULT_CODE, TEXT_DEFAULT_TITLE1_BOLD, TEXT_SMALL_CODE,
     TEXT_SMALL_REGULAR, TEXT_SMALL_TITLE1_BOLD,
 };
@@ -180,6 +180,12 @@ pub struct KeymapEditorProps {
     /// Placeholder text displayed in the filter field.
     #[prop(default = SharedString::new_static("Filter commands, keystrokes, or context…"))]
     pub filter_placeholder: Prop<SharedString>,
+    /// Theme color role or token name used to highlight text on user-rebound (`User`) rows.
+    /// Accepts any theme role (for example `"intent-alerts-warning-accent"`,
+    /// `"surface-text-warning"`, `"surface-link"`) or color token name (for example
+    /// `"theme-colors-palettes-orange-600"`).
+    #[prop(default = SharedString::new_static("intent-alerts-warning-accent"))]
+    pub user_binding_color: Prop<SharedString>,
 }
 
 /// The events emitted by [`KeymapEditor`].
@@ -225,11 +231,18 @@ pub enum KeymapEditorEvent {
 #[component]
 pub fn KeymapEditor(props: KeymapEditorProps, cx: Scope<KeymapEditorEvent>) -> impl IntoElement {
     let look = computed(Look::of);
+    let user_color = computed({
+        let color_token = props.user_binding_color;
+        move || {
+            let name = color_token.get();
+            resolve_color_token(name.as_str(), look.with(|l| l.warning_accent))
+        }
+    });
 
     let toolbar = build_toolbar(props.clone(), cx, look);
     let error_banner = build_error_banner(props.clone(), look);
     let table_header = build_table_header(look);
-    let table_body = build_table_body(props.clone(), cx, look);
+    let table_body = build_table_body(props.clone(), cx, look, user_color);
     let footer = build_footer(props.clone(), look);
     let recorder = build_recorder(props, cx, look);
 
@@ -417,6 +430,7 @@ fn build_table_body(
     props: KeymapEditorProps,
     cx: Scope<KeymapEditorEvent>,
     look: Memo<Look>,
+    user_color: Memo<Hsla>,
 ) -> impl IntoElement {
     scroll()
         .flex_1()
@@ -495,7 +509,13 @@ fn build_table_body(
                                 text(move || row.with(|r| r.command_name.clone()))
                                     .number_of_lines(1u32)
                                     .typography(move || look.with(|l| l.text_small.clone()))
-                                    .text_color(move || look.with(|l| l.text)),
+                                    .text_color(move || {
+                                        if row.with(|r| r.source == KeymapSource::User) {
+                                            user_color.get()
+                                        } else {
+                                            look.with(|l| l.text)
+                                        }
+                                    }),
                             )
                             .child(
                                 text(move || row.with(|r| r.action.clone()))
@@ -573,7 +593,9 @@ fn build_table_body(
                                         })
                                         .text_color(
                                             move || {
-                                                if row.with(|r| {
+                                                if row.with(|r| r.source == KeymapSource::User) {
+                                                    user_color.get()
+                                                } else if row.with(|r| {
                                                     r.is_unbound || r.display_keystrokes.is_empty()
                                                 }) {
                                                     look.with(|l| l.text_subtle)
@@ -629,7 +651,7 @@ fn build_table_body(
                                 })
                                 .text_color(move || {
                                     if row.with(|r| r.source == KeymapSource::User) {
-                                        look.with(|l| l.link)
+                                        user_color.get()
                                     } else {
                                         look.with(|l| l.text_subtle)
                                     }
@@ -978,6 +1000,25 @@ fn build_recorder(
     )
 }
 
+/// Resolves a theme color role name (e.g. `"intent-alerts-warning-accent"`,
+/// `"surface-text-warning"`) or direct theme color token name (e.g.
+/// `"theme-colors-palettes-orange-600"`) reactively against the active theme, falling back to
+/// `fallback` if empty or unknown.
+fn resolve_color_token(name: &str, fallback: Hsla) -> Hsla {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return fallback;
+    }
+    let tokens = nsh_core::element::tokens();
+    if let Some(Token::Color(color)) = tokens.role_by_name(trimmed) {
+        return color;
+    }
+    if let Some(color) = tokens.color(trimmed) {
+        return color;
+    }
+    fallback
+}
+
 /// Resolved theme tokens for [`KeymapEditor`], updated reactively whenever the active theme or
 /// modifiers change.
 #[derive(Debug, Clone, PartialEq)]
@@ -996,7 +1037,6 @@ struct Look {
     text_subtle: Hsla,
     text_danger: Hsla,
     text_warning: Hsla,
-    link: Hsla,
     neutral_bg: Hsla,
     neutral_hover: Hsla,
     primary_accent: Hsla,
@@ -1042,7 +1082,6 @@ impl Look {
             text_subtle: value(SURFACE_TEXT_SUBTLE),
             text_danger: value(SURFACE_TEXT_DANGER),
             text_warning: value(SURFACE_TEXT_WARNING),
-            link: value(SURFACE_LINK),
             neutral_bg: value(INTENT_NEUTRAL_BG),
             neutral_hover: value(INTENT_NEUTRAL_BG_HOVER),
             primary_accent: value(INTENT_PRIMARY_ACCENT),

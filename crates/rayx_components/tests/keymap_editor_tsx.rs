@@ -44,6 +44,7 @@ mount(() => (
       sourceFilter={filter()}
       totalCount={1}
       userCount={0}
+      userBindingColor="intent-alerts-warning-accent"
       onSourceFilterChange={({ filter: next }) => {
         filter.set(next);
         status.set(`filter:${next}`);
@@ -66,6 +67,7 @@ fn the_library_set_declares_keymap_editor_types_and_events_for_tsx() {
         "export interface KeymapRow {",
         "export interface KeymapRecording {",
         "export interface KeymapEditorProps extends ComponentHostProps {",
+        "  userBindingColor?: string;",
         "  onQueryChange?: (event: { query: string }) => void;",
         "  onSourceFilterChange?: (event: { filter: KeymapSourceFilter }) => void;",
         "  onStartRecord?: (event: { rowId: string }) => void;",

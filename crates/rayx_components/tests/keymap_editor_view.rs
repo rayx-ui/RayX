@@ -56,6 +56,7 @@ fn EditorHarness() -> impl IntoElement {
                 .source_filter(filter)
                 .total_count(2u32)
                 .user_count(1u32)
+                .user_binding_color("intent-alerts-warning-accent")
                 .recording(recording)
                 .on_source_filter_change(move |next: &KeymapSourceFilter| {
                     filter.set(*next);
