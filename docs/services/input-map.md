@@ -43,9 +43,12 @@ The TS side is there once the crate's set is registered: `#[rayx::native_module]
 ## Configure
 
 `InputMapOptions` bind from `RayX:Services:InputMap` (`INPUT_MAP_OPTIONS_SECTION`), then the closure changes them;
-an invalid or duplicate binding fails startup. They hold the framework's bindings (`framework`) and the
+an invalid or duplicate binding fails startup. They hold the framework's bindings (`framework`), the
 application's (`application`, which `bind_key(context, sequence, action)` and
-`bind_key_with(context, sequence, action, |entry| ..)` add to):
+`bind_key_with(context, sequence, action, |entry| ..)` add to), and an optional `application_asset` path
+(`options.application_asset("keybindings.json")` in Rust, `options.applicationAsset("keybindings.json")` in TS) whose
+JSON is read from the app's `dyn AssetService` at startup (after `AssetService` initializes) as the application layer's
+default bindings (accepting either a full `InputMapDocument` or `{ "entries": [...] }`):
 
 ```json
 { "RayX": { "Services": { "InputMap": { "framework": [

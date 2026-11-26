@@ -12,6 +12,7 @@ use nsh_core::JsonValue;
 use nsh_core::element::Registry;
 use nsh_core::prelude::*;
 use nsh_engine::Assets;
+use rayx_app::services::assets::{AssetCatalog, AssetManifest, AssetService};
 use rayx_app::services::storage::KeyValueStore;
 use rayx_app_nsh::testing;
 use rayx_app_nsh::ts::ServiceProvider;
@@ -26,6 +27,47 @@ fn add_fake_storage(mut builder: rayx_app_nsh::RayXAppBuilder) -> rayx_app_nsh::
         .add_singleton_as::<dyn KeyValueStore>(
             rayx_app::testing::FakeKeyValueStore::new() as Arc<dyn KeyValueStore>
         );
+    builder
+}
+
+/// Registers an in-memory `AssetService` shipping `keybindings.json`.
+#[rayx_app_nsh::app_extension]
+fn add_keybindings_asset(
+    mut builder: rayx_app_nsh::RayXAppBuilder,
+) -> rayx_app_nsh::RayXAppBuilder {
+    use rayx_app_nsh::AppBuilder as _;
+    let mut catalog = AssetCatalog::builder();
+    catalog.add_manifest(
+        "app",
+        &AssetManifest {
+            files: vec!["keybindings.json".to_owned()],
+            ..AssetManifest::default()
+        },
+    );
+    let assets = rayx_app::testing::FakeAssets::new(catalog.build()).file(
+        "@app/keybindings.json",
+        br#"{
+            "schema_version": 1,
+            "source": "application",
+            "revision": 0,
+            "entries": [
+                {
+                    "context": "",
+                    "binding": { "kind": "keyboard", "value": "mod-z" },
+                    "action": "edit.undo"
+                },
+                {
+                    "context": "code-editor",
+                    "binding": { "kind": "keyboard", "value": "mod-s" },
+                    "action": "code.save",
+                    "when": "always"
+                }
+            ]
+        }"#,
+    );
+    builder
+        .services_mut()
+        .replace_service::<dyn AssetService>(assets as Arc<dyn AssetService>);
     builder
 }
 
@@ -64,7 +106,9 @@ impl Probe {
 fn set() -> Registry {
     testing::set(|set| {
         rayx_services_input_map::register(set);
-        set.module::<Probe>().class_extension::<add_fake_storage>();
+        set.module::<Probe>()
+            .class_extension::<add_fake_storage>()
+            .class_extension::<add_keybindings_asset>();
     })
 }
 
@@ -144,11 +188,62 @@ fn a_throwing_callback_makes_add_input_map_throw_with_its_message() {
     );
 }
 
+const FROM_ASSET: &str = r#"import { mount, signal, Text } from "nsh";
+import { InputMapService, RayXAppBuilder } from "test/app";
+
+const shown = signal("waiting");
+setTimeout(async () => {
+  const lines = [];
+  try {
+    const services = await new RayXAppBuilder()
+      .addHostFakes()
+      .addFakeStorage()
+      .addKeybindingsAsset()
+      .addInputMap((options) => {
+        options.applicationAsset("keybindings.json");
+      })
+      .start();
+    const inputMap = services.getRequiredService(InputMapService);
+    const key = (value) => ({ kind: "keyboard", value });
+    const undo = inputMap.resolveForPlatform([], key("ctrl-z"), false);
+    const save = inputMap.resolveForPlatform(["code-editor"], key("cmd-s"), true);
+    lines.push(`${undo.action}:${undo.source}`);
+    lines.push(`${save.action}:${save.when}:${save.source}`);
+
+    // User override takes precedence over the asset-loaded application binding.
+    await inputMap.applyUserDocument(inputMap.revision(), {
+      schema_version: 1,
+      source: "user",
+      revision: 0,
+      entries: [
+        { context: "", binding: key("mod-z"), action: "custom.undo" },
+      ],
+    });
+    const overridden = inputMap.resolveForPlatform([], key("ctrl-z"), false);
+    lines.push(`${overridden.action}:${overridden.source}`);
+  } catch (error) {
+    lines.push(`threw ${error}`);
+  }
+  shown.set(`done ${lines.join("|")}`);
+}, 0);
+
+mount(() => <Text>{shown()}</Text>);
+"#;
+
+#[test]
+fn application_asset_loads_bindings_in_ts_and_user_overrides_win() {
+    assert_eq!(
+        testing::run(set(), FROM_ASSET),
+        "done edit.undo:application|code.save:always:application|custom.undo:user"
+    );
+}
+
 #[test]
 fn the_options_class_is_declared_with_rust_s_methods() {
     let ts = testing::declarations(&set());
     for declared in [
         "export declare class InputMapOptions {",
+        "  applicationAsset(path: string): InputMapOptions;",
         "  bindKey(context: string, sequence: string, action: string): InputMapOptions;",
         "  bindKeyWith(context: string, sequence: string, action: string, options?: InputKeyBindingOptions | null): InputMapOptions;",
     ] {

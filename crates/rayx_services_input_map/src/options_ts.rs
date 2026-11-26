@@ -21,31 +21,49 @@ struct KeyBindingOptions {
     pass_through: bool,
 }
 
-/// The input map's options (`addInputMap`), as Rust's `InputMapOptions` sets them: `bindKey`
-/// and `bindKeyWith` add bindings and return the object, so calls chain.
+/// What one `InputMapOptions` method recorded.
+#[derive(Clone, Debug)]
+pub(crate) enum InputMapStep {
+    Bind(InputMapEntry),
+    ApplicationAsset(String),
+}
+
+impl InputMapStep {
+    pub(crate) fn apply(&self, options: &mut InputMap) {
+        match self {
+            Self::Bind(entry) => options.application.push(entry.clone()),
+            Self::ApplicationAsset(path) => {
+                options.application_asset(path.clone());
+            }
+        }
+    }
+}
+
+/// The input map's options (`addInputMap`), as Rust's `InputMapOptions` sets them: `bindKey`,
+/// `bindKeyWith`, and `applicationAsset` configure bindings and return the object, so calls chain.
 #[class]
 pub struct InputMapOptions {
-    entries: Vec<InputMapEntry>,
+    steps: Vec<InputMapStep>,
 }
 
 impl InputMapOptions {
     pub(crate) fn new() -> Self {
-        Self {
-            entries: Vec::new(),
-        }
+        Self { steps: Vec::new() }
     }
 
-    pub(crate) fn take(&mut self) -> Vec<InputMapEntry> {
-        std::mem::take(&mut self.entries)
-    }
-
-    pub(crate) fn apply(entry: &InputMapEntry, options: &mut InputMap) {
-        options.application.push(entry.clone());
+    pub(crate) fn take(&mut self) -> Vec<InputMapStep> {
+        std::mem::take(&mut self.steps)
     }
 }
 
 #[class]
 impl InputMapOptions {
+    /// Sets the asset path (`"keybindings.json"`) whose JSON supplies the application's default
+    /// bindings, loaded from the app's `AssetService` when the input map starts.
+    pub fn application_asset(this: Instance<Self>, path: String) -> Instance<Self> {
+        push(this, |o| o.steps.push(InputMapStep::ApplicationAsset(path)))
+    }
+
     /// Adds an application binding of the key sequence `sequence` (`"ctrl-k ctrl-c"`) to
     /// `action` in `context`.
     pub fn bind_key(
@@ -55,8 +73,9 @@ impl InputMapOptions {
         action: String,
     ) -> Instance<Self> {
         push(this, |o| {
-            o.entries
-                .push(InputMapEntry::keyboard(context, sequence, action, None));
+            o.steps.push(InputMapStep::Bind(InputMapEntry::keyboard(
+                context, sequence, action, None,
+            )));
         })
     }
 
@@ -83,6 +102,6 @@ impl InputMapOptions {
             .with_when(parsed.when)
             .with_repeat(parsed.repeat)
             .with_pass_through(parsed.pass_through);
-        Ok(push(this, |o| o.entries.push(entry)))
+        Ok(push(this, |o| o.steps.push(InputMapStep::Bind(entry))))
     }
 }

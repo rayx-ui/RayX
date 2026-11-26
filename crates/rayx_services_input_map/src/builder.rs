@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use nsh_core::prelude::*;
 use rayx_app::di::{StartupInitializationFailure, StartupService, StartupServiceType};
+use rayx_app::services::assets::AssetService;
 use rayx_app::services::input_map::InputMapService;
 use rayx_app::services::storage::KeyValueStore;
 use rayx_app::{AppBuilder, ServiceAppBuilderExt as _};
@@ -21,7 +22,8 @@ const STORAGE_HINT: &str = "add_storage() (addStorage in TS) from rayx_services_
 /// Registers RayX's input map on an app builder.
 pub trait InputMapAppBuilderExt: AppBuilder {
     /// Registers RayX's input map as the app's `dyn InputMapService`, replacing any other: a
-    /// startup service that reads the user's bindings from the app's `dyn KeyValueStore` once
+    /// startup service that reads any configured application asset (from `dyn AssetService`,
+    /// after it initializes) and the user's bindings from the app's `dyn KeyValueStore` once
     /// it is ready (which it requires: `add_storage()` from `rayx_services_storage`, or the
     /// app's own). Its [`InputMapOptions`] bind from [`INPUT_MAP_OPTIONS_SECTION`], then
     /// `configure` changes them; invalid bindings fail startup.
@@ -34,10 +36,7 @@ pub trait InputMapAppBuilderExt: AppBuilder {
                 .bind(INPUT_MAP_OPTIONS_SECTION)
                 .configure(configure)
                 .validate(
-                    |options| {
-                        let (framework, application) = options.documents();
-                        framework.validate().is_ok() && application.validate().is_ok()
-                    },
+                    InputMapOptions::is_valid,
                     "the input map has an invalid or duplicate binding",
                 )
                 .validate_on_start();
@@ -48,12 +47,19 @@ pub trait InputMapAppBuilderExt: AppBuilder {
             let store = services
                 .required_service::<dyn KeyValueStore>()
                 .unwrap_or_else(|error| panic!("the input map needs a key-value store: {error}"));
+            let assets = services.service::<dyn AssetService>();
             let options = services
                 .options::<InputMapOptions>()
                 .unwrap_or_else(|error| panic!("the input map's options are invalid: {error}"));
             let (framework, application) = options.documents();
-            RayxInputMap::new(store, framework, application)
-                .unwrap_or_else(|error| panic!("the input map's bindings are invalid: {error}"))
+            RayxInputMap::new(
+                store,
+                assets,
+                framework,
+                application,
+                options.application_asset.clone(),
+            )
+            .unwrap_or_else(|error| panic!("the input map's bindings are invalid: {error}"))
         });
         // Replacing drops the startup service keyed `dyn InputMapService` (an earlier one's), so
         // the service's own startup registration, under that key, comes after.
@@ -88,17 +94,17 @@ pub struct InputMapBuilder;
 #[class_extension(RayXAppBuilder)]
 impl InputMapBuilder {
     /// Registers the app's input map (it keeps the user's bindings in the app's key-value store:
-    /// `addStorage`); `configure` adds the app's bindings (`options.bindKey("Editor", "ctrl-s", "save")`) after
-    /// configuration's options.
+    /// `addStorage`); `configure` adds the app's bindings (`options.bindKey("Editor", "ctrl-s", "save")`)
+    /// or default asset (`options.applicationAsset("keybindings.json")`) after configuration's options.
     pub fn add_input_map(
         this: Instance<RayXAppBuilder>,
         #[args(options)] configure: Option<Callback<Instance<TsInputMapOptions>>>,
     ) -> Result<Instance<RayXAppBuilder>, String> {
-        let bindings = record(TsInputMapOptions::new(), configure, TsInputMapOptions::take)?;
+        let steps = record(TsInputMapOptions::new(), configure, TsInputMapOptions::take)?;
         RayXAppBuilder::extend_with(this, move |builder| {
             builder.add_input_map(move |options| {
-                for binding in &bindings {
-                    TsInputMapOptions::apply(binding, options);
+                for step in &steps {
+                    step.apply(options);
                 }
             })
         })
