@@ -127,11 +127,13 @@ pub fn SegmentedControl(
         .test_id("segmented-control")
         .orientation(Some(Axis::Horizontal))
         .accessibility_label(props.accessibility_label)
+        // Keep the spring-animated indicator border-only (transparent fill) so it can never
+        // occlude the active tab's label on any platform; the active Tab itself draws its own
+        // pill background directly behind its text children.
         .indicator_style(move |s| {
             let l = look.get();
             s.top(px(l.inner_inset))
                 .bottom(px(l.inner_inset))
-                .bg(l.indicator_bg)
                 .rounded(px(l.inner_radius))
                 .border(px(l.border_width))
                 .border_color(l.indicator_border)
@@ -159,6 +161,17 @@ pub fn SegmentedControl(
                         .with(|current| item.with(|i| current.as_str() == i.value.as_str()))
                 };
                 let is_disabled = move || props.disabled.get() || item.with(|i| i.disabled);
+                let label_color = move || {
+                    look.with(|l| {
+                        if is_disabled() {
+                            l.fg_disabled
+                        } else if is_selected() {
+                            l.fg_selected
+                        } else {
+                            l.fg
+                        }
+                    })
+                };
 
                 nsh_base::tab()
                     .test_id(&test_id)
@@ -182,17 +195,14 @@ pub fn SegmentedControl(
                     .px(move || px(look.with(|l| l.inset)))
                     .gap(move || px(look.with(|l| l.content_gap)))
                     .rounded(move || px(look.with(|l| l.inner_radius)))
-                    .text_color(move || {
-                        look.with(|l| {
-                            if is_disabled() {
-                                l.fg_disabled
-                            } else if is_selected() {
-                                l.fg_selected
-                            } else {
-                                l.fg
-                            }
-                        })
+                    .bg(move || {
+                        if is_selected() {
+                            look.with(|l| l.indicator_bg)
+                        } else {
+                            Hsla::default()
+                        }
                     })
+                    .text_color(label_color)
                     .typography(move || {
                         look.with(|l| {
                             if is_selected() {
@@ -220,7 +230,11 @@ pub fn SegmentedControl(
                         s.outline(move || px(look.with(|l| l.ring_width)))
                             .outline_color(move || look.with(|l| l.ring))
                     })
-                    .child(text(move || item.with(|i| i.label.clone())).number_of_lines(1u32))
+                    .child(
+                        text(move || item.with(|i| i.label.clone()))
+                            .number_of_lines(1u32)
+                            .text_color(label_color),
+                    )
                     .child(when(
                         move || item.with(|i| i.badge.is_some()),
                         move || {

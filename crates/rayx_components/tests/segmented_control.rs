@@ -76,10 +76,45 @@ fn segmented_control_renders_segments_and_handles_selection_and_disabled() {
         app.screen.shown()
     );
 
+    // The active tab draws its own opaque pill fill behind its label, while any non-tab
+    // indicator sibling keeps a transparent fill so it can never paint over active text.
+    let transparent = nsh_core::Color::from(nsh_core::color::Hsla::default());
+    let all_tab = app.screen.pressable("All").unwrap();
+    let icons_tab = app.screen.pressable("Icons").unwrap();
+    let tabs_parent = *app.screen.parents.get(&all_tab).unwrap();
+    let all_bg = app.screen.styles.get(&all_tab).unwrap().background_color;
+    let icons_bg = app.screen.styles.get(&icons_tab).unwrap().background_color;
+    assert_ne!(
+        all_bg, transparent,
+        "active segment draws its own pill fill: {all_bg:?}"
+    );
+    assert_eq!(
+        icons_bg, transparent,
+        "inactive segment has no pill fill: {icons_bg:?}"
+    );
+    for sibling in app.screen.children(tabs_parent) {
+        if !app.screen.events.contains_key(&sibling)
+            && let Some(style) = app.screen.styles.get(&sibling)
+        {
+            assert_eq!(
+                style.background_color, transparent,
+                "indicator sibling must stay transparent so it never occludes active tab text"
+            );
+        }
+    }
+
     // Pressing an unselected segment updates value and emits onChange.
     app.press("Icons");
     assert!(
-        app.wait(|s| s.text_node("selected=icons changes=1").is_some()),
+        app.wait(|s| {
+            s.text_node("selected=icons changes=1").is_some()
+                && s.styles
+                    .get(&icons_tab)
+                    .is_some_and(|st| st.background_color != transparent)
+                && s.styles
+                    .get(&all_tab)
+                    .is_some_and(|st| st.background_color == transparent)
+        }),
         "{:?}",
         app.screen.shown()
     );
