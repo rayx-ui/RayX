@@ -41,4 +41,28 @@ impl AssetService {
             .uri_for_scale(&path, scale as f32)
             .map_err(|error| error.to_string())
     }
+
+    /// Every virtual namespace declared in the loaded catalog, sorted.
+    pub fn namespaces(&self) -> Result<Vec<String>, String> {
+        let catalog = self
+            .service
+            .loaded_catalog()
+            .map_err(|error| error.to_string())?;
+        let Some(catalog) = catalog.as_ref() else {
+            return Err(rayx_app::services::assets::AssetError::NotLoaded.to_string());
+        };
+        Ok(catalog.namespaces().iter().cloned().collect())
+    }
+
+    /// The loaded asset catalog serialized as JSON.
+    pub fn catalog_json(&self) -> Result<String, String> {
+        let catalog = self
+            .service
+            .loaded_catalog()
+            .map_err(|error| error.to_string())?;
+        let Some(catalog) = catalog.as_ref() else {
+            return Err(rayx_app::services::assets::AssetError::NotLoaded.to_string());
+        };
+        serde_json::to_string(catalog).map_err(|error| error.to_string())
+    }
 }

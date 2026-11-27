@@ -155,7 +155,7 @@ fn a_served_library_s_files_are_in_the_catalog_without_the_app_naming_them() {
         ["acme-ui"]
     );
     let star = assets.descriptor("@acme-ui/icons/star.svg").unwrap();
-    assert_eq!(star.kind, AssetKind::Svg);
+    assert_eq!(star.kind, AssetKind::Icon);
     assert_eq!(star.tags, ["brand"], "the library's manifest's metadata");
     assert_eq!(
         assets.uri("data/palette.json").unwrap(),

@@ -45,6 +45,7 @@ pub mod auto_layout;
 pub mod button;
 pub mod keymap_editor;
 pub mod meta;
+pub mod segmented_control;
 pub mod slot;
 pub mod theme;
 
@@ -65,6 +66,10 @@ pub mod prelude {
     pub use crate::keymap_editor::{
         KeymapEditor, KeymapEditorElement, KeymapEditorEvent, KeymapEditorProps, KeymapRecording,
         KeymapRow, KeymapSource, KeymapSourceFilter, keymap_editor,
+    };
+    pub use crate::segmented_control::{
+        SegmentedControl, SegmentedControlElement, SegmentedControlEvent, SegmentedControlProps,
+        SegmentedItem, segmented_control,
     };
     pub use crate::slot::{SlotProps, slot};
     pub use crate::theme::{
@@ -91,9 +96,13 @@ pub fn set() -> Registry {
         .ts_alias(meta::META_SECTION)
         .ts_alias(meta::META_STATE)
         .ts_alias(meta::META_SERVICES)
+        .ts_alias(meta::ICON_SRC)
+        .ts_alias(meta::ILLUSTRATION_SRC)
+        .ts_alias(meta::ASSET_REF)
         .register::<button::Button>()
         .register::<auto_layout::AutoLayout>()
         .register::<slot::Slot>()
-        .register::<keymap_editor::KeymapEditor>();
+        .register::<keymap_editor::KeymapEditor>()
+        .register::<segmented_control::SegmentedControl>();
     set
 }

@@ -189,3 +189,34 @@ pub const META_SERVICES: TsAlias = TsAlias {
           the app's registrations for that instance alone. Startup services belong to the app's \
           root and are not registered here.",
 };
+
+/// A component prop taking an icon asset reference (`icon?: IconSrc`): evaluates to `string` at
+/// run time (logical path `@<pkg>/<path>` or `asset:/` URI) while signaling to tooling that the
+/// prop expects an icon asset (`svg`, `png`, or `webp`).
+pub const ICON_SRC: TsAlias = TsAlias {
+    name: "IconSrc",
+    ts: "string",
+    doc: "An icon asset reference (logical path `@<pkg>/<path>` or `asset:/` URI) for monochrome \
+          or duotone icons (`svg`, `png`, `webp`).",
+};
+
+/// A component prop taking an illustration asset reference (`illustration?: IllustrationSrc`):
+/// evaluates to `string` at run time (logical path `@<pkg>/<path>` or `asset:/` URI) while
+/// signaling to tooling that the prop expects an illustration asset (`svg`, `png`, or `webp`).
+pub const ILLUSTRATION_SRC: TsAlias = TsAlias {
+    name: "IllustrationSrc",
+    ts: "string",
+    doc: "An illustration asset reference (logical path `@<pkg>/<path>` or `asset:/` URI) for \
+          multicolored artwork (`svg`, `png`, `webp`).",
+};
+
+/// A component prop taking an asset reference filtered by kind (`asset?: AssetRef<"theme">`,
+/// `asset?: AssetRef<"font" | "locale">`, or `AssetRef` for any kind): evaluates to `string` at
+/// run time while carrying the accepted kind union in `K` for tooling.
+pub const ASSET_REF: TsAlias = TsAlias {
+    name: "AssetRef<K extends string = string>",
+    ts: "string",
+    doc: "An asset reference (logical path `@<pkg>/<path>` or `asset:/` URI), optionally \
+          parameterized by accepted asset kind(s) such as `AssetRef<\"theme\">` or \
+          `AssetRef<\"icon\" | \"illustration\">`.",
+};
