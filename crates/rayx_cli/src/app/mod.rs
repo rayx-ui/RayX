@@ -1,11 +1,13 @@
 //! `rayx app [-C <dir>] [--no-install] <command> [arguments]`: an nsh command run with the nsh the
 //! project pins (design §4.4, D12, RUN-1 to RUN-3).
 //!
-//! rayx reads only the command name and `--target` (for the prerequisites, [`prereqs`]); every
-//! argument after the command goes to nsh unchanged, `--` and what follows included. nsh runs in
-//! the directory the pin was read in, without `CARGO`, with the web set's LLVM as the wasm32 C
-//! tools and the pinned NDK as `ANDROID_NDK_HOME` when those are unset; everything else passes
-//! through. On Unix rayx replaces itself with nsh; on Windows it waits and exits with nsh's code.
+//! rayx reads only the command name, `--target`, and (when `--target` is absent on `run`, `build`,
+//! or `package`) `--profile` from `nsh.json` (for the prerequisites, [`prereqs`]); every argument
+//! after the command — including repeatable `--context <key=val>` and `--profile <name>` flags —
+//! goes to nsh unchanged, `--` and what follows included. nsh runs in the directory the pin was
+//! read in, without `CARGO`, with the web set's LLVM as the wasm32 C tools and the pinned NDK as
+//! `ANDROID_NDK_HOME` when those are unset; everything else passes through. On Unix rayx replaces
+//! itself with nsh; on Windows it waits and exits with nsh's code.
 //!
 //! Fork development has two doors (design §4.6): `RAYX_NSH=<path>` runs that binary instead of
 //! the pin's, with a warning on every command, and a path dependency on an NSH checkout runs the
@@ -209,7 +211,13 @@ pub fn prepare(
     };
     let env = setup::environment_with(host.clone(), project.as_ref(), false, nsh);
     let command = args.command().to_string_lossy().into_owned();
-    let target = prereqs::target(args.args());
+    let target = prereqs::target(args.args()).or_else(|| {
+        if matches!(command.as_str(), "run" | "build" | "package") {
+            profile_arg(args.args()).and_then(|profile| profile_target(&dir, &profile))
+        } else {
+            None
+        }
+    });
     let sets = prereqs::required_sets(&command, target.as_deref());
     ensure(&env, &sets, &dir, runner, machine, user_path)?;
 
@@ -352,4 +360,155 @@ pub fn wasm_tools(cx: &Cx) -> Option<(PathBuf, PathBuf)> {
         }
     };
     (cx.machine.exists(&cc) && cx.machine.exists(&ar)).then_some((cc, ar))
+}
+
+/// Every repeatable `--context <key=val>` (or `--context=<key=val>`) value passed before `--`.
+pub fn context_args(args: &[OsString]) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut words = args.iter().map(|arg| arg.to_string_lossy().into_owned());
+    while let Some(word) = words.next() {
+        if word == "--" {
+            break;
+        }
+        if word == "--context" {
+            if let Some(value) = words.next() {
+                out.push(value);
+            }
+        } else if let Some(value) = word.strip_prefix("--context=") {
+            out.push(value.to_string());
+        }
+    }
+    out
+}
+
+/// The value of `--profile <name>` (or `--profile=<name>`) before any `--`.
+pub fn profile_arg(args: &[OsString]) -> Option<String> {
+    let mut words = args.iter().map(|arg| arg.to_string_lossy().into_owned());
+    while let Some(word) = words.next() {
+        if word == "--" {
+            return None;
+        }
+        if word == "--profile" {
+            return words.next();
+        }
+        if let Some(value) = word.strip_prefix("--profile=") {
+            return Some(value.to_string());
+        }
+    }
+    None
+}
+
+/// Reads `assets.profiles.<profile>.target` from `<dir>/nsh.json`, if present.
+fn profile_target(dir: &Path, profile: &str) -> Option<String> {
+    let text = std::fs::read_to_string(dir.join(crate::nsh::pin::NSH_JSON)).ok()?;
+    let json: serde_json::Value = serde_json::from_str(&text).ok()?;
+    json.get("assets")?
+        .get("profiles")?
+        .get(profile)?
+        .get("target")?
+        .as_str()
+        .map(str::to_owned)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cli::{Cli, Command};
+    use crate::host::{Arch, HostFacts, Os, Runner};
+    use crate::nsh::pin::default_pin;
+    use crate::project::Pins;
+    use crate::setup::{Cx, FakeMachine, PlanEnv};
+    use clap::Parser;
+
+    fn parse_app(argv: &[&str]) -> AppArgs {
+        let mut full = vec!["rayx", "app"];
+        full.extend_from_slice(argv);
+        match Cli::try_parse_from(full).expect("parses").command {
+            Command::App(args) => args,
+            other => panic!("unexpected command: {other:?}"),
+        }
+    }
+
+    fn os_vec(words: &[&str]) -> Vec<OsString> {
+        words.iter().map(OsString::from).collect()
+    }
+
+    #[test]
+    fn context_and_profile_flags_forward_verbatim_for_run_build_and_package() {
+        for subcommand in ["run", "build", "package"] {
+            let args = parse_app(&[
+                subcommand,
+                "--context",
+                "brand=acme",
+                "--context=tier=pro",
+                "--profile",
+                "acme-ios",
+                "--",
+                "--extra",
+            ]);
+            assert_eq!(
+                context_args(args.args()),
+                vec!["brand=acme".to_string(), "tier=pro".to_string()]
+            );
+            assert_eq!(profile_arg(args.args()).as_deref(), Some("acme-ios"));
+
+            let dir = PathBuf::from(".");
+            let env = PlanEnv {
+                host: HostFacts {
+                    os: Os::Linux,
+                    arch: Arch::X64,
+                    emulated: false,
+                    wsl: false,
+                    distro: None,
+                },
+                pins: Pins::resolve(None),
+                project_root: None,
+                tools_node: None,
+                yes: false,
+                nsh: None,
+            };
+            let mut runner = Runner::record().with_os(Os::Linux);
+            let machine = FakeMachine::new();
+            let mut path =
+                UserPath::Windows(Box::new(crate::host::path_env::MemoryPathStore::new(None)));
+            let mut cx = Cx::new(&env, &mut runner, &machine, &mut path);
+            let launch = launch_for(
+                &args,
+                &dir,
+                Some(&default_pin(&dir)),
+                Some(Path::new("/usr/local/bin/nsh")),
+                &mut cx,
+                &mut Vec::new(),
+            )
+            .expect("launch");
+            assert_eq!(
+                launch.args,
+                os_vec(&[
+                    subcommand,
+                    "--context",
+                    "brand=acme",
+                    "--context=tier=pro",
+                    "--profile",
+                    "acme-ios",
+                    "--",
+                    "--extra",
+                ])
+            );
+        }
+    }
+
+    #[test]
+    fn profile_target_reads_target_from_nsh_json() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        std::fs::write(
+            dir.path().join("nsh.json"),
+            r#"{"assets":{"profiles":{"acme-web":{"target":"web","context":{"brand":"acme"}}}}}"#,
+        )
+        .expect("write nsh.json");
+        assert_eq!(
+            profile_target(dir.path(), "acme-web").as_deref(),
+            Some("web")
+        );
+        assert_eq!(profile_target(dir.path(), "missing"), None);
+    }
 }

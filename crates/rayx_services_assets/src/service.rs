@@ -13,8 +13,7 @@ use rayx_app::di::{
     StartupServiceType,
 };
 use rayx_app::services::assets::{
-    AssetCatalog, AssetDiagnosticSeverity, AssetError, AssetKind, AssetManifest,
-    AssetManifestEntry, AssetService, Result,
+    AssetCatalog, AssetDiagnosticSeverity, AssetError, AssetManifest, AssetService, Result,
 };
 
 use crate::reader::AssetReader;
@@ -78,19 +77,14 @@ impl RayxAssets {
             } else {
                 Ok(AssetManifest::default())
             };
-            let added = manifest.map(|mut manifest| {
-                let listed: Vec<String> = manifest.entries().map(|entry| entry.path).collect();
-                for path in files {
-                    if path != self.options.manifest && !listed.contains(&path) {
-                        // A file only the platform lists: its kind from its name, quietly.
-                        manifest.assets.push(AssetManifestEntry {
-                            kind: Some(AssetKind::infer_from_path(&path)),
-                            path,
-                            ..AssetManifestEntry::default()
-                        });
-                    }
-                }
-                builder.add_manifest(package, &manifest);
+            let added = manifest.map(|manifest| {
+                let available: Vec<String> = files
+                    .iter()
+                    .filter(|path| *path != &self.options.manifest)
+                    .cloned()
+                    .collect();
+                builder.add_manifest_with_files(package, &manifest, &available);
+                builder.add_unlisted_files(package, &available, Some(&manifest));
             });
             if let Err(error) = added {
                 if strict {

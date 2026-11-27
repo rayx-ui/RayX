@@ -52,7 +52,7 @@ fn a_served_library_s_files_are_in_the_catalog_unnamed() {
     assert_eq!(packages(&assets), ["acme-ui"]);
     assert_eq!(
         assets.descriptor("@acme-ui/icons/star.svg").unwrap().kind,
-        AssetKind::Svg
+        AssetKind::Icon
     );
     let png = assets.descriptor("icons/star.png").unwrap();
     assert_eq!(png.package, "acme-ui");

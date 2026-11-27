@@ -78,23 +78,53 @@ TS's options object has `package(name)` only.
 
 A package whose files are added (`add_asset_files`, `add_bundled_assets`) or shipped by a served set needs a manifest
 only for metadata, and its manifest is read only when it ships one; a package whose files are not listed so lists them
-in its manifest. The manifest is TOML,
-`assets.toml` by default:
+in its manifest. The manifest is TOML, `assets.toml` by default:
 
 ```toml
-files = ["icons/close.svg", "locales/en.json"]
+# Optional explicit virtual directories (persists empty namespaces).
+namespaces = ["icons/navigation", "illustrations/empty"]
+
+# Shorthand: literal paths or glob patterns (*, **, ?, {a,b}).
+files = ["fonts/**/*-OFL.txt", "locales/*.json"]
+
+[[asset]]
+path = "icons/**/*.svg"
+exclude = ["icons/draft/**"]
+namespace = "icons/{subdir}"
+kind = "icon"
+tags = ["ui"]
 
 [[asset]]
 path = "images/logo.png"
 scales = [2, 3]
 tags = ["brand"]
+when = { platform = ["ios", "macos"], brand = "acme" }
+alias = "brand/logo.svg"
 ```
 
-- `files = [..]` lists plain files; `[[asset]]` tables add a kind, density `scales`, tags, locale, theme, platform,
-  title, description, size and custom data.
-- Density variants are `@1.5x`, `@2x`, `@3x` and `@4x` file names (as NSH's images load them), declared with `scales`
-  or listed and folded into their base. There are no density folders.
-- A listed file the manifest does not mention takes its kind from its name; it is in the catalog with no metadata.
+- **Kinds (`AssetKind`)**: `font` (`ttf`, `otf`, `woff`, `woff2`), `icon` (`svg`, `png`, `webp` — monochrome or
+  duotone), `illustration` (`svg`, `png`, `webp` — multicolored), `locale` (`json` under `locales/` or `i18n/`),
+  `keymap` (`json` under `keymaps/` or `keybindings/`), unified `theme` (`json` under `themes/` or `*.dtcg.json`),
+  plus legacy kinds (`image`, `svg`, `json`, `markdown`, `text`, `audio`, `video`, `binary`, `fixture`, `unknown`).
+  Extensions are validated against the asset's kind (`AssetKind::validate_extension`).
+- **Globbing & specificity**: `files` and `[[asset]]` entries accept `*`, `**`, `?`, and `{a,b}` globs plus optional
+  `exclude = [...]`. Rules apply in specificity order — broad globs (`**`) → more specific globs → exact paths — with
+  more specific or later entries overriding scalar fields (`kind`, `namespace`, `locale`, `theme`, `platform`, `title`,
+  `description`, `width`, `height`, `alias`, `when`) and merging `tags` (deduped union) and `custom` (key-merge).
+  Globs that match zero files emit a `Warning`; duplicate exact paths emit an `Error`.
+- **Virtual namespacing**: `namespace = "icons/navigation"` assigns a `/`-separated virtual namespace (no leading or
+  trailing `/`, no empty segments, no `..`). Globs may use `{subdir}` (e.g. `namespace = "icons/{subdir}"`) to capture
+  the relative subdirectory beneath the glob's leading literal prefix. Top-level `namespaces = [...]` registers empty
+  virtual directories. Query by namespace with `AssetQuery { namespace, namespace_recursive, .. }`.
+- **Build-context predicates (`when`) & `alias`**: `when = { platform = ["ios", "macos"], brand = "acme" }` declares
+  build-time inclusion criteria (single string or list of strings, normalized to `Vec<String>`). `alias = "brand/logo.svg"`
+  gives mutually exclusive `when` entries a shared logical path override. Forward context flags via
+  `rayx app run|build|package --context <key=val> --profile <name>`.
+- **Density variants**: `@1.5x`, `@2x`, `@3x`, and `@4x` file names (as NSH's images load them), declared with `scales`
+  or listed and folded into their base. Supported for `image` and raster (`png`/`webp`) `icon` and `illustration`
+  assets (`AssetKind::has_density_variants_for_path`); SVG icons and illustrations ignore `scales`.
+- A listed file the manifest does not mention (and does not exclude) takes its kind from its name; it is in the catalog
+  with no metadata.
 - Manifest problems are diagnostics or startup failures, as `AssetValidationPolicy` says.
 
 ## The contract

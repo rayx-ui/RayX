@@ -1,4 +1,5 @@
-//! Asset paths: relative to a crate's `assets/` directory, with density suffixes.
+//! Asset paths: relative to a crate's `assets/` directory, with density suffixes and virtual
+//! namespaces.
 
 use super::AssetError;
 
@@ -36,6 +37,43 @@ pub fn normalize(path: &str) -> Result<String, AssetError> {
         return Err(invalid("it names no file"));
     }
     Ok(segments.join("/"))
+}
+
+/// Checks and normalizes a virtual asset namespace: `/`-separated, no leading or trailing `/`,
+/// no empty segments, no `.` or `..` segments, and no backslashes.
+pub fn normalize_namespace(ns: &str) -> Result<String, AssetError> {
+    let invalid = |reason: &str| AssetError::InvalidPath {
+        path: ns.to_owned(),
+        reason: reason.to_owned(),
+    };
+    if ns.is_empty() || ns.trim().is_empty() {
+        return Err(invalid("namespace is empty"));
+    }
+    if ns.contains('\\') {
+        return Err(invalid("namespace uses `\\`; namespaces are `/`-separated"));
+    }
+    if ns.starts_with('/') || ns.ends_with('/') {
+        return Err(invalid("namespace must not have leading or trailing `/`"));
+    }
+    let mut segments = Vec::new();
+    for segment in ns.split('/') {
+        if segment.is_empty() {
+            return Err(invalid("namespace has an empty segment"));
+        }
+        if segment == "." || segment == ".." {
+            return Err(invalid("namespace must not contain `.` or `..`"));
+        }
+        if segment.trim().is_empty() {
+            return Err(invalid("namespace has a whitespace-only segment"));
+        }
+        segments.push(segment);
+    }
+    Ok(segments.join("/"))
+}
+
+/// Whether any path segment starts with `.` (a hidden file or directory).
+pub(crate) fn is_hidden(path: &str) -> bool {
+    path.split('/').any(|segment| segment.starts_with('.'))
 }
 
 /// The base path and scale of a density variant's path (`logo@2x.png` is `logo.png` at 2),
