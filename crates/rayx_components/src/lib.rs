@@ -43,7 +43,9 @@
 
 pub mod auto_layout;
 pub mod button;
+pub mod dialog;
 pub mod keymap_editor;
+pub mod menu;
 pub mod meta;
 pub mod segmented_control;
 pub mod slot;
@@ -63,9 +65,16 @@ pub mod prelude {
     pub use crate::button::{
         Button, ButtonElement, ButtonEvent, ButtonProps, ButtonVariant, button,
     };
+    pub use crate::dialog::{Dialog, DialogElement, DialogEvent, DialogProps, dialog};
     pub use crate::keymap_editor::{
         KeymapEditor, KeymapEditorElement, KeymapEditorEvent, KeymapEditorProps, KeymapRecording,
         KeymapRow, KeymapSource, KeymapSourceFilter, keymap_editor,
+    };
+    pub use crate::menu::{
+        ContextMenu, ContextMenuElement, ContextMenuEvent, ContextMenuProps, Menu, MenuElement,
+        MenuEvent, MenuItem, MenuItemElement, MenuItemEvent, MenuItemProps, MenuItemVariant,
+        MenuProps, MenuSeparator, MenuSeparatorElement, MenuSeparatorProps, OpenChangeReason,
+        context_menu, menu, menu_item, menu_separator,
     };
     pub use crate::segmented_control::{
         SegmentedControl, SegmentedControlElement, SegmentedControlEvent, SegmentedControlProps,
@@ -103,6 +112,11 @@ pub fn set() -> Registry {
         .register::<auto_layout::AutoLayout>()
         .register::<slot::Slot>()
         .register::<keymap_editor::KeymapEditor>()
-        .register::<segmented_control::SegmentedControl>();
+        .register::<segmented_control::SegmentedControl>()
+        .register::<menu::Menu>()
+        .register::<menu::ContextMenu>()
+        .register::<menu::MenuItem>()
+        .register::<menu::MenuSeparator>()
+        .register::<dialog::Dialog>();
     set
 }

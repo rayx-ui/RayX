@@ -56,6 +56,7 @@ impl Tsx {
             minify: false,
             split: false,
             ui_sets: described(),
+            ..Default::default()
         })
         .unwrap();
         let _ = std::fs::remove_dir_all(&dir);

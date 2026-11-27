@@ -97,6 +97,7 @@ fn a_tsx_screen_mounts_and_interacts_with_keymap_editor() {
         minify: false,
         split: false,
         ui_sets: described(),
+        ..Default::default()
     })
     .unwrap();
     let _ = std::fs::remove_dir_all(&dir);
