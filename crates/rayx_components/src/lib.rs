@@ -43,6 +43,7 @@
 
 pub mod auto_layout;
 pub mod button;
+pub mod combobox;
 pub mod keymap_editor;
 pub mod meta;
 pub mod segmented_control;
@@ -62,6 +63,9 @@ pub mod prelude {
     };
     pub use crate::button::{
         Button, ButtonElement, ButtonEvent, ButtonProps, ButtonVariant, button,
+    };
+    pub use crate::combobox::{
+        Combobox, ComboboxElement, ComboboxEvent, ComboboxItem, ComboboxProps, combobox,
     };
     pub use crate::keymap_editor::{
         KeymapEditor, KeymapEditorElement, KeymapEditorEvent, KeymapEditorProps, KeymapRecording,
@@ -100,6 +104,7 @@ pub fn set() -> Registry {
         .ts_alias(meta::ILLUSTRATION_SRC)
         .ts_alias(meta::ASSET_REF)
         .register::<button::Button>()
+        .register::<combobox::Combobox>()
         .register::<auto_layout::AutoLayout>()
         .register::<slot::Slot>()
         .register::<keymap_editor::KeymapEditor>()
