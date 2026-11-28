@@ -45,6 +45,7 @@ pub mod auto_layout;
 pub mod button;
 pub mod combobox;
 pub mod dialog;
+pub mod hover_card;
 pub mod keymap_editor;
 pub mod menu;
 pub mod meta;
@@ -70,6 +71,9 @@ pub mod prelude {
         Combobox, ComboboxElement, ComboboxEvent, ComboboxItem, ComboboxProps, combobox,
     };
     pub use crate::dialog::{Dialog, DialogElement, DialogEvent, DialogProps, dialog};
+    pub use crate::hover_card::{
+        HoverCard, HoverCardElement, HoverCardEvent, HoverCardProps, hover_card,
+    };
     pub use crate::keymap_editor::{
         KeymapEditor, KeymapEditorElement, KeymapEditorEvent, KeymapEditorProps, KeymapRecording,
         KeymapRow, KeymapSource, KeymapSourceFilter, keymap_editor,
@@ -122,6 +126,7 @@ pub fn set() -> Registry {
         .register::<menu::ContextMenu>()
         .register::<menu::MenuItem>()
         .register::<menu::MenuSeparator>()
-        .register::<dialog::Dialog>();
+        .register::<dialog::Dialog>()
+        .register::<hover_card::HoverCard>();
     set
 }
