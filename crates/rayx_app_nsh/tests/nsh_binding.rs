@@ -233,6 +233,7 @@ fn a_tsx_class_exposes_the_view_model_as_observables() {
         minify: false,
         split: false,
         ui_sets: ui_sets.iter().map(Into::into).collect(),
+        context: None,
     })
     .unwrap();
     let described: Vec<_> = ui_sets.iter().map(Into::into).collect();

@@ -93,6 +93,7 @@ impl Gallery {
             minify: false,
             split: false,
             ui_sets: described.clone(),
+            context: None,
         })
         .unwrap();
         let bytecode = nsh_js::compile_bytecode_with(&bundle.code, false, &described).unwrap();

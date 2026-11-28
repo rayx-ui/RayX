@@ -756,6 +756,7 @@ fn run_tsx(tsx: &str) -> String {
         minify: false,
         split: false,
         ui_sets: ui_sets.iter().map(Into::into).collect(),
+        context: None,
     })
     .unwrap();
     let described: Vec<_> = ui_sets.iter().map(Into::into).collect();
