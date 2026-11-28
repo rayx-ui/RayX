@@ -13,7 +13,7 @@ hooks = ["nsh-core/inspect"]
 
 [dependencies]
 rayx_app_nsh = { path = "@RAYX_APP@" }
-nsh-core = "0.7.0"
+nsh-core = "0.7.2"
 
 [workspace]
 

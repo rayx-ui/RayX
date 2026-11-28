@@ -4,13 +4,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use nsh_core::JsonValue;
-use nsh_core::element::{Arg, JsHost, JsIn, JsKind, JsOwned, PropError, Settles, TsTypes, start_task};
+use nsh_core::element::{
+    Arg, JsHost, JsIn, JsKind, JsOwned, PropError, Settles, TsTypes, start_task,
+};
 use nsh_core::prelude::*;
 use rayx_app::ChangeSubscription;
 use rayx_app::di::ThreadBound;
-use rayx_app::services::commands::{
-    CommandService as Commands, ContextService as Contexts,
-};
+use rayx_app::services::commands::{CommandService as Commands, ContextService as Contexts};
 use rayx_app::services::input_map::InputMapService;
 use rayx_app_nsh::EngineRunner;
 use rayx_app_nsh::ts::{Argument, Listeners, ServiceClass, json};
@@ -206,7 +206,9 @@ impl ContextService {
         let service = Arc::clone(&self.service);
         self.listeners.listen(listener, move |post| {
             Ok::<ChangeSubscription, String>(
-                service.context().subscribe(move |state| post(json(&**state))),
+                service
+                    .context()
+                    .subscribe(move |state| post(json(&**state))),
             )
         })
     }
@@ -274,7 +276,9 @@ fn read_title(obj: JsIn<'_>, required: bool) -> Result<Option<TsTitle>, PropErro
     let value = raw.get();
     if value.is_nullish() {
         if required {
-            return Err(PropError("`title` is required (string or () => string)".into()));
+            return Err(PropError(
+                "`title` is required (string or () => string)".into(),
+            ));
         }
         return Ok(None);
     }
@@ -303,9 +307,7 @@ fn read_optional_can_execute(obj: JsIn<'_>) -> Result<Option<Callback<(), bool>>
         .map_err(|error| PropError(format!("`canExecute`: {}", error.0)))
 }
 
-fn read_optional_checked(
-    obj: JsIn<'_>,
-) -> Result<Option<Callback<(), Option<bool>>>, PropError> {
+fn read_optional_checked(obj: JsIn<'_>) -> Result<Option<Callback<(), Option<bool>>>, PropError> {
     let raw = obj.field("checked")?;
     let value = raw.get();
     if value.is_nullish() {
@@ -335,8 +337,8 @@ impl JsValue for CommandDescriptorArg {
         let id_raw = value.field("id")?;
         let id = <String as JsValue>::from_js(id_raw.get())
             .map_err(|error| PropError(format!("`id`: {}", error.0)))?;
-        let title = read_title(value, true)?
-            .ok_or_else(|| PropError("`title` is required".into()))?;
+        let title =
+            read_title(value, true)?.ok_or_else(|| PropError("`title` is required".into()))?;
         Ok(Self {
             id,
             title,
@@ -350,7 +352,9 @@ impl JsValue for CommandDescriptorArg {
     }
 
     fn to_js<'a>(&self, _host: &'a dyn JsHost) -> Result<JsOwned<'a>, PropError> {
-        Err(PropError("CommandDescriptor is an input argument only".into()))
+        Err(PropError(
+            "CommandDescriptor is an input argument only".into(),
+        ))
     }
 }
 
@@ -496,7 +500,7 @@ fn make_run_action(
             });
             if started.is_err() {
                 return Box::pin(futures::future::ready(Err(
-                    "the surface's engine is gone".to_owned(),
+                    "the surface's engine is gone".to_owned()
                 )));
             }
             Box::pin(async move {
@@ -592,14 +596,8 @@ impl CommandService {
             category: descriptor.category,
             kind: descriptor.kind,
             contexts: descriptor.contexts,
-            can_execute: descriptor
-                .can_execute
-                .map(make_bool_provider)
-                .transpose()?,
-            checked: descriptor
-                .checked
-                .map(make_checked_provider)
-                .transpose()?,
+            can_execute: descriptor.can_execute.map(make_bool_provider).transpose()?,
+            checked: descriptor.checked.map(make_checked_provider).transpose()?,
             run: make_run_action(descriptor.run, self.runner.clone())?,
         };
         let registration = rayx

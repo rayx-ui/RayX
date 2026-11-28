@@ -11,9 +11,10 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The service crates, by the name after `rayx_services_`: the feature names.
-const SERVICES: [&str; 13] = [
+const SERVICES: [&str; 14] = [
     "application_configuration",
     "assets",
+    "commands",
     "fonts",
     "history",
     "i18n",
