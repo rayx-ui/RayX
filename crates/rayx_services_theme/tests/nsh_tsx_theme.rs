@@ -295,6 +295,7 @@ fn frames(tsx: &str, scheme: nsh_core::platform::ColorScheme) -> Vec<String> {
         minify: false,
         split: false,
         ui_sets: sets.iter().map(Into::into).collect(),
+        context: None,
     })
     .unwrap();
     let _ = std::fs::remove_dir_all(&dir);

@@ -18,7 +18,7 @@ use rayx_cli::nsh::install::RustTools;
 use rayx_cli::nsh::store::{Kind, Receipt, Store};
 use rayx_cli::nsh::{install_in, path_in};
 
-const ID: &str = "3d62c3d27f23";
+const ID: &str = "c5e83119beb7";
 
 /// `rayx` with its store and records in `home`.
 fn rayx(home: &Workspace) -> Command {
@@ -43,10 +43,10 @@ fn installed(home: &Workspace, id: &str, kind: Kind) -> PathBuf {
             version: 1,
             id: id.into(),
             kind,
-            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.7.0-2/nsh-macos-arm64.tar.gz"
+            url: "https://github.com/dXnSix/nsh/releases/download/nshx-0.7.2-2/nsh-macos-arm64.tar.gz"
                 .into(),
-            reference: Some("nshx-0.7.0-2".into()),
-            commit: Some("3d62c3d27f234d71ef695db53016ec1e24c84286".into()),
+            reference: Some("nshx-0.7.2-2".into()),
+            commit: Some("c5e83119beb780beb743cc06c531c175ab2808b1".into()),
             nsh: "0.2.0".into(),
             cli: cli.into(),
             installed: "2026-10-24T01:30:00Z".into(),
@@ -78,7 +78,7 @@ fn status_shows_the_pin_its_source_the_entry_its_size_and_the_cli() {
         .get_output()
         .clone();
     let text = String::from_utf8(output.stdout).expect("UTF-8");
-    assert!(text.starts_with("nsh nshx-0.7.0-2 (3d62c3d)\n"), "{text}");
+    assert!(text.starts_with("nsh nshx-0.7.2-2 (c5e8311)\n"), "{text}");
     for line in [
         "  source     project\n".to_string(),
         format!("  id         {ID}\n"),
@@ -103,7 +103,7 @@ fn status_json_has_the_same_fields() {
         .get_output()
         .clone();
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).expect("JSON");
-    assert_eq!(json["value"], "nshx-0.7.0-2 (3d62c3d)");
+    assert_eq!(json["value"], "nshx-0.7.2-2 (c5e8311)");
     assert_eq!(json["source"], "project");
     assert_eq!(json["id"], ID);
     assert_eq!(json["kind"], "source");
@@ -116,8 +116,8 @@ fn status_json_has_the_same_fields() {
             .is_some_and(|c| Path::new(c).ends_with(Path::new("source/target/release/nsh"))),
         "{json}"
     );
-    assert_eq!(json["commit"], "3d62c3d27f234d71ef695db53016ec1e24c84286");
-    assert_eq!(json["version"], "0.7.0");
+    assert_eq!(json["commit"], "c5e83119beb780beb743cc06c531c175ab2808b1");
+    assert_eq!(json["version"], "0.7.2");
 }
 
 #[test]
@@ -154,7 +154,7 @@ fn status_of_a_missing_pin_and_of_each_source() {
         .current_dir(&app.root)
         .assert()
         .success()
-        .stderr(contains("pins no nsh").and(contains("tag = \"nshx-0.7.0-2\"")));
+        .stderr(contains("pins no nsh").and(contains("tag = \"nshx-0.7.2-2\"")));
 }
 
 #[test]
@@ -181,7 +181,7 @@ fn path_without_install_on_a_missing_pin_exits_1_with_the_setup_command() {
         .code(1)
         .stdout(predicate::str::is_empty())
         .stderr(
-            contains("nsh nshx-0.7.0-2 (3d62c3d) is not installed")
+            contains("nsh nshx-0.7.2-2 (c5e8311) is not installed")
                 .and(contains(format!("cd {} && rayx setup", app.root.display()))),
         );
     assert!(

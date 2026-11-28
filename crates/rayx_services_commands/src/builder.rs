@@ -22,7 +22,8 @@ pub trait CommandsAppBuilderExt: AppBuilder {
     /// `InputMapService` is required to use commands standalone.
     fn add_commands(mut self) -> Self {
         let services = self.services_mut();
-        services.replace_service_factory_as::<RayxContext>(|_services| Arc::new(RayxContext::new()));
+        services
+            .replace_service_factory_as::<RayxContext>(|_services| Arc::new(RayxContext::new()));
         services.replace_service_factory_as::<dyn ContextService>(|services| {
             services
                 .required_service::<RayxContext>()

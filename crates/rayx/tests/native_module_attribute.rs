@@ -222,7 +222,7 @@ fn an_extension_the_body_exports_is_applied_from_ts() {
 }
 
 /// NSH's CLI's specifier scan of a crate's source, as `specifier_of` in
-/// `crates/nsh-cli/src/rust_app.rs` at `nshx-0.7.0-2` (`3d62c3d27`) writes it: the first line that,
+/// `crates/nsh-cli/src/rust_app.rs` at `nshx-0.7.2-2` (`c5e83119b`) writes it: the first line that,
 /// trimmed, starts with `#[` and has `native_module` followed by `("…"`. NSH names the set's
 /// web gate after it (`nsh_ui_set_<specifier>`); without one it falls back to the crate's name,
 /// and the set's gate is dropped from the web runtime.

@@ -96,6 +96,7 @@ fn nsh_tsx_reaches_the_services_and_start_keeps_the_platform_current() {
         minify: false,
         split: false,
         ui_sets: ui_sets.iter().map(Into::into).collect(),
+        context: None,
     })
     .unwrap();
     let described: Vec<_> = ui_sets.iter().map(Into::into).collect();

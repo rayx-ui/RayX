@@ -2,8 +2,8 @@ version = 4
 
 [[package]]
 name = "nsh-core"
-version = "0.7.0"
-source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.0-2#3d62c3d27f234d71ef695db53016ec1e24c84286"
+version = "0.7.2"
+source = "git+https://github.com/dXnSix/nsh?tag=nshx-0.7.2-2#c5e83119beb780beb743cc06c531c175ab2808b1"
 
 [[package]]
 name = "split-one"
