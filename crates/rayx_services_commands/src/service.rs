@@ -110,19 +110,28 @@ impl CommandDefinition {
     }
 
     /// Replaces the title with a dynamic provider.
-    pub fn with_dynamic_title(mut self, title: impl Fn() -> String + Send + Sync + 'static) -> Self {
+    pub fn with_dynamic_title(
+        mut self,
+        title: impl Fn() -> String + Send + Sync + 'static,
+    ) -> Self {
         self.title = Arc::new(title);
         self
     }
 
     /// Sets the `can_execute` predicate.
-    pub fn with_can_execute(mut self, can_execute: impl Fn() -> bool + Send + Sync + 'static) -> Self {
+    pub fn with_can_execute(
+        mut self,
+        can_execute: impl Fn() -> bool + Send + Sync + 'static,
+    ) -> Self {
         self.can_execute = Some(Arc::new(can_execute));
         self
     }
 
     /// Sets the optional checked/toggle predicate.
-    pub fn with_checked(mut self, checked: impl Fn() -> Option<bool> + Send + Sync + 'static) -> Self {
+    pub fn with_checked(
+        mut self,
+        checked: impl Fn() -> Option<bool> + Send + Sync + 'static,
+    ) -> Self {
         self.checked = Some(Arc::new(checked));
         self
     }
@@ -184,19 +193,28 @@ impl ContextCommandHandlerDefinition {
     }
 
     /// Overrides the command title dynamically while this handler is active.
-    pub fn with_dynamic_title(mut self, title: impl Fn() -> String + Send + Sync + 'static) -> Self {
+    pub fn with_dynamic_title(
+        mut self,
+        title: impl Fn() -> String + Send + Sync + 'static,
+    ) -> Self {
         self.title = Some(Arc::new(title));
         self
     }
 
     /// Sets the `can_execute` predicate for this contextual handler.
-    pub fn with_can_execute(mut self, can_execute: impl Fn() -> bool + Send + Sync + 'static) -> Self {
+    pub fn with_can_execute(
+        mut self,
+        can_execute: impl Fn() -> bool + Send + Sync + 'static,
+    ) -> Self {
         self.can_execute = Some(Arc::new(can_execute));
         self
     }
 
     /// Sets the optional checked/toggle predicate for this contextual handler.
-    pub fn with_checked(mut self, checked: impl Fn() -> Option<bool> + Send + Sync + 'static) -> Self {
+    pub fn with_checked(
+        mut self,
+        checked: impl Fn() -> Option<bool> + Send + Sync + 'static,
+    ) -> Self {
         self.checked = Some(Arc::new(checked));
         self
     }
@@ -263,7 +281,9 @@ impl CommandRegistration {
         };
         if removed {
             shared.publish_latest();
-            shared.events.publish(CommandEvent::Unregistered(self.id.clone()));
+            shared
+                .events
+                .publish(CommandEvent::Unregistered(self.id.clone()));
         }
     }
 }
@@ -461,7 +481,11 @@ impl RegistryInner {
         }
     }
 
-    fn resolve_run(&self, id: &str, active_contexts: &[String]) -> Result<Option<ResolvedRun>, CommandError> {
+    fn resolve_run(
+        &self,
+        id: &str,
+        active_contexts: &[String],
+    ) -> Result<Option<ResolvedRun>, CommandError> {
         let Some(slot) = self.slots.get(id) else {
             return Err(CommandError::UnknownCommand(id.to_owned()));
         };

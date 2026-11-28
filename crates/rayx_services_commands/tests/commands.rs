@@ -10,9 +10,7 @@ use std::sync::{Arc, Mutex};
 use futures::channel::oneshot;
 use futures::executor::block_on;
 use futures::task::{Context, Poll, noop_waker};
-use rayx_app::services::commands::{
-    CommandError, CommandEvent, CommandService, ContextService,
-};
+use rayx_app::services::commands::{CommandError, CommandEvent, CommandService, ContextService};
 use rayx_app::services::input_map::{
     InputMapDocument, InputMapEntry, InputMapService, InputMapSource, InputMapState, InputWhen,
 };
@@ -155,11 +153,9 @@ fn direct_command_executes_checks_predicates_emits_events_and_unregisters() {
     assert_eq!(meta.contexts, vec!["workspace"]);
 
     // Execute with JSON arguments.
-    let ran = block_on(dyn_cmds.execute(
-        "view.grid".into(),
-        Some(serde_json::json!({ "snap": 8 })),
-    ))
-    .unwrap();
+    let ran =
+        block_on(dyn_cmds.execute("view.grid".into(), Some(serde_json::json!({ "snap": 8 }))))
+            .unwrap();
     assert!(ran);
     assert_eq!(
         *received_arg.lock().unwrap(),
@@ -420,7 +416,10 @@ fn keystroke_conversion_and_active_binding_resolution_follow_layers_and_contexts
     assert_eq!(global_bindings.len(), 1);
     assert_eq!(global_bindings[0].keystroke, "mod+z");
     assert_eq!(global_bindings[0].action, "edit.undo");
-    assert_eq!(shortcut_for("edit.undo", &[], &state).as_deref(), Some("mod+z"));
+    assert_eq!(
+        shortcut_for("edit.undo", &[], &state).as_deref(),
+        Some("mod+z")
+    );
     assert_eq!(
         shortcut_for("canvas.delete", &[], &state).as_deref(),
         Some("backspace")
@@ -439,9 +438,11 @@ fn keystroke_conversion_and_active_binding_resolution_follow_layers_and_contexts
             && b.when.as_deref() == Some("notEditing")
             && b.repeat
     }));
-    assert!(canvas_bindings.iter().any(|b| {
-        b.keystroke == "mod+shift+z" && b.action == "edit.redo" && b.pass_through
-    }));
+    assert!(
+        canvas_bindings
+            .iter()
+            .any(|b| { b.keystroke == "mod+shift+z" && b.action == "edit.redo" && b.pass_through })
+    );
 }
 
 #[test]

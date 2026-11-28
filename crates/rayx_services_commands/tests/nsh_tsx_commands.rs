@@ -276,8 +276,7 @@ fn tsx_context_and_command_services_work_end_to_end() {
     assert_eq!(parts[5], "canvas,canvas,global", "{shown}");
     assert_eq!(parts[6], "true:true:false", "{shown}");
     assert_eq!(
-        parts[7],
-        "mod+z;mod+s;mod+s=file.save,mod+z=edit.undo",
+        parts[7], "mod+z;mod+s;mod+s=file.save,mod+z=edit.undo",
         "{shown}"
     );
     assert_eq!(parts[8], "false", "{shown}");
