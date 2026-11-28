@@ -108,11 +108,11 @@ expect_used = "deny"
 # NSH comes from an integration tag of the fork (github.com/dXnSix/nsh,
 # `nshx-*`); a consumer's own patch decides there.
 [patch.crates-io]
-nsh-macros = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-core = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-base = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-package = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-js = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-engine = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-bundler = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
-nsh-theme = { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-macros = { path = "../../dXn/nsh/nsh/crates/nsh-macros" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-core = { path = "../../dXn/nsh/nsh/crates/nsh-core" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-base = { path = "../../dXn/nsh/nsh/crates/nsh-base" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-package = { path = "../../dXn/nsh/nsh/crates/nsh-package" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-js = { path = "../../dXn/nsh/nsh/crates/nsh-js" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-engine = { path = "../../dXn/nsh/nsh/crates/nsh-engine" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-bundler = { path = "../../dXn/nsh/nsh/crates/nsh-bundler" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
+nsh-theme = { path = "../../dXn/nsh/nsh/crates/nsh-theme" } # rayx nshx use, was { git = "https://github.com/dXnSix/nsh", tag = "nshx-0.7.0-2" }
